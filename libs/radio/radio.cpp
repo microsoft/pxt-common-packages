@@ -122,13 +122,20 @@ CODAL_RADIO* getRadio() {
         if (p == PacketBuffer::EmptyPacket)
             return mkBuffer(NULL, 0);
         int rssi = p.getRSSI();
+        auto length = p.length();
+        auto bytes = p.getBytes();
 #else
-        // TODO
+        // TODO: RSSI support
         int rssi = -73;        
-#endif        
+        auto length = p.length();
+        auto bytes = p.getBytes();
+        if (length == 0)
+            return mkBuffer(NULL, 0);
+#endif
+
         uint8_t buf[DEVICE_RADIO_MAX_PACKET_SIZE + sizeof(int)]; // packet length + rssi
         memset(buf, 0, sizeof(buf));
-        memcpy(buf, p.getBytes(), p.length()); // data
+        memcpy(buf, bytes, length); // data
         memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
     }
