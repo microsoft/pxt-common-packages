@@ -6,7 +6,6 @@
 
 #define CODAL_RADIO codal::NRF52Radio
 #define CODAL_EVENT codal::Event
-#define CODAL_RADIO_MICROBIT_DAL 0
 
 #elif defined(MICROBIT_H) // micro:bit dal
 
@@ -74,7 +73,7 @@ CODAL_RADIO* getRadio() {
 
     bool radioEnabled = false;
     int radioEnable() {
-#ifdef CODAL_RADIO        
+#ifdef CODAL_RADIO
         auto radio = getRadio();
         if (NULL == radio) 
             return DEVICE_NOT_SUPPORTED;
