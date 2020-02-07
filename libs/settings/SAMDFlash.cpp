@@ -45,12 +45,17 @@ static void lock() {
 #endif
 }
 
+int ZFlash::totalSize() {
+    return (8 << NVMCTRL->PARAM.bit.PSZ) * NVMCTRL->PARAM.bit.NVMP;
+}
+
+// this returns the size of "page" that can be erased ("row" in datasheet)
 int ZFlash::pageSize(uintptr_t address) {
 #ifdef SAMD51
-    if (address < 1024 * 1024)
+    if (address < (uintptr_t)totalSize())
         return NVMCTRL_BLOCK_SIZE; // 8k
 #else
-    if (address < 256 * 1024)
+    if (address < (uintptr_t)totalSize())
         return 256;
 #endif
     target_panic(DEVICE_FLASH_ERROR);

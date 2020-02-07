@@ -209,7 +209,7 @@ static void sendBtnUp(Event ev) {
 void setupButton(int buttonId, int key) {
     int pin = getConfig(key);
     if (pin == -1)
-        target_panic(PANIC_NO_SUCH_CONFIG);
+        return;
 
     unsigned highflags = (unsigned)pin >> 16;
     int flags = BUTTON_ACTIVE_LOW_PULL_UP;

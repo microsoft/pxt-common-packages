@@ -994,10 +994,6 @@ extern "C" void *app_alloc(int numbytes);
 extern "C" void *app_free(void *ptr);
 void gcPreAllocateBlock(uint32_t sz);
 
-#ifdef CODAL_JACDAC_WIRE_SERIAL
-codal::LowLevelTimer *allocateTimer();
-#endif
-
 #ifdef PXT64
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
 #else
