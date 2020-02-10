@@ -26,7 +26,7 @@ namespace pins {
     }
 
     /**
-     * Write a given command to SPI bus, and afterwards read the response.
+     * Write a given command to SPI bus, and at the same time read the response.
      */
     //% help=pins/spi-transfer weight=4 advanced=true
     //% blockId=spi_transfer block="spi transfer %command into %response"
