@@ -33,7 +33,6 @@
 
 typedef uint8_t PinName;
 
-#define neopixel_send_buffer(pin, ptr, len) target_panic(50)
 #define DEFAULT_NEOPIXEL_PIN P0_0
 
 // The parameters below needs tuning!
