@@ -38,14 +38,14 @@ namespace servos {
         //% group="Positional"
         setAngle(degrees: number) {
             degrees = this.clampDegrees(degrees);
-            this._angle = this.internalSetAngle(degrees);
+            this._angle = this.internalSetAngle(degrees, false);
         }
 
         get angle() {
             return this._angle || 90;
         }
 
-        protected internalSetAngle(angle: number): number {
+        protected internalSetAngle(angle: number, continuous: boolean): number {
             return 0;
         }
 
@@ -67,7 +67,7 @@ namespace servos {
             if (this._stopOnNeutral && degrees == neutral)
                 this.stop();
             else
-                this.setAngle(degrees);
+                this._angle = this.internalSetAngle(degrees, true);
         }
 
         /**
@@ -174,7 +174,8 @@ namespace servos {
             this._pin = pin;
         }
 
-        protected internalSetAngle(angle: number): number {
+        protected internalSetAngle(angle: number, continuous: number): number {
+            this._pin.servoSetContinous(continuous);
             this._pin.servoWrite(angle);
             return angle;
         }

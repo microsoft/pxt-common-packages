@@ -19,6 +19,7 @@ namespace pxsim {
         pull = 0; // PullDown
         eventMode = 0;
         used: boolean = false;
+        servoContinuous: boolean;
 
         setValue(value: number) {
             // value set from the simulator
@@ -69,6 +70,10 @@ namespace pxsim {
             this.analogSetPeriod(20000);
             this.servoAngle = Math.max(0, Math.min(180, value));
             runtime.queueDisplayUpdate();
+        }
+
+        servoSetContinuous(continuous: boolean) {
+            this.servoContinuous = continuous;
         }
 
         servoSetPulse(pinId: number, micros: number) {

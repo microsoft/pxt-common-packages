@@ -59,4 +59,9 @@ void servoSetPulse(PwmOnlyPin name, int duration) {
     PINOP(setServoPulseUs(duration));
 }
 
+//% blockHidden=1
+void servoSetContinous(PwmOnlyPin name, boolean continuous) {
+    // used by simulator
+}
+
 }
