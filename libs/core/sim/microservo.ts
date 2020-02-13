@@ -74,7 +74,8 @@ namespace pxsim.visuals {
             } else {
                 this.targetAngle = 180.0 - servoAngle;
             }
-            if (this.targetAngle != this.currentAngle)
+            if (continuous ||
+                this.targetAngle != this.currentAngle)
                 this.renderAngle();
         }
 
