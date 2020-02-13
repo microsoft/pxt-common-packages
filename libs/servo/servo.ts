@@ -45,6 +45,10 @@ namespace servos {
             return this._angle || 90;
         }
 
+        protected internalSetContinuous(continuous: number): void {
+
+        }
+
         protected internalSetAngle(angle: number, continuous: boolean): number {
             return 0;
         }
@@ -174,10 +178,13 @@ namespace servos {
             this._pin = pin;
         }
 
-        protected internalSetAngle(angle: number, continuous: boolean): number {
-            this._pin.servoSetContinuous(continuous);
+        protected internalSetAngle(angle: number): number {
             this._pin.servoWrite(angle);
             return angle;
+        }
+
+        protected internalSetContinuous(continuous: number): void {
+            this._pin.servoSetContinuous(continuous);
         }
 
         protected internalSetPulse(micros: number): void {
