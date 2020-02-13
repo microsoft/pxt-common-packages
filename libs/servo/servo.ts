@@ -174,8 +174,8 @@ namespace servos {
             this._pin = pin;
         }
 
-        protected internalSetAngle(angle: number, continuous: number): number {
-            this._pin.servoSetContinous(continuous);
+        protected internalSetAngle(angle: number, continuous: boolean): number {
+            this._pin.servoSetContinuous(continuous);
             this._pin.servoWrite(angle);
             return angle;
         }
