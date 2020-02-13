@@ -1,4 +1,16 @@
 // Auto-generated. Do not edit.
+declare namespace light {
+
+    /**
+     * Send a programmable light buffer to the specified digital pin
+     * @param data The pin that the lights are connected to
+     * @param clk the clock line if any
+     * @param mode the color encoding mode
+     * @param buf The buffer to send to the pin
+     */
+    //% shim=light::sendBuffer
+    function sendBuffer(data: DigitalInOutPin, clk: DigitalInOutPin, mode: int32, buf: Buffer): void;
+}
 declare namespace control {
 
     /**
@@ -127,7 +139,7 @@ declare interface DigitalInOutPin {
      * @param value the value of the pulse (default high)
      * @param maximum duration in micro-seconds
      */
-    //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %high||timeout %maxDuration (us)"
+    //% blockId="pins_pulse_in" block="pulse in (µs)|pin %name|pulsed %high||timeout %maxDuration (µs)"
     //% weight=18 blockGap=8
     //% help="pins/pulse-in"
     //% blockNamespace=pins
@@ -202,6 +214,12 @@ declare interface PwmOnlyPin {
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=PwmOnlyPinMethods::servoSetPulse
     servoSetPulse(duration: int32): void;
+
+    /**
+     * Indicates if the servo is running continuously
+     */
+    //% blockHidden=1 shim=PwmOnlyPinMethods::servoSetContinous
+    servoSetContinous(continuous: boolean): void;
 }
 declare namespace control {
 
@@ -295,18 +313,6 @@ declare interface SPI {
      */
     //% shim=SPIMethods::setMode
     setMode(mode: int32): void;
-}
-declare namespace light {
-
-    /**
-     * Send a programmable light buffer to the specified digital pin
-     * @param data The pin that the light are connected to
-     * @param clk the clock line if any
-     * @param mode the color encoding mode
-     * @param buf The buffer to send to the pin
-     */
-    //% shim=light::sendBuffer
-    function sendBuffer(data: DigitalInOutPin, clk: DigitalInOutPin, mode: int32, buf: Buffer): void;
 }
 declare namespace configStorage {
 
