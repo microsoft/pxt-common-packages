@@ -38,7 +38,8 @@ namespace servos {
         //% group="Positional"
         setAngle(degrees: number) {
             degrees = this.clampDegrees(degrees);
-            this._angle = this.internalSetAngle(degrees, false);
+            this.internalSetContinuous(false);
+            this._angle = this.internalSetAngle(degrees);
         }
 
         get angle() {
@@ -49,7 +50,7 @@ namespace servos {
 
         }
 
-        protected internalSetAngle(angle: number, continuous: boolean): number {
+        protected internalSetAngle(angle: number): number {
             return 0;
         }
 
@@ -68,10 +69,11 @@ namespace servos {
         run(speed: number): void {
             const degrees = this.clampDegrees(Math.map(speed, -100, 100, this._minAngle, this._maxAngle));
             const neutral = (this.maxAngle - this.minAngle) >> 1;
+            this.internalSetContinuous(true);
             if (this._stopOnNeutral && degrees == neutral)
                 this.stop();
             else
-                this._angle = this.internalSetAngle(degrees, true);
+                this._angle = this.internalSetAngle(degrees);
         }
 
         /**
