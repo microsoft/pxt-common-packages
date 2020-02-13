@@ -82,7 +82,10 @@ namespace pxsim {
             this.power = 6; // default value
             this.groupId = 0;
             this.band = 7; // https://github.com/lancaster-university/microbit-dal/blob/master/inc/core/MicroBitConfig.h#L320
-            const board = this.runtime.board as pxsim.BaseBoard;
+        }
+
+        addListeners() {
+            const board = runtime.board as pxsim.BaseBoard;
             board.addMessageListener(msg => this.messageHandler(msg));
         }
 
