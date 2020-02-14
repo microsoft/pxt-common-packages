@@ -24,6 +24,7 @@ namespace pxsim.visuals {
         return { el: createMicroServoElement(), x: xy[0], y: xy[1], w: 112.188, h: 299.674 };
     }
 
+    const SPEED = 300; // 0.1s/60 degree
     export class MicroServoView implements IBoardPart<EdgeConnectorState> {
         public style: string = "";
         public overElement: SVGElement = undefined;
@@ -61,21 +62,36 @@ namespace pxsim.visuals {
             translateEl(this.element, [x, y])
         }
         updateState(): void {
-            this.targetAngle = 180.0 - this.state.getPin(this.pin).servoAngle;
-            if (this.targetAngle != this.currentAngle) {
+            const p = this.state.getPin(this.pin);
+            const continuous = !!p.servoContinuous;
+            const servoAngle = p.servoAngle;
+            if (continuous) {
+                // for a continuous servo, the angle is interpreted as a rotation speed
+                // 0 -> -100%, 90 - 0%, 180 - 100%
                 const now = U.now();
-                const cx = 56.661;
-                const cy = 899.475;
-                const speed = 300; // 0.1s/60 degree
                 const dt = Math.min(now - this.lastAngleTime, 50) / 1000;
-                const delta = this.targetAngle - this.currentAngle;
-                this.currentAngle += Math.min(Math.abs(delta), speed * dt) * (delta > 0 ? 1 : -1);
-                this.crankEl.setAttribute("transform", this.crankTransform
-                    + ` rotate(${this.currentAngle}, ${cx}, ${cy})`)
-                this.lastAngleTime = now;
-                setTimeout(() => runtime.updateDisplay(), 20);
+                this.currentAngle = this.targetAngle;
+                this.targetAngle += ((servoAngle - 90) / 90) * SPEED * dt;
+            } else {
+                this.targetAngle = 180.0 - servoAngle;
             }
+            if (this.targetAngle != this.currentAngle)
+                this.renderAngle();
         }
+
+        private renderAngle() {
+            const now = U.now();
+            const cx = 56.661;
+            const cy = 899.475;
+            const dt = Math.min(now - this.lastAngleTime, 50) / 1000;
+            const delta = this.targetAngle - this.currentAngle;
+            this.currentAngle += Math.min(Math.abs(delta), SPEED * dt) * (delta > 0 ? 1 : -1);
+            this.crankEl.setAttribute("transform", this.crankTransform
+                + ` rotate(${this.currentAngle}, ${cx}, ${cy})`)
+            this.lastAngleTime = now;
+            setTimeout(() => runtime.updateDisplay(), 20);
+        }
+
         updateTheme(): void {
 
         }
