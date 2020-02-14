@@ -63,7 +63,7 @@ void servoSetPulse(PwmOnlyPin name, int duration) {
 * Indicates if the servo is running continuously
 */
 //% blockHidden=1
-void servoSetContinous(PwmOnlyPin name, bool continuous) {
+void servoSetContinuous(PwmOnlyPin name, bool continuous) {
     // used by simulator
 }
 

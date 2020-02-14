@@ -218,8 +218,8 @@ declare interface PwmOnlyPin {
     /**
      * Indicates if the servo is running continuously
      */
-    //% blockHidden=1 shim=PwmOnlyPinMethods::servoSetContinous
-    servoSetContinous(continuous: boolean): void;
+    //% blockHidden=1 shim=PwmOnlyPinMethods::servoSetContinuous
+    servoSetContinuous(continuous: boolean): void;
 }
 declare namespace control {
 
