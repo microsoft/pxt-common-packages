@@ -32,7 +32,6 @@ namespace pxsim {
         }
 
         queue(packet: PacketBuffer) {
-            const state = getRadioState();  
             if (this.datagram.length < 4)
                 this.datagram.push(packet);
             (<EventBusBoard>runtime.board).bus.queue(this.dal.ID_RADIO, this.dal.RADIO_EVT_DATAGRAM);
@@ -58,7 +57,7 @@ namespace pxsim {
 
         onReceived(handler: RefAction) {
             pxtcore.registerWithDal(this.dal.ID_RADIO, this.dal.RADIO_EVT_DATAGRAM, handler);
-            this.recv();    
+            this.recv();
         }
 
         private static defaultPacket(): PacketBuffer {
@@ -83,6 +82,18 @@ namespace pxsim {
             this.power = 6; // default value
             this.groupId = 0;
             this.band = 7; // https://github.com/lancaster-university/microbit-dal/blob/master/inc/core/MicroBitConfig.h#L320
+        }
+
+        addListeners() {
+            const board = runtime.board as pxsim.BaseBoard;
+            board.addMessageListener(msg => this.messageHandler(msg));
+        }
+
+        private messageHandler(msg: SimulatorMessage) {
+            if (msg.type == "radiopacket") {
+                let packet = <SimulatorRadioPacketMessage>msg;
+                this.receivePacket(packet);
+            }
         }
 
         public setGroup(id: number) {

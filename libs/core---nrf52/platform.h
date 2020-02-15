@@ -7,6 +7,7 @@
 #include "NRF52I2C.h"
 #include "NRF52Pin.h"
 #include "NRF52PWM.h"
+#include "NRF52Serial.h"
 #include "Timer.h"
 #include "MultiButton.h"
 
@@ -28,12 +29,12 @@
 #define CODAL_SPI NRF52SPI
 #define CODAL_I2C NRF52I2C
 #define CODAL_TIMER Timer
+#define CODAL_SERIAL NRF52Serial
 
 #define IMAGE_BITS 4
 
 typedef uint8_t PinName;
 
-#define neopixel_send_buffer(pin, ptr, len) target_panic(50)
 #define DEFAULT_NEOPIXEL_PIN P0_0
 
 // The parameters below needs tuning!

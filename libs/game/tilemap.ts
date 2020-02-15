@@ -274,6 +274,14 @@ namespace tiles {
             const tileset = this._map.getTileset();
             for (let i = 0; i < tileset.length; i++)
                 if (tileset[i].equals(im)) return i;
+
+            // not found; append to the tileset if there are spots left.
+            const newIndex = tileset.length;
+            if (!this.isInvalidIndex(newIndex)) {
+                tileset.push(im);
+                return newIndex;
+            }
+
             return -1;
         }
 
