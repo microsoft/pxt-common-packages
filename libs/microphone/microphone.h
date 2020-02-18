@@ -1,3 +1,6 @@
+#ifndef PXT_MICROPHONE_H
+#define PXT_MICROPHONE_H
+
 #include "pxt.h"
 #include "dmac.h"
 #include "LevelDetector.h"
@@ -35,3 +38,5 @@ CODAL_LEVEL_DETECTOR_SPL* getMicrophoneLevel() {
 }
 
 }
+
+#endif
