@@ -1,8 +1,13 @@
 #include "pxt.h"
-#include "microphone.h"
+#include "LevelDetector.h"
+#include "LevelDetectorSPL.h"
 
 #define MICROPHONE_MIN 52.0f
 #define MICROPHONE_MAX 120.0f
+
+namespace pxt {
+    codal::LevelDetectorSPL* getMicrophoneLevel();
+}
 
 namespace input {
 /**

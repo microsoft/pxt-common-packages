@@ -2,7 +2,6 @@
 #include "dmac.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
-#include "microphone.h"
 
 #ifdef NRF52_SERIES
 #include "NRF52PDM.h"
@@ -28,7 +27,7 @@ class WMicrophone {
 SINGLETON(WMicrophone);
 
 
-CODAL_LEVEL_DETECTOR_SPL* getMicrophoneLevel() {
+codal::LevelDetectorSPL* getMicrophoneLevel() {
     auto wmic = getWMicrophone();
     return wmic ? &(wmic->level) : NULL;
 }
