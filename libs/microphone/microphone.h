@@ -3,6 +3,8 @@
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
 
+#define CODAL_LEVEL_DETECTOR_SPL codal::LevelDetectorSPL
+
 #ifdef NRF52_SERIES
 #include "NRF52PDM.h"
 #define PDMDevice NRF52PDM
@@ -10,9 +12,6 @@
 #include "SAMDPDM.h"
 #define PDMDevice SAMD21PDM
 #endif
-
-#define MICROPHONE_MIN 52.0f
-#define MICROPHONE_MAX 120.0f
 
 namespace pxt {
 
@@ -30,9 +29,9 @@ class WMicrophone {
 SINGLETON(WMicrophone);
 
 
-    codal::LevelDetectorSPL* getMicrophoneLevel() {
-        auto wmic = getWAccel();
-        return wmic ? &(wmic->level) : NULL;
-    }
+CODAL_LEVEL_DETECTOR_SPL* getMicrophoneLevel() {
+    auto wmic = getWMicrophone();
+    return wmic ? &(wmic->level) : NULL;
+}
 
 }

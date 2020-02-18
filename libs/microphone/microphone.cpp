@@ -1,9 +1,7 @@
-#include "pxt.h"
-#include "LevelDetectorSPL.h"
+#include "microphone.h"
 
-namespace pxt {
-    codal::LevelDetectorSPL* getMicrophoneLevel();
-}
+#define MICROPHONE_MIN 52.0f
+#define MICROPHONE_MAX 120.0f
 
 namespace input {
 /**
@@ -14,7 +12,7 @@ namespace input {
 //% parts="microphone"
 //% weight=88 blockGap=12
 void onLoudSound(Action handler) {
-    getMicrophoneLevel(); // wake up service
+    pxt::getMicrophoneLevel(); // wake up service
     registerWithDal(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, handler);
 }
 
@@ -26,7 +24,7 @@ void onLoudSound(Action handler) {
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
-    auto level = getWMicrophoneLevel();
+    auto level = pxt::getWMicrophoneLevel();
     if (NULL == level)
         return MICROPHONE_MIN;        
     const int micValue = level->getValue();
@@ -43,7 +41,7 @@ int soundLevel() {
 //% value.min=1 value.max=255
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
-    auto level = getWMicrophoneLevel();
+    auto level = pxt::getWMicrophoneLevel();
     if (NULL == level)
         return;
 
