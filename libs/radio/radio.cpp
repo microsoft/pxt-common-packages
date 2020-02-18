@@ -1,19 +1,20 @@
 #include "pxt.h"
 
-#if defined(NRF52_SERIES)
-
-#include "NRF52Radio.h"
-
-#define CODAL_RADIO codal::NRF52Radio
-#define CODAL_EVENT codal::Event
-
-#elif defined(MICROBIT_H) // micro:bit dal
+// micro:bit dal
+#if defined(MICROBIT_H) 
 
 #define CODAL_RADIO MicroBitRadio
 #define DEVICE_OK MICROBIT_OK
 #define DEVICE_NOT_SUPPORTED MICROBIT_NOT_SUPPORTED
 #define CODAL_EVENT MicroBitEvent
 #define CODAL_RADIO_MICROBIT_DAL 1
+
+// any other NRF52 board
+#elif defined(NRF52_SERIES)
+
+#include "NRF52Radio.h"
+#define CODAL_RADIO codal::NRF52Radio
+#define CODAL_EVENT codal::Event
 
 #endif
 
