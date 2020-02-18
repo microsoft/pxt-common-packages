@@ -24,7 +24,7 @@ void onLoudSound(Action handler) {
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
-    auto level = pxt::getWMicrophoneLevel();
+    auto level = pxt::getMicrophoneLevel();
     if (NULL == level)
         return MICROPHONE_MIN;        
     const int micValue = level->getValue();
@@ -41,7 +41,7 @@ int soundLevel() {
 //% value.min=1 value.max=255
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
-    auto level = pxt::getWMicrophoneLevel();
+    auto level = pxt::getMicrophoneLevel();
     if (NULL == level)
         return;
 
