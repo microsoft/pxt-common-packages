@@ -1,3 +1,4 @@
+#include "pxt.h"
 #include "microphone.h"
 
 #define MICROPHONE_MIN 52.0f
