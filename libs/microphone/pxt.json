@@ -5,7 +5,6 @@
         "README.md",
         "microphone.cpp",
         "jacdac.ts",
-        "ns.ts",
         "enums.d.ts",
         "shims.d.ts"
     ],
