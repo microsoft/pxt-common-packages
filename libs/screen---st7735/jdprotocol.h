@@ -22,9 +22,9 @@ typedef struct {
 
 typedef struct {
     uint8_t size; // of the payload
-    uint8_t flags;
     uint8_t service_number;
     uint8_t service_command;
+    uint8_t service_flags;
     uint8_t data[0];
 } __attribute((__packed__)) __attribute__((aligned(4))) jd_packet_t;
 
