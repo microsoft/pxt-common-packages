@@ -22,6 +22,17 @@ public:
     {
     }
 
+#ifdef CODAL_SPI_SLAVE_SUPPORTED
+    CodalSPIProxy(DevicePin* _mosi, DevicePin* _miso, DevicePin* _sck, DevicePin* _cs)
+        : mosi(_mosi)
+        , miso(_miso)
+        , sck(_sck)
+        , spi(*_mosi, *_miso, *_sck, _cs) 
+        , next(NULL)
+    {
+    }
+#endif
+
     CODAL_SPI* getSPI() {
         return &spi;
     }
@@ -70,6 +81,31 @@ SPI_ createSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin
   ser->next = spis;
   spis = ser;
   return ser;
+}
+
+/**
+* Opens a slave SPI driver
+*/
+//% parts=spi
+SPI_ createSlaveSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInOutPin sckPin, DigitalInOutPin csPin) {
+#ifdef CODAL_SPI_SLAVE_SUPPORTED
+  auto dev = spis;
+  if (!csPin)
+    target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+  while(dev) {
+    if (dev->matchPins(mosiPin, misoPin, sckPin))
+      return dev;
+    dev = dev->next;
+  }
+
+  auto ser = new CodalSPIProxy(mosiPin, misoPin, sckPin, csPin);
+  ser->next = spis;
+  spis = ser;
+  return ser;
+#else
+  target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+  return NULL;
+#endif
 }
 
 }
