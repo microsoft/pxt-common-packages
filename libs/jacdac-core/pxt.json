@@ -1,0 +1,15 @@
+{
+    "name": "jacdac-core",
+    "description": "Plug and play single wire serial protocol v1 - beta",
+    "files": [
+        "jdlow.c",
+        "jdlow.h",
+        "jdprotocol.h",
+        "jdutil.c"
+    ],
+    "testFiles": [],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
