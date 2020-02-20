@@ -23,7 +23,7 @@ static void set_log_pin4(int v) {}
 static void pulse_log_pin() {}
 
 void jd_init() {
-    // tim_init();
+    tim_init();
     set_tick_timer(0);
     uart_init();
 }
@@ -128,7 +128,7 @@ void jd_line_falling() {
 
     // otherwise we can enable RX in the middle of LO pulse
     uart_wait_high();
-    wait_us(2);
+    target_wait_us(2);
 
     uart_start_rx(rxPkt, sizeof(*rxPkt));
 
