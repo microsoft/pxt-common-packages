@@ -16,7 +16,7 @@ void jd_seed_random(uint32_t s) {
 
 uint32_t jd_random() {
     if (seed == 0)
-        seed_random(13);
+        jd_seed_random(13);
 
     // xorshift algorithm
     uint32_t x = seed;
@@ -32,7 +32,7 @@ uint32_t jd_random_around(uint32_t v) {
     uint32_t mask = 0xfffffff;
     while (mask > v)
         mask >>= 1;
-    return (v - (mask >> 1)) + (random() & mask);
+    return (v - (mask >> 1)) + (jd_random() & mask);
 }
 
 // https://wiki.nicksoft.info/mcu:pic16:crc-16:home

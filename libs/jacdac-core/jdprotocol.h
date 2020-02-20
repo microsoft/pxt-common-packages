@@ -10,6 +10,7 @@ extern "C" {
 
 // 255 minus size of the serial header, rounded to 4
 #define JD_SERIAL_PAYLOAD_SIZE 236
+#define JD_SERIAL_HEADER_SIZE 16
 
 #define JD_SERIAL_FLAG_DEVICE_ID_IS_RECIPIENT 0x01 // device_identifier is the intended recipient (and not source) of the message
 #define JD_SERIAL_VERSION 1

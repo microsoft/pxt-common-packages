@@ -2,6 +2,7 @@
 #define __JDLOW_H
 
 #include "jdprotocol.h"
+#include "jdhal.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,16 +19,13 @@ void wait_us(int n);
 uint64_t tim_get_micros(void);
 void tim_set_timer(int delta, cb_t cb);
 void app_queue_annouce(void);
-void app_handle_packet(jd_packet_t *pkt);
+void app_handle_packet(jd_serial_packet_t *pkt);
 void uart_init(void);
 int uart_start_tx(const void *data, uint32_t numbytes);
 void uart_start_rx(void *data, uint32_t maxbytes);
 void uart_disable(void);
 void uart_wait_high(void);
 
-
-// crc.c
-uint16_t crc16(const void *data, uint32_t size);
 
 // Provided jdutil.c
 uint32_t jd_random_around(uint32_t v);
@@ -38,7 +36,7 @@ uint16_t jd_crc16(const void *data, uint32_t size);
 
 // Provided jdlow.c
 void jd_init(void);
-void jd_queue_packet(jd_packet_t *pkt);
+void jd_queue_packet(jd_serial_packet_t *pkt);
 uint32_t jd_get_num_pending_tx(void);
 uint32_t jd_get_free_queue_space(void);
 // these are to be called by uart implementation

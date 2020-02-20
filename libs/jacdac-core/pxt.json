@@ -4,6 +4,7 @@
     "files": [
         "jdlow.c",
         "jdlow.h",
+        "jdhal.h",
         "jdprotocol.h",
         "jdutil.c"
     ],
