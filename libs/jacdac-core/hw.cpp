@@ -8,7 +8,6 @@
 
 static ZSingleWireSerial *sws;
 static cb_t tim_cb;
-static volatile uint32_t can_send;
 static uint8_t status;
 
 #define STATUS_IN_RX 0x01
@@ -60,7 +59,6 @@ static void setup_exti() {
     // also drive the bus high for a little bit.
     sws->p.setDigitalValue(1);
     sws->p.getDigitalValue(PullMode::Up);
-    can_send = 0xffffffff;
     sws->p.eventOn(DEVICE_PIN_INTERRUPT_ON_EDGE);
 }
 
@@ -77,11 +75,10 @@ static void line_falling(int lineV) {
         return; // rising
 
     if (sws->p.isOutput()) {
-        LOG("in send already");
+        // LOG("in send already");
         return;
     }
 
-    can_send = 0;
     sws->p.eventOn(DEVICE_PIN_EVENT_NONE);
     jd_line_falling();
 }
@@ -122,16 +119,33 @@ void uart_init() {
 }
 
 int uart_start_tx(const void *data, uint32_t numbytes) {
-    if(status & STATUS_IN_TX)
+    if (status & STATUS_IN_TX)
         jd_panic();
-    if (sws->p.conditionalSetDigitalValue(0, &can_send))
+
+    if (status & STATUS_IN_RX)
         return -1;
-    status |= STATUS_IN_TX;
+
     sws->p.eventOn(DEVICE_PIN_EVENT_NONE);
 
-    target_wait_us(9); // TODO
+    if (status & STATUS_IN_RX)
+        return -1; // we got hit by the IRQ before we managed to disable it
+
+    // try to pull the line low, provided it currently reads as high
+    if (sws->p.getAndSetDigitalValue(0)) {
+        // we failed - the line was low - start reception
+        // jd_lin_falling() would normally execute from EXTI, which has high
+        // priority - we simulate this by completely disabling IRQs
+        target_disable_irq();
+        jd_line_falling();
+        target_enable_irq();
+        return -1;
+    }
+
+    target_wait_us(10);
+    status |= STATUS_IN_TX;
     sws->p.setDigitalValue(1);
-    //LOG("start tx @%d", (int)tim_get_micros());
+
+    // LOG("start tx @%d", (int)tim_get_micros());
     target_wait_us(40);
 
     sws->sendDMA((uint8_t *)data, numbytes);
@@ -140,7 +154,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
 
 void uart_start_rx(void *data, uint32_t maxbytes) {
     // LOG("start rx @%d", (int)tim_get_micros());
-    if(status & STATUS_IN_RX)
+    if (status & STATUS_IN_RX)
         jd_panic();
     status |= STATUS_IN_RX;
     sws->receiveDMA((uint8_t *)data, maxbytes);
