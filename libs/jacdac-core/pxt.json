@@ -6,6 +6,7 @@
         "jdlow.h",
         "jdprotocol.h",
         "jdutil.c",
+        "app.cpp",
         "hw.cpp",
         "hw.h"
     ],
