@@ -26,6 +26,8 @@ void uart_start_rx(void *data, uint32_t maxbytes);
 void uart_disable(void);
 void uart_wait_high(void);
 
+void log_pin_set(int line, int v);
+
 void app_queue_annouce(void);
 void app_handle_packet(jd_serial_header_t *pkt);
 void app_packet_sent(jd_serial_header_t *pkt);

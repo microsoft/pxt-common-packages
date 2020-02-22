@@ -3,6 +3,12 @@
 #define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
 //#define LOG(...) ((void)0)
 
+#define ERROR(msg, ...)                                                                            \
+    do {                                                                                           \
+        DMESG("JD-ERROR: " msg, ##__VA_ARGS__);                                                    \
+        signal_error();                                                                            \
+    } while (0)
+
 #define RAM_FUNC __attribute__((noinline, long_call, section(".data")))
 
 #define JD_STATUS_RX_ACTIVE 0x01
@@ -21,7 +27,20 @@ static uint32_t numOKPkts;
 
 static jd_serial_header_t *txQueue[TX_QUEUE_SIZE];
 
-static void set_log_pin3(int v) {}
+static void pulse1() {
+    log_pin_set(1, 1);
+    log_pin_set(1, 0);
+}
+
+static void signal_error() {
+    log_pin_set(2, 1);
+    log_pin_set(2, 0);
+}
+
+static void signal_write(int v) {
+    log_pin_set(1, v);
+}
+
 static void set_log_pin4(int v) {}
 static void pulse_log_pin() {}
 
@@ -32,7 +51,7 @@ void jd_init() {
 }
 
 static void tx_done() {
-    set_log_pin3(0);
+    signal_write(0);
     set_tick_timer(JD_STATUS_TX_ACTIVE);
 }
 
@@ -47,7 +66,7 @@ void jd_tx_completed(int errCode) {
     LOG("tx done: %d", errCode);
     if (numPending == 0)
         jd_panic();
-    target_disable_irq();    
+    target_disable_irq();
     jd_serial_header_t *prev = txQueue[0];
     shift_queue();
     numPending--;
@@ -78,6 +97,7 @@ static void tick() {
 }
 
 static void flush_tx_queue() {
+    LOG("flush %d", status);
     target_disable_irq();
     if (status & (JD_STATUS_RX_ACTIVE | JD_STATUS_TX_ACTIVE)) {
         target_enable_irq();
@@ -86,9 +106,9 @@ static void flush_tx_queue() {
     status |= JD_STATUS_TX_ACTIVE;
     target_enable_irq();
 
-    set_log_pin3(1);
+    signal_write(1);
     if (uart_start_tx(txQueue[0], txQueue[0]->pkt.size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
-        LOG("race on TX");
+        ERROR("race on TX");
         tx_done();
         return;
     }
@@ -113,7 +133,7 @@ static void set_tick_timer(uint8_t statusClear) {
 
 static void rx_timeout() {
     target_disable_irq();
-    LOG("RX timeout");
+    ERROR("RX timeout");
     uart_disable();
     set_log_pin4(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
@@ -154,30 +174,31 @@ void jd_rx_completed(int dataLeft) {
     set_tick_timer(JD_STATUS_RX_ACTIVE);
 
     if (dataLeft < 0) {
-        LOG("rx error: %d", dataLeft);
+        ERROR("rx error: %d", dataLeft);
         return;
     }
 
     uint32_t txSize = sizeof(*pkt) - dataLeft;
     uint32_t declaredSize = pkt->pkt.size + JD_SERIAL_FULL_HEADER_SIZE;
     if (txSize < declaredSize) {
-        LOG("pkt too short");
+        ERROR("pkt too short");
         return;
     }
     uint16_t crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
     if (crc != pkt->serial.crc) {
-        LOG("crc mismatch");
+        ERROR("crc mismatch");
         return;
     }
 
     if (crc == 0) {
-        LOG("crc==0");
+        ERROR("crc==0");
         return;
     }
 
     numOKPkts++;
 
-    app_handle_packet((jd_serial_header_t*)pkt);
+    pulse1();
+    app_handle_packet((jd_serial_header_t *)pkt);
 }
 
 int jd_queue_packet(jd_serial_header_t *pkt) {
@@ -197,6 +218,7 @@ int jd_queue_packet(jd_serial_header_t *pkt) {
 
     if (!queued) {
         app_packet_dropped(pkt);
+        ERROR("TX overflow");
         return -1;
     }
 

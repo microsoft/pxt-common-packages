@@ -13,14 +13,24 @@ static uint8_t status;
 #define STATUS_IN_RX 0x01
 #define STATUS_IN_TX 0x02
 
-void pin_log(int v) {
-    static DigitalInOutPin p;
-    if (!p)
-        p = LOOKUP_PIN(D2);
-    p->setDigitalValue(v);
+static DevicePin **logPins;
+void log_pin_set(int line, int v) {
+    if (!logPins) {
+        logPins = new DevicePin *[4];
+        logPins[0] = LOOKUP_PIN(A0);
+        logPins[1] = LOOKUP_PIN(A1);
+        logPins[2] = LOOKUP_PIN(A2);
+        logPins[3] = LOOKUP_PIN(A3);
+    }
+    if (0 <= line && line < 4)
+        logPins[line]->setDigitalValue(v);
 }
 
-void pin_pulse() {
+static void pin_log(int v) {
+    log_pin_set(3, v);
+}
+
+static void pin_pulse() {
     pin_log(1);
     pin_log(0);
 }
@@ -53,19 +63,13 @@ void tim_set_timer(int delta, cb_t cb) {
 }
 
 static void setup_exti() {
-    LOG("setup exti; %d", sws->p.name);
+    // LOG("setup exti; %d", sws->p.name);
     sws->setMode(SingleWireDisconnected);
     // force transition to output so that the pin is reconfigured.
     // also drive the bus high for a little bit.
     sws->p.setDigitalValue(1);
     sws->p.getDigitalValue(PullMode::Up);
     sws->p.eventOn(DEVICE_PIN_INTERRUPT_ON_EDGE);
-}
-
-static void send_brk() {
-    sws->p.setDigitalValue(0);
-    target_wait_us(9);
-    sws->p.setDigitalValue(1);
 }
 
 static void line_falling(int lineV) {
@@ -84,27 +88,47 @@ static void line_falling(int lineV) {
 }
 
 static void sws_done(uint16_t errCode) {
-    pin_log(1);
-    pin_log(0);
-    LOG("sws_done %d @%d", errCode, (int)tim_get_micros());
+    pin_pulse();
+    pin_pulse();
+
+    // LOG("sws_done %d @%d", errCode, (int)tim_get_micros());
+
     switch (errCode) {
     case SWS_EVT_DATA_SENT:
         if (status & STATUS_IN_TX) {
-            send_brk();
+            status &= ~STATUS_IN_TX;
+            sws->setMode(SingleWireDisconnected);
+            // force reconfigure
+            sws->p.getDigitalValue();
+            // send break signal
+            sws->p.setDigitalValue(0);
+            target_wait_us(11);
+            sws->p.setDigitalValue(1);
             jd_tx_completed(0);
         }
         break;
-    case SWS_EVT_DATA_RECEIVED:
-        LOG("DMA overrun");
     case SWS_EVT_ERROR: // brk condition
-        // sws->getBytesReceived() always returns 1 on NRF
-        if (status & STATUS_IN_RX)
-            jd_rx_completed(0);
-        else
+        if (!(status & STATUS_IN_RX)) {
             LOG("SWS error");
+            target_panic(122);
+        } else {
+            return;
+        }
+        break;
+    case SWS_EVT_DATA_RECEIVED:
+        // LOG("DMA overrun");
+        // sws->getBytesReceived() always returns 1 on NRF
+        if (status & STATUS_IN_RX) {
+            status &= ~STATUS_IN_RX;
+            sws->setMode(SingleWireDisconnected);
+            jd_rx_completed(0);
+        } else {
+            LOG("double complete");
+            target_panic(122);
+        }
+        sws->abortDMA();
         break;
     }
-    status = 0;
     setup_exti();
 }
 
@@ -130,6 +154,8 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     if (status & STATUS_IN_RX)
         return -1; // we got hit by the IRQ before we managed to disable it
 
+    // sws->setMode(SingleWireDisconnected);
+
     // try to pull the line low, provided it currently reads as high
     if (sws->p.getAndSetDigitalValue(0)) {
         // we failed - the line was low - start reception
@@ -148,12 +174,14 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     // LOG("start tx @%d", (int)tim_get_micros());
     target_wait_us(40);
 
+    pin_pulse();
+
     sws->sendDMA((uint8_t *)data, numbytes);
     return 0;
 }
 
 void uart_start_rx(void *data, uint32_t maxbytes) {
-    // LOG("start rx @%d", (int)tim_get_micros());
+    LOG("start rx @%d", (int)tim_get_micros());
     if (status & STATUS_IN_RX)
         jd_panic();
     status |= STATUS_IN_RX;
@@ -162,9 +190,11 @@ void uart_start_rx(void *data, uint32_t maxbytes) {
 }
 
 void uart_disable() {
+    pin_pulse();
     sws->abortDMA();
     status = 0;
     setup_exti();
+    pin_pulse();
 }
 
 void uart_wait_high() {
