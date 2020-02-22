@@ -29,9 +29,9 @@ void uart_wait_high(void);
 void log_pin_set(int line, int v);
 
 void app_queue_annouce(void);
-void app_handle_packet(jd_serial_header_t *pkt);
-void app_packet_sent(jd_serial_header_t *pkt);
-void app_packet_dropped(jd_serial_header_t *pkt);
+void app_handle_packet(jd_header_t *pkt);
+void app_packet_sent(jd_header_t *pkt);
+void app_packet_dropped(jd_header_t *pkt);
 
 
 // Provided jdutil.c
@@ -43,7 +43,7 @@ uint16_t jd_crc16(const void *data, uint32_t size);
 
 // Provided jdlow.c
 void jd_init(void);
-int jd_queue_packet(jd_serial_header_t *pkt);
+int jd_queue_packet(jd_header_t *pkt);
 uint32_t jd_get_num_pending_tx(void);
 uint32_t jd_get_free_queue_space(void);
 // these are to be called by uart implementation

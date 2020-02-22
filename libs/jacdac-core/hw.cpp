@@ -181,7 +181,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
 }
 
 void uart_start_rx(void *data, uint32_t maxbytes) {
-    LOG("start rx @%d", (int)tim_get_micros());
+    // LOG("start rx @%d", (int)tim_get_micros());
     if (status & STATUS_IN_RX)
         jd_panic();
     status |= STATUS_IN_RX;

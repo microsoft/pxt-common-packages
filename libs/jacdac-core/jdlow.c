@@ -1,7 +1,7 @@
 #include "jdlow.h"
 
-#define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
-//#define LOG(...) ((void)0)
+//#define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
+#define LOG(...) ((void)0)
 
 #define ERROR(msg, ...)                                                                            \
     do {                                                                                           \
@@ -25,7 +25,7 @@ static volatile uint8_t numPending;
 static uint32_t numFalls;
 static uint32_t numOKPkts;
 
-static jd_serial_header_t *txQueue[TX_QUEUE_SIZE];
+static jd_header_t *txQueue[TX_QUEUE_SIZE];
 
 static void pulse1() {
     log_pin_set(1, 1);
@@ -67,7 +67,7 @@ void jd_tx_completed(int errCode) {
     if (numPending == 0)
         jd_panic();
     target_disable_irq();
-    jd_serial_header_t *prev = txQueue[0];
+    jd_header_t *prev = txQueue[0];
     shift_queue();
     numPending--;
     target_enable_irq();
@@ -107,7 +107,7 @@ static void flush_tx_queue() {
     target_enable_irq();
 
     signal_write(1);
-    if (uart_start_tx(txQueue[0], txQueue[0]->pkt.size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
+    if (uart_start_tx(txQueue[0], txQueue[0]->size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
         ERROR("race on TX");
         tx_done();
         return;
@@ -179,13 +179,13 @@ void jd_rx_completed(int dataLeft) {
     }
 
     uint32_t txSize = sizeof(*pkt) - dataLeft;
-    uint32_t declaredSize = pkt->pkt.size + JD_SERIAL_FULL_HEADER_SIZE;
+    uint32_t declaredSize = pkt->header.size + JD_SERIAL_FULL_HEADER_SIZE;
     if (txSize < declaredSize) {
         ERROR("pkt too short");
         return;
     }
     uint16_t crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
-    if (crc != pkt->serial.crc) {
+    if (crc != pkt->header.crc) {
         ERROR("crc mismatch");
         return;
     }
@@ -198,15 +198,15 @@ void jd_rx_completed(int dataLeft) {
     numOKPkts++;
 
     pulse1();
-    app_handle_packet((jd_serial_header_t *)pkt);
+    app_handle_packet(&pkt->header);
 }
 
-int jd_queue_packet(jd_serial_header_t *pkt) {
+int jd_queue_packet(jd_header_t *pkt) {
     if (!pkt)
         return -2;
 
-    uint32_t declaredSize = pkt->pkt.size + JD_SERIAL_FULL_HEADER_SIZE;
-    pkt->serial.crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
+    uint32_t declaredSize = pkt->size + JD_SERIAL_FULL_HEADER_SIZE;
+    pkt->crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
     int queued = 0;
 
     target_disable_irq();
