@@ -4,6 +4,9 @@
 #define LOG(msg, ...) DMESG("JDAPP: " msg, ##__VA_ARGS__)
 //#define LOG(...) ((void)0)
 
+static uint32_t prevCnt;
+uint32_t numErrors, numPkts, numSent;
+
 struct test_ann {
     jd_header_t hd;
     uint32_t data;
@@ -28,6 +31,7 @@ static void queue_cnt() {
         cnt.hd.service_number = 255;
         auto s = new count_service_pkt_t;
         *s = cnt;
+        numSent++;
         jd_queue_packet(&s->hd);
     }
 }
@@ -43,9 +47,6 @@ void app_queue_annouce() {
     jd_queue_packet(&p->hd);
 }
 
-static uint32_t prevCnt;
-uint32_t numErrors, numPkts;
-
 
 static void signal_error() {
     log_pin_set(2, 1);
@@ -56,14 +57,14 @@ void app_handle_packet(jd_header_t *pkt) {
     // LOG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->size,
     //    pkt->service_number, pkt->service_command, pkt->service_arg);
 
-    numPkts++;
     if (pkt->service_number == 255) {
+        numPkts++;
         count_service_pkt_t *cs = (count_service_pkt_t *)pkt;
         uint32_t c = cs->count;
         if (prevCnt && prevCnt + 1 != c) {
             signal_error();
             numErrors++;
-            DMESG("ERR %d/%d %d", numErrors, numPkts, numErrors * 10000 / numPkts);
+            DMESG("ERR %d/%d %d snt:%d", numErrors, numPkts, numErrors * 10000 / numPkts, numSent);
         }
         prevCnt = c;
     }

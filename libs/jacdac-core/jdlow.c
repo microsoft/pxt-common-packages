@@ -38,10 +38,12 @@ static void signal_error() {
 }
 
 static void signal_write(int v) {
-    log_pin_set(1, v);
+    log_pin_set(4, v);
 }
 
-static void set_log_pin4(int v) {}
+static void signal_read(int v) {
+    log_pin_set(0, v);
+}
 static void pulse_log_pin() {}
 
 void jd_init() {
@@ -116,7 +118,7 @@ static void flush_tx_queue() {
 
     signal_write(1);
     if (uart_start_tx(txQueue[0], txQueue[0]->size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
-        ERROR("race on TX");
+        // ERROR("race on TX");
         tx_done();
         return;
     }
@@ -143,14 +145,14 @@ static void rx_timeout() {
     target_disable_irq();
     ERROR("RX timeout");
     uart_disable();
-    set_log_pin4(0);
+    signal_read(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
     target_enable_irq();
 }
 
 void jd_line_falling() {
     pulse_log_pin();
-    set_log_pin4(1);
+    signal_read(1);
     numFalls++;
     // LOG("fall %d", numFalls);
     // target_disable_irq();
@@ -164,7 +166,9 @@ void jd_line_falling() {
     uart_wait_high();
     target_wait_us(2);
 
+    pulse1();
     uart_start_rx(rxPkt, sizeof(*rxPkt));
+    pulse1();
 
     tim_set_timer(sizeof(*rxPkt) * 12 + 60, rx_timeout);
     // target_enable_irq();
@@ -180,7 +184,7 @@ void jd_rx_completed(int dataLeft) {
     else
         rxPkt = &_rxBuffer[0];
 
-    set_log_pin4(0);
+    signal_read(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
 
     if (dataLeft < 0) {

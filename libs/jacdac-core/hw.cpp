@@ -3,12 +3,15 @@
 
 #include "ZSingleWireSerial.h"
 
+#define DEVICE_ID DEVICE_ID_JACDAC_PHYS
+
 #define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
 //#define LOG(...) ((void)0)
 
 static ZSingleWireSerial *sws;
 static cb_t tim_cb;
 static uint8_t status;
+static uint16_t currEvent;
 
 #define STATUS_IN_RX 0x01
 #define STATUS_IN_TX 0x02
@@ -25,22 +28,25 @@ static void pin_pulse() {
     pin_log(0);
 }
 
+#define NUM_LOG_PINS 5
+
 static void init_log_pins() {
-    logPins = new DevicePin *[4];
+    logPins = new DevicePin *[NUM_LOG_PINS];
     logPins[0] = LOOKUP_PIN(A0);
     logPins[1] = LOOKUP_PIN(A1);
     logPins[2] = LOOKUP_PIN(A2);
     logPins[3] = LOOKUP_PIN(A3);
+    logPins[4] = LOOKUP_PIN(A4);
 
-    logPinMasks = new uint32_t[4];
-    for (int i = 0; i < 4; ++i) {
+    logPinMasks = new uint32_t[NUM_LOG_PINS];
+    for (int i = 0; i < NUM_LOG_PINS; ++i) {
         logPins[i]->setDigitalValue(0);
         logPinMasks[i] = 1 << (uint32_t)logPins[i]->name;
     }
 }
 
 static inline void log_pin_set_core(unsigned line, int v) {
-    if (line >= 4)
+    if (line >= NUM_LOG_PINS)
         return;
 #ifdef NRF52_SERIES
     if (v)
@@ -53,31 +59,31 @@ static inline void log_pin_set_core(unsigned line, int v) {
 }
 
 extern "C" void timer_log(int line, int v) {
-    log_pin_set_core(line, v);
+    //    log_pin_set_core(line, v);
 }
 
 void log_pin_set(int line, int v) {
-    if (line == 1)
-        log_pin_set_core(line, v);
+    // if (line == 1)
+    log_pin_set_core(line, v);
 }
 
 void jd_panic(void) {
     target_panic(PANIC_JACDAC);
 }
 
-static void tim_callback(Event) {
+static void tim_callback(Event e) {
     cb_t f = tim_cb;
     if (f) {
         tim_cb = NULL;
-        f();
+        if (e.value == currEvent)
+            f();
     }
 }
 
 void tim_init() {
     init_log_pins();
-    
-    EventModel::defaultEventBus->listen(DEVICE_ID_JACDAC_PHYS, 0x1234, tim_callback,
-                                        MESSAGE_BUS_LISTENER_IMMEDIATE);
+
+    EventModel::defaultEventBus->listen(DEVICE_ID, 0, tim_callback, MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
 
 uint64_t tim_get_micros(void) {
@@ -85,10 +91,17 @@ uint64_t tim_get_micros(void) {
 }
 
 void tim_set_timer(int delta, cb_t cb) {
+    delta -= 26; // compensate for overheads
+    if (delta < 20)
+        delta = 20;
     target_disable_irq();
-    system_timer_cancel_event(DEVICE_ID_JACDAC_PHYS, 0x1234);
+    uint16_t prev = currEvent;
+    currEvent++;
+    if (currEvent == 0)
+        currEvent = 1;
     tim_cb = cb;
-    system_timer_event_after_us(delta, DEVICE_ID_JACDAC_PHYS, 0x1234);
+    system_timer_event_after_us(delta, DEVICE_ID, currEvent);
+    system_timer_cancel_event(DEVICE_ID, prev); // make sure we don't get the same slot
     target_enable_irq();
 }
 
@@ -186,8 +199,6 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     if (status & STATUS_IN_RX)
         return -1; // we got hit by the IRQ before we managed to disable it
 
-    // sws->setMode(SingleWireDisconnected);
-
     // try to pull the line low, provided it currently reads as high
     if (sws->p.getAndSetDigitalValue(0)) {
         // we failed - the line was low - start reception
@@ -199,7 +210,7 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
         return -1;
     }
 
-    target_wait_us(10);
+    target_wait_us(9);
     status |= STATUS_IN_TX;
     sws->p.setDigitalValue(1);
 
