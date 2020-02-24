@@ -14,17 +14,7 @@ static uint8_t status;
 #define STATUS_IN_TX 0x02
 
 static DevicePin **logPins;
-void log_pin_set(int line, int v) {
-    if (!logPins) {
-        logPins = new DevicePin *[4];
-        logPins[0] = LOOKUP_PIN(A0);
-        logPins[1] = LOOKUP_PIN(A1);
-        logPins[2] = LOOKUP_PIN(A2);
-        logPins[3] = LOOKUP_PIN(A3);
-    }
-    if (0 <= line && line < 4)
-        logPins[line]->setDigitalValue(v);
-}
+static uint32_t *logPinMasks;
 
 static void pin_log(int v) {
     log_pin_set(3, v);
@@ -33,6 +23,42 @@ static void pin_log(int v) {
 static void pin_pulse() {
     pin_log(1);
     pin_log(0);
+}
+
+static void init_log_pins() {
+    logPins = new DevicePin *[4];
+    logPins[0] = LOOKUP_PIN(A0);
+    logPins[1] = LOOKUP_PIN(A1);
+    logPins[2] = LOOKUP_PIN(A2);
+    logPins[3] = LOOKUP_PIN(A3);
+
+    logPinMasks = new uint32_t[4];
+    for (int i = 0; i < 4; ++i) {
+        logPins[i]->setDigitalValue(0);
+        logPinMasks[i] = 1 << (uint32_t)logPins[i]->name;
+    }
+}
+
+static inline void log_pin_set_core(unsigned line, int v) {
+    if (line >= 4)
+        return;
+#ifdef NRF52_SERIES
+    if (v)
+        NRF_P0->OUTSET = logPinMasks[line];
+    else
+        NRF_P0->OUTCLR = logPinMasks[line];
+#else
+    logPins[line]->setDigitalValue(v);
+#endif
+}
+
+extern "C" void timer_log(int line, int v) {
+    log_pin_set_core(line, v);
+}
+
+void log_pin_set(int line, int v) {
+    if (line == 1)
+        log_pin_set_core(line, v);
 }
 
 void jd_panic(void) {
@@ -48,6 +74,8 @@ static void tim_callback(Event) {
 }
 
 void tim_init() {
+    init_log_pins();
+    
     EventModel::defaultEventBus->listen(DEVICE_ID_JACDAC_PHYS, 0x1234, tim_callback,
                                         MESSAGE_BUS_LISTENER_IMMEDIATE);
 }
@@ -57,9 +85,11 @@ uint64_t tim_get_micros(void) {
 }
 
 void tim_set_timer(int delta, cb_t cb) {
+    target_disable_irq();
     system_timer_cancel_event(DEVICE_ID_JACDAC_PHYS, 0x1234);
     tim_cb = cb;
     system_timer_event_after_us(delta, DEVICE_ID_JACDAC_PHYS, 0x1234);
+    target_enable_irq();
 }
 
 static void setup_exti() {
@@ -130,6 +160,8 @@ static void sws_done(uint16_t errCode) {
         break;
     }
     setup_exti();
+
+    pin_pulse();
 }
 
 void uart_init() {

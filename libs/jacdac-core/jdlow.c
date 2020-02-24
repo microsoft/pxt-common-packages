@@ -87,16 +87,24 @@ uint32_t jd_get_free_queue_space() {
     return 0;
 }
 
-static void tick() {
+static void check_announce() {
     if (tim_get_micros() > nextAnnounce) {
         // pulse_log_pin();
+        if (nextAnnounce)
+            app_queue_annouce();
         nextAnnounce = tim_get_micros() + jd_random_around(400000);
-        app_queue_annouce();
     }
+}
+
+static void tick() {
+    check_announce();
     set_tick_timer(0);
 }
 
 static void flush_tx_queue() {
+    pulse1();
+    check_announce();
+
     LOG("flush %d", status);
     target_disable_irq();
     if (status & (JD_STATUS_RX_ACTIVE | JD_STATUS_TX_ACTIVE)) {
@@ -124,7 +132,7 @@ static void set_tick_timer(uint8_t statusClear) {
     }
     if ((status & JD_STATUS_RX_ACTIVE) == 0) {
         if (txQueue[0] && !(status & JD_STATUS_TX_ACTIVE))
-            tim_set_timer(jd_random_around(50), flush_tx_queue);
+            tim_set_timer(jd_random_around(150), flush_tx_queue);
         else
             tim_set_timer(10000, tick);
     }
@@ -163,6 +171,8 @@ void jd_line_falling() {
 }
 
 void jd_rx_completed(int dataLeft) {
+    check_announce();
+
     jd_serial_packet_t *pkt = rxPkt;
 
     if (rxPkt == &_rxBuffer[0])
@@ -197,7 +207,7 @@ void jd_rx_completed(int dataLeft) {
 
     numOKPkts++;
 
-    pulse1();
+    // pulse1();
     app_handle_packet(&pkt->header);
 }
 
