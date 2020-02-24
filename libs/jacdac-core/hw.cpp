@@ -3,6 +3,8 @@
 
 #include "ZSingleWireSerial.h"
 
+// #define ENABLE_PIN_LOG 1
+
 #define DEVICE_ID DEVICE_ID_JACDAC_PHYS
 
 #define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
@@ -16,19 +18,11 @@ static uint16_t currEvent;
 #define STATUS_IN_RX 0x01
 #define STATUS_IN_TX 0x02
 
+#ifdef ENABLE_PIN_LOG
+#define NUM_LOG_PINS 5
+
 static DevicePin **logPins;
 static uint32_t *logPinMasks;
-
-static void pin_log(int v) {
-    log_pin_set(3, v);
-}
-
-static void pin_pulse() {
-    pin_log(1);
-    pin_log(0);
-}
-
-#define NUM_LOG_PINS 5
 
 static void init_log_pins() {
     logPins = new DevicePin *[NUM_LOG_PINS];
@@ -57,6 +51,10 @@ static inline void log_pin_set_core(unsigned line, int v) {
     logPins[line]->setDigitalValue(v);
 #endif
 }
+#else
+static void log_pin_set_core(unsigned, int) {}
+static void init_log_pins() {}
+#endif
 
 extern "C" void timer_log(int line, int v) {
     //    log_pin_set_core(line, v);
@@ -65,6 +63,15 @@ extern "C" void timer_log(int line, int v) {
 void log_pin_set(int line, int v) {
     // if (line == 1)
     log_pin_set_core(line, v);
+}
+
+static void pin_log(int v) {
+    log_pin_set(3, v);
+}
+
+static void pin_pulse() {
+    pin_log(1);
+    pin_log(0);
 }
 
 void jd_panic(void) {
