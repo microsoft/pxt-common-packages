@@ -1,12 +1,14 @@
 #include "jdlow.h"
 
+#include <string.h>
+
 //#define LOG(msg, ...) DMESG("JD: " msg, ##__VA_ARGS__)
 #define LOG(...) ((void)0)
 
 #define ERROR(msg, ...)                                                                            \
     do {                                                                                           \
-        DMESG("JD-ERROR: " msg, ##__VA_ARGS__);                                                    \
         signal_error();                                                                            \
+        DMESG("JD-ERROR: " msg, ##__VA_ARGS__);                                                    \
     } while (0)
 
 #define RAM_FUNC __attribute__((noinline, long_call, section(".data")))
@@ -148,6 +150,14 @@ static void rx_timeout() {
     signal_read(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
     target_enable_irq();
+    signal_error();
+}
+
+static void setup_rx_timeout() {
+    if (rxPkt->header.crc == 0)
+        rx_timeout(); // didn't get any data after lo-pulse
+    // got the size - set timeout for whole packet
+    tim_set_timer((rxPkt->header.size + JD_SERIAL_FULL_HEADER_SIZE) * 12 + 60, rx_timeout);
 }
 
 void jd_line_falling() {
@@ -162,15 +172,18 @@ void jd_line_falling() {
 
     memset(rxPkt, 0, JD_SERIAL_FULL_HEADER_SIZE);
 
+    pulse1();
     // otherwise we can enable RX in the middle of LO pulse
     uart_wait_high();
+    pulse1();
+    tim_set_timer(100, setup_rx_timeout);
+
     target_wait_us(2);
 
     pulse1();
     uart_start_rx(rxPkt, sizeof(*rxPkt));
     pulse1();
 
-    tim_set_timer(sizeof(*rxPkt) * 12 + 60, rx_timeout);
     // target_enable_irq();
 }
 
