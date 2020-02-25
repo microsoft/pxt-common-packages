@@ -24,8 +24,12 @@ static uint64_t nextAnnounce;
 static volatile uint8_t status;
 static volatile uint8_t numPending;
 
-static uint32_t numFalls;
-static uint32_t numOKPkts;
+static jd_diagnostics_t jd_diagnostics;
+
+jd_diagnostics_t *jd_get_diagnostics(void) {
+    jd_diagnostics.bus_state = 0; // TODO?
+    return &jd_diagnostics;
+}
 
 static jd_packet_t *txQueue[TX_QUEUE_SIZE];
 
@@ -121,6 +125,7 @@ static void flush_tx_queue() {
     signal_write(1);
     if (uart_start_tx(txQueue[0], txQueue[0]->size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
         // ERROR("race on TX");
+        jd_diagnostics.bus_lo_error++;
         tx_done();
         return;
     }
@@ -145,6 +150,7 @@ static void set_tick_timer(uint8_t statusClear) {
 
 static void rx_timeout() {
     target_disable_irq();
+    jd_diagnostics.bus_timeout_error++;
     ERROR("RX timeout");
     uart_disable();
     signal_read(0);
@@ -163,8 +169,6 @@ static void setup_rx_timeout() {
 void jd_line_falling() {
     pulse_log_pin();
     signal_read(1);
-    numFalls++;
-    // LOG("fall %d", numFalls);
     // target_disable_irq();
     if (status & JD_STATUS_RX_ACTIVE)
         jd_panic();
@@ -202,6 +206,7 @@ void jd_rx_completed(int dataLeft) {
 
     if (dataLeft < 0) {
         ERROR("rx error: %d", dataLeft);
+        jd_diagnostics.bus_uart_error++;
         return;
     }
 
@@ -209,20 +214,23 @@ void jd_rx_completed(int dataLeft) {
     uint32_t declaredSize = pkt->header.size + JD_SERIAL_FULL_HEADER_SIZE;
     if (txSize < declaredSize) {
         ERROR("pkt too short");
+        jd_diagnostics.bus_uart_error++;
         return;
     }
     uint16_t crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
     if (crc != pkt->header.crc) {
         ERROR("crc mismatch");
+        jd_diagnostics.bus_uart_error++;
         return;
     }
 
     if (crc == 0) {
         ERROR("crc==0");
+        jd_diagnostics.bus_uart_error++;
         return;
     }
 
-    numOKPkts++;
+    jd_diagnostics.packets_received++;
 
     // pulse1();
     app_handle_packet(&pkt->header);
@@ -244,6 +252,8 @@ int jd_queue_packet(jd_packet_t *pkt) {
     target_enable_irq();
 
     if (!queued) {
+        // codal counts packet dropped on recv, this is sent; we never hit that
+        jd_diagnostics.packets_dropped++;
         app_packet_dropped(pkt);
         ERROR("TX overflow");
         return -1;

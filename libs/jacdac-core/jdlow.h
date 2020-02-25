@@ -33,7 +33,6 @@ void app_handle_packet(jd_packet_t *pkt);
 void app_packet_sent(jd_packet_t *pkt);
 void app_packet_dropped(jd_packet_t *pkt);
 
-
 // Provided jdutil.c
 uint32_t jd_random_around(uint32_t v);
 uint32_t jd_random(void);
@@ -51,6 +50,16 @@ void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
 void jd_line_falling(void);
 
+typedef struct {
+    uint32_t bus_state;
+    uint32_t bus_lo_error;
+    uint32_t bus_uart_error;
+    uint32_t bus_timeout_error;
+    uint32_t packets_sent;
+    uint32_t packets_received;
+    uint32_t packets_dropped;
+} jd_diagnostics_t;
+jd_diagnostics_t *jd_get_diagnostics(void);
 
 #ifdef __cplusplus
 }
