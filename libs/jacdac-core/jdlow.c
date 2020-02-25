@@ -25,7 +25,7 @@ static volatile uint8_t numPending;
 static uint32_t numFalls;
 static uint32_t numOKPkts;
 
-static jd_header_t *txQueue[TX_QUEUE_SIZE];
+static jd_packet_t *txQueue[TX_QUEUE_SIZE];
 
 static void pulse1() {
     log_pin_set(1, 1);
@@ -69,7 +69,7 @@ void jd_tx_completed(int errCode) {
     if (numPending == 0)
         jd_panic();
     target_disable_irq();
-    jd_header_t *prev = txQueue[0];
+    jd_packet_t *prev = txQueue[0];
     shift_queue();
     numPending--;
     target_enable_irq();
@@ -215,7 +215,7 @@ void jd_rx_completed(int dataLeft) {
     app_handle_packet(&pkt->header);
 }
 
-int jd_queue_packet(jd_header_t *pkt) {
+int jd_queue_packet(jd_packet_t *pkt) {
     if (!pkt)
         return -2;
 

@@ -12,7 +12,8 @@ extern "C" {
 #define JD_SERIAL_PAYLOAD_SIZE 236
 #define JD_SERIAL_FULL_HEADER_SIZE 16
 
-#define JD_SERIAL_FLAG_DEVICE_ID_IS_RECIPIENT 0x01 // device_identifier is the intended recipient (and not source) of the message
+#define JD_SERIAL_FLAG_DEVICE_ID_IS_RECIPIENT                                                      \
+    0x01 // device_identifier is the intended recipient (and not source) of the message
 
 typedef struct {
     uint16_t crc;
@@ -26,10 +27,10 @@ typedef struct {
     uint64_t device_identifier;
 
     uint8_t data[0];
-} __attribute((__packed__)) __attribute__((aligned(4))) jd_header_t;
+} __attribute((__packed__)) __attribute__((aligned(4))) jd_packet_t;
 
 typedef struct {
-    jd_header_t header;
+    jd_packet_t header;
     uint8_t data[JD_SERIAL_PAYLOAD_SIZE + 1];
 } jd_serial_packet_t;
 
@@ -42,14 +43,13 @@ typedef struct {
     uint16_t magic;
     uint8_t reserved;
     uint8_t size; // of data[]
-    
+
     uint8_t service_number;
     uint8_t service_command;
     uint16_t service_arg;
 
     uint8_t data[JDSPI_PKTSIZE - JDSPI_HEADER_SIZE];
 } jd_spi_packet_t;
-
 
 #ifdef __cplusplus
 }

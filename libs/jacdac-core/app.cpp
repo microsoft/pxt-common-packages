@@ -8,7 +8,7 @@ static uint32_t prevCnt;
 uint32_t numErrors, numPkts, numSent;
 
 struct test_ann {
-    jd_header_t hd;
+    jd_packet_t hd;
     uint32_t data;
 };
 
@@ -17,7 +17,7 @@ uint64_t device_id() {
 }
 
 typedef struct {
-    jd_header_t hd;
+    jd_packet_t hd;
     uint32_t count;
 } count_service_pkt_t;
 
@@ -53,7 +53,7 @@ static void signal_error() {
     log_pin_set(2, 0);
 }
 
-void app_handle_packet(jd_header_t *pkt) {
+void app_handle_packet(jd_packet_t *pkt) {
     // LOG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->size,
     //    pkt->service_number, pkt->service_command, pkt->service_arg);
 
@@ -70,13 +70,13 @@ void app_handle_packet(jd_header_t *pkt) {
     }
 }
 
-void app_packet_sent(jd_header_t *pkt) {
+void app_packet_sent(jd_packet_t *pkt) {
     // LOG("pkt sent");
     free(pkt);
     queue_cnt();
 }
 
-void app_packet_dropped(jd_header_t *pkt) {
+void app_packet_dropped(jd_packet_t *pkt) {
     // LOG("pkt dropped!");
     free(pkt);
 }
