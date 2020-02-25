@@ -85,6 +85,7 @@ namespace pxt {
 
 //%
 void startJD() {
+    jd_seed_random(getRandom(0xffffffff));
     jd_init();
 }
 
