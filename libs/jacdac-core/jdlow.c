@@ -52,10 +52,24 @@ static void signal_read(int v) {
 }
 static void pulse_log_pin() {}
 
+static void check_announce() {
+    if (tim_get_micros() > nextAnnounce) {
+        // pulse_log_pin();
+        if (nextAnnounce)
+            app_queue_annouce();
+        nextAnnounce = tim_get_micros() + jd_random_around(400000);
+    }
+}
+
 void jd_init() {
     tim_init();
     set_tick_timer(0);
     uart_init();
+    check_announce();
+}
+
+int jd_is_running() {
+    return nextAnnounce != 0;
 }
 
 static void tx_done() {
@@ -93,15 +107,6 @@ uint32_t jd_get_free_queue_space() {
             return TX_QUEUE_SIZE - i - 1;
     }
     return 0;
-}
-
-static void check_announce() {
-    if (tim_get_micros() > nextAnnounce) {
-        // pulse_log_pin();
-        if (nextAnnounce)
-            app_queue_annouce();
-        nextAnnounce = tim_get_micros() + jd_random_around(400000);
-    }
 }
 
 static void tick() {

@@ -49,6 +49,7 @@ uint32_t jd_get_free_queue_space(void);
 void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
 void jd_line_falling(void);
+int jd_is_running();
 
 typedef struct {
     uint32_t bus_state;

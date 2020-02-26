@@ -12,16 +12,18 @@ extern "C" {
 #define JD_SERIAL_PAYLOAD_SIZE 236
 #define JD_SERIAL_FULL_HEADER_SIZE 16
 
-#define JD_SERIAL_FLAG_DEVICE_ID_IS_RECIPIENT                                                      \
-    0x01 // device_identifier is the intended recipient (and not source) of the message
+// the highest bit in command signifies that the device_identifier is the recipent
+// (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
+// (i.e., it's a response from peripheral or a broadcast message)
+#define JD_SERVICE_COMMAND 0x8000
+#define JD_SERVICE_RESPONSE 0x0000
 
 typedef struct {
     uint16_t crc;
     uint8_t size; // of data[]
-    uint8_t serial_flags;
-
     uint8_t service_number;
-    uint8_t service_command;
+
+    uint16_t service_command;
     uint16_t service_arg;
 
     uint64_t device_identifier;
@@ -41,11 +43,10 @@ typedef struct {
 
 typedef struct {
     uint16_t magic;
-    uint8_t reserved;
     uint8_t size; // of data[]
-
     uint8_t service_number;
-    uint8_t service_command;
+
+    uint16_t service_command;
     uint16_t service_arg;
 
     uint8_t data[JDSPI_PKTSIZE - JDSPI_HEADER_SIZE];
