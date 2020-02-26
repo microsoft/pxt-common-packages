@@ -325,7 +325,7 @@ uint32_t toRealUTF8(String str, uint8_t *dst) {
 }
 #endif
 
-Buffer mkBuffer(const uint8_t *data, int len) {
+Buffer mkBuffer(const void *data, int len) {
     if (len <= 0 && !inGCPrealloc())
         return (Buffer)emptyBuffer;
     Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
