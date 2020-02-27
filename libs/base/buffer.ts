@@ -3,7 +3,7 @@ namespace pins {
     export function sizeOf(format: NumberFormat) {
         return Buffer.sizeOfNumberFormat(format)
     }
-   
+
     //% deprecated=1
     export function createBufferFromArray(bytes: number[]) {
         return Buffer.fromArray(bytes)
@@ -191,7 +191,7 @@ interface Buffer {
      */
     //% helper=bufferPackAt
     packAt(offset: number, format: string, nums: number[]): void;
-    
+
     // rest defined in buffer.cpp
 }
 
@@ -292,6 +292,11 @@ namespace Buffer {
         }
     }
 
+    function isDigit(ch: string) {
+        const code = ch.charCodeAt(0)
+        return 0x30 <= code && code <= 0x39
+    }
+
     export function __packUnpackCore(format: string, nums: number[], buf: Buffer, isPack: boolean, off = 0) {
         let isBig = false
         let idx = 0
@@ -310,18 +315,25 @@ namespace Buffer {
                     off++
                     break
                 default:
-                    let fmt = getFormat(format[i], isBig)
-                    if (fmt === null) {
-                        control.fail("Not supported format character: " + format[i])
-                    } else {
-                        if (buf) {
-                            if (isPack)
-                                buf.setNumber(fmt, off, nums[idx++])
-                            else
-                                nums.push(buf.getNumber(fmt, off))
-                        }
+                    const i0 = i
+                    while (isDigit(format[i])) i++
+                    let reps = 1
+                    if (i0 != i)
+                        reps = parseInt(format.slice(i0, i))
+                    while (reps--) {
+                        let fmt = getFormat(format[i], isBig)
+                        if (fmt === null) {
+                            control.fail("Unsupported format character: " + format[i])
+                        } else {
+                            if (buf) {
+                                if (isPack)
+                                    buf.setNumber(fmt, off, nums[idx++])
+                                else
+                                    nums.push(buf.getNumber(fmt, off))
+                            }
 
-                        off += sizeOfNumberFormat(fmt)
+                            off += sizeOfNumberFormat(fmt)
+                        }
                     }
                     break
             }
