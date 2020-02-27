@@ -72,13 +72,9 @@ namespace jacdac2 {
 
     function queueAnnounce() {
         const pkt = new JDPacket()
-        let fmt = "<"
-        const ids = hostServices.map(h => {
-            fmt += "I"
-            if (h.running) return h.service_class
-            else return -1
-        })
-        pkt.data = pins.packBuffer(fmt, ids)
+        const fmt = "<" + hostServices.length + "I"
+        const ids = hostServices.map(h => h.running ? h.service_class : -1)
+        pkt.pack(fmt, ids)
         pkt.send()
     }
 
@@ -275,6 +271,11 @@ namespace jacdac2 {
         set data(buf: Buffer) {
             this.size = buf.length;
             this._buffer.write(JD_SERIAL_HEADER_SIZE, buf)
+        }
+
+        pack(fmt: string, nums: number[]) {
+            this.size = Buffer.packedSize(fmt)
+            this._buffer.packAt(JD_SERIAL_HEADER_SIZE, fmt, nums)
         }
 
         get is_command() {
