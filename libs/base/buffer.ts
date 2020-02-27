@@ -1,139 +1,37 @@
 namespace pins {
-    /**
-     * Get the size in bytes of specified number format.
-     */
-    //%
+    //% deprecated=1
     export function sizeOf(format: NumberFormat) {
-        switch (format) {
-            case NumberFormat.Int8LE:
-            case NumberFormat.UInt8LE:
-            case NumberFormat.Int8BE:
-            case NumberFormat.UInt8BE:
-                return 1;
-            case NumberFormat.Int16LE:
-            case NumberFormat.UInt16LE:
-            case NumberFormat.Int16BE:
-            case NumberFormat.UInt16BE:
-                return 2;
-            case NumberFormat.Int32LE:
-            case NumberFormat.Int32BE:
-            case NumberFormat.UInt32BE:
-            case NumberFormat.UInt32LE:
-            case NumberFormat.Float32BE:
-            case NumberFormat.Float32LE:
-                return 4;
-            case NumberFormat.Float64BE:
-            case NumberFormat.Float64LE:
-                return 8;
-        }
-        return 0;
+        return Buffer.sizeOfNumberFormat(format)
     }
 
-    /**
-     * Create a new buffer initalized to bytes from given array.
-     * @param bytes data to initalize with
-     */
-    //%
+    //% deprecated=1
     export function createBufferFromArray(bytes: number[]) {
-        let buf = control.createBuffer(bytes.length)
-        for (let i = 0; i < bytes.length; ++i)
-            buf[i] = bytes[i]
-        return buf
+        return Buffer.fromArray(bytes)
     }
 
-    function getFormat(pychar: string, isBig: boolean) {
-        switch (pychar) {
-            case 'B':
-                return NumberFormat.UInt8LE
-            case 'b':
-                return NumberFormat.Int8LE
-            case 'H':
-                return isBig ? NumberFormat.UInt16BE : NumberFormat.UInt16LE
-            case 'h':
-                return isBig ? NumberFormat.Int16BE : NumberFormat.Int16LE
-            case 'I':
-            case 'L':
-                return isBig ? NumberFormat.UInt32BE : NumberFormat.UInt32LE
-            case 'i':
-            case 'l':
-                return isBig ? NumberFormat.Int32BE : NumberFormat.Int32LE
-            case 'f':
-                return isBig ? NumberFormat.Float32BE : NumberFormat.Float32LE
-            case 'd':
-                return isBig ? NumberFormat.Float64BE : NumberFormat.Float64LE
-            default:
-                return null as NumberFormat
-        }
-    }
-
-    function packUnpackCore(format: string, nums: number[], buf: Buffer, isPack: boolean, off = 0) {
-        let isBig = false
-        let idx = 0
-        for (let i = 0; i < format.length; ++i) {
-            switch (format[i]) {
-                case ' ':
-                case '<':
-                case '=':
-                    isBig = false
-                    break
-                case '>':
-                case '!':
-                    isBig = true
-                    break
-                case 'x':
-                    off++
-                    break
-                default:
-                    let fmt = getFormat(format[i], isBig)
-                    if (fmt === null) {
-                        control.fail("Not supported format character: " + format[i])
-                    } else {
-                        if (buf) {
-                            if (isPack)
-                                buf.setNumber(fmt, off, nums[idx++])
-                            else
-                                nums.push(buf.getNumber(fmt, off))
-                        }
-
-                        off += pins.sizeOf(fmt)
-                    }
-                    break
-            }
-        }
-        return off
-    }
-
+    //% deprecated=1
     export function packedSize(format: string) {
-        return packUnpackCore(format, null, null, true)
+        return Buffer.packedSize(format)
     }
 
+    //% deprecated=1
     export function packBuffer(format: string, nums: number[]) {
-        let buf = control.createBuffer(packedSize(format))
-        packUnpackCore(format, nums, buf, true)
-        return buf
+        return Buffer.pack(format, nums)
     }
 
+    //% deprecated=1
     export function packIntoBuffer(format: string, buf: Buffer, offset: number, nums: number[]) {
-        packUnpackCore(format, nums, buf, true, offset)
+        buf.packAt(offset, format, nums)
     }
 
+    //% deprecated=1
     export function unpackBuffer(format: string, buf: Buffer, offset = 0) {
-        let res: number[] = []
-        packUnpackCore(format, res, buf, false, offset)
-        return res
+        return buf.unpack(format, offset)
     }
 
+    //% deprecated=1
     export function concatBuffers(bufs: Buffer[]) {
-        let len = 0
-        for (let b of bufs)
-            len += b.length
-        const r = control.createBuffer(len)
-        len = 0
-        for (let b of bufs) {
-            r.write(len, b)
-            len += b.length
-        }
-        return r
+        return Buffer.concat(bufs)
     }
 }
 
@@ -222,7 +120,7 @@ namespace msgpack {
         for (let n of nums) {
             off += packNumberCore(null, off, n)
         }
-        let buf = control.createBuffer(off)
+        let buf = Buffer.create(off)
         off = 0
         for (let n of nums) {
             off += packNumberCore(buf, off, n)
@@ -233,7 +131,7 @@ namespace msgpack {
 
 namespace helpers {
     export function bufferConcat(a: Buffer, b: Buffer) {
-        const r = control.createBuffer(a.length + b.length)
+        const r = Buffer.create(a.length + b.length)
         r.write(0, a)
         r.write(a.length, b)
         return r
@@ -254,6 +152,17 @@ namespace helpers {
         }
         return -1
     }
+
+    export function bufferUnpack(buf: Buffer, format: string, offset?: number) {
+        if (!offset) offset = 0
+        let res: number[] = []
+        Buffer.__packUnpackCore(format, res, buf, false, offset)
+        return res
+    }
+
+    export function bufferPackAt(buf: Buffer, offset: number, format: string, nums: number[]) {
+        Buffer.__packUnpackCore(format, nums, buf, true, offset)
+    }
 }
 
 interface Buffer {
@@ -271,5 +180,193 @@ interface Buffer {
     //% helper=bufferIndexOf
     indexOf(other: Buffer): number;
 
+    /**
+     * Reads numbers from the buffer according to the format
+     */
+    //% helper=bufferUnpack
+    unpack(format: string, offset?: number): number[];
+
+    /**
+     * Writes numbers to the buffer according to the format
+     */
+    //% helper=bufferPackAt
+    packAt(offset: number, format: string, nums: number[]): void;
+
     // rest defined in buffer.cpp
+}
+
+namespace Buffer {
+    /**
+     * Allocate a new buffer.
+     * @param size number of bytes in the buffer
+     */
+    //% shim=control::createBuffer
+    export declare function create(size: number): Buffer;
+
+    /**
+     * Create a new buffer, decoding a hex string
+     */
+    export function fromHex(hex: string) {
+        const hexStr = "0123456789abcdef"
+        const res = Buffer.create(hex.length >> 1)
+        hex = hex.toLowerCase()
+        for (let i = 0; i < hex.length; i += 2) {
+            const p0 = hexStr.indexOf(hex.charAt(i))
+            const p1 = hexStr.indexOf(hex.charAt(i + 1))
+            if (p0 < 0 || p1 < 0)
+                throw "Invalid hex"
+            res[i >> 1] = (p0 << 4) | p1
+        }
+        return res
+    }
+
+    /**
+     * Create a new buffer with UTF8-encoded string
+     * @param str the string to put in the buffer
+     */
+    //% shim=control::createBufferFromUTF8
+    export declare function fromUTF8(str: string): Buffer;
+
+
+    /**
+     * Create a new buffer initalized to bytes from given array.
+     * @param bytes data to initalize with
+     */
+    export function fromArray(bytes: number[]) {
+        let buf = Buffer.create(bytes.length)
+        for (let i = 0; i < bytes.length; ++i)
+            buf[i] = bytes[i]
+        return buf
+    }
+
+    /**
+     * Concatenates all buffers in the list
+     */
+    export function concat(buffers: Buffer[]) {
+        let len = 0
+        for (let b of buffers)
+            len += b.length
+        const r = Buffer.create(len)
+        len = 0
+        for (let b of buffers) {
+            r.write(len, b)
+            len += b.length
+        }
+        return r
+    }
+
+    // Python-like packing, see https://docs.python.org/3/library/struct.html
+
+    export function packedSize(format: string) {
+        return __packUnpackCore(format, null, null, true)
+    }
+
+    export function pack(format: string, nums: number[]) {
+        let buf = Buffer.create(packedSize(format))
+        __packUnpackCore(format, nums, buf, true)
+        return buf
+    }
+
+    function getFormat(pychar: string, isBig: boolean) {
+        switch (pychar) {
+            case 'B':
+                return NumberFormat.UInt8LE
+            case 'b':
+                return NumberFormat.Int8LE
+            case 'H':
+                return isBig ? NumberFormat.UInt16BE : NumberFormat.UInt16LE
+            case 'h':
+                return isBig ? NumberFormat.Int16BE : NumberFormat.Int16LE
+            case 'I':
+            case 'L':
+                return isBig ? NumberFormat.UInt32BE : NumberFormat.UInt32LE
+            case 'i':
+            case 'l':
+                return isBig ? NumberFormat.Int32BE : NumberFormat.Int32LE
+            case 'f':
+                return isBig ? NumberFormat.Float32BE : NumberFormat.Float32LE
+            case 'd':
+                return isBig ? NumberFormat.Float64BE : NumberFormat.Float64LE
+            default:
+                return null as NumberFormat
+        }
+    }
+
+    function isDigit(ch: string) {
+        const code = ch.charCodeAt(0)
+        return 0x30 <= code && code <= 0x39
+    }
+
+    export function __packUnpackCore(format: string, nums: number[], buf: Buffer, isPack: boolean, off = 0) {
+        let isBig = false
+        let idx = 0
+        for (let i = 0; i < format.length; ++i) {
+            switch (format[i]) {
+                case ' ':
+                case '<':
+                case '=':
+                    isBig = false
+                    break
+                case '>':
+                case '!':
+                    isBig = true
+                    break
+                case 'x':
+                    off++
+                    break
+                default:
+                    const i0 = i
+                    while (isDigit(format[i])) i++
+                    let reps = 1
+                    if (i0 != i)
+                        reps = parseInt(format.slice(i0, i))
+                    while (reps--) {
+                        let fmt = getFormat(format[i], isBig)
+                        if (fmt === null) {
+                            control.fail("Unsupported format character: " + format[i])
+                        } else {
+                            if (buf) {
+                                if (isPack)
+                                    buf.setNumber(fmt, off, nums[idx++])
+                                else
+                                    nums.push(buf.getNumber(fmt, off))
+                            }
+
+                            off += sizeOfNumberFormat(fmt)
+                        }
+                    }
+                    break
+            }
+        }
+        return off
+    }
+
+    /**
+     * Get the size in bytes of specified number format.
+     */
+    export function sizeOfNumberFormat(format: NumberFormat) {
+        switch (format) {
+            case NumberFormat.Int8LE:
+            case NumberFormat.UInt8LE:
+            case NumberFormat.Int8BE:
+            case NumberFormat.UInt8BE:
+                return 1;
+            case NumberFormat.Int16LE:
+            case NumberFormat.UInt16LE:
+            case NumberFormat.Int16BE:
+            case NumberFormat.UInt16BE:
+                return 2;
+            case NumberFormat.Int32LE:
+            case NumberFormat.Int32BE:
+            case NumberFormat.UInt32BE:
+            case NumberFormat.UInt32LE:
+            case NumberFormat.Float32BE:
+            case NumberFormat.Float32LE:
+                return 4;
+            case NumberFormat.Float64BE:
+            case NumberFormat.Float64LE:
+                return 8;
+        }
+        return 0;
+    }
 }
