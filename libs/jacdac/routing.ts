@@ -1,26 +1,83 @@
-namespace jacdac2 {
+/*
+services from jacdac-v0
+
+consoleservice.ts
+debugging services?
+
+*/
+
+namespace jacdac {
+    export let consolePriority = ConsolePriority.Debug;
+
     export class HostService {
-        service_class: number
+        protected supressLog: boolean;
+        serviceClass: number
         running = true
+        name = ""
         handlePacket(pkt: JDPacket) { }
+
+        /**
+         * Registers and starts the driver
+         */
+        //% blockId=jacdachoststart block="start %service"
+        //% group="Services" blockGap=8
         start() {
-            start()
+            if (this.running)
+                return
+            jacdac.start();
             hostServices.push(this)
-            this.running = true
+            this.log("start");
         }
+
+        /**
+         * Unregister and stops the driver
+         */
+        //% blockId=jacdachoststop block="stop %service"
+        //% group="Services" blockGap=8
         stop() {
+            if (!this.running)
+                return
             this.running = false
+            this.log("stop")
+        }
+
+        protected log(text: string) {
+            if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
+                let dev = selfDevice().toString()
+                console.add(jacdac.consolePriority, `${dev}:${this.serviceClass}>${this.name}>${text}`);
+            }
         }
     }
 
     export class Client {
-        service_class: number
-        name: string
+        requiredDeviceName: string
         device: Device
+        eventId: number
+        controlData: Buffer
+        protected supressLog: boolean;
+
+        constructor(
+            public name: string,
+            public serviceClass: number,
+            controlDataLength = 0
+        ) {
+            this.controlData = Buffer.create(Math.max(0, controlDataLength));
+            this.eventId = control.allocateNotifyEvent();
+        }
+
+        handlePacketOuter(pkt: JDPacket) {
+            if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
+                const p = new JDPacket()
+                p.data = this.controlData
+                p.send()
+            } else {
+                this.handlePacket(pkt)
+            }
+        }
         handlePacket(pkt: JDPacket) { }
         attach(dev: Device) {
             if (this.device) throw "Oops"
-            if (this.name && this.name != dev.name)
+            if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
                 return false // don't attach
             this.device = dev
             dev.clients.push(this)
@@ -31,15 +88,28 @@ namespace jacdac2 {
             this.device = null
             unattachedClients.push(this)
         }
+
+        protected registerEvent(value: number, handler: () => void) {
+            control.onEvent(this.eventId, value, handler);
+        }
+
+        protected log(text: string) {
+            if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
+                let dev = selfDevice().toString()
+                let other = this.device ? this.device.toString() : "<unbound>"
+                console.add(jacdac.consolePriority, `${dev}/${other}:${this.serviceClass}>${this.name}>${text}`);
+            }
+        }
     }
 
     const devNameSettingPrefix = "#jddev:"
 
     export class Device {
-        deviceId: string
         services: Buffer
         lastSeen: number
         clients: Client[] = []
+
+        constructor(public deviceId: string) { }
 
         get name() {
             return settings.readString(devNameSettingPrefix + this.deviceId)
@@ -47,6 +117,10 @@ namespace jacdac2 {
 
         set name(n: string) {
             settings.writeString(devNameSettingPrefix + this.deviceId, n)
+        }
+
+        toString() {
+            return this.name || this.deviceId
         }
     }
 
@@ -58,29 +132,36 @@ namespace jacdac2 {
         }
     }
 
-    let myDeviceId: string
     //% whenUsed
     let hostServices: HostService[] = [new ControlService()]
     //% whenUsed
     let unattachedClients: Client[] = []
     //% whenUsed
     let devices_: Device[] = []
+    //% whenUsed
+    let myDevice: Device
 
     export function devices() {
         return devices_.slice()
     }
 
+    export function selfDevice() {
+        if (!myDevice)
+            myDevice = new Device(control.deviceLongSerialNumber().toHex())
+        return myDevice
+    }
+
     function queueAnnounce() {
         const pkt = new JDPacket()
         const fmt = "<" + hostServices.length + "I"
-        const ids = hostServices.map(h => h.running ? h.service_class : -1)
+        const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
         pkt.pack(fmt, ids)
         pkt.send()
     }
 
     export function routePacket(pkt: JDPacket) {
         const devId = pkt.device_identifier
-        if (devId == myDeviceId) {
+        if (devId == selfDevice().deviceId) {
             if (!pkt.is_command)
                 return // huh? someone's pretending to be us?
             const h = hostServices[pkt.service_number - 1]
@@ -92,8 +173,7 @@ namespace jacdac2 {
             let dev = devices_.find(d => d.deviceId == devId)
             if (!dev) {
                 if (pkt.service_number == 0 && pkt.service_command == 0) {
-                    dev = new Device()
-                    dev.deviceId = pkt.device_identifier
+                    dev = new Device(pkt.device_identifier)
                 } else {
                     // we can't know the service_class, no announcement seen yet for this device
                     return
@@ -111,10 +191,10 @@ namespace jacdac2 {
             if (!service_class || service_class == 0xffffffff)
                 return
 
-            let client = dev.clients.find(c => c.service_class == service_class)
+            let client = dev.clients.find(c => c.serviceClass == service_class)
             if (!client) {
                 for (let cc of unattachedClients) {
-                    if (cc.service_class == service_class) {
+                    if (cc.serviceClass == service_class) {
                         if (cc.attach(dev)) {
                             client = cc
                             break
@@ -124,7 +204,7 @@ namespace jacdac2 {
             }
 
             if (client)
-                client.handlePacket(pkt)
+                client.handlePacketOuter(pkt)
         }
     }
 
@@ -194,7 +274,7 @@ namespace jacdac2 {
                 this.packets_sent,
                 this.packets_received,
                 this.packets_dropped
-            ] = pins.unpackBuffer("<IIIIIII", buf)
+            ] = pins.unpackBuffer("7I", buf)
         }
     }
 
@@ -202,11 +282,11 @@ namespace jacdac2 {
         getBuffer(): Buffer;
     }
 
-    const JD_SERIAL_HEADER_SIZE = 16
-    const JD_SERIAL_MAX_PAYLOAD_SIZE = 236
+    export const JD_SERIAL_HEADER_SIZE = 16
+    export const JD_SERIAL_MAX_PAYLOAD_SIZE = 236
 
     function error(msg: string) {
-        throw new Error(msg)
+        throw msg
     }
 
     export class JDPacket implements JDSerializable {

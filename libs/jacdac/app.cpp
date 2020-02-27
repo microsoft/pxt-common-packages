@@ -11,7 +11,7 @@
 #define EVT_DATA_READY 1
 #define EVT_QUEUE_ANNOUNCE 100
 
-namespace jacdac2 {
+namespace jacdac {
 
 #define MAX_RX 10
 static Buffer rxQ[MAX_RX];

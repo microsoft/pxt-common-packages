@@ -8,6 +8,7 @@
         "jdutil.c",
         "app.cpp",
         "hw.cpp",
+        "shims.d.ts",
         "hw.h"
     ],
     "testFiles": [],
