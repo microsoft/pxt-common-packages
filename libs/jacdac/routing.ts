@@ -89,6 +89,7 @@ namespace jacdac {
         device: Device
         eventId: number
         broadcast: boolean // do not attach
+        serviceNumber: number;
         protected supressLog: boolean;
 
         constructor(
@@ -203,6 +204,38 @@ namespace jacdac {
             ._send(selfDevice())
     }
 
+    function reattach(dev: Device) {
+        const newClients: Client[] = []
+        const occupied = Buffer.create(dev.services.length >> 2)
+        for (let c of dev.clients) {
+            const newClass = dev.services.getNumber(NumberFormat.UInt32LE, c.serviceNumber << 2)
+            if (newClass == c.serviceClass) {
+                newClients.push(c)
+                occupied[c.serviceNumber] = 1
+            } else {
+                c.detach()
+            }
+        }
+        dev.clients = newClients
+
+        if (unattachedClients.length == 0)
+            return
+
+        for (let i = 0; i < dev.services.length; i += 4) {
+            if (occupied[i >> 2])
+                continue
+            const service_class = dev.services.getNumber(NumberFormat.UInt32LE, i)
+            for (let cc of unattachedClients) {
+                if (cc.serviceClass == service_class) {
+                    if (cc.attach(dev)) {
+                        cc.serviceNumber = i >> 2
+                        break
+                    }
+                }
+            }
+        }
+    }
+
     export function routePacket(pkt: JDPacket) {
         const devId = pkt.device_identifier
         if (devId == selfDevice().deviceId) {
@@ -215,38 +248,29 @@ namespace jacdac {
                 return // it's a command, and it's not for us
 
             let dev = devices_.find(d => d.deviceId == devId)
-            if (!dev) {
-                if (pkt.service_number == 0 && pkt.service_command == 0) {
-                    dev = new Device(pkt.device_identifier)
-                } else {
-                    // we can't know the service_class, no announcement seen yet for this device
-                    return
-                }
-            }
-
-            dev.lastSeen = control.millis()
 
             if (pkt.service_number == 0 && pkt.service_command == 0) {
-                dev.services = pkt.data
+                if (!dev)
+                    dev = new Device(pkt.device_identifier)
+                if (!pkt.data.equals(dev.services)) {
+                    dev.services = pkt.data
+                    dev.lastSeen = control.millis()
+                    reattach(dev)
+                }
                 return
             }
+
+            if (!dev)
+                // we can't know the service_class, no announcement seen yet for this device
+                return
+
+            dev.lastSeen = control.millis()
 
             const service_class = dev.services.getNumber(NumberFormat.UInt32LE, pkt.service_number << 2)
             if (!service_class || service_class == 0xffffffff)
                 return
 
-            let client = dev.clients.find(c => c.serviceClass == service_class)
-            if (!client) {
-                for (let cc of unattachedClients) {
-                    if (cc.serviceClass == service_class) {
-                        if (cc.attach(dev)) {
-                            client = cc
-                            break
-                        }
-                    }
-                }
-            }
-
+            const client = dev.clients.find(c => c.serviceNumber == pkt.service_number)
             if (client)
                 client.handlePacketOuter(pkt)
         }
