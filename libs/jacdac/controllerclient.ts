@@ -138,7 +138,6 @@ namespace jacdac {
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
                 this.log(`server ${packet.device_identifier}`)
-                const address = this.client.device;
                 /* JDTODO
                 for (let i = 1; i <= 4; ++i) {
                     if (data[i] == address) {
@@ -188,8 +187,8 @@ namespace jacdac {
                 if (this.stateUpdateHandler)
                     this.stateUpdateHandler();
                 // send state
-                this.sendResponse(
-                    JDPacket.from(RESP_MY_STATE, 0, this.state))
+                this.sendReport(
+                    JDPacket.from(REP_MY_STATE, 0, this.state))
                 // waiting for a bit
                 pause(this.streamingInterval);
                 // check if server still alive

@@ -1,7 +1,7 @@
 namespace jacdac {
-    export const RESP_ADVERTISEMENT_DATA = 0x0000
-    export const RESP_MY_STATE = 0x0001
-    export const RESP_EVENT = 0x0002
+    export const REP_ADVERTISEMENT_DATA = 0x0000
+    export const REP_MY_STATE = 0x0001
+    export const REP_EVENT = 0x0002
 
     export const CMD_GET_ADVERTISEMENT_DATA = 0x8000
     export const CMD_SET_STATE = 0x8001

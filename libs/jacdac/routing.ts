@@ -3,6 +3,9 @@ services from jacdac-v0
 
 consoleservice.ts - need two
 debugging services?
+name service - need to re-implement
+identification service
+messagebus.ts
 
 */
 
@@ -16,8 +19,8 @@ namespace jacdac {
 
         handlePacketOuter(pkt: JDPacket) {
             if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
-                this.sendResponse(
-                    JDPacket.from(RESP_ADVERTISEMENT_DATA, 0, this.controlData))
+                this.sendReport(
+                    JDPacket.from(REP_ADVERTISEMENT_DATA, 0, this.controlData))
             } else {
                 this.handlePacket(pkt)
             }
@@ -29,7 +32,7 @@ namespace jacdac {
             return this.running
         }
 
-        sendResponse(pkt: JDPacket) {
+        sendReport(pkt: JDPacket) {
             pkt._send(myDevice)
         }
 
@@ -79,6 +82,7 @@ namespace jacdac {
         requiredDeviceName: string
         device: Device
         eventId: number
+        broadcast: boolean // do not attach
         protected supressLog: boolean;
 
         constructor(
@@ -100,14 +104,18 @@ namespace jacdac {
 
         attach(dev: Device) {
             if (this.device) throw "Oops"
-            if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
-                return false // don't attach
-            this.device = dev
+            if (!this.broadcast) {
+                if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
+                    return false // don't attach
+                this.device = dev
+            }
             dev.clients.push(this)
             return true
         }
 
         detach() {
+            if (this.broadcast)
+                return
             if (!this.device) throw "Oops"
             this.device = null
             unattachedClients.push(this)
@@ -185,7 +193,7 @@ namespace jacdac {
     function queueAnnounce() {
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
-        JDPacket.packed(RESP_ADVERTISEMENT_DATA, 0, fmt, ids)
+        JDPacket.packed(REP_ADVERTISEMENT_DATA, 0, fmt, ids)
             ._send(selfDevice())
     }
 

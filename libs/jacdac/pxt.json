@@ -2,6 +2,9 @@
     "name": "jacdac-core",
     "description": "Plug and play single wire serial protocol v1 - beta",
     "files": [
+        "README.md",
+        "jacdac.svg",
+        "pxtparts.json",
         "jdlow.c",
         "jdlow.h",
         "jdprotocol.h",
@@ -16,7 +19,9 @@
         "service.ts",
         "sensordriver.ts",
         "actuator.ts",
-        "controllerclient.ts"
+        "controllerclient.ts",
+        "messagebus.ts",
+        "ns.ts"
     ],
     "testFiles": [],
     "public": true,

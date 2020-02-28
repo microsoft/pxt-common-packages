@@ -14,9 +14,9 @@ extern "C" {
 
 // the highest bit in command signifies that the device_identifier is the recipent
 // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
-// (i.e., it's a response from peripheral or a broadcast message)
+// (i.e., it's a report from peripheral or a broadcast message)
 #define JD_SERVICE_COMMAND 0x8000
-#define JD_SERVICE_RESPONSE 0x0000
+#define JD_SERVICE_REPORT 0x0000
 
 typedef struct {
     uint16_t crc;

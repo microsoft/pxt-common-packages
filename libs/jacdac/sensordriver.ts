@@ -87,8 +87,8 @@ namespace jacdac {
         }
 
         protected raiseHostEvent(value: number) {
-            this.sendResponse(
-                JDPacket.onlyHeader(RESP_EVENT, value))
+            this.sendReport(
+                JDPacket.onlyHeader(REP_EVENT, value))
         }
 
         public setStreaming(on: boolean) {
@@ -110,8 +110,8 @@ namespace jacdac {
                         // did the state change?
                         if (this.isConnected()) {
                             // send state and record time
-                            this.sendResponse(
-                                JDPacket.from(RESP_MY_STATE, 0, state))
+                            this.sendReport(
+                                JDPacket.from(REP_MY_STATE, 0, state))
                         }
                     }
                     // check streaming interval value
