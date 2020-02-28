@@ -1,5 +1,5 @@
 namespace jacdac {
-    export enum SensorState {
+    export enum SensorStateTODO {
         None = 0,
         Stopped = 0x01,
         Stopping = 0x02,
@@ -9,7 +9,7 @@ namespace jacdac {
     //% fixedInstances
     export class ControllerClient extends Broadcast {
         state: Buffer;
-        streamingState: jacdac.SensorState;
+        streamingState: jacdac.SensorStateTODO;
         streamingInterval: number;
         stateUpdateHandler: () => void;
         lastServerTime: number;
@@ -21,7 +21,7 @@ namespace jacdac {
             this.playerIndex = 0;
             this.state = control.createBuffer(2);
             this.state[0] = JDControllerCommand.ClientButtons;
-            this.streamingState = jacdac.SensorState.Stopped;
+            this.streamingState = jacdac.SensorStateTODO.Stopped;
             this.streamingInterval = 25;
             this.lastServerTime = 0;
         }
@@ -180,16 +180,16 @@ namespace jacdac {
         }
 
         private startStreaming() {
-            if (this.streamingState != SensorState.Stopped)
+            if (this.streamingState != SensorStateTODO.Stopped)
                 return;
 
             this.log(`start`);
-            this.streamingState = SensorState.Streaming;
+            this.streamingState = SensorStateTODO.Streaming;
             control.runInBackground(() => this.stream());
         }
 
         private stream() {
-            while (this.streamingState == SensorState.Streaming) {
+            while (this.streamingState == SensorStateTODO.Streaming) {
                 // alllow handle to update state
                 if (this.stateUpdateHandler)
                     this.stateUpdateHandler();
@@ -203,15 +203,15 @@ namespace jacdac {
                     this.serverAddress = 0; // inactive
                 }
             }
-            this.streamingState = SensorState.Stopped;
+            this.streamingState = SensorStateTODO.Stopped;
             this.log(`stopped`);
         }
 
         private stopStreaming() {
-            if (this.streamingState == SensorState.Streaming) {
+            if (this.streamingState == SensorStateTODO.Streaming) {
                 this.log(`stopping`)
-                this.streamingState = SensorState.Stopping;
-                pauseUntil(() => this.streamingState == SensorState.Stopped);
+                this.streamingState = SensorStateTODO.Stopping;
+                pauseUntil(() => this.streamingState == SensorStateTODO.Stopped);
             }
         }
     }
