@@ -130,7 +130,7 @@ void platform_init() {
 
 int *getBootloaderConfigData() {
 #ifdef NRF52840
-    auto p = (volatile uint32_t *)0x000fdc00;
+    auto p = (volatile uint32_t *)0x000fd800;
     if (p[0] == CFG_MAGIC0 && p[1] == CFG_MAGIC1)
         return (int *)p + 4;
 #endif
