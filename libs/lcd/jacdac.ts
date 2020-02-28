@@ -5,21 +5,20 @@ namespace jacdac {
             super(name, jacdac.LCD_DEVICE_CLASS, 17);
         }
 
-        handleStateChanged(): number {
+        handleStateChanged() {
             const l = lcd.screen();
             if (!l)
-                return jacdac.DEVICE_OK;
+                return
 
             const flags: JDLCDFlags = this.state[0];
             l.display = !!(flags & JDLCDFlags.Display);
             l.blink = !!(flags & JDLCDFlags.Blink);
             l.cursor = !!(flags & JDLCDFlags.Cursor);
 
-            const message = bufferToString(this.state, 1);
+            const message = this.state.slice(1).toString();
             if (message != l.message) {
                 l.message = message;
             }
-            return jacdac.DEVICE_OK;
         }
     }
 

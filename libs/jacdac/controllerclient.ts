@@ -1,4 +1,11 @@
 namespace jacdac {
+    export enum SensorState {
+        None = 0,
+        Stopped = 0x01,
+        Stopping = 0x02,
+        Streaming = 0x04,
+    }
+
     //% fixedInstances
     export class ControllerClient extends Broadcast {
         state: Buffer;
@@ -188,7 +195,7 @@ namespace jacdac {
                     this.stateUpdateHandler();
                 // send state
                 this.sendReport(
-                    JDPacket.from(REP_MY_STATE, 0, this.state))
+                    JDPacket.from(REP_STATE, 0, this.state))
                 // waiting for a bit
                 pause(this.streamingInterval);
                 // check if server still alive

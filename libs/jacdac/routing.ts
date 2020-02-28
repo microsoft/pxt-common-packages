@@ -5,7 +5,13 @@ consoleservice.ts - need two
 debugging services?
 name service - need to re-implement
 identification service
-messagebus.ts
+
+"gamepad": "file:../../libs/gamepad",
+"keyboard": "file:../../libs/keyboard",
+"mouse": "file:../../libs/mouse",
+"rotary-encoder": "file:../../libs/rotary-encoder",
+"music": "file:../../libs/music",
+"touch": "file:../../libs/touch",
 
 */
 

@@ -1,29 +1,15 @@
 namespace jacdac {
-    export enum SensorState {
-        None = 0,
-        Stopped = 0x01,
-        Stopping = 0x02,
-        Streaming = 0x04,
-    }
-
     /**
      * JacDac service running on sensor and streaming data out
      */
     export class SensorHost extends Host {
         public streamingInterval: number; // millis
+        public isStreaming: boolean;
 
         constructor(name: string, deviceClass: number, controlLength = 0) {
-            super(name, deviceClass, 1 + controlLength);
-            this.sensorState = SensorState.Stopped;
+            super(name, deviceClass, controlLength);
             this.streamingInterval = 100;
-        }
-
-        get sensorState(): SensorState {
-            return this.controlData[0];
-        }
-
-        set sensorState(value: SensorState) {
-            this.controlData[0] = value;
+            this.isStreaming = false;
         }
 
         public updateControlPacket() {
@@ -41,13 +27,20 @@ namespace jacdac {
             this.log(`hpkt ${packet.service_command}`);
             const val = packet.data.getNumber(NumberFormat.Int32LE, 0)
             switch (packet.service_command) {
-                case CMD_START_STREAM:
-                    if (val)
-                        this.streamingInterval = Math.max(20, val);
-                    this.startStreaming();
+                case CMD_SET_STREAMING:
+                    if (packet.service_argument == 1) {
+                        if (val)
+                            this.streamingInterval = Math.max(20, val);
+                        this.startStreaming();
+                    } else if (packet.service_argument == 0) {
+                        this.stopStreaming();
+                    }
                     break
-                case CMD_STOP_STREAM:
-                    this.stopStreaming();
+                case CMD_GET_STREAMING:
+                    this.sendReport(JDPacket.packed(
+                        REP_STREAMING,
+                        this.isStreaming ? 1 : 0,
+                        "I", [this.streamingInterval]))
                     break
                 case CMD_SET_THRESHOLD:
                     switch (packet.service_argument) {
@@ -87,8 +80,7 @@ namespace jacdac {
         }
 
         protected raiseHostEvent(value: number) {
-            this.sendReport(
-                JDPacket.onlyHeader(REP_EVENT, value))
+            this.sendReport(JDPacket.onlyHeader(REP_EVENT, value))
         }
 
         public setStreaming(on: boolean) {
@@ -97,21 +89,20 @@ namespace jacdac {
         }
 
         private startStreaming() {
-            if (this.sensorState != SensorState.Stopped)
+            if (this.isStreaming)
                 return;
 
             this.log(`start`);
-            this.sensorState = SensorState.Streaming;
+            this.isStreaming = true;
             control.runInBackground(() => {
-                while (this.sensorState == SensorState.Streaming) {
+                while (this.isStreaming) {
                     // run callback                    
                     const state = this.serializeState();
                     if (!!state) {
                         // did the state change?
                         if (this.isConnected()) {
                             // send state and record time
-                            this.sendReport(
-                                JDPacket.from(REP_MY_STATE, 0, state))
+                            this.sendReport(JDPacket.from(REP_STATE, 0, state))
                         }
                     }
                     // check streaming interval value
@@ -120,16 +111,16 @@ namespace jacdac {
                     // waiting for a bit
                     pause(this.streamingInterval);
                 }
-                this.sensorState = SensorState.Stopped;
+                this.isStreaming = false
                 this.log(`stopped`);
             })
         }
 
         private stopStreaming() {
-            if (this.sensorState == SensorState.Streaming) {
+            if (this.isStreaming) {
                 this.log(`stopping`)
-                this.sensorState = SensorState.Stopping;
-                pauseUntil(() => this.sensorState == SensorState.Stopped);
+                this.isStreaming = null
+                pauseUntil(() => this.isStreaming === false);
             }
         }
     }
