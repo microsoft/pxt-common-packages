@@ -134,7 +134,7 @@ namespace jacdac {
         protected onAttach() {}
         protected onDetach() {}
 
-        sendCmd(pkt: JDPacket) {
+        sendCommand(pkt: JDPacket) {
             pkt._send(this.device)
         }
 

@@ -12,6 +12,7 @@ namespace jacdac {
     export const REP_EVENT = 0x0005
     // request to calibrate sensor
     export const REP_CALIBRATE = 0x0006
+    export const REP_INTENSITY = 0x0007
 
     export const CMD_GET_MASK = 0x8000
     export const CMD_SET_MASK = 0xC000
@@ -27,6 +28,8 @@ namespace jacdac {
     export const CMD_SET_THRESHOLD = CMD_SET_MASK | REP_THRESHOLD
     export const CMD_CALIBRATE = CMD_SET_MASK | REP_CALIBRATE
     export const CMD_GET_CALIBRATION_STATUS = CMD_GET_MASK | REP_CALIBRATE
+    export const CMD_GET_INTENSITY = CMD_GET_MASK | REP_INTENSITY
+    export const CMD_SET_INTENSITY = CMD_SET_MASK | REP_INTENSITY
 
     export const ARG_LOW_THRESHOLD = 0x0001
     export const ARG_HIGH_THRESHOLD = 0x0002

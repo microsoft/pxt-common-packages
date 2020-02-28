@@ -32,6 +32,8 @@ namespace jacdac {
             }
         }
 
+        protected handleCustomCommand(pkt: JDPacket): void { }
+
         protected handleStateChanged(): void {
             // if not responding to 'enabled' bit, make sure to set it to true here
         }
@@ -56,7 +58,7 @@ namespace jacdac {
         }
 
         protected notifyChange() {
-            this.sendCmd(JDPacket.from(CMD_SET_STATE, 0, this.state))
+            this.sendCommand(JDPacket.from(CMD_SET_STATE, 0, this.state))
         }
     }
 }

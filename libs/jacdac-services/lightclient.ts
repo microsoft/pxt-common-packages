@@ -5,11 +5,8 @@ namespace jacdac {
             super(name, jacdac.LIGHT_DEVICE_CLASS);
         }
 
-        private sendCmd(cmd: number, value: number) {
-            const buf = control.createBuffer(9);
-            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            buf.setNumber(NumberFormat.UInt32LE, 1, value);
-            this.sendPacket(buf);
+        private setState(cmd: number, value: number) {
+            this.sendCommand(JDPacket.packed(CMD_SET_STATE, 0, "bI", [cmd, value]))
         }
 
         /**
@@ -21,7 +18,7 @@ namespace jacdac {
         //% weight=2 blockGap=8
         //% group="Light"
         setBrightness(brightness: number): void {
-            this.sendCmd(JDLightCommand.SetBrightness, brightness);
+            this.sendCommand(JDPacket.onlyHeader(CMD_SET_INTENSITY, brightness))
         }
 
         /**
@@ -32,7 +29,7 @@ namespace jacdac {
         //% weight=80 blockGap=8
         //% group="Light"
         setAll(rgb: number) {
-            this.sendCmd(JDLightCommand.SetAll, rgb);
+            this.setState(JDLightCommand.SetAll, rgb);
         }
 
         /**
@@ -44,7 +41,7 @@ namespace jacdac {
         //% weight=90 blockGap=8
         //% group="Light"
         showAnimation(animation: JDLightAnimation, duration: number) {
-            this.sendCmd(animation, duration);
+            this.setState(animation, duration);
         }
     }
 

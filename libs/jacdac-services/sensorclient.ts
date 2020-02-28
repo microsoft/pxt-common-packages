@@ -37,12 +37,12 @@ namespace jacdac {
          */
         public calibrate() {
             this.start();
-            this.sendCmd(JDPacket.onlyHeader(CMD_CALIBRATE, 0))
+            this.sendCommand(JDPacket.onlyHeader(CMD_CALIBRATE, 0))
         }
 
         private sync() {
             if (!this.isConnected()) return;
-            this.sendCmd(JDPacket.onlyHeader(CMD_SET_STREAMING, this.isStreaming ? 1 : 0))
+            this.sendCommand(JDPacket.onlyHeader(CMD_SET_STREAMING, this.isStreaming ? 1 : 0))
         }
 
         public onStateChanged(handler: () => void) {
@@ -82,7 +82,7 @@ namespace jacdac {
         protected setThreshold(low: boolean, value: number) {
             this.start();
             const cmd = low ? ARG_LOW_THRESHOLD : ARG_HIGH_THRESHOLD
-            this.sendCmd(JDPacket.packed(CMD_SET_THRESHOLD, cmd, "i", [value]))
+            this.sendCommand(JDPacket.packed(CMD_SET_THRESHOLD, cmd, "i", [value]))
         }
     }
 }

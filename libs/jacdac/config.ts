@@ -59,15 +59,14 @@ namespace jacdac {
 }
 
 const enum JDLightCommand {
-    None,
-    SetAll,
-    SetBrightness,
-    Rainbow,
-    RunningLights,
-    ColorWipe,
-    Comet,
-    TheaterChase,
-    Sparkle
+    None = 0,
+    SetAll = 1,
+    Rainbow = 2,
+    RunningLights = 3,
+    ColorWipe = 4,
+    Comet = 5,
+    TheaterChase = 6,
+    Sparkle = 7
 }
 
 enum JDLightAnimation {
