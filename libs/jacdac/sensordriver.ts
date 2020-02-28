@@ -25,7 +25,7 @@ namespace jacdac {
 
         public handlePacket(packet: JDPacket) {
             this.log(`hpkt ${packet.service_command}`);
-            const val = packet.data.getNumber(NumberFormat.Int32LE, 0)
+            const [val] = packet.data.unpack("i")
             switch (packet.service_command) {
                 case CMD_SET_STREAMING:
                     if (packet.service_argument == 1) {
@@ -40,7 +40,7 @@ namespace jacdac {
                     this.sendReport(JDPacket.packed(
                         REP_STREAMING,
                         this.isStreaming ? 1 : 0,
-                        "I", [this.streamingInterval]))
+                        "i", [this.streamingInterval]))
                     break
                 case CMD_SET_THRESHOLD:
                     switch (packet.service_argument) {

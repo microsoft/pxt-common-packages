@@ -7,12 +7,11 @@ namespace jacdac {
         protected _lastState: Buffer;
         private _stateChangedHandler: () => void;
 
-        private _sensorState: SensorState;
+        public isStreaming = false
 
         constructor(name: string, deviceClass: number) {
             super(name, deviceClass);
             this._lastState = control.createBuffer(0);
-            this._sensorState = SensorState.None;
         }
 
         public get state() {
@@ -29,8 +28,8 @@ namespace jacdac {
         //% group="Services"
         public setStreaming(on: boolean) {
             this.start();
-            this._sensorState = on ? SensorState.Streaming : SensorState.Stopped;
-            this.sync();
+            this.isStreaming = on
+            this.sync()
         }
 
         /**
@@ -38,20 +37,12 @@ namespace jacdac {
          */
         public calibrate() {
             this.start();
-            const buf = control.createBuffer(2);
-            const cmd = SensorCommand.Calibrate;
-            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            this.sendPacket(buf);
+            this.sendCmd(JDPacket.onlyHeader(CMD_CALIBRATE, 0))
         }
 
         private sync() {
-            if (this._sensorState == SensorState.None) return;
-
-            const buf = control.createBuffer(2);
-            const cmd = (this._sensorState & SensorState.Streaming)
-                ? SensorCommand.StartStream : SensorCommand.StopStream;
-            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            this.sendPacket(buf);
+            if (!this.isConnected()) return;
+            this.sendCmd(JDPacket.onlyHeader(CMD_SET_STREAMING, this.isStreaming ? 1 : 0))
         }
 
         public onStateChanged(handler: () => void) {
@@ -59,55 +50,39 @@ namespace jacdac {
             this.start();
         }
 
-        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
-            if (this._sensorState == SensorState.None) return DEVICE_OK;
-            const data = serviceInfo.data;
-            const state = data.getNumber(NumberFormat.UInt8LE, 1);
-            if ((this._sensorState & SensorState.Streaming) != (state & SensorState.Streaming))
-                this.sync(); // start            
-            return DEVICE_OK;
+        protected onAttach() {
+            this.sync()
         }
 
-        handlePacket(packet: JDPacket): number {
-            const data = packet.data;
-            const command = data.getNumber(NumberFormat.UInt8LE, 0);
-            this.log(`vpkt ${command}`)
-            switch (command) {
-                case SensorCommand.State: {
-                    const state = data.slice(1);
-                    const changed = !jacdac.bufferEqual(this._lastState, state);
-                    const r = this.handleVirtualState(state);
+        handlePacket(packet: JDPacket) {
+            this.log(`vpkt ${packet.service_command}`)
+            switch (packet.service_command) {
+                case REP_STATE: {
+                    const state = packet.data
+                    const changed = !state.equals(this._lastState);
+                    this.handleVirtualState(state);
                     this._lastState = state;
                     this._localTime = control.millis();
                     if (changed && this._stateChangedHandler)
                         this._stateChangedHandler();
-                    return r;
                 }
-                case SensorCommand.Event: {
-                    const value = data.getNumber(NumberFormat.UInt16LE, 1);
-                    control.raiseEvent(this.eventId, value);
-                    return jacdac.DEVICE_OK;
-                }
+                case REP_EVENT:
+                    control.raiseEvent(this.eventId, packet.service_argument);
                 default:
-                    return this.handleCustomCommand(command, packet);
+                    this.handleCustomCommand(packet);
             }
         }
 
-        protected handleCustomCommand(command: number, pkt: JDPacket): number {
-            return jacdac.DEVICE_OK;
+        protected handleCustomCommand(pkt: JDPacket) {
         }
 
-        protected handleVirtualState(state: Buffer): number {
-            return jacdac.DEVICE_OK;
+        protected handleVirtualState(state: Buffer) {
         }
 
         protected setThreshold(low: boolean, value: number) {
             this.start();
-            const buf = control.createBuffer(6);
-            const cmd = low ? SensorCommand.LowThreshold : SensorCommand.HighThreshold;
-            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            buf.setNumber(NumberFormat.Int32LE, 1, value);
-            this.sendPacket(buf);
+            const cmd = low ? ARG_LOW_THRESHOLD : ARG_HIGH_THRESHOLD
+            this.sendCmd(JDPacket.packed(CMD_SET_THRESHOLD, cmd, "i", [value]))
         }
     }
 }

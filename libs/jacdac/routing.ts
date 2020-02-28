@@ -91,6 +91,7 @@ namespace jacdac {
         broadcast: boolean // do not attach
         serviceNumber: number;
         protected supressLog: boolean;
+        started: boolean;
 
         constructor(
             public name: string,
@@ -109,7 +110,7 @@ namespace jacdac {
 
         handlePacket(pkt: JDPacket) { }
 
-        attach(dev: Device) {
+        _attach(dev: Device) {
             if (this.device) throw "Oops"
             if (!this.broadcast) {
                 if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
@@ -117,16 +118,21 @@ namespace jacdac {
                 this.device = dev
             }
             dev.clients.push(this)
+            this.onAttach()
             return true
         }
 
-        detach() {
+        _detach() {
             if (this.broadcast)
                 return
             if (!this.device) throw "Oops"
             this.device = null
             unattachedClients.push(this)
+            this.onDetach()
         }
+
+        protected onAttach() {}
+        protected onDetach() {}
 
         sendCmd(pkt: JDPacket) {
             pkt._send(this.device)
@@ -142,6 +148,13 @@ namespace jacdac {
                 let other = this.device ? this.device.toString() : "<unbound>"
                 console.add(jacdac.consolePriority, `${dev}/${other}:${this.serviceClass}>${this.name}>${text}`);
             }
+        }
+
+        start() {
+            if (this.started) return
+            this.started = true
+            jacdac.start()
+            unattachedClients.push(this)
         }
     }
 
@@ -213,7 +226,7 @@ namespace jacdac {
                 newClients.push(c)
                 occupied[c.serviceNumber] = 1
             } else {
-                c.detach()
+                c._detach()
             }
         }
         dev.clients = newClients
@@ -227,7 +240,7 @@ namespace jacdac {
             const service_class = dev.services.getNumber(NumberFormat.UInt32LE, i)
             for (let cc of unattachedClients) {
                 if (cc.serviceClass == service_class) {
-                    if (cc.attach(dev)) {
+                    if (cc._attach(dev)) {
                         cc.serviceNumber = i >> 2
                         break
                     }
@@ -284,7 +297,7 @@ namespace jacdac {
                 devices_.splice(i, 1)
                 i--
                 for (let c of dev.clients) {
-                    c.detach()
+                    c._detach()
                 }
                 dev.clients = null
             }
