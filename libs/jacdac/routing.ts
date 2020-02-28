@@ -1,20 +1,45 @@
 /*
 services from jacdac-v0
 
-consoleservice.ts
+consoleservice.ts - need two
 debugging services?
 
 */
 
 namespace jacdac {
-    export let consolePriority = ConsolePriority.Debug;
 
-    export class HostService {
+    //% fixedInstances
+    export class Host {
         protected supressLog: boolean;
-        serviceClass: number
         running = true
-        name = ""
+        controlData: Buffer
+
+        handlePacketOuter(pkt: JDPacket) {
+            if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
+                this.sendResponse(
+                    JDPacket.from(RESP_ADVERTISEMENT_DATA, 0, this.controlData))
+            } else {
+                this.handlePacket(pkt)
+            }
+        }
+
         handlePacket(pkt: JDPacket) { }
+
+        isConnected() {
+            return this.running
+        }
+
+        sendResponse(pkt: JDPacket) {
+            pkt._send(myDevice)
+        }
+
+        constructor(
+            public name: string,
+            public serviceClass: number,
+            controlDataLength = 0
+        ) {
+            this.controlData = Buffer.create(Math.max(0, controlDataLength));
+        }
 
         /**
          * Registers and starts the driver
@@ -49,32 +74,30 @@ namespace jacdac {
         }
     }
 
+    //% fixedInstances
     export class Client {
         requiredDeviceName: string
         device: Device
         eventId: number
-        controlData: Buffer
         protected supressLog: boolean;
 
         constructor(
             public name: string,
-            public serviceClass: number,
-            controlDataLength = 0
+            public serviceClass: number
         ) {
-            this.controlData = Buffer.create(Math.max(0, controlDataLength));
             this.eventId = control.allocateNotifyEvent();
         }
 
-        handlePacketOuter(pkt: JDPacket) {
-            if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
-                const p = new JDPacket()
-                p.data = this.controlData
-                p.send()
-            } else {
-                this.handlePacket(pkt)
-            }
+        isConnected() {
+            return !!this.device
         }
+
+        handlePacketOuter(pkt: JDPacket) {
+            this.handlePacket(pkt)
+        }
+
         handlePacket(pkt: JDPacket) { }
+
         attach(dev: Device) {
             if (this.device) throw "Oops"
             if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
@@ -83,10 +106,15 @@ namespace jacdac {
             dev.clients.push(this)
             return true
         }
+
         detach() {
             if (!this.device) throw "Oops"
             this.device = null
             unattachedClients.push(this)
+        }
+
+        sendCmd(pkt: JDPacket) {
+            pkt._send(this.device)
         }
 
         protected registerEvent(value: number, handler: () => void) {
@@ -124,16 +152,19 @@ namespace jacdac {
         }
     }
 
-    class ControlService extends HostService {
-        handlePacket(pkt: JDPacket) {
-            if (pkt.service_command == 0x8000) {
+    class ControlService extends Host {
+        constructor() {
+            super("ctrl", 0)
+        }
+        handlePacketOuter(pkt: JDPacket) {
+            if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
                 queueAnnounce()
             }
         }
     }
 
     //% whenUsed
-    let hostServices: HostService[] = [new ControlService()]
+    let hostServices: Host[] = [new ControlService()]
     //% whenUsed
     let unattachedClients: Client[] = []
     //% whenUsed
@@ -152,11 +183,10 @@ namespace jacdac {
     }
 
     function queueAnnounce() {
-        const pkt = new JDPacket()
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
-        pkt.pack(fmt, ids)
-        pkt.send()
+        JDPacket.packed(RESP_ADVERTISEMENT_DATA, 0, fmt, ids)
+            ._send(selfDevice())
     }
 
     export function routePacket(pkt: JDPacket) {
@@ -165,7 +195,7 @@ namespace jacdac {
             if (!pkt.is_command)
                 return // huh? someone's pretending to be us?
             const h = hostServices[pkt.service_number - 1]
-            if (h && h.running) h.handlePacket(pkt)
+            if (h && h.running) h.handlePacketOuter(pkt)
         } else {
             if (pkt.is_command)
                 return // it's a command, and it's not for us
@@ -228,7 +258,6 @@ namespace jacdac {
             return
 
         hostServices = [new ControlService()]
-        myDeviceId = control.deviceLongSerialNumber().toHex()
         jacdac.__physStart();
         control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
             let buf: Buffer;
@@ -302,6 +331,23 @@ namespace jacdac {
                 this._buffer = control.createBuffer(JD_SERIAL_MAX_PAYLOAD_SIZE + JD_SERIAL_HEADER_SIZE);
         }
 
+        static from(service_command: number, service_argument: number, data: Buffer) {
+            const p = new JDPacket()
+            p.service_command = service_command
+            p.service_argument = service_argument
+            p.data = data
+            return p
+        }
+
+        static onlyHeader(service_command: number, service_argument: number) {
+            return JDPacket.from(service_command, service_argument, Buffer.create(0))
+        }
+
+        static packed(service_command: number, service_argument: number, fmt: string, nums: number[]) {
+            return JDPacket.from(service_command, service_argument,
+                Buffer.pack(fmt, nums))
+        }
+
         get device_identifier() {
             // second 8 is length!
             return this._buffer.slice(8, 8).toHex()
@@ -370,7 +416,10 @@ namespace jacdac {
             return this._buffer.toHex();
         }
 
-        send() {
+        _send(dev: Device) {
+            if (!dev)
+                return
+            this.device_identifier = dev.deviceId
             jacdac.__physSendPacket(this._buffer)
         }
     }

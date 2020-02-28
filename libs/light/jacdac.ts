@@ -7,7 +7,7 @@ namespace jacdac {
             this.strip = strip;
         }
 
-        protected handleStateChanged(): number {
+        protected handleStateChanged() {
             const animation = this.state.getNumber(NumberFormat.UInt8LE, 0);
             const value = this.state.getNumber(NumberFormat.UInt32LE, 1);
             const range = this.strip;
@@ -21,7 +21,6 @@ namespace jacdac {
                 case JDLightCommand.Comet: range.showAnimation(light.cometAnimation, value); break;
                 case JDLightCommand.Sparkle: range.showAnimation(light.sparkleAnimation, value); break;
             }
-            return jacdac.DEVICE_OK;
         }
     }
 }

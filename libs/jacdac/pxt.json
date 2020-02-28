@@ -9,11 +9,19 @@
         "app.cpp",
         "hw.cpp",
         "shims.d.ts",
-        "hw.h"
+        "hw.h",
+        "commands.ts",
+        "config.ts",
+        "routing.ts",
+        "service.ts",
+        "sensordriver.ts",
+        "actuator.ts",
+        "controllerclient.ts"
     ],
     "testFiles": [],
     "public": true,
     "dependencies": {
-        "core": "file:../core"
+        "core": "file:../core",
+        "settings": "file:../settings"
     }
 }

@@ -4,7 +4,7 @@ namespace jacdac {
             super(name, jacdac.PIXEL_DEVICE_CLASS, 4);
         }
 
-        protected handleStateChanged(): number {
+        protected handleStateChanged() {
             let brightness = 0;
             let color = 0;
             if (this.state.length >= 4) {
@@ -17,7 +17,6 @@ namespace jacdac {
             }
             pixel.setBrightness(brightness)
             pixel.setColor(color);
-            return jacdac.DEVICE_OK;
         }
     }
 
