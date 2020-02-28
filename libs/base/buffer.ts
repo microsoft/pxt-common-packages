@@ -137,6 +137,16 @@ namespace helpers {
         return r
     }
 
+    export function bufferEquals(l: Buffer, r: Buffer) {
+        if (!l || !r) return !!l == !!r;
+        if (l.length != r.length) return false;
+        for (let i = 0; i < l.length; ++i) {
+            if (l[i] != r[i])
+                return false;
+        }
+        return true;
+    }
+
     export function bufferIndexOf(a: Buffer, b: Buffer) {
         for (let i = 0; i <= a.length - b.length; ++i) {
             if (a[i] == b[0]) {
@@ -191,6 +201,12 @@ interface Buffer {
      */
     //% helper=bufferPackAt
     packAt(offset: number, format: string, nums: number[]): void;
+
+    /**
+     * Returns true if this and the other buffer hold the same data
+     */
+    //% helper=bufferEquals
+    equals(other: Buffer): boolean;
 
     // rest defined in buffer.cpp
 }
