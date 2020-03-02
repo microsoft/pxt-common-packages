@@ -15,6 +15,7 @@ namespace jacdac {
         protected supressLog: boolean;
         running = true
         controlData: Buffer
+        serviceNumber: number
 
         handlePacketOuter(pkt: JDPacket) {
             if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
@@ -32,6 +33,7 @@ namespace jacdac {
         }
 
         sendReport(pkt: JDPacket) {
+            pkt.service_number = this.serviceNumber
             pkt._send(myDevice)
         }
 
@@ -52,6 +54,7 @@ namespace jacdac {
             if (this.running)
                 return
             jacdac.start();
+            this.serviceNumber = hostServices.length
             hostServices.push(this)
             this.log("start");
         }
@@ -128,12 +131,13 @@ namespace jacdac {
         protected onDetach() { }
 
         sendCommand(pkt: JDPacket) {
+            pkt.service_number = this.serviceNumber
             pkt._send(this.device)
         }
 
         sendPackedCommand(service_command: number, service_argument: number, fmt: string, nums: number[]) {
             const pkt = JDPacket.packed(service_command, service_argument, fmt, nums)
-            pkt._send(this.device)
+            this.sendCommand(pkt)
         }
 
         protected registerEvent(value: number, handler: () => void) {
@@ -260,7 +264,7 @@ namespace jacdac {
 
             let dev = devices_.find(d => d.deviceId == devId)
 
-            if (pkt.service_number == 0 && pkt.service_command == 0) {
+            if (pkt.service_number == 0 && pkt.service_command == REP_ADVERTISEMENT_DATA) {
                 if (!dev)
                     dev = new Device(pkt.device_identifier)
                 if (!pkt.data.equals(dev.services)) {
@@ -418,11 +422,23 @@ namespace jacdac {
                 error("invalid size")
         }
 
+        get requires_ack(): boolean {
+            return this._buffer[3] & 0x80 ? true : false;
+        }
+        set requires_ack(ack: boolean) {
+            if (ack != this.requires_ack)
+                this._buffer[3] ^= 0x80
+        }
+
         get service_number(): number {
-            return this._buffer[3];
+            return this._buffer[3] & 63;
         }
         set service_number(service_number: number) {
-            this._buffer[3] = service_number;
+            this._buffer[3] = (this._buffer[3] & 0xc0) | service_number;
+        }
+
+        get crc(): number {
+            return this._buffer.getNumber(NumberFormat.UInt16LE, 0)
         }
 
         get service_command(): number {
