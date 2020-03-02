@@ -9,6 +9,8 @@ identification service - led blinking
 */
 
 namespace jacdac {
+    const ACK_RETRIES = 3
+    const devNameSettingPrefix = "#jddev:"
 
     //% fixedInstances
     export class Host {
@@ -160,8 +162,6 @@ namespace jacdac {
         }
     }
 
-    const devNameSettingPrefix = "#jddev:"
-
     export class Device {
         services: Buffer
         lastSeen: number
@@ -201,6 +201,54 @@ namespace jacdac {
     let devices_: Device[] = []
     //% whenUsed
     let myDevice: Device
+
+    class AckAwaiter {
+        added: number
+        numTries = 1
+        crc: number
+        eventId: number
+        constructor(
+            public pkt: JDPacket,
+        ) {
+            this.crc = pkt.crc
+            this.added = control.millis()
+            this.eventId = control.allocateNotifyEvent()
+        }
+    }
+
+    //% whenUsed
+    let ackAwaiters: AckAwaiter[] = []
+    function checkAckAwaiters() {
+        const now = control.millis()
+        const retryTime = now - 30
+        const toRetry = ackAwaiters.filter(a => a.added < retryTime)
+        if (!toRetry.length)
+            return
+        for (let a of toRetry) {
+            if (a.added == 0)
+                continue // already got ack
+            if (a.numTries >= ACK_RETRIES) {
+                a.added = -1
+            } else {
+                a.numTries++
+                jacdac.__physSendPacket(a.pkt._buffer)
+            }
+        }
+        ackAwaiters = ackAwaiters.filter(a => a.added > 0)
+    }
+
+    function gotAckFor(crc: number) {
+        let numNotify = 0
+        for (let a of ackAwaiters) {
+            if (a.crc == crc) {
+                a.added = 0
+                control.raiseEvent(DAL.DEVICE_ID_NOTIFY, a.eventId)
+                numNotify++
+            }
+        }
+        if (numNotify)
+            ackAwaiters = ackAwaiters.filter(a => a.crc != crc)
+    }
 
     export function devices() {
         return devices_.slice()
@@ -264,13 +312,17 @@ namespace jacdac {
 
             let dev = devices_.find(d => d.deviceId == devId)
 
-            if (pkt.service_number == 0 && pkt.service_command == REP_ADVERTISEMENT_DATA) {
-                if (!dev)
-                    dev = new Device(pkt.device_identifier)
-                if (!pkt.data.equals(dev.services)) {
-                    dev.services = pkt.data
-                    dev.lastSeen = control.millis()
-                    reattach(dev)
+            if (pkt.service_number == 0) {
+                if (pkt.service_command == REP_ADVERTISEMENT_DATA) {
+                    if (!dev)
+                        dev = new Device(pkt.device_identifier)
+                    if (!pkt.data.equals(dev.services)) {
+                        dev.services = pkt.data
+                        dev.lastSeen = control.millis()
+                        reattach(dev)
+                    }
+                } else if (pkt.service_command == REP_ACK) {
+                    gotAckFor(pkt.service_argument)
                 }
                 return
             }
@@ -320,6 +372,12 @@ namespace jacdac {
             gcDevices()
         });
         control.internalOnEvent(jacdac.__physId(), 100, queueAnnounce);
+        control.runInBackground(() => {
+            while (1) {
+                pause(Math.randomRange(20, 50))
+                checkAckAwaiters()
+            }
+        })
 
         /*
         console.addListener(function (pri, msg) {
@@ -487,6 +545,18 @@ namespace jacdac {
             this.device_identifier = dev.deviceId
             jacdac.__physSendPacket(this._buffer)
         }
-    }
 
+        // returns true when sent and recieved
+        _sendWithAck(dev: Device) {
+            if (!dev)
+                return false
+            this.requires_ack = true
+            this._send(dev)
+            const aw = new AckAwaiter(this)
+            ackAwaiters.push(aw)
+            while (aw.added > 0)
+                control.waitForEvent(DAL.DEVICE_ID_NOTIFY, aw.eventId)
+            return aw.added == 0
+        }
+    }
 }
