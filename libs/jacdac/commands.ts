@@ -1,18 +1,19 @@
 namespace jacdac {
     export const REP_ADVERTISEMENT_DATA = 0x0000
+    export const REP_ACK = 0x0001
     // think power-down of peripheral
-    export const REP_ENABLED = 0x0001
+    export const REP_ENABLED = 0x0002
     // state of sensor or actuator, ie servo angle
-    export const REP_STATE = 0x0002
+    export const REP_STATE = 0x0003
     // is the sensor streaming state
-    export const REP_STREAMING = 0x0003
+    export const REP_STREAMING = 0x0004
     // threshold for analog sensor (threshold type in arg; value in payload)
-    export const REP_THRESHOLD = 0x0004
+    export const REP_THRESHOLD = 0x0005
     // event from sensor or on broadcast service
-    export const REP_EVENT = 0x0005
+    export const REP_EVENT = 0x0006
     // request to calibrate sensor
-    export const REP_CALIBRATE = 0x0006
-    export const REP_INTENSITY = 0x0007
+    export const REP_CALIBRATE = 0x0007
+    export const REP_INTENSITY = 0x0008
 
     export const CMD_GET_MASK = 0xC000
     export const CMD_SET_MASK = 0x8000

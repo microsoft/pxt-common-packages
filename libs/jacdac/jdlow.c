@@ -16,6 +16,7 @@
 #define JD_STATUS_RX_ACTIVE 0x01
 #define JD_STATUS_TX_ACTIVE 0x02
 #define TX_QUEUE_SIZE 3
+#define CRC_QUEUE_SIZE 8
 
 static jd_serial_packet_t _rxBuffer[2];
 static jd_serial_packet_t *rxPkt = &_rxBuffer[0];
@@ -32,6 +33,9 @@ jd_diagnostics_t *jd_get_diagnostics(void) {
 }
 
 static jd_packet_t *txQueue[TX_QUEUE_SIZE];
+static uint8_t crcAckPtr;
+static uint16_t crcAcks[CRC_QUEUE_SIZE];
+static jd_packet_t crcPkt;
 
 static void pulse1() {
     log_pin_set(1, 1);
@@ -81,6 +85,7 @@ static void shift_queue() {
     target_disable_irq();
     for (int i = 1; i < TX_QUEUE_SIZE; ++i)
         txQueue[i - 1] = txQueue[i];
+    txQueue[TX_QUEUE_SIZE - 1] = 0;
     target_enable_irq();
 }
 
@@ -125,17 +130,39 @@ static void flush_tx_queue() {
         return;
     }
     status |= JD_STATUS_TX_ACTIVE;
+    jd_packet_t *pkt = txQueue[0];
+    if (crcAckPtr) {
+        pkt = &crcPkt;
+        crcPkt.service_arg = crcAcks[0];
+    }
     target_enable_irq();
 
     signal_write(1);
-    if (uart_start_tx(txQueue[0], txQueue[0]->size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
+    if (uart_start_tx(pkt, pkt->size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
         // ERROR("race on TX");
         jd_diagnostics.bus_lo_error++;
         tx_done();
         return;
     }
 
+    if (pkt == &crcPkt) {
+        target_disable_irq();
+        for (int i = 1; i < crcAckPtr; ++i)
+            crcAcks[i - 1] = crcAcks[i];
+        crcAckPtr--;
+        target_enable_irq();
+    }
+
     set_tick_timer(0);
+}
+
+static void push_crc(uint16_t crc) {
+    if (!crcPkt.service_command)
+        return;
+    target_disable_irq();
+    if (crcAckPtr < CRC_QUEUE_SIZE)
+        crcAcks[crcAckPtr++] = crc;
+    target_enable_irq();
 }
 
 static void set_tick_timer(uint8_t statusClear) {
@@ -145,7 +172,7 @@ static void set_tick_timer(uint8_t statusClear) {
         status &= ~statusClear;
     }
     if ((status & JD_STATUS_RX_ACTIVE) == 0) {
-        if (txQueue[0] && !(status & JD_STATUS_TX_ACTIVE))
+        if ((crcAckPtr || txQueue[0]) && !(status & JD_STATUS_TX_ACTIVE))
             tim_set_timer(jd_random_around(150), flush_tx_queue);
         else
             tim_set_timer(10000, tick);
@@ -229,16 +256,22 @@ void jd_rx_completed(int dataLeft) {
         return;
     }
 
+#if 0
+    // this can be correct
     if (crc == 0) {
         ERROR("crc==0");
         jd_diagnostics.bus_uart_error++;
         return;
     }
+#endif
 
     jd_diagnostics.packets_received++;
 
     // pulse1();
     app_handle_packet(&pkt->header);
+
+    if (pkt->header.service_number & JD_SERVICE_NUMBER_REQUIRES_ACK)
+        push_crc(pkt->header.crc);
 }
 
 int jd_queue_packet(jd_packet_t *pkt) {
@@ -255,6 +288,12 @@ int jd_queue_packet(jd_packet_t *pkt) {
         queued = 1;
     }
     target_enable_irq();
+
+    // is it announce packet, and we didn't initalize crcPkt yet?
+    if (!crcPkt.service_command && pkt->service_number == 0 && pkt->service_command == 0) {
+        crcPkt.service_command = 1;
+        crcPkt.device_identifier = pkt->device_identifier;
+    }
 
     if (!queued) {
         // codal counts packet dropped on recv, this is sent; we never hit that

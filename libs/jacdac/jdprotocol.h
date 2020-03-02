@@ -16,7 +16,11 @@ extern "C" {
 // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
 // (i.e., it's a report from peripheral or a broadcast message)
 #define JD_SERVICE_COMMAND 0x8000
+#define JD_SERVICE_GET_COMMAND 0xC000
 #define JD_SERVICE_REPORT 0x0000
+
+#define JD_SERVICE_NUMBER_REQUIRES_ACK 0x80
+#define JD_SERVICE_NUMBER_MASK 63
 
 typedef struct {
     uint16_t crc;

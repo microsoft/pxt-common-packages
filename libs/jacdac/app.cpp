@@ -127,7 +127,9 @@ void __physSendPacket(Buffer buf) {
         sz = buf->length; // this shouldn't really happen
     }
     memcpy(copy, buf->data, sz);
-    jd_queue_packet(copy);
+    // copy-out CRC
+    if (jd_queue_packet(copy) == 0)
+        memcpy(buf->data, copy, 2);
 }
 
 /**
