@@ -18,9 +18,8 @@ namespace jacdac {
             return buf;
         }
 
-        handleCalibrateCommand(pkt: JDPacket): number {
+        handleCalibrateCommand(pkt: JDPacket) {
             this.button.calibrate();
-            return super.handleCalibrateCommand(pkt);
         }
     }
 
@@ -45,10 +44,9 @@ namespace jacdac {
             return buf;
         }
 
-        handleCalibrateCommand(pkt: JDPacket): number {
+        handleCalibrateCommand(pkt: JDPacket) {
             for (let i = 0; i < this.buttons.length; ++i)
                 this.buttons[i].calibrate();
-            return super.handleCalibrateCommand(pkt);
         }
     }
 }
