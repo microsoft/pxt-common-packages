@@ -68,11 +68,8 @@ namespace jacdac {
         //% blockId=jdjoystickSetButton block="%gamepad button %index=jdjoystickStandardButton|%down=toggleDownUp"
         //% weight=100 group="Gamepad"
         setButton(index: number, down: boolean): void {
-            const buf = control.createBuffer(4);
-            buf[0] = JDGamepadCommand.Button;
-            buf[1] = index;
-            buf[2] = down ? 1 : 0;
-            this.sendPacket(buf);
+            this.sendPackedCommand(
+                JDGamepadCommand.Button, 0, "Bb", [index, down ? 1 : 0])
         }
 
         /**
@@ -83,12 +80,8 @@ namespace jacdac {
         //% index.min=0 index.max=1
         //% blockGap=8 group="Gamepad"
         move(index: number, x: number, y: number): void {
-            const buf = control.createBuffer(4);
-            buf[0] = JDGamepadCommand.Move;
-            buf[1] = index;
-            buf.setNumber(NumberFormat.Int8LE, 2, x);
-            buf.setNumber(NumberFormat.Int8LE, 3, y);
-            this.sendPacket(buf);
+            this.sendPackedCommand(
+                JDGamepadCommand.Move, 0, "Bbb", [index, x, y])
         }
 
         /** 
@@ -100,11 +93,8 @@ namespace jacdac {
         //% value.min=0 value.max=31
         //% group="Gamepad"
         setThrottle(index: number, value: number): void {
-            const buf = control.createBuffer(4);
-            buf[0] = JDGamepadCommand.Move;
-            buf[1] = index;
-            buf.setNumber(NumberFormat.Int8LE, 2, value);
-            this.sendPacket(buf);
+            this.sendPackedCommand(
+                JDGamepadCommand.Throttle, 0, "Bb", [index, value])
         }
     }
 

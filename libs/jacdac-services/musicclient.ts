@@ -16,11 +16,8 @@ namespace jacdac {
         //% weight=76 blockGap=8
         //% group="Music"
         playTone(frequency: number, ms: number): void {
-            const buf = control.createBuffer(9);
-            buf[0] = JDMusicCommand.PlayTone;
-            buf.setNumber(NumberFormat.UInt32LE, 1, frequency);
-            buf.setNumber(NumberFormat.UInt32LE, 5, ms);
-            this.sendPacket(buf);
+            this.sendPackedCommand(
+                JDMusicCommand.PlayTone, 0, "II", [frequency, ms])
         }
     }
 

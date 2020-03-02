@@ -85,30 +85,26 @@ enum JDLightAnimation {
 }
 
 const enum JDKeyboardCommand {
-    None,
-    Type,
-    Key,
-    MediaKey,
-    FunctionKey
+    Type = 0x8100,
+    Key = 0x8101,
+    MediaKey = 0x8102,
+    FunctionKey = 0x8103,
 }
 
 const enum JDMouseCommand {
-    None,
-    Button,
-    Move,
-    TurnWheel
+    Button = 0x8100,
+    Move = 0x8101,
+    TurnWheel = 0x8102,
 }
 
 const enum JDGamepadCommand {
-    None,
-    Button,
-    Move,
-    Throttle
+    Button = 0x8100,
+    Move = 0x8101,
+    Throttle = 0x8102,
 }
 
 const enum JDMusicCommand {
-    None,
-    PlayTone
+    PlayTone = 0x8100,
 }
 
 const enum JDGesture {

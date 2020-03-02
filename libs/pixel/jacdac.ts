@@ -15,7 +15,7 @@ namespace jacdac {
                     this.state.getNumber(NumberFormat.UInt8LE, 3)
                 );
             }
-            pixel.setBrightness(brightness)
+            pixel.setBrightness(this.enabled ? brightness : 0)
             pixel.setColor(color);
         }
     }

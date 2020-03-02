@@ -131,10 +131,15 @@ namespace jacdac {
             this.onDetach()
         }
 
-        protected onAttach() {}
-        protected onDetach() {}
+        protected onAttach() { }
+        protected onDetach() { }
 
         sendCommand(pkt: JDPacket) {
+            pkt._send(this.device)
+        }
+
+        sendPackedCommand(service_command: number, service_argument: number, fmt: string, nums: number[]) {
+            const pkt = JDPacket.packed(service_command, service_argument, fmt, nums)
             pkt._send(this.device)
         }
 

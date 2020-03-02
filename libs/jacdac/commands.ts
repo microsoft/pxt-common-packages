@@ -14,8 +14,8 @@ namespace jacdac {
     export const REP_CALIBRATE = 0x0006
     export const REP_INTENSITY = 0x0007
 
-    export const CMD_GET_MASK = 0x8000
-    export const CMD_SET_MASK = 0xC000
+    export const CMD_GET_MASK = 0xC000
+    export const CMD_SET_MASK = 0x8000
 
     export const CMD_GET_ADVERTISEMENT_DATA = CMD_GET_MASK | REP_ADVERTISEMENT_DATA
     export const CMD_GET_ENABLED = CMD_GET_MASK | REP_ENABLED

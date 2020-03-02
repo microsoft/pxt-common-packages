@@ -6,40 +6,32 @@ namespace jacdac {
             super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
         }
 
-        handlePacket(packet: JDPacket): number {
+        handlePacket(packet: JDPacket) {
             const data = packet.data;
-            const cmd = data.getNumber(NumberFormat.UInt8LE, 0);
-            switch (cmd) {
-                case JDKeyboardCommand.Type: {
-                    let s = "";
-                    for (let i = 1; i < data.length; ++i) {
-                        const c = data[i];
-                        if (c)
-                            s += String.fromCharCode(c);
-                    }
-                    keyboard.type(s);
+            const payload = data.unpack("I")[0];
+            switch (packet.service_command) {
+                case JDKeyboardCommand.Type:
+                    keyboard.type(packet.data.toString());
                     break;
-                }
                 case JDKeyboardCommand.Key: {
-                    const key = String.fromCharCode(data.getNumber(NumberFormat.UInt8LE, 1));
-                    const ev: KeyboardKeyEvent = data.getNumber(NumberFormat.UInt8LE, 2);
+                    const key = String.fromCharCode(payload);
+                    const ev: KeyboardKeyEvent = packet.service_argument;
                     keyboard.key(key, ev);
                     break;
                 }
                 case JDKeyboardCommand.MediaKey: {
-                    const key: KeyboardMediaKey = data.getNumber(NumberFormat.UInt8LE, 1);
-                    const ev: KeyboardKeyEvent = data.getNumber(NumberFormat.UInt8LE, 2);
+                    const key: KeyboardMediaKey = payload;
+                    const ev: KeyboardKeyEvent = packet.service_argument;
                     keyboard.mediaKey(key, ev);
                     break;
                 }
                 case JDKeyboardCommand.FunctionKey: {
-                    const key: KeyboardFunctionKey = data.getNumber(NumberFormat.UInt8LE, 1);
-                    const ev: KeyboardKeyEvent = data.getNumber(NumberFormat.UInt8LE, 2);
+                    const key: KeyboardFunctionKey = payload;
+                    const ev: KeyboardKeyEvent = packet.service_argument;
                     keyboard.functionKey(key, ev);
                     break;
                 }
             }
-            return jacdac.DEVICE_OK;
         }
     }
 
