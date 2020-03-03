@@ -16,6 +16,8 @@
         "commands.ts",
         "config.ts",
         "routing.ts",
+        "packet.ts",
+        "consolehost.ts",
         "service.ts",
         "sensordriver.ts",
         "actuator.ts",
