@@ -157,8 +157,6 @@ static void flush_tx_queue() {
 }
 
 static void push_crc(uint16_t crc) {
-    if (!crcPkt.service_command)
-        return;
     target_disable_irq();
     if (crcAckPtr < CRC_QUEUE_SIZE)
         crcAcks[crcAckPtr++] = crc;
@@ -270,7 +268,10 @@ void jd_rx_completed(int dataLeft) {
     // pulse1();
     app_handle_packet(&pkt->header);
 
-    if (pkt->header.service_number & JD_SERVICE_NUMBER_REQUIRES_ACK)
+    // only ack when requested and only to packets addressed to us
+    if ((pkt->header.service_number & JD_SERVICE_NUMBER_REQUIRES_ACK) &&
+        crcPkt.service_command && // crcPkt initialized
+        crcPkt.device_identifier == pkt->header.device_identifier)
         push_crc(pkt->header.crc);
 }
 
