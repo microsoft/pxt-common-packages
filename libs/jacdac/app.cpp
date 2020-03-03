@@ -83,6 +83,7 @@ extern "C" int app_handle_packet(jd_packet_t *pkt) {
     }
 
     auto buf = (RxPkt *)malloc(sizeof(RxPkt) + pkt->size);
+    buf->next = NULL;
     memcpy(&buf->pkt, pkt, JD_SERIAL_FULL_HEADER_SIZE + pkt->size);
 
     target_disable_irq();
