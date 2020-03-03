@@ -278,12 +278,16 @@ void jd_rx_completed(int dataLeft) {
         push_crc(pkt->header.crc);
 }
 
+void jd_compute_crc(jd_packet_t *pkt) {
+    uint32_t declaredSize = pkt->size + JD_SERIAL_FULL_HEADER_SIZE;
+    pkt->crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
+}
+
 int jd_queue_packet(jd_packet_t *pkt) {
     if (!pkt)
         return -2;
 
-    uint32_t declaredSize = pkt->size + JD_SERIAL_FULL_HEADER_SIZE;
-    pkt->crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
+    jd_compute_crc(pkt);
     int queued = 0;
 
     target_disable_irq();

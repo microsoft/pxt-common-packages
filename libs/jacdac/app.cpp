@@ -134,9 +134,9 @@ int __physId() {
  * Write a buffer to the jacdac physical layer.
  **/
 //%
-int __physSendPacket(Buffer buf) {
+void __physSendPacket(Buffer buf) {
     if (!buf || buf->length < 16)
-        return -2;
+        return;
     int sz = JD_SERIAL_FULL_HEADER_SIZE + buf->data[2];
     auto copy = (jd_packet_t *)malloc(sz);
     if (sz > buf->length) {
@@ -144,13 +144,12 @@ int __physSendPacket(Buffer buf) {
         sz = buf->length; // this shouldn't really happen
     }
     memcpy(copy, buf->data, sz);
-    // copy-out CRC
-    if (jd_queue_packet(copy) == 0) {
-        memcpy(buf->data, copy, 2);
-        return 0;
-    }
 
-    return -1;
+    // copy-out CRC
+    jd_compute_crc(copy);
+    memcpy(buf->data, copy, 2);
+
+    jd_queue_packet(copy);
 }
 
 /**

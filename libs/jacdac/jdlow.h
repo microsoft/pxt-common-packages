@@ -53,6 +53,7 @@ void jd_init(void);
 int jd_queue_packet(jd_packet_t *pkt);
 uint32_t jd_get_num_pending_tx(void);
 uint32_t jd_get_free_queue_space(void);
+void jd_compute_crc(jd_packet_t *pkt);
 // these are to be called by uart implementation
 void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
