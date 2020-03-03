@@ -11,7 +11,7 @@ declare namespace jacdac {
      * Write a buffer to the jacdac physical layer.
      **/
     //% shim=jacdac::__physSendPacket
-    function __physSendPacket(buf: Buffer): void;
+    function __physSendPacket(buf: Buffer): int32;
 
     /**
      * Reads a packet from the queue. NULL if queue is empty

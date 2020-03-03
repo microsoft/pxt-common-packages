@@ -13,8 +13,14 @@
 
 namespace jacdac {
 
+struct RxPkt {
+    RxPkt *next;
+    jd_packet_t pkt;
+};
+
 #define MAX_RX 10
-static Buffer rxQ[MAX_RX];
+
+static RxPkt *rxQ;
 
 #ifdef COUNT_SERVICE
 typedef struct {
@@ -32,7 +38,7 @@ static void queue_cnt() {
         cnt.count++;
         cnt.hd.size = 4;
         cnt.hd.device_identifier = 0x65646f43656b614d;
-        cnt.hd.service_number = 255;
+        cnt.hd.service_number = 0x42;
         auto s = new count_service_pkt_t;
         *s = cnt;
         numSent++;
@@ -67,30 +73,40 @@ extern "C" void app_queue_annouce() {
     Event(DEVICE_ID, EVT_QUEUE_ANNOUNCE);
 }
 
-extern "C" void app_handle_packet(jd_packet_t *pkt) {
+extern "C" int app_handle_packet(jd_packet_t *pkt) {
     // LOG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->size,
     //    pkt->service_number, pkt->service_command, pkt->service_arg);
 
-    if (pkt->service_number == 255) {
+    if (pkt->service_number == 0x42) {
         handle_count_packet(pkt);
-        return;
+        return 0;
     }
 
-    auto buf = mkBuffer((uint8_t *)pkt, pkt->size + JD_SERIAL_FULL_HEADER_SIZE);
+    auto buf = (RxPkt *)malloc(sizeof(RxPkt) + pkt->size);
+    memcpy(&buf->pkt, pkt, JD_SERIAL_FULL_HEADER_SIZE + pkt->size);
 
     target_disable_irq();
-    int i;
-    for (i = 0; i < MAX_RX; ++i)
-        if (!rxQ[i]) {
-            rxQ[i] = buf;
-            break;
-        }
+    auto last = rxQ;
+    int num = 0;
+    while (last && last->next) {
+        last = last->next;
+        num++;
+    }
+    if (num < MAX_RX) {
+        if (last)
+            last->next = buf;
+        else
+            rxQ = buf;
+        buf = NULL;
+    }
     target_enable_irq();
 
-    if (i == MAX_RX) {
-        jd_get_diagnostics()->packets_dropped++;
+    if (buf) {
+        free(buf);
+        return -1;
     } else {
         Event(DEVICE_ID, EVT_DATA_READY);
+        return 0;
     }
 }
 
@@ -117,9 +133,9 @@ int __physId() {
  * Write a buffer to the jacdac physical layer.
  **/
 //%
-void __physSendPacket(Buffer buf) {
+int __physSendPacket(Buffer buf) {
     if (!buf || buf->length < 16)
-        return;
+        return -2;
     int sz = JD_SERIAL_FULL_HEADER_SIZE + buf->data[2];
     auto copy = (jd_packet_t *)malloc(sz);
     if (sz > buf->length) {
@@ -128,8 +144,12 @@ void __physSendPacket(Buffer buf) {
     }
     memcpy(copy, buf->data, sz);
     // copy-out CRC
-    if (jd_queue_packet(copy) == 0)
+    if (jd_queue_packet(copy) == 0) {
         memcpy(buf->data, copy, 2);
+        return 0;
+    }
+
+    return -1;
 }
 
 /**
@@ -137,18 +157,20 @@ void __physSendPacket(Buffer buf) {
  **/
 //%
 Buffer __physGetPacket() {
-    if (!rxQ[0])
+    if (!rxQ)
         return NULL;
 
     target_disable_irq();
-    auto res = rxQ[0];
-    for (int i = 0; i < MAX_RX - 1; ++i) {
-        rxQ[i] = rxQ[i + 1];
-        if (!rxQ[i])
-            break; // last one
-    }
+    auto buf = rxQ;
+    if (buf)
+        rxQ = buf->next;
     target_enable_irq();
 
+    if (!buf)
+        return NULL;
+
+    auto res = mkBuffer(&buf->pkt, buf->pkt.size + JD_SERIAL_FULL_HEADER_SIZE);
+    free(buf);
     return res;
 }
 
@@ -192,7 +214,7 @@ Buffer __physGetDiagnostics() {
 //%
 void __physStop() {
     if (!jd_is_running())
-        return; // nothing to do
+        return;                 // nothing to do
     target_panic(PANIC_JACDAC); // not supported
 }
 

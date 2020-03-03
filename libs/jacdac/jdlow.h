@@ -37,7 +37,7 @@ void uart_wait_high(void);
 void log_pin_set(int line, int v);
 
 void app_queue_annouce(void);
-void app_handle_packet(jd_packet_t *pkt);
+int app_handle_packet(jd_packet_t *pkt);
 void app_packet_sent(jd_packet_t *pkt);
 void app_packet_dropped(jd_packet_t *pkt);
 

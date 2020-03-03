@@ -264,7 +264,12 @@ void jd_rx_completed(int dataLeft) {
     jd_diagnostics.packets_received++;
 
     // pulse1();
-    app_handle_packet(&pkt->header);
+    int err = app_handle_packet(&pkt->header);
+
+    if (err) {
+        jd_diagnostics.packets_dropped++;
+        return;
+    }
 
     // only ack when requested and only to packets addressed to us
     if ((pkt->header.service_number & JD_SERVICE_NUMBER_REQUIRES_ACK) &&
