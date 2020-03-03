@@ -121,11 +121,11 @@ namespace jacdac {
         }
 
         _detach() {
-            if (this.broadcast)
-                return
-            if (!this.device) throw "Oops"
-            this.device = null
-            unattachedClients.push(this)
+            if (!this.broadcast) {
+                if (!this.device) throw "Oops"
+                this.device = null
+                unattachedClients.push(this)
+            }
             this.onDetach()
         }
 
@@ -271,6 +271,10 @@ namespace jacdac {
         const newClients: Client[] = []
         const occupied = Buffer.create(dev.services.length >> 2)
         for (let c of dev.clients) {
+            if (c.broadcast) {
+                c._detach()
+                continue // will re-attach
+            }
             const newClass = dev.services.getNumber(NumberFormat.UInt32LE, c.serviceNumber << 2)
             if (newClass == c.serviceClass) {
                 newClients.push(c)
@@ -324,6 +328,8 @@ namespace jacdac {
                 } else if (pkt.service_command == REP_ACK) {
                     gotAckFor(pkt.service_argument)
                 }
+                if (dev)
+                    dev.lastSeen = control.millis()
                 return
             }
 
@@ -337,7 +343,10 @@ namespace jacdac {
             if (!service_class || service_class == 0xffffffff)
                 return
 
-            const client = dev.clients.find(c => c.serviceNumber == pkt.service_number)
+            const client = dev.clients.find(c =>
+                c.broadcast
+                    ? c.serviceClass == service_class
+                    : c.serviceNumber == pkt.service_number)
             if (client)
                 client.handlePacketOuter(pkt)
         }
