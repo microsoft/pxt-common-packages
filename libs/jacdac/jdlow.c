@@ -15,8 +15,6 @@
 
 #define JD_STATUS_RX_ACTIVE 0x01
 #define JD_STATUS_TX_ACTIVE 0x02
-#define TX_QUEUE_SIZE 3
-#define CRC_QUEUE_SIZE 8
 
 static jd_serial_packet_t _rxBuffer[2];
 static jd_serial_packet_t *rxPkt = &_rxBuffer[0];
@@ -32,9 +30,9 @@ jd_diagnostics_t *jd_get_diagnostics(void) {
     return &jd_diagnostics;
 }
 
-static jd_packet_t *txQueue[TX_QUEUE_SIZE];
+static jd_packet_t *txQueue[JD_TX_QUEUE_SIZE];
 static uint8_t crcAckPtr;
-static uint16_t crcAcks[CRC_QUEUE_SIZE];
+static uint16_t crcAcks[JD_CRC_QUEUE_SIZE];
 static jd_packet_t crcPkt;
 
 static void pulse1() {
@@ -83,9 +81,9 @@ static void tx_done() {
 
 static void shift_queue() {
     target_disable_irq();
-    for (int i = 1; i < TX_QUEUE_SIZE; ++i)
+    for (int i = 1; i < JD_TX_QUEUE_SIZE; ++i)
         txQueue[i - 1] = txQueue[i];
-    txQueue[TX_QUEUE_SIZE - 1] = 0;
+    txQueue[JD_TX_QUEUE_SIZE - 1] = 0;
     target_enable_irq();
 }
 
@@ -107,9 +105,9 @@ uint32_t jd_get_num_pending_tx() {
 }
 
 uint32_t jd_get_free_queue_space() {
-    for (int i = TX_QUEUE_SIZE - 1; i >= 0; ++i) {
+    for (int i = JD_TX_QUEUE_SIZE - 1; i >= 0; ++i) {
         if (txQueue[i])
-            return TX_QUEUE_SIZE - i - 1;
+            return JD_TX_QUEUE_SIZE - i - 1;
     }
     return 0;
 }
@@ -158,7 +156,7 @@ static void flush_tx_queue() {
 
 static void push_crc(uint16_t crc) {
     target_disable_irq();
-    if (crcAckPtr < CRC_QUEUE_SIZE)
+    if (crcAckPtr < JD_CRC_QUEUE_SIZE)
         crcAcks[crcAckPtr++] = crc;
     target_enable_irq();
 }
@@ -284,7 +282,7 @@ int jd_queue_packet(jd_packet_t *pkt) {
     int queued = 0;
 
     target_disable_irq();
-    if (numPending < TX_QUEUE_SIZE) {
+    if (numPending < JD_TX_QUEUE_SIZE) {
         txQueue[numPending++] = pkt;
         queued = 1;
     }

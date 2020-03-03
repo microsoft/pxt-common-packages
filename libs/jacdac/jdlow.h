@@ -4,6 +4,14 @@
 #include "jdprotocol.h"
 #include <hw.h>
 
+#ifndef JD_TX_QUEUE_SIZE
+#define JD_TX_QUEUE_SIZE 4
+#endif
+
+#ifndef JD_CRC_QUEUE_SIZE
+#define JD_CRC_QUEUE_SIZE (JD_TX_QUEUE_SIZE * 2)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
