@@ -1,7 +1,6 @@
 /*
 services from jacdac-v0
 
-consoleservice.ts - need two
 debugging services?
 name service - need to re-implement
 identification service - led blinking
@@ -293,7 +292,7 @@ namespace jacdac {
                         reattach(dev)
                     }
                 } else if (pkt.service_command == REP_ACK) {
-                    _gotAckFor(pkt.service_argument)
+                    _gotAckFor(pkt)
                 }
                 if (dev)
                     dev.lastSeen = control.millis()

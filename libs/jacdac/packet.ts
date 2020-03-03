@@ -1,6 +1,10 @@
 namespace jacdac {
     export const JD_SERIAL_HEADER_SIZE = 16
     export const JD_SERIAL_MAX_PAYLOAD_SIZE = 236
+    export const JD_SERVICE_NUM_REQUIRES_ACK = 0x80
+    export const JD_SERVICE_NUM_MASK = 0x3f
+    export const JD_SERVICE_NUM_INV_MASK = 0xc0
+    export const JD_SERVICE_NUM_IS_MULTICOMMAND = 0x41
 
     const ACK_RETRIES = 3
     let ackAwaiters: AckAwaiter[]
@@ -52,8 +56,8 @@ namespace jacdac {
         }
 
         get multicommand_class() {
-            if (this._buffer.getNumber(NumberFormat.Int32LE, 8) == 0)
-                return this._buffer.getNumber(NumberFormat.UInt32LE, 12)
+            if (this._buffer[3] == JD_SERVICE_NUM_IS_MULTICOMMAND)
+                return this._buffer.getNumber(NumberFormat.UInt32LE, 8)
             return undefined
         }
 
@@ -68,18 +72,18 @@ namespace jacdac {
         }
 
         get requires_ack(): boolean {
-            return this._buffer[3] & 0x80 ? true : false;
+            return this._buffer[3] & JD_SERIAL_MAX_PAYLOAD_SIZE ? true : false;
         }
         set requires_ack(ack: boolean) {
             if (ack != this.requires_ack)
-                this._buffer[3] ^= 0x80
+                this._buffer[3] ^= JD_SERVICE_NUM_REQUIRES_ACK
         }
 
         get service_number(): number {
-            return this._buffer[3] & 63;
+            return this._buffer[3] & JD_SERVICE_NUM_MASK;
         }
         set service_number(service_number: number) {
-            this._buffer[3] = (this._buffer[3] & 0xc0) | service_number;
+            this._buffer[3] = (this._buffer[3] & JD_SERVICE_NUM_INV_MASK) | service_number;
         }
 
         get crc(): number {
@@ -130,8 +134,9 @@ namespace jacdac {
         }
 
         sendAsMultiCommand(service_class: number) {
-            this._buffer.setNumber(NumberFormat.UInt32LE, 8, 0)
-            this._buffer.setNumber(NumberFormat.UInt32LE, 12, service_class)
+            this._buffer[3] = JD_SERVICE_NUM_IS_MULTICOMMAND
+            this._buffer.setNumber(NumberFormat.UInt32LE, 8, service_class)
+            this._buffer.setNumber(NumberFormat.UInt32LE, 12, 0)
             jacdac.__physSendPacket(this._buffer)
         }
 
@@ -164,6 +169,7 @@ namespace jacdac {
         added: number
         numTries = 1
         crc: number
+        srcId: string
         eventId: number
         constructor(
             public pkt: JDPacket,
@@ -193,12 +199,14 @@ namespace jacdac {
         ackAwaiters = ackAwaiters.filter(a => a.added > 0)
     }
 
-    export function _gotAckFor(crc: number) {
+    export function _gotAckFor(pkt: JDPacket) {
         if (!ackAwaiters)
             return
         let numNotify = 0
+        const crc = pkt.crc
+        const srcId = pkt.device_identifier
         for (let a of ackAwaiters) {
-            if (a.crc == crc) {
+            if (a.crc == crc && a.srcId == srcId) {
                 a.added = 0
                 control.raiseEvent(DAL.DEVICE_ID_NOTIFY, a.eventId)
                 numNotify++
