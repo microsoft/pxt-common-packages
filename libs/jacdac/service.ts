@@ -19,7 +19,7 @@ namespace jacdac {
         }
 
         handlePacketOuter(pkt: JDPacket) {
-            // we're not expecting any packets addressed directly to us
+            // do nothing; we're not expecting any packets addressed directly to us
         }
     }
 

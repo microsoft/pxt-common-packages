@@ -15,7 +15,7 @@ namespace jacdac {
     //% fixedInstances
     export class Host {
         protected supressLog: boolean;
-        running = true
+        running: boolean
         controlData: Buffer
         serviceNumber: number
 
@@ -55,6 +55,7 @@ namespace jacdac {
         start() {
             if (this.running)
                 return
+            this.running = true
             jacdac.start();
             this.serviceNumber = hostServices.length
             hostServices.push(this)
@@ -85,6 +86,7 @@ namespace jacdac {
     export class Client {
         requiredDeviceName: string
         device: Device
+        currentDevice: Device
         eventId: number
         broadcast: boolean // do not attach
         serviceNumber: number;
@@ -201,6 +203,8 @@ namespace jacdac {
     let devices_: Device[] = []
     //% whenUsed
     let myDevice: Device
+    //% whenUsed
+    let announceCallbacks: (() => void)[] = [];
 
     class AckAwaiter {
         added: number
@@ -260,11 +264,16 @@ namespace jacdac {
         return myDevice
     }
 
+    export function onAnnounce(cb: () => void) {
+        announceCallbacks.push(cb)
+    }
+
     function queueAnnounce() {
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
         JDPacket.packed(REP_ADVERTISEMENT_DATA, 0, fmt, ids)
             ._send(selfDevice())
+        announceCallbacks.forEach(f => f())
     }
 
     function reattach(dev: Device) {
@@ -305,10 +314,20 @@ namespace jacdac {
 
     export function routePacket(pkt: JDPacket) {
         const devId = pkt.device_identifier
-        if (devId == selfDevice().deviceId) {
+        const multiCommandClass = pkt.multicommand_class
+        if (multiCommandClass) {
+            if (!pkt.is_command)
+                return // only bcast commands supported
+            const h = hostServices.find(s => s.serviceClass == multiCommandClass);
+            if (h && h.running) {
+                // pretend it's directly addressed to us
+                pkt.device_identifier = selfDevice().deviceId
+                h.handlePacketOuter(pkt)
+            }
+        } else if (devId == selfDevice().deviceId) {
             if (!pkt.is_command)
                 return // huh? someone's pretending to be us?
-            const h = hostServices[pkt.service_number - 1]
+            const h = hostServices[pkt.service_number]
             if (h && h.running) h.handlePacketOuter(pkt)
         } else {
             if (pkt.is_command)
@@ -347,8 +366,10 @@ namespace jacdac {
                 c.broadcast
                     ? c.serviceClass == service_class
                     : c.serviceNumber == pkt.service_number)
-            if (client)
+            if (client) {
+                client.currentDevice = dev
                 client.handlePacketOuter(pkt)
+            }
         }
     }
 
@@ -388,11 +409,11 @@ namespace jacdac {
             }
         })
 
-        /*
         console.addListener(function (pri, msg) {
-            jacdac.JACDAC.instance.consoleService.add(<jacdac.JDConsolePriority><number>pri, msg);
+            if (msg[0] != ":")
+                consoleHost.add(pri as number as JDConsolePriority, msg)
         });
-        */
+        consoleHost.start()
     }
 
     export function diagnostics(): jacdac.JDDiagnostics {
@@ -479,6 +500,12 @@ namespace jacdac {
             this._buffer.write(8, idb)
         }
 
+        get multicommand_class() {
+            if (this._buffer.getNumber(NumberFormat.Int32LE, 8) == 0)
+                return this._buffer.getNumber(NumberFormat.UInt32LE, 12)
+            return undefined
+        }
+
         get size(): number {
             return this._buffer[2];
         }
@@ -555,6 +582,12 @@ namespace jacdac {
             jacdac.__physSendPacket(this._buffer)
         }
 
+        sendAsMultiCommand(service_class: number) {
+            this._buffer.setNumber(NumberFormat.UInt32LE, 8, 0)
+            this._buffer.setNumber(NumberFormat.UInt32LE, 12, service_class)
+            jacdac.__physSendPacket(this._buffer)
+        }
+
         // returns true when sent and recieved
         _sendWithAck(dev: Device) {
             if (!dev)
@@ -568,4 +601,63 @@ namespace jacdac {
             return aw.added == 0
         }
     }
+
+    export class ConsoleHost extends Host {
+        private _lastListenerTime: number = 0;
+        minPriority = JDConsolePriority.Silent;
+
+        constructor() {
+            super("conh", LOGGER_DEVICE_CLASS);
+            this._lastListenerTime = 0;
+        }
+
+        handlePacket(packet: JDPacket) {
+            switch (packet.service_command) {
+                case JDConsoleCommand.SetMinPriority:
+                    const now = control.millis()
+                    // lower the priority immedietly, but tighten it only when no one 
+                    // was asking for lower one for some time
+                    if (packet.service_argument <= this.minPriority ||
+                        now - this._lastListenerTime > 1500) {
+                        this.minPriority = packet.service_argument
+                        this._lastListenerTime = now
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        debug(message: string): void {
+            this.add(JDConsolePriority.Debug, message);
+        }
+        log(message: string): void {
+            this.add(JDConsolePriority.Log, message);
+        }
+        warn(message: string): void {
+            this.add(JDConsolePriority.Warning, message);
+        }
+        error(message: string): void {
+            this.add(JDConsolePriority.Error, message);
+        }
+
+        add(priority: JDConsolePriority, message: string): void {
+            if (!message || !message.length || priority < this.minPriority || !this._lastListenerTime)
+                return;
+
+            // no one listening?
+            if (control.millis() - this._lastListenerTime > 3000) {
+                this._lastListenerTime = 0;
+                return;
+            }
+
+            for (let buf of Buffer.chunkedFromUTF8(message, JD_SERIAL_MAX_PAYLOAD_SIZE)) {
+                this.sendReport(JDPacket.from(JDConsoleReport.Message, priority, buf))
+            }
+        }
+    }
+
+
+    //% whenUsed
+    export const consoleHost = new ConsoleHost()
 }

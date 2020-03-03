@@ -12,17 +12,6 @@ namespace jacdac {
             this.isStreaming = false;
         }
 
-        public updateControlPacket() {
-            // send streaming state in control package
-            const buf = this.sensorControlPacket();
-            if (buf)
-                this.controlData.write(1, buf);
-        }
-
-        protected sensorControlPacket(): Buffer {
-            return undefined;
-        }
-
         public handlePacket(packet: JDPacket) {
             this.log(`hpkt ${packet.service_command}`);
             const [val] = packet.data.unpack("i")

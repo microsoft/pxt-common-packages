@@ -107,6 +107,22 @@ const enum JDMusicCommand {
     PlayTone = 0x8100,
 }
 
+const enum JDConsoleReport {
+    Message = 0x0100,
+}
+
+const enum JDConsoleCommand {
+    SetMinPriority = 0x8101,
+}
+
+const enum JDConsolePriority {
+    Debug = 0,
+    Log = 1,
+    Warning = 2,
+    Error = 3,
+    Silent = 4
+}
+
 const enum JDGesture {
     /**
      * Raised when shaken

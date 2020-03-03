@@ -243,6 +243,39 @@ namespace Buffer {
     //% shim=control::createBufferFromUTF8
     export declare function fromUTF8(str: string): Buffer;
 
+    function chunkLen(s: string, off: number, maxlen: number) {
+        let L = Math.idiv(maxlen, 3)
+        let R = maxlen
+
+        if (fromUTF8(s.slice(off, off + R)).length <= maxlen)
+            return R
+
+        while (L < R) {
+            const m = (L + R) >> 1
+            if (m == L)
+                break
+            const ll = fromUTF8(s.slice(off, off + m)).length
+            if (ll <= maxlen)
+                L = m
+            else
+                R = m
+        }
+
+        return L
+    }
+
+    export function chunkedFromUTF8(str: string, maxBytes: number) {
+        if (maxBytes < 3)
+            throw "Oops"
+        const chunks: Buffer[] = []
+        let pos = 0
+        while (pos < str.length) {
+            const len = chunkLen(str, pos, maxBytes)
+            chunks.push(fromUTF8(str.slice(pos, pos + len)))
+            pos += len
+        }
+        return chunks
+    }
 
     /**
      * Create a new buffer initalized to bytes from given array.

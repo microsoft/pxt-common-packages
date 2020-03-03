@@ -3,6 +3,7 @@
     "description": "Services for jacdac",
     "files": [
         "sensorclient.ts",
+        "consoleclient.ts",
         "buttonclient.ts",
         "lightsensorclient.ts",
         "accelerometerclient.ts",

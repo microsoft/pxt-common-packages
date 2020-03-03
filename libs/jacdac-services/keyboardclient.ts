@@ -113,16 +113,9 @@ namespace jacdac {
         //% text.shadowOptions.toString=true
         //% group="Keyboard"
         type(type: string) {
-            // type.length would count 16 bit characters; these can
-            // take up to 3 bytes in UTF8
-            const max = (jacdac.JD_SERIAL_MAX_PAYLOAD_SIZE / 3) | 0
-            if (type.length > max) {
-                for (let i = 0; i < type.length; i += max)
-                    this.type(type.slice(i, i + max))
-            } else {
-                this.sendCommand(JDPacket.from(JDKeyboardCommand.Type, 0,
-                    Buffer.fromUTF8(type)))
-            }
+            const bufs = Buffer.chunkedFromUTF8(type, JD_SERIAL_MAX_PAYLOAD_SIZE)
+            for (let buf of bufs)
+                this.sendCommand(JDPacket.from(JDKeyboardCommand.Type, 0, buf))
         }
 
         /**
