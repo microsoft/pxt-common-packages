@@ -12,7 +12,7 @@
 
 static ZSingleWireSerial *sws;
 static cb_t tim_cb;
-static uint8_t status;
+static volatile uint8_t status;
 static uint16_t currEvent;
 
 #define STATUS_IN_RX 0x01
@@ -26,7 +26,7 @@ static uint32_t *logPinMasks;
 
 static void init_log_pins() {
     logPins = new DevicePin *[NUM_LOG_PINS];
-    logPins[0] = LOOKUP_PIN(A0);
+    logPins[0] = LOOKUP_PIN(A5);
     logPins[1] = LOOKUP_PIN(A1);
     logPins[2] = LOOKUP_PIN(A2);
     logPins[3] = LOOKUP_PIN(A3);
@@ -97,8 +97,17 @@ uint64_t tim_get_micros(void) {
     return current_time_us();
 }
 
+// timer overhead measurements (without any delta compensation)
+// STM32F030 - +5.5us +7.8us (not this code - just raw)
+// ATSAMD51  - +13us +10.8us
+
 void tim_set_timer(int delta, cb_t cb) {
-    delta -= 26; // compensate for overheads
+     // compensate for overheads
+#ifdef NRF52_SERIES
+    delta -= 26;
+#else
+    delta -= 10;
+#endif
     if (delta < 20)
         delta = 20;
     target_disable_irq();
@@ -198,18 +207,19 @@ int uart_start_tx(const void *data, uint32_t numbytes) {
     if (status & STATUS_IN_TX)
         jd_panic();
 
-    if (status & STATUS_IN_RX)
+    target_disable_irq();
+    if (status & STATUS_IN_RX) {
+        target_enable_irq();
         return -1;
-
+    }
     sws->p.eventOn(DEVICE_PIN_EVENT_NONE);
-
-    if (status & STATUS_IN_RX)
-        return -1; // we got hit by the IRQ before we managed to disable it
+    int val = sws->p.getDigitalValue();
+    target_enable_irq();
 
     // try to pull the line low, provided it currently reads as high
-    if (sws->p.getAndSetDigitalValue(0)) {
+    if (val == 0 || sws->p.getAndSetDigitalValue(0)) {
         // we failed - the line was low - start reception
-        // jd_lin_falling() would normally execute from EXTI, which has high
+        // jd_line_falling() would normally execute from EXTI, which has high
         // priority - we simulate this by completely disabling IRQs
         target_disable_irq();
         jd_line_falling();
