@@ -12,9 +12,9 @@
 #define JD_WR_OVERHEAD 0 // TODO
 #elif defined(STM32F4)
 #define JD_TIM_OVERHEAD 3
-#define JD_WR_OVERHEAD 0
+#define JD_WR_OVERHEAD -2
 #endif
 
 #ifndef JD_TIM_OVERHEAD
-#define JD_TIM_OVERHEAD 10
+#define JD_TIM_OVERHEAD 5
 #endif
