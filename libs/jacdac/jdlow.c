@@ -118,7 +118,7 @@ static void tick() {
 }
 
 static void flush_tx_queue() {
-    //pulse1();
+    pulse1();
     check_announce();
 
     LOG("flush %d", status);
@@ -170,7 +170,8 @@ static void set_tick_timer(uint8_t statusClear) {
     if ((status & JD_STATUS_RX_ACTIVE) == 0) {
         if ((crcAckPtr || txQueue[0]) && !(status & JD_STATUS_TX_ACTIVE)) {
             //pulse1();
-            tim_set_timer(jd_random_around(150), flush_tx_queue);
+            //tim_set_timer(150, flush_tx_queue);
+            tim_set_timer(jd_random_around(150) - JD_WR_OVERHEAD, flush_tx_queue);
         } else
             tim_set_timer(10000, tick);
     }

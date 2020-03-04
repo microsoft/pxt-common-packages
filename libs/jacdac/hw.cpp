@@ -100,14 +100,11 @@ uint64_t tim_get_micros(void) {
 // timer overhead measurements (without any delta compensation)
 // STM32F030 - +5.5us +7.8us (not this code - just raw)
 // ATSAMD51  - +13us +10.8us
+// ATSAMD21  - +29us +20us
 
 void tim_set_timer(int delta, cb_t cb) {
      // compensate for overheads
-#ifdef NRF52_SERIES
-    delta -= 26;
-#else
-    delta -= 10;
-#endif
+    delta -= JD_TIM_OVERHEAD;
     if (delta < 20)
         delta = 20;
     target_disable_irq();

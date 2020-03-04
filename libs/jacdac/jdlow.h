@@ -12,6 +12,10 @@
 #define JD_CRC_QUEUE_SIZE (JD_TX_QUEUE_SIZE * 2)
 #endif
 
+#ifndef JD_WR_OVERHEAD
+#define JD_WR_OVERHEAD 0
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
