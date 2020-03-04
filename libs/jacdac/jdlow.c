@@ -50,7 +50,7 @@ static void signal_write(int v) {
 }
 
 static void signal_read(int v) {
-    log_pin_set(0, v);
+    // log_pin_set(0, v);
 }
 static void pulse_log_pin() {}
 
@@ -118,7 +118,7 @@ static void tick() {
 }
 
 static void flush_tx_queue() {
-    pulse1();
+    //pulse1();
     check_announce();
 
     LOG("flush %d", status);
@@ -168,9 +168,10 @@ static void set_tick_timer(uint8_t statusClear) {
         status &= ~statusClear;
     }
     if ((status & JD_STATUS_RX_ACTIVE) == 0) {
-        if ((crcAckPtr || txQueue[0]) && !(status & JD_STATUS_TX_ACTIVE))
+        if ((crcAckPtr || txQueue[0]) && !(status & JD_STATUS_TX_ACTIVE)) {
+            //pulse1();
             tim_set_timer(jd_random_around(150), flush_tx_queue);
-        else
+        } else
             tim_set_timer(10000, tick);
     }
     target_enable_irq();
@@ -195,6 +196,7 @@ static void setup_rx_timeout() {
 }
 
 void jd_line_falling() {
+    pulse1();
     pulse_log_pin();
     signal_read(1);
     // target_disable_irq();
@@ -202,19 +204,27 @@ void jd_line_falling() {
         jd_panic();
     status |= JD_STATUS_RX_ACTIVE;
 
+#if 1
+    // 1us faster on SAMD21
+    uint32_t *p = (uint32_t *)rxPkt;
+    p[0] = 0;
+    p[1] = 0;
+    p[2] = 0;
+    p[3] = 0;
+#else
     memset(rxPkt, 0, JD_SERIAL_FULL_HEADER_SIZE);
+#endif
 
-    pulse1();
     // otherwise we can enable RX in the middle of LO pulse
     uart_wait_high();
-    pulse1();
-    tim_set_timer(100, setup_rx_timeout);
-
-    target_wait_us(2);
+    //pulse1();
+    //target_wait_us(2);
 
     pulse1();
     uart_start_rx(rxPkt, sizeof(*rxPkt));
     pulse1();
+
+    tim_set_timer(100, setup_rx_timeout);
 
     // target_enable_irq();
 }
