@@ -46,19 +46,18 @@ static void queue_cnt() {
     }
 }
 
-static void signal_error() {
-    log_pin_set(2, 1);
-    log_pin_set(2, 0);
-}
-
 static void handle_count_packet(jd_packet_t *pkt) {
     numPkts++;
     count_service_pkt_t *cs = (count_service_pkt_t *)pkt;
     uint32_t c = cs->count;
     if (prevCnt && prevCnt + 1 != c) {
-        signal_error();
+        log_pin_set(2, 1);
         numErrors++;
-        DMESG("ERR %d/%d %d snt:%d", numErrors, numPkts, numErrors * 10000 / numPkts, numSent);
+        if ((numErrors & 0x1f) == 0)
+            DMESG("ERR %d/%d %d snt:%d", numErrors, numPkts, numErrors * 10000 / numPkts, numSent);
+        else
+            DMESG("CNT-ERR");
+        log_pin_set(2, 0);
     }
     prevCnt = c;
 }
