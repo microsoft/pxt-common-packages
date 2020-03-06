@@ -14,7 +14,7 @@
 #define JD_WR_OVERHEAD 10
 #elif defined(STM32F4)
 #define JD_TIM_OVERHEAD 13
-#define JD_WR_OVERHEAD 7
+#define JD_WR_OVERHEAD 8
 #endif
 
 #ifndef JD_TIM_OVERHEAD
