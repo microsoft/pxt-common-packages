@@ -7,8 +7,8 @@
 #define JD_TIM_OVERHEAD 20
 #define JD_WR_OVERHEAD 7
 #elif defined(SAMD21)
-#define JD_TIM_OVERHEAD 29
-#define JD_WR_OVERHEAD 34
+#define JD_TIM_OVERHEAD 38
+#define JD_WR_OVERHEAD 10
 #elif defined(SAMD51)
 #define JD_TIM_OVERHEAD 11
 #define JD_WR_OVERHEAD 10
