@@ -366,10 +366,11 @@ namespace jacdac {
     }
 
     export function start(): void {
-        if (jacdac.__physIsRunning())
-            return
+        if (hostServices)
+            return // already started
 
-        hostServices = [new ControlService()]
+        hostServices = []
+        new ControlService().start()
         unattachedClients = []
         jacdac.__physStart();
         control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
