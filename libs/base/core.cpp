@@ -1985,8 +1985,11 @@ void endTry() {
 void throwValue(TValue v) {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
-    if (!f)
+    if (!f) {
+        DMESG("unhandled exception, value:");
+        anyPrint(v);
         target_panic(PANIC_UNHANDLED_EXCEPTION);
+    }
     ctx->tryFrame = f->parent;
     TryFrame copy = *f;
     app_free(f);
