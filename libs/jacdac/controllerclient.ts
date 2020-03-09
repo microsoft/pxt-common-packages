@@ -13,9 +13,11 @@ namespace jacdac {
         streamingInterval: number;
         stateUpdateHandler: () => void;
         lastServerTime: number;
+        controlData: Buffer
 
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 3);
+            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+            this.controlData = Buffer.create(3)
             this.controlData[0] = JDControllerCommand.ControlClient;
             this.serverAddress = 0;
             this.playerIndex = 0;

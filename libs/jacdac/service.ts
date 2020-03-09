@@ -13,8 +13,8 @@ namespace jacdac {
     export class Broadcast extends Host {
         readonly client: BroadcastClient
 
-        constructor(name: string, serviceClass: number, controlDataLength = 0) {
-            super(name, serviceClass, controlDataLength)
+        constructor(name: string, serviceClass: number) {
+            super(name, serviceClass)
             this.client = new BroadcastClient(this)
         }
 

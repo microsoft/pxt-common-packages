@@ -22,13 +22,12 @@ namespace jacdac {
     export class Host {
         protected supressLog: boolean;
         running: boolean
-        controlData: Buffer
         serviceNumber: number
 
         handlePacketOuter(pkt: JDPacket) {
             if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
                 this.sendReport(
-                    JDPacket.from(REP_ADVERTISEMENT_DATA, 0, this.controlData))
+                    JDPacket.from(REP_ADVERTISEMENT_DATA, 0, this.advertisementData()))
             } else {
                 this.handlePacket(pkt)
             }
@@ -40,6 +39,10 @@ namespace jacdac {
             return this.running
         }
 
+        advertisementData() {
+            return Buffer.create(0)
+        }
+
         sendReport(pkt: JDPacket) {
             pkt.service_number = this.serviceNumber
             pkt._send(myDevice)
@@ -47,11 +50,8 @@ namespace jacdac {
 
         constructor(
             public name: string,
-            public serviceClass: number,
-            controlDataLength = 0
-        ) {
-            this.controlData = Buffer.create(Math.max(0, controlDataLength));
-        }
+            public serviceClass: number
+        ) { }
 
         /**
          * Registers and starts the driver

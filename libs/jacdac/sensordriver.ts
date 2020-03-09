@@ -6,8 +6,8 @@ namespace jacdac {
         public streamingInterval: number; // millis
         public isStreaming: boolean;
 
-        constructor(name: string, deviceClass: number, controlLength = 0) {
-            super(name, deviceClass, controlLength);
+        constructor(name: string, deviceClass: number) {
+            super(name, deviceClass);
             this.streamingInterval = 100;
             this.isStreaming = false;
         }

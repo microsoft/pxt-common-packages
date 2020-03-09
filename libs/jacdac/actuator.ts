@@ -4,8 +4,8 @@ namespace jacdac {
         state: Buffer;
         enabled = true;
 
-        constructor(name: string, deviceClass: number, stateLength: number, controlDataLength?: number) {
-            super(name, deviceClass, controlDataLength);
+        constructor(name: string, deviceClass: number, stateLength: number) {
+            super(name, deviceClass);
             this.stateLength = stateLength;
             this.state = control.createBuffer(this.stateLength);
         }
