@@ -1,7 +1,7 @@
 #include "pxt.h"
 #include "jdlow.h"
 
-#define COUNT_SERVICE 1
+// #define COUNT_SERVICE 1
 
 #define LOG(msg, ...) DMESG("JDAPP: " msg, ##__VA_ARGS__)
 //#define LOG(...) ((void)0)

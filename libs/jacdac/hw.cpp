@@ -3,7 +3,7 @@
 
 #include "ZSingleWireSerial.h"
 
-#define ENABLE_PIN_LOG 1
+//#define ENABLE_PIN_LOG 1
 
 #define DEVICE_ID DEVICE_ID_JACDAC_PHYS
 
