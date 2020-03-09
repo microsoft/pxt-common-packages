@@ -1,4 +1,5 @@
 namespace jacdac {
+    // Generic commands
     export const REP_ADVERTISEMENT_DATA = 0x0000
     export const REP_ACK = 0x0001
     // think power-down of peripheral
@@ -34,4 +35,9 @@ namespace jacdac {
 
     export const ARG_LOW_THRESHOLD = 0x0001
     export const ARG_HIGH_THRESHOLD = 0x0002
+
+    // Commands specific to control service
+    // blink led or otherwise draw user's attention
+    export const CMD_CTRL_IDENTIFY = 0x8100
+
 }

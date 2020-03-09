@@ -94,10 +94,11 @@ namespace jacdac {
         device: Device
         currentDevice: Device
         eventId: number
-        broadcast: boolean // do not attach
+        broadcast: boolean // when true, this.device is never set
         serviceNumber: number;
         protected supressLog: boolean;
         started: boolean;
+        advertisementData: Buffer
 
         constructor(
             public name: string,
@@ -106,12 +107,23 @@ namespace jacdac {
             this.eventId = control.allocateNotifyEvent();
         }
 
+        broadcastDevices() {
+            return devices().filter(d => d.clients.indexOf(this) >= 0)
+        }
+
         isConnected() {
             return !!this.device
         }
 
+        requestAdvertisementData() {
+            this.sendCommand(JDPacket.onlyHeader(CMD_GET_ADVERTISEMENT_DATA, 0))
+        }
+
         handlePacketOuter(pkt: JDPacket) {
-            this.handlePacket(pkt)
+            if (pkt.service_command == REP_ADVERTISEMENT_DATA && pkt.service_argument == 0)
+                this.advertisementData = pkt.data
+            else
+                this.handlePacket(pkt)
         }
 
         handlePacket(pkt: JDPacket) { }
@@ -190,13 +202,31 @@ namespace jacdac {
         }
     }
 
+    //% whenUsed
+    export let onIdentifyRequest = () => {
+        const led = pins.pinByCfg(DAL.CFG_PIN_LED);
+        if (!led)
+            return
+        for (let i = 0; i < 10; ++i) {
+            led.digitalWrite(true)
+            pause(100)
+            led.digitalWrite(false)
+            pause(100)
+        }
+    }
+
     class ControlService extends Host {
         constructor() {
             super("ctrl", 0)
         }
         handlePacketOuter(pkt: JDPacket) {
-            if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
-                queueAnnounce()
+            switch (pkt.service_command) {
+                case CMD_GET_ADVERTISEMENT_DATA:
+                    queueAnnounce()
+                    break
+                case CMD_CTRL_IDENTIFY:
+                    control.runInBackground(onIdentifyRequest)
+                    break
             }
         }
     }
