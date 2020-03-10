@@ -161,6 +161,8 @@ namespace jacdac {
         protected onDetach() { }
 
         sendCommand(pkt: JDPacket) {
+            if (this.serviceNumber == null)
+                return
             pkt.service_number = this.serviceNumber
             pkt._send(this.device)
         }
