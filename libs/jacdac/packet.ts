@@ -65,7 +65,7 @@ namespace jacdac {
             return this._buffer[2];
         }
         set size(size: number) {
-            if (0 < size && size <= JD_SERIAL_MAX_PAYLOAD_SIZE)
+            if (0 <= size && size <= JD_SERIAL_MAX_PAYLOAD_SIZE)
                 this._buffer[2] = size
             else
                 error("invalid size")
