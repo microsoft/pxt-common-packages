@@ -6,6 +6,7 @@ namespace jacdac {
         }
 
         private setState(cmd: number, value: number) {
+            this.start()
             this.sendCommand(JDPacket.packed(CMD_SET_STATE, 0, "bI", [cmd, value]))
         }
 
@@ -18,6 +19,7 @@ namespace jacdac {
         //% weight=2 blockGap=8
         //% group="Light"
         setBrightness(brightness: number): void {
+            this.start()
             this.sendCommand(JDPacket.onlyHeader(CMD_SET_INTENSITY, brightness))
         }
 
