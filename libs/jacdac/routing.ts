@@ -196,7 +196,9 @@ namespace jacdac {
         clients: Client[] = []
         private _name: string
 
-        constructor(public deviceId: string) { }
+        constructor(public deviceId: string) {
+            devices_.push(this)
+        }
 
         get name() {
             if (this._name === undefined)
@@ -266,7 +268,7 @@ namespace jacdac {
     }
 
     function reattach(dev: Device) {
-        log(`reattching services to ${dev.toString()}`)
+        log(`reattaching services to ${dev.toString()}`)
         const newClients: Client[] = []
         const occupied = Buffer.create(dev.services.length >> 2)
         for (let c of dev.clients) {
@@ -301,7 +303,7 @@ namespace jacdac {
     }
 
     export function routePacket(pkt: JDPacket) {
-        log("route: " + pkt.toString())
+        // log("route: " + pkt.toString())
         const devId = pkt.device_identifier
         const multiCommandClass = pkt.multicommand_class
         if (multiCommandClass) {
@@ -393,7 +395,6 @@ namespace jacdac {
         jacdac.__physStart();
         control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
             let buf: Buffer;
-            log("pkt")
             while (null != (buf = jacdac.__physGetPacket())) {
                 routePacket(new JDPacket(buf))
             }
