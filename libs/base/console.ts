@@ -27,8 +27,8 @@ namespace console {
     ];
 
     export function add(priority: ConsolePriority, message: any) {
-        let text = inspect(message);
         if (priority < minPriority) return;
+        let text = inspect(message);
         // add new line
         text += "\n";
         // send to listeners
