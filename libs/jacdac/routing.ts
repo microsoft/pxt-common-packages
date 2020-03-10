@@ -18,6 +18,10 @@ namespace jacdac {
     //% whenUsed
     let announceCallbacks: (() => void)[] = [];
 
+    function log(msg: string) {
+        console.add(jacdac.consolePriority, msg);
+    }
+
     //% fixedInstances
     export class Host {
         protected supressLog: boolean;
@@ -81,10 +85,10 @@ namespace jacdac {
         }
 
         protected log(text: string) {
-            if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
-                let dev = selfDevice().toString()
-                console.add(jacdac.consolePriority, `${dev}:${this.serviceClass}>${this.name}>${text}`);
-            }
+            if (this.supressLog || jacdac.consolePriority < console.minPriority)
+                return
+            let dev = selfDevice().toString()
+            console.add(jacdac.consolePriority, `${dev}:${this.serviceClass}>${this.name}>${text}`);
         }
     }
 
@@ -128,21 +132,25 @@ namespace jacdac {
 
         handlePacket(pkt: JDPacket) { }
 
-        _attach(dev: Device) {
-            if (this.device) throw "Oops"
+        _attach(dev: Device, serviceNum: number) {
+            if (this.device) throw "Invalid attach"
             if (!this.broadcast) {
                 if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
                     return false // don't attach
                 this.device = dev
+                this.serviceNumber = serviceNum
+                unattachedClients.removeElement(this)
             }
+            log(`attached ${dev.toString()}/${serviceNum} to client ${this.name}`)
             dev.clients.push(this)
             this.onAttach()
             return true
         }
 
         _detach() {
+            log(`dettached ${this.name}`)
             if (!this.broadcast) {
-                if (!this.device) throw "Oops"
+                if (!this.device) throw "Invalid detach"
                 this.device = null
                 unattachedClients.push(this)
             }
@@ -167,11 +175,11 @@ namespace jacdac {
         }
 
         protected log(text: string) {
-            if (!this.supressLog || jacdac.consolePriority < console.minPriority) {
-                let dev = selfDevice().toString()
-                let other = this.device ? this.device.toString() : "<unbound>"
-                console.add(jacdac.consolePriority, `${dev}/${other}:${this.serviceClass}>${this.name}>${text}`);
-            }
+            if (this.supressLog || jacdac.consolePriority < console.minPriority)
+                return
+            let dev = selfDevice().toString()
+            let other = this.device ? this.device.toString() : "<unbound>"
+            console.add(jacdac.consolePriority, `${dev}/${other}:${this.serviceClass}>${this.name}>${text}`);
         }
 
         start() {
@@ -186,19 +194,23 @@ namespace jacdac {
         services: Buffer
         lastSeen: number
         clients: Client[] = []
+        private _name: string
 
         constructor(public deviceId: string) { }
 
         get name() {
-            return settings.readString(devNameSettingPrefix + this.deviceId)
+            if (this._name === undefined)
+                this._name = settings.readString(devNameSettingPrefix + this.deviceId) || null
+            return this._name
         }
 
         set name(n: string) {
+            this._name = n
             settings.writeString(devNameSettingPrefix + this.deviceId, n)
         }
 
         toString() {
-            return this.name || this.deviceId
+            return this.deviceId + (this.name ? ` (${this.name})` : ``)
         }
     }
 
@@ -254,6 +266,7 @@ namespace jacdac {
     }
 
     function reattach(dev: Device) {
+        log(`reattching services to ${dev.toString()}`)
         const newClients: Client[] = []
         const occupied = Buffer.create(dev.services.length >> 2)
         for (let c of dev.clients) {
@@ -280,21 +293,20 @@ namespace jacdac {
             const service_class = dev.services.getNumber(NumberFormat.UInt32LE, i)
             for (let cc of unattachedClients) {
                 if (cc.serviceClass == service_class) {
-                    if (cc._attach(dev)) {
-                        cc.serviceNumber = i >> 2
+                    if (cc._attach(dev, i >> 2))
                         break
-                    }
                 }
             }
         }
     }
 
     export function routePacket(pkt: JDPacket) {
+        log("route: " + pkt.toString())
         const devId = pkt.device_identifier
         const multiCommandClass = pkt.multicommand_class
         if (multiCommandClass) {
             if (!pkt.is_command)
-                return // only bcast commands supported
+                return // only commands supported in multi-command
             const h = hostServices.find(s => s.serviceClass == multiCommandClass);
             if (h && h.running) {
                 // pretend it's directly addressed to us
@@ -305,7 +317,10 @@ namespace jacdac {
             if (!pkt.is_command)
                 return // huh? someone's pretending to be us?
             const h = hostServices[pkt.service_number]
-            if (h && h.running) h.handlePacketOuter(pkt)
+            if (h && h.running) {
+                log(`handle pkt at ${h.name} cmd=${pkt.service_command}`)
+                h.handlePacketOuter(pkt)
+            }
         } else {
             if (pkt.is_command)
                 return // it's a command, and it's not for us
@@ -344,6 +359,7 @@ namespace jacdac {
                     ? c.serviceClass == service_class
                     : c.serviceNumber == pkt.service_number)
             if (client) {
+                log(`handle pkt at ${client.name} rep=${pkt.service_command}`)
                 client.currentDevice = dev
                 client.handlePacketOuter(pkt)
             }
@@ -369,12 +385,15 @@ namespace jacdac {
         if (hostServices)
             return // already started
 
+        log("jacdac starting")
+
         hostServices = []
         new ControlService().start()
         unattachedClients = []
         jacdac.__physStart();
         control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
             let buf: Buffer;
+            log("pkt")
             while (null != (buf = jacdac.__physGetPacket())) {
                 routePacket(new JDPacket(buf))
             }

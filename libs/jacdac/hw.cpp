@@ -130,7 +130,6 @@ static void setup_exti() {
 
 static void line_falling(int lineV) {
     pin_log(1);
-    // LOG("line %d @%d", lineV, (int)tim_get_micros());
     if (lineV)
         return; // rising
 

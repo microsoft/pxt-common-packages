@@ -73,8 +73,8 @@ extern "C" void app_queue_annouce() {
 }
 
 extern "C" int app_handle_packet(jd_packet_t *pkt) {
-    // LOG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->size,
-    //    pkt->service_number, pkt->service_command, pkt->service_arg);
+    // DMESG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->service_number,
+    //      pkt->size, pkt->service_command, pkt->service_arg);
 
     if (pkt->service_number == 0x42) {
         handle_count_packet(pkt);
@@ -126,7 +126,7 @@ extern "C" void app_packet_dropped(jd_packet_t *pkt) {
  **/
 //%
 int __physId() {
-    return DEVICE_ID_JACDAC;
+    return DEVICE_ID;
 }
 
 /**

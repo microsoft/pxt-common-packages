@@ -65,6 +65,7 @@ static void check_announce() {
 }
 
 void jd_init() {
+    DMESG("JD: init");
     tim_init();
     set_tick_timer(0);
     uart_init();
@@ -202,6 +203,7 @@ static void setup_rx_timeout() {
 }
 
 void jd_line_falling() {
+    LOG("line fall");
     pulse1();
     pulse_log_pin();
     signal_read(1);
@@ -239,6 +241,7 @@ void jd_rx_completed(int dataLeft) {
     if (annCounter++ == 0)
         check_announce();
 
+    LOG("rx cmpl");
     jd_serial_packet_t *pkt = rxPkt;
 
     if (rxPkt == &_rxBuffer[0])
