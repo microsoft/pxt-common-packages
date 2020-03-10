@@ -83,6 +83,8 @@ namespace jacdac {
             return this._buffer[3] & JD_SERVICE_NUM_MASK;
         }
         set service_number(service_number: number) {
+            if (service_number == null)
+                throw "service_number not set"
             this._buffer[3] = (this._buffer[3] & JD_SERVICE_NUM_INV_MASK) | service_number;
         }
 
@@ -123,7 +125,10 @@ namespace jacdac {
         }
 
         toString(): string {
-            return this._buffer.toHex();
+            let msg = `${this.device_identifier}/${this.service_number}: ${this.service_command}(${this.service_argument}) sz=${this.size}`
+            if (this.size < 20) msg += ": " + this.data.toHex()
+            else msg += ": " + this.data.slice(0, 20).toHex() + "..."
+            return msg
         }
 
         _send(dev: Device) {
