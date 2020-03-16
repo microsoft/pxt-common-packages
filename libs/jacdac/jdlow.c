@@ -196,7 +196,8 @@ static void rx_timeout() {
 }
 
 static void setup_rx_timeout() {
-    if (rxPkt->header.crc == 0)
+    uint32_t *p = (uint32_t *)rxPkt;
+    if (p[0] == 0 && p[1] == 0)
         rx_timeout(); // didn't get any data after lo-pulse
     // got the size - set timeout for whole packet
     tim_set_timer((rxPkt->header.size + JD_SERIAL_FULL_HEADER_SIZE) * 12 + 60, rx_timeout);
