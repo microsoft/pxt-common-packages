@@ -20,7 +20,10 @@ extern "C" {
 #define JD_SERVICE_REPORT 0x0000
 
 #define JD_SERVICE_NUMBER_REQUIRES_ACK 0x80
-#define JD_SERVICE_NUMBER_MASK 63
+#define JD_SERVICE_NUMBER_MASK 0x3f
+#define JD_SERVICE_NUMBER_COMPRESSED 0x3f
+#define JD_SERVICE_NUMBER_MULTICOMMAND 0x3e
+
 
 typedef struct {
     uint16_t crc;

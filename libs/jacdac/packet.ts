@@ -4,7 +4,7 @@ namespace jacdac {
     export const JD_SERVICE_NUM_REQUIRES_ACK = 0x80
     export const JD_SERVICE_NUM_MASK = 0x3f
     export const JD_SERVICE_NUM_INV_MASK = 0xc0
-    export const JD_SERVICE_NUM_IS_MULTICOMMAND = 0x41
+    export const JD_SERVICE_NUM_IS_MULTICOMMAND = 0x3e
 
     const ACK_RETRIES = 3
     let ackAwaiters: AckAwaiter[]
@@ -115,6 +115,11 @@ namespace jacdac {
             this._buffer.write(JD_SERIAL_HEADER_SIZE, buf)
         }
 
+        // same as this.data.getNumber but faster
+        getNumber(fmt: NumberFormat, offset: number) {
+            return this._buffer.getNumber(fmt, offset + JD_SERIAL_HEADER_SIZE)
+        }
+
         pack(fmt: string, nums: number[]) {
             this.size = Buffer.packedSize(fmt)
             this._buffer.packAt(JD_SERIAL_HEADER_SIZE, fmt, nums)
@@ -204,20 +209,26 @@ namespace jacdac {
         ackAwaiters = ackAwaiters.filter(a => a.added > 0)
     }
 
-    export function _gotAckFor(pkt: JDPacket) {
+    function hasAck(pkt: JDPacket, crc: number) {
+        for (let i = 0; i < pkt.size; i += 2)
+            if (pkt.getNumber(NumberFormat.UInt16LE, i) == crc)
+                return true
+        return false
+    }
+
+    export function _gotAck(pkt: JDPacket) {
         if (!ackAwaiters)
             return
         let numNotify = 0
-        const crc = pkt.crc
         const srcId = pkt.device_identifier
         for (let a of ackAwaiters) {
-            if (a.crc == crc && a.srcId == srcId) {
+            if (a.srcId == srcId && hasAck(pkt, a.crc)) {
                 a.added = 0
                 control.raiseEvent(DAL.DEVICE_ID_NOTIFY, a.eventId)
                 numNotify++
             }
         }
         if (numNotify)
-            ackAwaiters = ackAwaiters.filter(a => a.crc != crc)
+            ackAwaiters = ackAwaiters.filter(a => a.added !== 0)
     }
 }

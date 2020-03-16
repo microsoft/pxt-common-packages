@@ -4,16 +4,25 @@
 #include "jdprotocol.h"
 #include <hw.h>
 
+// each entry is 4 bytes of RAM
 #ifndef JD_TX_QUEUE_SIZE
 #define JD_TX_QUEUE_SIZE 4
 #endif
 
+// each entry is 2 bytes of RAM
 #ifndef JD_CRC_QUEUE_SIZE
 #define JD_CRC_QUEUE_SIZE (JD_TX_QUEUE_SIZE * 2)
 #endif
 
+// adds 256 byte RAM
+#ifndef JD_COMPRESS_ON_SEND
+#define JD_COMPRESS_ON_SEND 1
+#endif
+
+// this is timing overhead (in us) of starting transmission
+// see set_tick_timer() for how to calibrate this
 #ifndef JD_WR_OVERHEAD
-#define JD_WR_OVERHEAD 0
+#define JD_WR_OVERHEAD 8
 #endif
 
 #ifdef __cplusplus

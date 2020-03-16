@@ -341,7 +341,7 @@ namespace jacdac {
                         reattach(dev)
                     }
                 } else if (pkt.service_command == REP_ACK) {
-                    _gotAckFor(pkt)
+                    _gotAck(pkt)
                 }
                 if (dev)
                     dev.lastSeen = control.millis()
