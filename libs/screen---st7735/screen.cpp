@@ -95,10 +95,12 @@ class WDisplay {
         lcd->configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
+        DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
+        int sz = width * height;
+        width = doubleSize ? (width << 1) : width;
+        height = doubleSize ? (height << 1) : height;
         displayHeight = height;
         setAddrMain();
-        DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
-        int sz = doubleSize ? (width >> 1) * (height >> 1) : width * height;
         screenBuf = (uint8_t *)app_alloc(sz / 2 + 20);
 
         lastStatus = NULL;
