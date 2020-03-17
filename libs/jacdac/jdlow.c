@@ -15,20 +15,17 @@
 
 #define JD_STATUS_RX_ACTIVE 0x01
 #define JD_STATUS_TX_ACTIVE 0x02
-#define JD_STATUS_TX_COMPRESSED 0x04
-#define JD_STATUS_TX_CRC 0x08
+#define JD_STATUS_TX_QUEUED 0x04
 
 static jd_serial_packet_t _rxBuffer[2];
 static jd_serial_packet_t *rxPkt = &_rxBuffer[0];
 static void set_tick_timer(uint8_t statusClear);
-static uint64_t nextAnnounce;
 static volatile uint8_t status;
-static volatile uint8_t numPending;
-static uint8_t annCounter;
 
-#if JD_COMPRESS_ON_SEND
-static jd_serial_packet_t sendBuffer;
-#endif
+static jd_packet_t *txPkt;
+static uint64_t nextAnnounce;
+static uint8_t txPending;
+static uint8_t annCounter;
 
 static jd_diagnostics_t jd_diagnostics;
 
@@ -36,13 +33,6 @@ jd_diagnostics_t *jd_get_diagnostics(void) {
     jd_diagnostics.bus_state = 0; // TODO?
     return &jd_diagnostics;
 }
-
-static jd_packet_t *txQueue[JD_TX_QUEUE_SIZE];
-static uint8_t crcAckPtr;
-struct {
-    jd_packet_t header;
-    uint16_t acks[JD_CRC_QUEUE_SIZE];
-} crcPkt;
 
 static void pulse1() {
     log_pin_set(1, 1);
@@ -86,98 +76,20 @@ int jd_is_running() {
 
 static void tx_done() {
     signal_write(0);
-    set_tick_timer(JD_STATUS_TX_ACTIVE | JD_STATUS_TX_COMPRESSED | JD_STATUS_TX_CRC);
-}
-
-static void shift_queue() {
-    target_disable_irq();
-    if (numPending == 0)
-        jd_panic();
-    jd_packet_t *prev = txQueue[0];
-    for (int i = 1; i < numPending; ++i)
-        txQueue[i - 1] = txQueue[i];
-    numPending--;
-    target_enable_irq();
-    app_packet_sent(prev);
+    set_tick_timer(JD_STATUS_TX_ACTIVE);
 }
 
 void jd_tx_completed(int errCode) {
     LOG("tx done: %d", errCode);
-    if (status & (JD_STATUS_TX_COMPRESSED | JD_STATUS_TX_CRC)) {
-        // everything done already
-    } else {
-#if JD_COMPRESS_ON_SEND
-        // there should be no uncompressed send
-        jd_panic();
-#else
-        shift_queue();
-#endif
-    }
+    app_packet_sent(txPkt);
+    txPkt = NULL;
     tx_done();
-}
-
-uint32_t jd_get_num_pending_tx() {
-    return numPending;
-}
-
-uint32_t jd_get_free_queue_space() {
-    return JD_TX_QUEUE_SIZE - numPending;
 }
 
 static void tick() {
     check_announce();
     set_tick_timer(0);
 }
-
-#if JD_COMPRESS_ON_SEND
-static int compress_packets(jd_packet_t *pkt) {
-    if (pkt == &crcPkt.header)
-        return 0;
-
-    int numPkts;
-    for (numPkts = 0; numPkts < numPending; ++numPkts) {
-        if (pkt->device_identifier != txQueue[numPkts]->device_identifier)
-            break;
-    }
-    if (numPkts <= 1)
-        goto single;
-
-    int ptr = 0;
-    int i;
-    for (i = 0; i < numPkts; ++i) {
-        jd_packet_t *src = txQueue[i];
-        if (ptr + src->size + 6 > JD_SERIAL_PAYLOAD_SIZE)
-            break;
-        sendBuffer.data[ptr++] = src->size;
-        sendBuffer.data[ptr++] = src->service_number;
-        if (i != 0) {
-            memcpy(sendBuffer.data + ptr, &src->service_command, 4);
-            ptr += 4;
-        }
-        memcpy(sendBuffer.data + ptr, &src->data, src->size);
-        ptr += src->size;
-    }
-
-    numPkts = i;
-    if (numPkts <= 1)
-        // we managed to pack at most one, just send it as is
-        goto single;
-
-    memcpy(&sendBuffer, pkt, JD_SERIAL_FULL_HEADER_SIZE);
-    sendBuffer.header.size = ptr;
-    sendBuffer.header.service_number = JD_SERVICE_NUMBER_COMPRESSED;
-
-    target_disable_irq();
-    status |= JD_STATUS_TX_COMPRESSED;
-    target_enable_irq();
-
-    return numPkts;
-
-single:
-    memcpy(&sendBuffer, pkt, JD_SERIAL_FULL_HEADER_SIZE + pkt->size);
-    return 1;
-}
-#endif
 
 static void flush_tx_queue() {
     // pulse1();
@@ -191,46 +103,22 @@ static void flush_tx_queue() {
         return;
     }
     status |= JD_STATUS_TX_ACTIVE;
-    jd_packet_t *pkt = txQueue[0];
-    if (crcAckPtr) {
-        pkt = &crcPkt.header;
-        pkt->size = crcAckPtr * 2;
-        status |= JD_STATUS_TX_CRC;
-    }
     target_enable_irq();
 
-#if JD_COMPRESS_ON_SEND
-    int numPkts = compress_packets(pkt);
-    if (numPkts)
-        pkt = &sendBuffer.header;
-#endif
+    txPending = 0;
+    if (!txPkt)
+        txPkt = app_pull_packet();
 
     signal_write(1);
-    if (uart_start_tx(pkt, pkt->size + JD_SERIAL_FULL_HEADER_SIZE) < 0) {
+    if (uart_start_tx(txPkt, JD_PACKET_SIZE(txPkt)) < 0) {
         // ERROR("race on TX");
         jd_diagnostics.bus_lo_error++;
         tx_done();
+        txPending = 1;
         return;
     }
 
-    // we managed to start transmission; update state to reflect that
-    if (pkt == &crcPkt.header)
-        crcAckPtr = 0;
-#if JD_COMPRESS_ON_SEND
-    else if (numPkts) {
-        while (numPkts--)
-            shift_queue();
-    }
-#endif
-
     set_tick_timer(0);
-}
-
-static void push_crc(uint16_t crc) {
-    target_disable_irq();
-    if (crcAckPtr < JD_CRC_QUEUE_SIZE)
-        crcPkt.acks[crcAckPtr++] = crc;
-    target_enable_irq();
 }
 
 static void set_tick_timer(uint8_t statusClear) {
@@ -240,15 +128,18 @@ static void set_tick_timer(uint8_t statusClear) {
         status &= ~statusClear;
     }
     if ((status & JD_STATUS_RX_ACTIVE) == 0) {
-        if ((crcAckPtr || txQueue[0]) && !(status & JD_STATUS_TX_ACTIVE)) {
+        if (txPending && !(status & JD_STATUS_TX_ACTIVE)) {
             pulse1();
             // the JD_WR_OVERHEAD value should be such, that the time from pulse1() above
             // to beginning of low-pulse generated by the current device is exactly 150us
             // (when the line below is uncommented)
             // tim_set_timer(150 - JD_WR_OVERHEAD, flush_tx_queue);
+            status |= JD_STATUS_TX_QUEUED;
             tim_set_timer(jd_random_around(150) - JD_WR_OVERHEAD, flush_tx_queue);
-        } else
+        } else {
+            status &= ~JD_STATUS_TX_QUEUED;
             tim_set_timer(10000, tick);
+        }
     }
     target_enable_irq();
 }
@@ -269,7 +160,7 @@ static void setup_rx_timeout() {
     if (p[0] == 0 && p[1] == 0)
         rx_timeout(); // didn't get any data after lo-pulse
     // got the size - set timeout for whole packet
-    tim_set_timer((rxPkt->header.size + JD_SERIAL_FULL_HEADER_SIZE) * 12 + 60, rx_timeout);
+    tim_set_timer(JD_PACKET_SIZE(&rxPkt->header) * 12 + 60, rx_timeout);
 }
 
 void jd_line_falling() {
@@ -277,21 +168,19 @@ void jd_line_falling() {
     pulse1();
     pulse_log_pin();
     signal_read(1);
+
     // target_disable_irq();
+    // no need to disable IRQ - we're at the highest IRQ level
     if (status & JD_STATUS_RX_ACTIVE)
         jd_panic();
     status |= JD_STATUS_RX_ACTIVE;
 
-#if 1
-    // 1us faster on SAMD21
+    // 1us faster than memset() on SAMD21
     uint32_t *p = (uint32_t *)rxPkt;
     p[0] = 0;
     p[1] = 0;
     p[2] = 0;
     p[3] = 0;
-#else
-    memset(rxPkt, 0, JD_SERIAL_FULL_HEADER_SIZE);
-#endif
 
     // otherwise we can enable RX in the middle of LO pulse
     uart_wait_high();
@@ -305,38 +194,6 @@ void jd_line_falling() {
     tim_set_timer(100, setup_rx_timeout);
 
     // target_enable_irq();
-}
-
-static int decompress_and_handle(jd_serial_packet_t *pkt) {
-    if ((pkt->header.service_number & JD_SERVICE_NUMBER_MASK) != JD_SERVICE_NUMBER_COMPRESSED)
-        return app_handle_packet(&pkt->header);
-
-    int totalSz = pkt->header.size;
-    int globalErr = 0;
-    for (int i = 0; i < totalSz;) {
-        int localSz = pkt->data[i];
-        pkt->header.size = localSz;
-        if (i + localSz + 6 > totalSz) {
-            ERROR("compression overflow");
-            return -1;
-        }
-        pkt->header.service_number = pkt->data[i + 1];
-        i += 2;
-        if (i != 2) {
-            // don't copy cmd/arg on the first one
-            memcpy(&pkt->header.service_command, &pkt->data[i], 4);
-            i += 4;
-        }
-        // don't memcpy, as the regions may overlap; don't trust memmove()
-        for (int j = 0; j < localSz; ++j)
-            pkt->header.data[j] = pkt->data[i++];
-        pkt->header.crc = jd_crc16((uint8_t *)pkt + 2, localSz + JD_SERIAL_FULL_HEADER_SIZE - 2);
-
-        int err = app_handle_packet(&pkt->header);
-        if (err)
-            globalErr = err;
-    }
-    return globalErr;
 }
 
 void jd_rx_completed(int dataLeft) {
@@ -361,7 +218,7 @@ void jd_rx_completed(int dataLeft) {
     }
 
     uint32_t txSize = sizeof(*pkt) - dataLeft;
-    uint32_t declaredSize = pkt->header.size + JD_SERIAL_FULL_HEADER_SIZE;
+    uint32_t declaredSize = JD_PACKET_SIZE(&pkt->header);
     if (txSize < declaredSize) {
         ERROR("pkt too short");
         jd_diagnostics.bus_uart_error++;
@@ -376,56 +233,21 @@ void jd_rx_completed(int dataLeft) {
 
     jd_diagnostics.packets_received++;
 
-    int savedCrc = pkt->header.crc;
-
     // pulse1();
-    int err = decompress_and_handle(pkt);
+    int err = app_handle_packet(&pkt->header);
 
-    if (err) {
+    if (err)
         jd_diagnostics.packets_dropped++;
-        return;
-    }
-
-    // only ack when requested and only to packets addressed to us
-    if ((pkt->header.service_number & JD_SERVICE_NUMBER_REQUIRES_ACK) &&
-        crcPkt.header.service_command && // crcPkt initialized
-        crcPkt.header.device_identifier == pkt->header.device_identifier)
-        push_crc(savedCrc);
 }
 
 void jd_compute_crc(jd_packet_t *pkt) {
-    uint32_t declaredSize = pkt->size + JD_SERIAL_FULL_HEADER_SIZE;
-    pkt->crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
+    pkt->crc = jd_crc16((uint8_t *)pkt + 2, JD_PACKET_SIZE(pkt) - 2);
 }
 
-int jd_queue_packet(jd_packet_t *pkt) {
-    if (!pkt)
-        return -2;
-
-    jd_compute_crc(pkt);
-    int queued = 0;
-
+void jd_packet_ready() {
     target_disable_irq();
-    if (numPending < JD_TX_QUEUE_SIZE) {
-        txQueue[numPending++] = pkt;
-        queued = 1;
-    }
+    txPending = 1;
+    if (status == 0)
+        set_tick_timer(0);
     target_enable_irq();
-
-    // is it announce packet, and we didn't initalize crcPkt yet?
-    if (!crcPkt.header.service_command && pkt->service_number == 0 && pkt->service_command == 0) {
-        crcPkt.header.service_command = 1;
-        crcPkt.header.device_identifier = pkt->device_identifier;
-    }
-
-    if (!queued) {
-        // codal counts packet dropped on recv, this is sent; we never hit that
-        jd_diagnostics.packets_dropped++;
-        app_packet_dropped(pkt);
-        ERROR("TX overflow");
-        return -1;
-    }
-
-    set_tick_timer(0);
-    return 0;
 }

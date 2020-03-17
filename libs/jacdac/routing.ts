@@ -124,7 +124,7 @@ namespace jacdac {
         }
 
         handlePacketOuter(pkt: JDPacket) {
-            if (pkt.service_command == REP_ADVERTISEMENT_DATA && pkt.service_argument == 0)
+            if (pkt.service_command == REP_ADVERTISEMENT_DATA)
                 this.advertisementData = pkt.data
             else
                 this.handlePacket(pkt)

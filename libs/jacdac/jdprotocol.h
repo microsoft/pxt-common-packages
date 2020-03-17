@@ -8,32 +8,35 @@
 extern "C" {
 #endif
 
-// 255 minus size of the serial header, rounded to 4
+// 255 minus size of the serial header, rounded down to 4
 #define JD_SERIAL_PAYLOAD_SIZE 236
 #define JD_SERIAL_FULL_HEADER_SIZE 16
 
-// the highest bit in command signifies that the device_identifier is the recipent
-// (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
-// (i.e., it's a report from peripheral or a broadcast message)
-#define JD_SERVICE_COMMAND 0x8000
-#define JD_SERVICE_GET_COMMAND 0xC000
-#define JD_SERVICE_REPORT 0x0000
-
-#define JD_SERVICE_NUMBER_REQUIRES_ACK 0x80
 #define JD_SERVICE_NUMBER_MASK 0x3f
-#define JD_SERVICE_NUMBER_COMPRESSED 0x3f
 #define JD_SERVICE_NUMBER_MULTICOMMAND 0x3e
 
+// the COMMAND flag signifies that the device_identifier is the recipent
+// (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
+// (i.e., it's a report from peripheral or a broadcast message)
+#define JD_PACKET_FLAG_COMMAND 0x01
+// an ACK should be issued with CRC of this package upon reception
+#define JD_PACKET_FLAG_ACK_REQUESTED 0x02
+// the device_identifier contains target service class number
+#define JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS 0x04
+
+#define JD_PACKET_SIZE(pkt) ((pkt)->_size + JD_SERIAL_FULL_HEADER_SIZE)
 
 typedef struct {
     uint16_t crc;
-    uint8_t size; // of data[]
-    uint8_t service_number;
-
-    uint16_t service_command;
-    uint16_t service_arg;
+    uint8_t _size; // of data[] before decompression
+    uint8_t flags;
 
     uint64_t device_identifier;
+
+    uint8_t service_size;
+    uint8_t service_number;
+    uint8_t service_command;
+    uint8_t service_arg;
 
     uint8_t data[0];
 } __attribute((__packed__)) __attribute__((aligned(4))) jd_packet_t;

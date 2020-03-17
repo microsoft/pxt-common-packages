@@ -4,21 +4,6 @@
 #include "jdprotocol.h"
 #include <hw.h>
 
-// each entry is 4 bytes of RAM
-#ifndef JD_TX_QUEUE_SIZE
-#define JD_TX_QUEUE_SIZE 4
-#endif
-
-// each entry is 2 bytes of RAM
-#ifndef JD_CRC_QUEUE_SIZE
-#define JD_CRC_QUEUE_SIZE (JD_TX_QUEUE_SIZE * 2)
-#endif
-
-// adds 256 byte RAM
-#ifndef JD_COMPRESS_ON_SEND
-#define JD_COMPRESS_ON_SEND 1
-#endif
-
 // this is timing overhead (in us) of starting transmission
 // see set_tick_timer() for how to calibrate this
 #ifndef JD_WR_OVERHEAD
@@ -49,10 +34,14 @@ void uart_wait_high(void);
 
 void log_pin_set(int line, int v);
 
+// the protocol is:
+// app calls jd_packet_ready()
+// JD stack calls app_pull_packet() when it's ready to send
+// JS stack calls app_packet_sent() when the send is done
+jd_packet_t *app_pull_packet(void);
+void app_packet_sent(jd_packet_t *pkt);
 void app_queue_annouce(void);
 int app_handle_packet(jd_packet_t *pkt);
-void app_packet_sent(jd_packet_t *pkt);
-void app_packet_dropped(jd_packet_t *pkt);
 
 // Provided jdutil.c
 uint32_t jd_random_around(uint32_t v);
@@ -63,9 +52,7 @@ uint16_t jd_crc16(const void *data, uint32_t size);
 
 // Provided jdlow.c
 void jd_init(void);
-int jd_queue_packet(jd_packet_t *pkt);
-uint32_t jd_get_num_pending_tx(void);
-uint32_t jd_get_free_queue_space(void);
+void jd_packet_ready(void);
 void jd_compute_crc(jd_packet_t *pkt);
 // these are to be called by uart implementation
 void jd_tx_completed(int errCode);

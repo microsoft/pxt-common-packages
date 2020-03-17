@@ -13,14 +13,25 @@
 
 namespace jacdac {
 
-struct RxPkt {
-    RxPkt *next;
+struct LinkedPkt {
+    LinkedPkt *next;
     jd_packet_t pkt;
 };
 
 #define MAX_RX 10
+#define MAX_TX 10
+static LinkedPkt *rxQ, *txQ;
 
-static RxPkt *rxQ;
+extern "C" jd_packet_t *app_pull_packet() {
+    target_disable_irq();
+    jd_packet_t *res = NULL;
+    if (txQ) {
+        res = &txQ->pkt;
+        txQ = txQ->next;
+    }
+    target_enable_irq();
+    return res;
+}
 
 #ifdef COUNT_SERVICE
 typedef struct {
@@ -72,6 +83,35 @@ extern "C" void app_queue_annouce() {
     Event(DEVICE_ID, EVT_QUEUE_ANNOUNCE);
 }
 
+static inline int copyAndAppend(LinkedPkt **q, jd_packet_t *pkt, int max) {
+    auto buf = (LinkedPkt *)malloc(JD_PACKET_SIZE(pkt) + sizeof(void *));
+    memcpy(&buf->pkt, pkt, JD_PACKET_SIZE(pkt));
+
+    target_disable_irq();
+    auto last = *q;
+    int num = 0;
+    buf->next = NULL;
+    while (last && last->next) {
+        last = last->next;
+        num++;
+    }
+    if (num < max) {
+        if (last)
+            last->next = buf;
+        else
+            *q = buf;
+        buf = NULL;
+    }
+    target_enable_irq();
+
+    if (buf == NULL) {
+        return 0;
+    } else {
+        free(buf);
+        return -1;
+    }
+}
+
 extern "C" int app_handle_packet(jd_packet_t *pkt) {
     // DMESG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->service_number,
     //      pkt->size, pkt->service_command, pkt->service_arg);
@@ -81,28 +121,7 @@ extern "C" int app_handle_packet(jd_packet_t *pkt) {
         return 0;
     }
 
-    auto buf = (RxPkt *)malloc(sizeof(RxPkt) + pkt->size);
-    buf->next = NULL;
-    memcpy(&buf->pkt, pkt, JD_SERIAL_FULL_HEADER_SIZE + pkt->size);
-
-    target_disable_irq();
-    auto last = rxQ;
-    int num = 0;
-    while (last && last->next) {
-        last = last->next;
-        num++;
-    }
-    if (num < MAX_RX) {
-        if (last)
-            last->next = buf;
-        else
-            rxQ = buf;
-        buf = NULL;
-    }
-    target_enable_irq();
-
-    if (buf) {
-        free(buf);
+    if (copyAndAppend(&rxQ, pkt, MAX_RX) < 0) {
         return -1;
     } else {
         Event(DEVICE_ID, EVT_DATA_READY);
@@ -112,13 +131,10 @@ extern "C" int app_handle_packet(jd_packet_t *pkt) {
 
 extern "C" void app_packet_sent(jd_packet_t *pkt) {
     // LOG("pkt sent");
-    free(pkt);
+    free((uint8_t *)pkt - sizeof(void *));
+    if (txQ)
+        jd_packet_ready();
     queue_cnt();
-}
-
-extern "C" void app_packet_dropped(jd_packet_t *pkt) {
-    // LOG("pkt dropped!");
-    free(pkt);
 }
 
 /**
@@ -136,19 +152,16 @@ int __physId() {
 void __physSendPacket(Buffer buf) {
     if (!buf || buf->length < 16)
         return;
-    int sz = JD_SERIAL_FULL_HEADER_SIZE + buf->data[2];
-    auto copy = (jd_packet_t *)malloc(sz);
-    if (sz > buf->length) {
-        memset(copy, 0, sz);
-        sz = buf->length; // this shouldn't really happen
+
+    jd_packet_t *pkt = (jd_packet_t *)buf->data;
+
+    if (copyAndAppend(&txQ, pkt, MAX_TX) < 0) {
+        pkt->crc = 0;
+        return;
     }
-    memcpy(copy, buf->data, sz);
 
-    // copy-out CRC
-    jd_compute_crc(copy);
-    memcpy(buf->data, copy, 2);
-
-    jd_queue_packet(copy);
+    jd_compute_crc(pkt);
+    jd_packet_ready();
 }
 
 /**
@@ -168,7 +181,7 @@ Buffer __physGetPacket() {
     if (!buf)
         return NULL;
 
-    auto res = mkBuffer(&buf->pkt, buf->pkt.size + JD_SERIAL_FULL_HEADER_SIZE);
+    auto res = mkBuffer(&buf->pkt, JD_PACKET_SIZE(&buf->pkt));
     free(buf);
     return res;
 }

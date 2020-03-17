@@ -1,7 +1,5 @@
 #include "CodalDmesg.h"
 
-#define JD_TX_QUEUE_SIZE 8
-
 #if defined(NRF52840) || defined(NRF52832) || defined(NRF52833)
 // NRF52_SERIES not defined here for some reason
 #define JD_TIM_OVERHEAD 20
