@@ -1,10 +1,19 @@
 namespace jacdac {
     export const JD_SERIAL_HEADER_SIZE = 16
     export const JD_SERIAL_MAX_PAYLOAD_SIZE = 236
-    export const JD_SERVICE_NUM_REQUIRES_ACK = 0x80
-    export const JD_SERVICE_NUM_MASK = 0x3f
-    export const JD_SERVICE_NUM_INV_MASK = 0xc0
-    export const JD_SERVICE_NUM_IS_MULTICOMMAND = 0x3e
+    export const JD_SERVICE_NUMBER_MASK = 0x3f
+    export const JD_SERVICE_NUMBER_INV_MASK = 0xc0
+    export const JD_SERVICE_NUMBER_CRC_ACK = 0x3f
+    export const JD_SERVICE_NUMBER_CTRL = 0x00
+
+    // the COMMAND flag signifies that the device_identifier is the recipent
+    // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
+    // (i.e., it's a report from peripheral or a broadcast message)
+    export const JD_PACKET_FLAG_COMMAND = 0x01
+    // an ACK should be issued with CRC of this package upon reception
+    export const JD_PACKET_FLAG_ACK_REQUESTED = 0x02
+    // the device_identifier contains target service class number
+    export const JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
     const ACK_RETRIES = 3
     let ackAwaiters: AckAwaiter[]
@@ -15,23 +24,24 @@ namespace jacdac {
     }
 
     export class JDPacket {
-        _buffer: Buffer;
+        _header: Buffer;
+        _data: Buffer;
 
-        constructor(buf?: Buffer) {
-            if (buf) {
-                if (buf.length < JD_SERIAL_HEADER_SIZE)
-                    error("invalid buffer size")
-                this._buffer = buf
-            }
-            else
-                this._buffer = control.createBuffer(JD_SERIAL_MAX_PAYLOAD_SIZE + JD_SERIAL_HEADER_SIZE);
+        private constructor() { }
+
+        static fromBinary(buf: Buffer) {
+            const p = new JDPacket()
+            p._header = buf.slice(0, JD_SERIAL_HEADER_SIZE)
+            p._data = buf.slice(JD_SERIAL_HEADER_SIZE)
+            return p
         }
 
         static from(service_command: number, service_argument: number, data: Buffer) {
             const p = new JDPacket()
+            p._header = Buffer.create(JD_SERIAL_HEADER_SIZE)
+            p._data = data
             p.service_command = service_command
             p.service_argument = service_argument
-            p.data = data
             return p
         }
 
@@ -40,93 +50,88 @@ namespace jacdac {
         }
 
         static packed(service_command: number, service_argument: number, fmt: string, nums: number[]) {
-            return JDPacket.from(service_command, service_argument,
-                Buffer.pack(fmt, nums))
+            return JDPacket.from(service_command, service_argument, Buffer.pack(fmt, nums))
         }
 
         get device_identifier() {
-            // second 8 is length!
-            return this._buffer.slice(8, 8).toHex()
+            // 8 is length!
+            return this._header.slice(4, 8).toHex()
         }
         set device_identifier(id: string) {
             const idb = control.createBufferFromHex(id)
             if (idb.length != 8)
                 error("Invalid id")
-            this._buffer.write(8, idb)
+            this._header.write(4, idb)
         }
 
+        get packet_flags() { return this._header[2] }
+
         get multicommand_class() {
-            if (this._buffer[3] == JD_SERVICE_NUM_IS_MULTICOMMAND)
-                return this._buffer.getNumber(NumberFormat.UInt32LE, 8)
+            if (this.packet_flags & JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+                return this._header.getNumber(NumberFormat.UInt32LE, 4)
             return undefined
         }
 
         get size(): number {
-            return this._buffer[2];
-        }
-        set size(size: number) {
-            if (0 <= size && size <= JD_SERIAL_MAX_PAYLOAD_SIZE)
-                this._buffer[2] = size
-            else
-                error("invalid size")
+            return this._header[12];
         }
 
         get requires_ack(): boolean {
-            return this._buffer[3] & JD_SERIAL_MAX_PAYLOAD_SIZE ? true : false;
+            return (this.packet_flags & JD_PACKET_FLAG_ACK_REQUESTED) ? true : false;
         }
         set requires_ack(ack: boolean) {
             if (ack != this.requires_ack)
-                this._buffer[3] ^= JD_SERVICE_NUM_REQUIRES_ACK
+                this._header[2] ^= JD_PACKET_FLAG_ACK_REQUESTED
         }
 
         get service_number(): number {
-            return this._buffer[3] & JD_SERVICE_NUM_MASK;
+            return this._header[13] & JD_SERVICE_NUMBER_MASK;
         }
         set service_number(service_number: number) {
             if (service_number == null)
                 throw "service_number not set"
-            this._buffer[3] = (this._buffer[3] & JD_SERVICE_NUM_INV_MASK) | service_number;
+            this._header[13] = (this._header[13] & JD_SERVICE_NUMBER_INV_MASK) | service_number;
         }
 
         get crc(): number {
-            return this._buffer.getNumber(NumberFormat.UInt16LE, 0)
+            return this._header.getNumber(NumberFormat.UInt16LE, 0)
         }
 
         get service_command(): number {
-            return this._buffer.getNumber(NumberFormat.UInt16LE, 4)
+            return this._header[14]
         }
         set service_command(cmd: number) {
-            this._buffer.setNumber(NumberFormat.UInt16LE, 4, cmd)
+            this._header[14] = cmd
         }
 
         get service_argument(): number {
-            return this._buffer.getNumber(NumberFormat.UInt16LE, 6)
+            return this._header[15]
         }
         set service_argument(arg: number) {
-            this._buffer.setNumber(NumberFormat.UInt16LE, 6, arg)
+            this._header[15] = arg
         }
 
         get data(): Buffer {
-            return this._buffer.slice(JD_SERIAL_HEADER_SIZE, this.size)
+            return this._data
         }
 
         set data(buf: Buffer) {
-            this.size = buf.length;
-            this._buffer.write(JD_SERIAL_HEADER_SIZE, buf)
+            if (buf.length > JD_SERIAL_MAX_PAYLOAD_SIZE)
+                throw "Too big"
+            this._header[12] = buf.length
+            this._data = buf
         }
 
-        // same as this.data.getNumber but faster
         getNumber(fmt: NumberFormat, offset: number) {
-            return this._buffer.getNumber(fmt, offset + JD_SERIAL_HEADER_SIZE)
+            return this._data.getNumber(fmt, offset)
         }
 
         pack(fmt: string, nums: number[]) {
-            this.size = Buffer.packedSize(fmt)
-            this._buffer.packAt(JD_SERIAL_HEADER_SIZE, fmt, nums)
+            this._data = Buffer.pack(fmt, nums)
         }
 
         get is_command() {
-            return !!(this.service_command & 0x8000)
+            return !!(this.packet_flags & JD_PACKET_FLAG_COMMAND)
         }
 
         toString(): string {
@@ -136,18 +141,26 @@ namespace jacdac {
             return msg
         }
 
+        _sendCore() {
+            // TODO would be slightly faster to do concat on the C++ side
+            if (this._data.length > 0)
+                jacdac.__physSendPacket(this._header.concat(this._data))
+            else
+                jacdac.__physSendPacket(this._header)
+        }
+
         _send(dev: Device) {
             if (!dev)
                 return
             this.device_identifier = dev.deviceId
-            jacdac.__physSendPacket(this._buffer)
+            this._sendCore()
         }
 
         sendAsMultiCommand(service_class: number) {
-            this._buffer[3] = JD_SERVICE_NUM_IS_MULTICOMMAND
-            this._buffer.setNumber(NumberFormat.UInt32LE, 8, service_class)
-            this._buffer.setNumber(NumberFormat.UInt32LE, 12, 0)
-            jacdac.__physSendPacket(this._buffer)
+            this._header[2] |= JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS
+            this._header.setNumber(NumberFormat.UInt32LE, 4, service_class)
+            this._header.setNumber(NumberFormat.UInt32LE, 8, 0)
+            this._sendCore()
         }
 
         // returns true when sent and recieved
@@ -203,17 +216,10 @@ namespace jacdac {
                 a.added = -1
             } else {
                 a.numTries++
-                jacdac.__physSendPacket(a.pkt._buffer)
+                a.pkt._sendCore()
             }
         }
         ackAwaiters = ackAwaiters.filter(a => a.added > 0)
-    }
-
-    function hasAck(pkt: JDPacket, crc: number) {
-        for (let i = 0; i < pkt.size; i += 2)
-            if (pkt.getNumber(NumberFormat.UInt16LE, i) == crc)
-                return true
-        return false
     }
 
     export function _gotAck(pkt: JDPacket) {
@@ -221,8 +227,9 @@ namespace jacdac {
             return
         let numNotify = 0
         const srcId = pkt.device_identifier
+        const crc = pkt.service_command | (pkt.service_argument << 8)
         for (let a of ackAwaiters) {
-            if (a.srcId == srcId && hasAck(pkt, a.crc)) {
+            if (a.crc == crc && a.srcId == srcId) {
                 a.added = 0
                 control.raiseEvent(DAL.DEVICE_ID_NOTIFY, a.eventId)
                 numNotify++

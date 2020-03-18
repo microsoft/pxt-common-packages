@@ -331,7 +331,7 @@ namespace jacdac {
 
             let dev = devices_.find(d => d.deviceId == devId)
 
-            if (pkt.service_number == 0) {
+            if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
                 if (pkt.service_command == REP_ADVERTISEMENT_DATA) {
                     if (!dev)
                         dev = new Device(pkt.device_identifier)
@@ -340,12 +340,12 @@ namespace jacdac {
                         dev.lastSeen = control.millis()
                         reattach(dev)
                     }
-                } else if (pkt.service_command == REP_ACK) {
-                    _gotAck(pkt)
                 }
                 if (dev)
                     dev.lastSeen = control.millis()
                 return
+            } else if (pkt.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
+                _gotAck(pkt)
             }
 
             if (!dev)
@@ -398,7 +398,7 @@ namespace jacdac {
         control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
             let buf: Buffer;
             while (null != (buf = jacdac.__physGetPacket())) {
-                routePacket(new JDPacket(buf))
+                routePacket(JDPacket.fromBinary(buf))
             }
         });
         control.internalOnEvent(jacdac.__physId(), 100, queueAnnounce);
