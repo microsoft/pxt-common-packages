@@ -253,20 +253,36 @@ void jd_packet_ready() {
 }
 
 int jd_shift_frame(jd_packet_t *pkt) {
-    if (pkt->service_size >= pkt->_size)
-        return 0;
+    int psize = pkt->_size;
     int oldsz = pkt->service_size;
-    uint8_t *src = &pkt->data[oldsz];
+    if (oldsz >= psize)
+        return 0; // nothing to shift
+
+    int ptr;
+    if (pkt->data[oldsz] == 0xff) {
+        ptr = pkt->data[oldsz + 1];
+        if (ptr >= psize)
+            return 0; // End-of-frame
+        if (ptr <= oldsz)
+            return 0; // don't let it go back, must be some corruption
+    } else {
+        ptr = oldsz;
+    }
+
+    uint8_t *src = &pkt->data[ptr];
     int newsz = *src + 4;
-    if (oldsz + newsz > pkt->_size) {
+    if (ptr + newsz > pkt->_size) {
         ERROR("invalid super-frame");
         return 0;
     }
-    int totalSz = pkt->_size;
     uint8_t *dst = &pkt->service_size;
     // don't trust memmove()
-    for (int i = 0; i < totalSz; ++i)
+    for (int i = 0; i < newsz; ++i)
         *dst++ = *src++;
-    pkt->_size -= oldsz + 4;
+    // store ptr
+    ptr += newsz;
+    pkt->data[newsz - 4] = 0xff;
+    pkt->data[newsz - 4 + 1] = ptr;
+
     return 1;
 }
