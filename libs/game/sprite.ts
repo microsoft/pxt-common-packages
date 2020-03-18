@@ -796,7 +796,7 @@ class Sprite extends sprites.BaseSprite {
             const wallHandlersToRun = wallCollisionHandlers
                 .filter(h => h.spriteKind == this.kind());
             if (wallHandlersToRun.length) {
-                const asTileLocation = tm.getTile(other.x >> tm.scale, other.y >> tm.scale);
+                const asTileLocation = tm.getTile(other.left >> tm.scale, other.top >> tm.scale);
                 wallHandlersToRun
                     .forEach(h => h.handler(this, asTileLocation));
             }
