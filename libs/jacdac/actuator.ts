@@ -17,7 +17,7 @@ namespace jacdac {
                     this.handleStateChanged();
                     break
                 case CMD_GET_STATE:
-                    this.sendReport(JDPacket.from(REP_STATE, 0, this.state))
+                    this.sendReport(JDPacket.from(CMD_GET_STATE, 0, this.state))
                     break
                 case CMD_SET_ENABLED:
                     if (packet.service_argument == 0)
@@ -27,7 +27,7 @@ namespace jacdac {
                     this.handleStateChanged();
                     break
                 case CMD_GET_ENABLED:
-                    JDPacket.onlyHeader(REP_ENABLED, this.enabled ? 1 : 0)
+                    JDPacket.onlyHeader(CMD_GET_ENABLED, this.enabled ? 1 : 0)
                     break
             }
         }

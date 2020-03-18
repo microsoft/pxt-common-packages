@@ -19,7 +19,7 @@ namespace jacdac {
 
         handlePacket(packet: JDPacket) {
             switch (packet.service_command) {
-                case JDConsoleReport.Message:
+                case JDConsoleCommand.Message:
                     // check priority
                     const pri = packet.service_argument
                     if (pri < this.minPriority)

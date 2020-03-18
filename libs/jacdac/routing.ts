@@ -29,9 +29,9 @@ namespace jacdac {
         serviceNumber: number
 
         handlePacketOuter(pkt: JDPacket) {
-            if (pkt.service_command == CMD_GET_ADVERTISEMENT_DATA) {
+            if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                 this.sendReport(
-                    JDPacket.from(REP_ADVERTISEMENT_DATA, 0, this.advertisementData()))
+                    JDPacket.from(CMD_ADVERTISEMENT_DATA, 0, this.advertisementData()))
             } else {
                 this.handlePacket(pkt)
             }
@@ -120,11 +120,11 @@ namespace jacdac {
         }
 
         requestAdvertisementData() {
-            this.sendCommand(JDPacket.onlyHeader(CMD_GET_ADVERTISEMENT_DATA, 0))
+            this.sendCommand(JDPacket.onlyHeader(CMD_ADVERTISEMENT_DATA, 0))
         }
 
         handlePacketOuter(pkt: JDPacket) {
-            if (pkt.service_command == REP_ADVERTISEMENT_DATA)
+            if (pkt.service_command == CMD_ADVERTISEMENT_DATA)
                 this.advertisementData = pkt.data
             else
                 this.handlePacket(pkt)
@@ -237,7 +237,7 @@ namespace jacdac {
         }
         handlePacketOuter(pkt: JDPacket) {
             switch (pkt.service_command) {
-                case CMD_GET_ADVERTISEMENT_DATA:
+                case CMD_ADVERTISEMENT_DATA:
                     queueAnnounce()
                     break
                 case CMD_CTRL_IDENTIFY:
@@ -263,7 +263,7 @@ namespace jacdac {
     function queueAnnounce() {
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
-        JDPacket.packed(REP_ADVERTISEMENT_DATA, 0, fmt, ids)
+        JDPacket.packed(CMD_ADVERTISEMENT_DATA, 0, fmt, ids)
             ._send(selfDevice())
         announceCallbacks.forEach(f => f())
         gcDevices()
@@ -332,7 +332,7 @@ namespace jacdac {
             let dev = devices_.find(d => d.deviceId == devId)
 
             if (pkt.service_number == JD_SERVICE_NUMBER_CTRL) {
-                if (pkt.service_command == REP_ADVERTISEMENT_DATA) {
+                if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                     if (!dev)
                         dev = new Device(pkt.device_identifier)
                     if (!pkt.data.equals(dev.services)) {

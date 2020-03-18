@@ -49,7 +49,7 @@ namespace jacdac {
             }
 
             for (let buf of Buffer.chunkedFromUTF8(message, JD_SERIAL_MAX_PAYLOAD_SIZE)) {
-                this.sendReport(JDPacket.from(JDConsoleReport.Message, priority, buf))
+                this.sendReport(JDPacket.from(JDConsoleCommand.Message, priority, buf))
             }
         }
     }

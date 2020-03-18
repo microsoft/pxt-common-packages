@@ -27,7 +27,7 @@ namespace jacdac {
                     break
                 case CMD_GET_STREAMING:
                     this.sendReport(JDPacket.packed(
-                        REP_STREAMING,
+                        CMD_GET_STREAMING,
                         this.isStreaming ? 1 : 0,
                         "i", [this.streamingInterval]))
                     break
@@ -69,7 +69,7 @@ namespace jacdac {
         }
 
         protected raiseHostEvent(value: number) {
-            this.sendReport(JDPacket.onlyHeader(REP_EVENT, value))
+            this.sendReport(JDPacket.onlyHeader(CMD_EVENT, value))
         }
 
         public setStreaming(on: boolean) {
@@ -91,7 +91,7 @@ namespace jacdac {
                         // did the state change?
                         if (this.isConnected()) {
                             // send state and record time
-                            this.sendReport(JDPacket.from(REP_STATE, 0, state))
+                            this.sendReport(JDPacket.from(CMD_GET_STATE, 0, state))
                         }
                     }
                     // check streaming interval value

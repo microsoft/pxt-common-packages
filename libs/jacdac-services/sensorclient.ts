@@ -57,7 +57,7 @@ namespace jacdac {
         handlePacket(packet: JDPacket) {
             this.log(`vpkt ${packet.service_command}`)
             switch (packet.service_command) {
-                case REP_STATE: {
+                case CMD_GET_STATE: {
                     const state = packet.data
                     const changed = !state.equals(this._lastState);
                     this.handleVirtualState(state);
@@ -66,7 +66,7 @@ namespace jacdac {
                     if (changed && this._stateChangedHandler)
                         this._stateChangedHandler();
                 }
-                case REP_EVENT:
+                case CMD_EVENT:
                     control.raiseEvent(this.eventId, packet.service_argument);
                 default:
                     this.handleCustomCommand(packet);

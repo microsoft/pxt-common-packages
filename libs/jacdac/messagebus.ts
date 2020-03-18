@@ -15,7 +15,7 @@ namespace jacdac {
         raiseEvent(id: number, value: number) {
             this.start();
             this.sendReport(
-                JDPacket.packed(REP_EVENT, 0, "HH", [id, value]))
+                JDPacket.packed(CMD_EVENT, 0, "HH", [id, value]))
         }
 
         broadcastEvent(id: number, value: number) {
@@ -28,7 +28,7 @@ namespace jacdac {
         }
 
         handlePacket(packet: JDPacket) {
-            if (packet.service_command == REP_EVENT) {
+            if (packet.service_command == CMD_EVENT) {
                 const [id, value] = packet.data.unpack("HH")
                 this.suppressForwarding = true;
                 control.raiseEvent(id, value);
