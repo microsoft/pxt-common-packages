@@ -408,7 +408,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 for (const tile of collidedTiles) {
-                    s.registerObstacle(collisionDirection, tile);
+                    s.registerObstacle(collisionDirection, tile, tm);
                 }
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
@@ -492,7 +492,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 );
 
                 for (const tile of collidedTiles) {
-                    s.registerObstacle(collisionDirection, tile);
+                    s.registerObstacle(collisionDirection, tile, tm);
                 }
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
@@ -527,7 +527,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite the sprite
      * @param overlappedTiles the list of tiles the sprite is overlapping
      */
-    private tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
+    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
         for (const tile of overlappedTiles) {
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
