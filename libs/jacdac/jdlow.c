@@ -251,3 +251,22 @@ void jd_packet_ready() {
         set_tick_timer(0);
     target_enable_irq();
 }
+
+int jd_shift_frame(jd_packet_t *pkt) {
+    if (pkt->service_size >= pkt->_size)
+        return 0;
+    int oldsz = pkt->service_size;
+    uint8_t *src = &pkt->data[oldsz];
+    int newsz = *src + 4;
+    if (oldsz + newsz > pkt->_size) {
+        ERROR("invalid super-frame");
+        return 0;
+    }
+    int totalSz = pkt->_size;
+    uint8_t *dst = &pkt->service_size;
+    // don't trust memmove()
+    for (int i = 0; i < totalSz; ++i)
+        *dst++ = *src++;
+    pkt->_size -= oldsz + 4;
+    return 1;
+}

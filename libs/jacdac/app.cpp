@@ -20,7 +20,9 @@ struct LinkedPkt {
 
 #define MAX_RX 10
 #define MAX_TX 10
-static LinkedPkt *rxQ, *txQ;
+static LinkedPkt *volatile rxQ;
+static LinkedPkt *volatile txQ;
+static LinkedPkt *superFrameRX;
 
 extern "C" jd_packet_t *app_pull_packet() {
     target_disable_irq();
@@ -83,7 +85,7 @@ extern "C" void app_queue_annouce() {
     Event(DEVICE_ID, EVT_QUEUE_ANNOUNCE);
 }
 
-static inline int copyAndAppend(LinkedPkt **q, jd_packet_t *pkt, int max) {
+static inline int copyAndAppend(LinkedPkt *volatile *q, jd_packet_t *pkt, int max) {
     auto buf = (LinkedPkt *)malloc(JD_PACKET_SIZE(pkt) + sizeof(void *));
     memcpy(&buf->pkt, pkt, JD_PACKET_SIZE(pkt));
 
@@ -169,21 +171,22 @@ void __physSendPacket(Buffer buf) {
  **/
 //%
 Buffer __physGetPacket() {
-    if (!rxQ)
+    if (superFrameRX && jd_shift_frame(&superFrameRX->pkt) == 0) {
+        free(superFrameRX);
+        superFrameRX = NULL;
+    }
+
+    if (!superFrameRX && rxQ) {
+        target_disable_irq();
+        if ((superFrameRX = rxQ) != NULL)
+            rxQ = rxQ->next;
+        target_enable_irq();
+    }
+
+    if (!superFrameRX)
         return NULL;
 
-    target_disable_irq();
-    auto buf = rxQ;
-    if (buf)
-        rxQ = buf->next;
-    target_enable_irq();
-
-    if (!buf)
-        return NULL;
-
-    auto res = mkBuffer(&buf->pkt, JD_PACKET_SIZE(&buf->pkt));
-    free(buf);
-    return res;
+    return mkBuffer(&superFrameRX->pkt, JD_PACKET_SIZE(&superFrameRX->pkt));
 }
 
 /**

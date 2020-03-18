@@ -59,6 +59,7 @@ void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
 void jd_line_falling(void);
 int jd_is_running();
+int jd_shift_frame(jd_packet_t *pkt);
 
 typedef struct {
     uint32_t bus_state;

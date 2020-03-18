@@ -13,7 +13,7 @@ extern "C" {
 #define JD_SERIAL_FULL_HEADER_SIZE 16
 
 #define JD_SERVICE_NUMBER_MASK 0x3f
-#define JD_SERVICE_NUMBER_MULTICOMMAND 0x3e
+#define JD_SERVICE_NUMBER_CRC_ACK 0x3f
 
 // the COMMAND flag signifies that the device_identifier is the recipent
 // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
@@ -26,7 +26,7 @@ extern "C" {
 
 #define JD_PACKET_SIZE(pkt) ((pkt)->_size + JD_SERIAL_FULL_HEADER_SIZE)
 
-typedef struct {
+struct _jd_packet_t {
     uint16_t crc;
     uint8_t _size; // of data[] before decompression
     uint8_t flags;
@@ -39,7 +39,8 @@ typedef struct {
     uint8_t service_arg;
 
     uint8_t data[0];
-} __attribute((__packed__)) __attribute__((aligned(4))) jd_packet_t;
+} __attribute__((__packed__, aligned(4)));
+typedef struct _jd_packet_t jd_packet_t;
 
 typedef struct {
     jd_packet_t header;
