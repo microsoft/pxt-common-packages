@@ -308,8 +308,17 @@ namespace jacdac {
         // log("route: " + pkt.toString())
         const devId = pkt.device_identifier
         const multiCommandClass = pkt.multicommand_class
+
+        // TODO implement send queue for packet compression
+
         if (pkt.requires_ack) {
-            TODO
+            pkt.requires_ack = false // make sure we only do it once
+            if (pkt.device_identifier == selfDevice().deviceId) {
+                const crc = pkt.crc
+                const ack = JDPacket.onlyHeader(crc & 0xff, crc >> 8)
+                ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
+                ack._send(selfDevice())
+            }
         }
 
         if (multiCommandClass) {
