@@ -16,7 +16,7 @@ static const int INTERNAL_KEY_UP = 2050;
 static const int INTERNAL_KEY_DOWN = 2051;
 
 static void waitABit() {
-    //for (int i = 0; i < 10; ++i)
+    // for (int i = 0; i < 10; ++i)
     //    asm volatile("nop");
 }
 
@@ -28,6 +28,7 @@ class ButtonMultiplexer : public CodalComponent {
     uint32_t state;
     uint32_t invMask;
     uint16_t buttonIdPerBit[8];
+    bool enabled;
 
     ButtonMultiplexer(uint16_t id)
         : latch(*LOOKUP_PIN(BTNMX_LATCH)), clock(*LOOKUP_PIN(BTNMX_CLOCK)),
@@ -37,12 +38,20 @@ class ButtonMultiplexer : public CodalComponent {
 
         state = 0;
         invMask = 0;
+        enabled = true;
 
         memset(buttonIdPerBit, 0, sizeof(buttonIdPerBit));
 
         data.getDigitalValue(PullMode::Down);
         latch.setDigitalValue(1);
         clock.setDigitalValue(1);
+    }
+
+    void disable() {
+        data.getDigitalValue(PullMode::None);
+        latch.getDigitalValue(PullMode::None);
+        clock.getDigitalValue(PullMode::None);
+        enabled = false;
     }
 
     bool isButtonPressed(int id) {
@@ -75,6 +84,9 @@ class ButtonMultiplexer : public CodalComponent {
     }
 
     virtual void periodicCallback() override {
+        if (!enabled)
+            return;
+
         uint32_t newState = readBits(8);
         newState ^= invMask;
         if (newState == state)
@@ -262,4 +274,11 @@ uint32_t readButtonMultiplexer(int bits) {
         return 0;
     return getMultiplexer()->readBits(bits);
 }
+
+void disableButtonMultiplexer() {
+    if (LOOKUP_PIN(BTNMX_CLOCK)) {
+        getMultiplexer()->disable();
+    }
+}
+
 } // namespace pxt

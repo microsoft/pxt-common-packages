@@ -93,6 +93,7 @@ LowLevelTimer* getJACDACTimer();
 #endif
 class PressureButton;
 uint32_t readButtonMultiplexer(int bits);
+void disableButtonMultiplexer();
 }
 
 namespace serial {
