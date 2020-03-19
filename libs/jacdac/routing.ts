@@ -308,6 +308,10 @@ namespace jacdac {
         // log("route: " + pkt.toString())
         const devId = pkt.device_identifier
         const multiCommandClass = pkt.multicommand_class
+        if (pkt.requires_ack) {
+            TODO
+        }
+
         if (multiCommandClass) {
             if (!pkt.is_command)
                 return // only commands supported in multi-command
@@ -315,6 +319,7 @@ namespace jacdac {
             if (h && h.running) {
                 // pretend it's directly addressed to us
                 pkt.device_identifier = selfDevice().deviceId
+                pkt.service_number = h.serviceNumber
                 h.handlePacketOuter(pkt)
             }
         } else if (devId == selfDevice().deviceId) {
