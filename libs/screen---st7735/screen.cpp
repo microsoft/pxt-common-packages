@@ -132,6 +132,8 @@ class WDisplay {
     uint32_t smartConfigure(uint32_t *cfg0, uint32_t *cfg1, uint32_t *cfg2) {
         uint32_t hc;
 
+        DMESG("74HC: waiting...");
+
         auto rst = LOOKUP_PIN(DISPLAY_RST);
         if (rst) {
             rst->setDigitalValue(0);

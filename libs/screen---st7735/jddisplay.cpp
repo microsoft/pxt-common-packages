@@ -37,7 +37,7 @@ void *JDDisplay::queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t s
         target_panic(PANIC_SCREEN_ERROR);
     auto hd = (jd_spi_packet_t *)(pktBuffer + queuePtr);
     hd->pkt.size = size;
-    hd->pkt.flags = 0;
+    hd->pkt.service_flags = 0;
     hd->pkt.service_number = service_num;
     hd->pkt.service_command = service_cmd;
     hd->magic = JDSPI_MAGIC;
