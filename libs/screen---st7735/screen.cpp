@@ -148,7 +148,7 @@ class WDisplay {
 
         DMESG("74HC: %x", hc);
 
-        // is the line forced down? if so, assume JDDisplay
+        // is the line forced up? if so, assume JDDisplay
         if (hc == 0x1FFFF) {
             disableButtonMultiplexer();
             return DISPLAY_TYPE_SMART;
