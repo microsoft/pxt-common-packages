@@ -23,10 +23,10 @@ typedef struct {
     uint16_t height;
 } jd_display_advertisement_data_t;
 
-#define JD_DISPLAY_CMD_SET_WINDOW 0x01
-#define JD_DISPLAY_CMD_PALETTE 0x02
-#define JD_DISPLAY_CMD_PIXELS 0x03
-#define JD_DISPLAY_CMD_SET_BRIGHTNESS 0x04
+#define JD_DISPLAY_CMD_SET_WINDOW 0x81
+#define JD_DISPLAY_CMD_PALETTE 0x82
+#define JD_DISPLAY_CMD_PIXELS 0x83
+#define JD_DISPLAY_CMD_SET_BRIGHTNESS 0x84
 
 typedef struct {
     uint16_t x;

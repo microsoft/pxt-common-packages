@@ -17,10 +17,13 @@
         "imagesoverrides.jres",
         "imagesoverrides.ts",
         "font12.jres",
-        "jdprotocol.h",
         "jdarcade.h",
         "jddisplay.h",
         "jddisplay.cpp"
     ],
+    "dependencies": {
+        "core": "file:../core",
+        "jacdac": "file:../jacdac"
+    },
     "additionalFilePath": "../screen"
 }
