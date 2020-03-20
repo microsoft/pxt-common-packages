@@ -12,6 +12,7 @@ extern "C" {
 #define JD_SERIAL_PAYLOAD_SIZE 236
 #define JD_SERIAL_FULL_HEADER_SIZE 16
 
+#define JD_SERVICE_NUMBER_CTRL 0x00
 #define JD_SERVICE_NUMBER_MASK 0x3f
 #define JD_SERVICE_NUMBER_CRC_ACK 0x3f
 
@@ -25,6 +26,34 @@ extern "C" {
 #define JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS 0x04
 
 #define JD_FRAME_SIZE(pkt) ((pkt)->size + 12)
+
+// Generic commands
+#define JD_CMD_ADVERTISEMENT_DATA 0x00
+// think power-down of peripheral
+#define JD_CMD_GET_ENABLED 0x01
+#define JD_CMD_SET_ENABLED 0x02
+// brightness of LEDs or similar
+#define JD_CMD_SET_INTENSITY 0x03
+// event from sensor or on broadcast service
+#define JD_CMD_EVENT 0x04
+
+// Sensors commands
+// state of sensor or actuator, ie servo angle
+#define JD_CMD_GET_STATE 0x10
+#define JD_CMD_SET_STATE 0x11
+// is the sensor streaming state
+#define JD_CMD_SET_STREAMING 0x12
+#define JD_CMD_GET_STREAMING 0x13
+// threshold for analog sensor (threshold type in arg; value in payload)
+#define JD_CMD_SET_THRESHOLD 0x14
+// request to calibrate sensor
+#define JD_CMD_CALIBRATE 0x15
+
+// Commands specific to control service
+// do nothing
+#define JD_CMD_CTRL_NOOP 0x80
+// blink led or otherwise draw user's attention
+#define JD_CMD_CTRL_IDENTIFY 0x81
 
 struct _jd_packet_t {
     uint16_t crc;
@@ -47,7 +76,6 @@ typedef struct {
     uint8_t data[JD_SERIAL_PAYLOAD_SIZE];
 } jd_serial_packet_t;
 
-
 struct _jd_frame_t {
     uint16_t crc;
     uint8_t size;
@@ -59,25 +87,7 @@ struct _jd_frame_t {
 } __attribute__((__packed__, aligned(4)));
 typedef struct _jd_frame_t jd_frame_t;
 
-
-
 #define JDSPI_MAGIC 0x7ACDAC01
-
-#define JDSPI_PKTSIZE 252
-#define JDSPI_HEADER_SIZE 8
-
-typedef struct {
-    uint16_t magic;
-    uint8_t _size; // of data[] before decompression
-    uint8_t flags;
-
-    uint8_t service_size;
-    uint8_t service_number;
-    uint8_t service_command;
-    uint8_t service_arg;
-
-    uint8_t data[JDSPI_PKTSIZE - JDSPI_HEADER_SIZE];
-} jd_spi_packet_t;
 
 #ifdef __cplusplus
 }

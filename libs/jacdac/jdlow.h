@@ -53,13 +53,17 @@ uint16_t jd_crc16(const void *data, uint32_t size);
 // Provided jdlow.c
 void jd_init(void);
 void jd_packet_ready(void);
-void jd_compute_crc(jd_frame_t *pkt);
+void jd_compute_crc(jd_frame_t *frame);
 // these are to be called by uart implementation
 void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
 void jd_line_falling(void);
 int jd_is_running();
-int jd_shift_frame(jd_frame_t *pkt);
+int jd_shift_frame(jd_frame_t *frame);
+void jd_reset_frame(jd_frame_t *frame);
+void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,
+                       unsigned service_arg, unsigned service_size);
+                       
 
 typedef struct {
     uint32_t bus_state;

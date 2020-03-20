@@ -25,6 +25,8 @@ namespace jacdac {
     export const ARG_HIGH_THRESHOLD = 0x02
 
     // Commands specific to control service
+    // do nothing
+    export const CMD_CTRL_NOOP = 0x80
     // blink led or otherwise draw user's attention
-    export const CMD_CTRL_IDENTIFY = 0x80
+    export const CMD_CTRL_IDENTIFY = 0x81
 }

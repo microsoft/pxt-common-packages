@@ -15,18 +15,17 @@ class JDDisplay {
     uint32_t dataLeft;
     const uint8_t *dataPtr;
     uint32_t *palette;
-    uint8_t pktBuffer[JDSPI_PKTSIZE];
-    uint8_t recvBuffer[JDSPI_PKTSIZE];
+    jd_frame_t sendFrame;
+    jd_frame_t recvFrame;
     uint8_t bytesPerTransfer;
     bool inProgress;
     volatile bool stepWaiting;
     uint8_t displayServiceNum;
     uint8_t controlsServiceNum;
-    uint16_t queuePtr;
     uint32_t buttonState;
     jd_display_advertisement_data_t displayAd;
 
-    void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size);
+    void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t service_arg, uint32_t size);
     void flushSend();
     void step();
     void sendDone(Event);

@@ -43,10 +43,6 @@ typedef struct {
     uint32_t pixels[0];
 } jd_display_pixels_t;
 
-typedef struct {
-    uint16_t level; // 0x0000 - backlight off to 0xffff - backlight always on
-} jd_display_brightness_t;
-
 #define JD_SERVICE_CLASS_ARCADE_CONTROLS 0x21c35d83
 
 #define JD_ARCADE_CONTROLS_BUTTON_LEFT 0x0001

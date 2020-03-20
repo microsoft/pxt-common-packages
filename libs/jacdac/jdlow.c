@@ -299,17 +299,14 @@ void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service
                        unsigned service_arg, unsigned service_size) {
     if ((service_num | service_cmd | service_arg) & ~0xff)
         jd_panic();
-    uint8_t *dst = frame->data + (frame->size == 0xff ? -4 : frame->size);
-    unsigned szLeft = frame->data + JD_SERIAL_PAYLOAD_SIZE - dst;
+    uint8_t *dst = frame->data + frame->size;
+    unsigned szLeft = (uint8_t *)frame + sizeof(*frame) - dst;
     if (service_size + 4 > szLeft)
         return NULL;
     *dst++ = service_size;
     *dst++ = service_num;
     *dst++ = service_cmd;
     *dst++ = service_arg;
-    if (frame->size == 0xff)
-        frame->size = service_size;
-    else
-        frame->size += service_size + 4;
+    frame->size += service_size + 4;
     return dst;
 }
