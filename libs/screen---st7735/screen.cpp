@@ -134,17 +134,22 @@ class WDisplay {
 
         DMESG("74HC: waiting...");
 
-        auto rst = LOOKUP_PIN(DISPLAY_RST);
-        if (rst) {
-            rst->setDigitalValue(0);
-            target_wait_us(10);
-            rst->setDigitalValue(1);
-            fiber_sleep(3); // in reality we need around 1.2ms
-        }
-
         // wait while nothing is connected
-        while ((hc = readButtonMultiplexer(17)) == 0x0)
+        for (;;) {
+            auto rst = LOOKUP_PIN(DISPLAY_RST);
+            if (rst) {
+                rst->setDigitalValue(0);
+                target_wait_us(10);
+                rst->setDigitalValue(1);
+                fiber_sleep(3); // in reality we need around 1.2ms
+            }
+
+            hc = readButtonMultiplexer(17);
+            if (hc != 0)
+                break;
+
             fiber_sleep(100);
+        }
 
         DMESG("74HC: %x", hc);
 
