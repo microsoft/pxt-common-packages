@@ -90,15 +90,16 @@ AnalogCache *lookupAnalogCache(Pin *pin) {
     return c;
 }
 
+int multiplexedButtonIsPressed(int btnId);
+int registerMultiplexedButton(int pin, int buttonId);
+
 //% expose
 int pressureLevelByButtonId(int btnId, int codalId) {
     if (codalId <= 0)
         codalId = DEVICE_ID_FIRST_BUTTON + btnId;
     auto btn = (PressureButton *)lookupComponent(codalId);
     if (!btn) {
-        if (btnMultiplexer)
-            return btnMultiplexer->isButtonPressed(btnId) ? 512 : 0;
-        return 0;
+        return multiplexedButtonIsPressed(btnId) ? 512 : 0;
     }
     return btn->pressureLevel();
 }
@@ -127,14 +128,8 @@ void setupButton(int buttonId, int key) {
     auto cpid = DEVICE_ID_FIRST_BUTTON + buttonId;
     auto btn = (PressureButton *)lookupComponent(cpid);
     if (btn == NULL) {
-        if (1050 <= pin && pin < 1058) {
-            pin -= 50;
-            getMultiplexer()->invMask |= 1 << (pin - 1000);
-        }
-        if (1000 <= pin && pin < 1008) {
-            getMultiplexer()->buttonIdPerBit[pin - 1000] = buttonId;
+        if (registerMultiplexedButton(pin, buttonId))
             return;
-        }
 
         if (1100 <= pin && pin < 1300) {
             pin -= 1100;
