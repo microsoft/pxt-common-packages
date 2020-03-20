@@ -17,12 +17,12 @@
 #define JD_STATUS_TX_ACTIVE 0x02
 #define JD_STATUS_TX_QUEUED 0x04
 
-static jd_serial_packet_t _rxBuffer[2];
-static jd_serial_packet_t *rxPkt = &_rxBuffer[0];
+static jd_frame_t _rxBuffer[2];
+static jd_frame_t *rxFrame = &_rxBuffer[0];
 static void set_tick_timer(uint8_t statusClear);
 static volatile uint8_t status;
 
-static jd_packet_t *txPkt;
+static jd_frame_t *txFrame;
 static uint64_t nextAnnounce;
 static uint8_t txPending;
 static uint8_t annCounter;
@@ -81,8 +81,8 @@ static void tx_done() {
 
 void jd_tx_completed(int errCode) {
     LOG("tx done: %d", errCode);
-    app_packet_sent(txPkt);
-    txPkt = NULL;
+    app_frame_sent(txFrame);
+    txFrame = NULL;
     tx_done();
 }
 
@@ -106,11 +106,11 @@ static void flush_tx_queue() {
     target_enable_irq();
 
     txPending = 0;
-    if (!txPkt)
-        txPkt = app_pull_packet();
+    if (!txFrame)
+        txFrame = app_pull_frame();
 
     signal_write(1);
-    if (uart_start_tx(txPkt, JD_PACKET_SIZE(txPkt)) < 0) {
+    if (uart_start_tx(txFrame, JD_FRAME_SIZE(txFrame)) < 0) {
         // ERROR("race on TX");
         jd_diagnostics.bus_lo_error++;
         tx_done();
@@ -156,11 +156,11 @@ static void rx_timeout() {
 }
 
 static void setup_rx_timeout() {
-    uint32_t *p = (uint32_t *)rxPkt;
+    uint32_t *p = (uint32_t *)rxFrame;
     if (p[0] == 0 && p[1] == 0)
         rx_timeout(); // didn't get any data after lo-pulse
     // got the size - set timeout for whole packet
-    tim_set_timer(JD_PACKET_SIZE(&rxPkt->header) * 12 + 60, rx_timeout);
+    tim_set_timer(JD_FRAME_SIZE(rxFrame) * 12 + 60, rx_timeout);
 }
 
 void jd_line_falling() {
@@ -176,7 +176,7 @@ void jd_line_falling() {
     status |= JD_STATUS_RX_ACTIVE;
 
     // 1us faster than memset() on SAMD21
-    uint32_t *p = (uint32_t *)rxPkt;
+    uint32_t *p = (uint32_t *)rxFrame;
     p[0] = 0;
     p[1] = 0;
     p[2] = 0;
@@ -188,7 +188,7 @@ void jd_line_falling() {
     // target_wait_us(2);
 
     pulse1();
-    uart_start_rx(rxPkt, sizeof(*rxPkt));
+    uart_start_rx(rxFrame, sizeof(*rxFrame));
     pulse1();
 
     tim_set_timer(100, setup_rx_timeout);
@@ -201,12 +201,12 @@ void jd_rx_completed(int dataLeft) {
         check_announce();
 
     LOG("rx cmpl");
-    jd_serial_packet_t *pkt = rxPkt;
+    jd_frame_t *frame = rxFrame;
 
-    if (rxPkt == &_rxBuffer[0])
-        rxPkt = &_rxBuffer[1];
+    if (rxFrame == &_rxBuffer[0])
+        rxFrame = &_rxBuffer[1];
     else
-        rxPkt = &_rxBuffer[0];
+        rxFrame = &_rxBuffer[0];
 
     signal_read(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
@@ -217,15 +217,15 @@ void jd_rx_completed(int dataLeft) {
         return;
     }
 
-    uint32_t txSize = sizeof(*pkt) - dataLeft;
-    uint32_t declaredSize = JD_PACKET_SIZE(&pkt->header);
+    uint32_t txSize = sizeof(*frame) - dataLeft;
+    uint32_t declaredSize = JD_FRAME_SIZE(frame);
     if (txSize < declaredSize) {
-        ERROR("pkt too short");
+        ERROR("frame too short");
         jd_diagnostics.bus_uart_error++;
         return;
     }
-    uint16_t crc = jd_crc16((uint8_t *)pkt + 2, declaredSize - 2);
-    if (crc != pkt->header.crc) {
+    uint16_t crc = jd_crc16((uint8_t *)frame + 2, declaredSize - 2);
+    if (crc != frame->crc) {
         ERROR("crc mismatch");
         jd_diagnostics.bus_uart_error++;
         return;
@@ -234,14 +234,14 @@ void jd_rx_completed(int dataLeft) {
     jd_diagnostics.packets_received++;
 
     // pulse1();
-    int err = app_handle_packet(&pkt->header);
+    int err = app_handle_frame(frame);
 
     if (err)
         jd_diagnostics.packets_dropped++;
 }
 
-void jd_compute_crc(jd_packet_t *pkt) {
-    pkt->crc = jd_crc16((uint8_t *)pkt + 2, JD_PACKET_SIZE(pkt) - 2);
+void jd_compute_crc(jd_frame_t *frame) {
+    frame->crc = jd_crc16((uint8_t *)frame + 2, JD_FRAME_SIZE(frame) - 2);
 }
 
 void jd_packet_ready() {
@@ -252,15 +252,16 @@ void jd_packet_ready() {
     target_enable_irq();
 }
 
-int jd_shift_frame(jd_packet_t *pkt) {
-    int psize = pkt->_size;
-    int oldsz = pkt->service_size;
+int jd_shift_frame(jd_frame_t *frame) {
+    int psize = frame->size;
+    jd_packet_t *pkt = (jd_packet_t *)frame;
+    int oldsz = pkt->service_size + 4;
     if (oldsz >= psize)
         return 0; // nothing to shift
 
     int ptr;
-    if (pkt->data[oldsz] == 0xff) {
-        ptr = pkt->data[oldsz + 1];
+    if (frame->data[oldsz] == 0xff) {
+        ptr = frame->data[oldsz + 1];
         if (ptr >= psize)
             return 0; // End-of-frame
         if (ptr <= oldsz)
@@ -269,20 +270,46 @@ int jd_shift_frame(jd_packet_t *pkt) {
         ptr = oldsz;
     }
 
-    uint8_t *src = &pkt->data[ptr];
+    // assume the first one got the ACK sorted
+    frame->flags &= ~JD_PACKET_FLAG_ACK_REQUESTED;
+
+    uint8_t *src = &frame->data[ptr];
     int newsz = *src + 4;
-    if (ptr + newsz > pkt->_size) {
+    if (ptr + newsz > frame->size) {
         ERROR("invalid super-frame");
         return 0;
     }
-    uint8_t *dst = &pkt->service_size;
+    uint8_t *dst = frame->data;
     // don't trust memmove()
     for (int i = 0; i < newsz; ++i)
         *dst++ = *src++;
     // store ptr
     ptr += newsz;
-    pkt->data[newsz - 4] = 0xff;
-    pkt->data[newsz - 4 + 1] = ptr;
+    frame->data[newsz] = 0xff;
+    frame->data[newsz + 1] = ptr;
 
     return 1;
+}
+
+void jd_reset_frame(jd_frame_t *frame) {
+    frame->size = 0x00;
+}
+
+void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,
+                       unsigned service_arg, unsigned service_size) {
+    if ((service_num | service_cmd | service_arg) & ~0xff)
+        jd_panic();
+    uint8_t *dst = frame->data + (frame->size == 0xff ? -4 : frame->size);
+    unsigned szLeft = frame->data + JD_SERIAL_PAYLOAD_SIZE - dst;
+    if (service_size + 4 > szLeft)
+        return NULL;
+    *dst++ = service_size;
+    *dst++ = service_num;
+    *dst++ = service_cmd;
+    *dst++ = service_arg;
+    if (frame->size == 0xff)
+        frame->size = service_size;
+    else
+        frame->size += service_size + 4;
+    return dst;
 }

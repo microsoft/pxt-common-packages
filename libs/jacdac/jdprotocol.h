@@ -24,11 +24,11 @@ extern "C" {
 // the device_identifier contains target service class number
 #define JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS 0x04
 
-#define JD_PACKET_SIZE(pkt) ((pkt)->_size + JD_SERIAL_FULL_HEADER_SIZE)
+#define JD_FRAME_SIZE(pkt) ((pkt)->size + 12)
 
 struct _jd_packet_t {
     uint16_t crc;
-    uint8_t _size; // of data[] before decompression
+    uint8_t _size; // of frame data[]
     uint8_t flags;
 
     uint64_t device_identifier;
@@ -44,8 +44,22 @@ typedef struct _jd_packet_t jd_packet_t;
 
 typedef struct {
     jd_packet_t header;
-    uint8_t data[JD_SERIAL_PAYLOAD_SIZE + 1];
+    uint8_t data[JD_SERIAL_PAYLOAD_SIZE];
 } jd_serial_packet_t;
+
+
+struct _jd_frame_t {
+    uint16_t crc;
+    uint8_t size;
+    uint8_t flags;
+
+    uint64_t device_identifier;
+
+    uint8_t data[JD_SERIAL_PAYLOAD_SIZE + 4];
+} __attribute__((__packed__, aligned(4)));
+typedef struct _jd_frame_t jd_frame_t;
+
+
 
 #define JDSPI_MAGIC 0x7ACDAC01
 
@@ -54,11 +68,13 @@ typedef struct {
 
 typedef struct {
     uint16_t magic;
-    uint8_t size; // of data[]
-    uint8_t service_number;
+    uint8_t _size; // of data[] before decompression
+    uint8_t flags;
 
-    uint16_t service_command;
-    uint16_t service_arg;
+    uint8_t service_size;
+    uint8_t service_number;
+    uint8_t service_command;
+    uint8_t service_arg;
 
     uint8_t data[JDSPI_PKTSIZE - JDSPI_HEADER_SIZE];
 } jd_spi_packet_t;

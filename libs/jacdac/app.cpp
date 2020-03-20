@@ -13,22 +13,22 @@
 
 namespace jacdac {
 
-struct LinkedPkt {
-    LinkedPkt *next;
-    jd_packet_t pkt;
+struct LinkedFrame {
+    LinkedFrame *next;
+    jd_frame_t frame;
 };
 
 #define MAX_RX 10
 #define MAX_TX 10
-static LinkedPkt *volatile rxQ;
-static LinkedPkt *volatile txQ;
-static LinkedPkt *superFrameRX;
+static LinkedFrame *volatile rxQ;
+static LinkedFrame *volatile txQ;
+static LinkedFrame *superFrameRX;
 
-extern "C" jd_packet_t *app_pull_packet() {
+extern "C" jd_frame_t *app_pull_frame() {
     target_disable_irq();
-    jd_packet_t *res = NULL;
+    jd_frame_t *res = NULL;
     if (txQ) {
-        res = &txQ->pkt;
+        res = &txQ->frame;
         txQ = txQ->next;
     }
     target_enable_irq();
@@ -59,9 +59,9 @@ static void queue_cnt() {
     }
 }
 
-static void handle_count_packet(jd_packet_t *pkt) {
+static void handle_count_packet(jd_packet_t *frame) {
     numPkts++;
-    count_service_pkt_t *cs = (count_service_pkt_t *)pkt;
+    count_service_pkt_t *cs = (count_service_pkt_t *)frame;
     uint32_t c = cs->count;
     if (prevCnt && prevCnt + 1 != c) {
         log_pin_set(2, 1);
@@ -85,9 +85,9 @@ extern "C" void app_queue_annouce() {
     Event(DEVICE_ID, EVT_QUEUE_ANNOUNCE);
 }
 
-static inline int copyAndAppend(LinkedPkt *volatile *q, jd_packet_t *pkt, int max) {
-    auto buf = (LinkedPkt *)malloc(JD_PACKET_SIZE(pkt) + sizeof(void *));
-    memcpy(&buf->pkt, pkt, JD_PACKET_SIZE(pkt));
+static inline int copyAndAppend(LinkedFrame *volatile *q, jd_frame_t *frame, int max) {
+    auto buf = (LinkedFrame *)malloc(JD_FRAME_SIZE(frame) + sizeof(void *));
+    memcpy(&buf->frame, frame, JD_FRAME_SIZE(frame));
 
     target_disable_irq();
     auto last = *q;
@@ -114,16 +114,17 @@ static inline int copyAndAppend(LinkedPkt *volatile *q, jd_packet_t *pkt, int ma
     }
 }
 
-extern "C" int app_handle_packet(jd_packet_t *pkt) {
-    // DMESG("PKT from %x/%d sz=%d cmd %d[%d]", (int)pkt->device_identifier, pkt->service_number,
-    //      pkt->size, pkt->service_command, pkt->service_arg);
+extern "C" int app_handle_frame(jd_frame_t *frame) {
+    // DMESG("PKT from %x/%d sz=%d cmd %d[%d]", (int)frame->device_identifier,
+    // frame->service_number,
+    //      frame->size, frame->service_command, frame->service_arg);
 
-    if (pkt->service_number == 0x42) {
-        handle_count_packet(pkt);
+    if (((jd_packet_t *)frame)->service_number == 0x42) {
+        handle_count_packet((jd_packet_t *)frame);
         return 0;
     }
 
-    if (copyAndAppend(&rxQ, pkt, MAX_RX) < 0) {
+    if (copyAndAppend(&rxQ, frame, MAX_RX) < 0) {
         return -1;
     } else {
         Event(DEVICE_ID, EVT_DATA_READY);
@@ -131,9 +132,9 @@ extern "C" int app_handle_packet(jd_packet_t *pkt) {
     }
 }
 
-extern "C" void app_packet_sent(jd_packet_t *pkt) {
-    // LOG("pkt sent");
-    free((uint8_t *)pkt - sizeof(void *));
+extern "C" void app_frame_sent(jd_frame_t *frame) {
+    // LOG("frame sent");
+    free((uint8_t *)frame - sizeof(void *));
     if (txQ)
         jd_packet_ready();
     queue_cnt();
@@ -155,14 +156,14 @@ void __physSendPacket(Buffer buf) {
     if (!buf || buf->length < 16)
         return;
 
-    jd_packet_t *pkt = (jd_packet_t *)buf->data;
+    jd_frame_t *frame = (jd_frame_t *)buf->data;
 
-    if (copyAndAppend(&txQ, pkt, MAX_TX) < 0) {
-        pkt->crc = 0;
+    if (copyAndAppend(&txQ, frame, MAX_TX) < 0) {
+        frame->crc = 0;
         return;
     }
 
-    jd_compute_crc(pkt);
+    jd_compute_crc(frame);
     jd_packet_ready();
 }
 
@@ -171,7 +172,7 @@ void __physSendPacket(Buffer buf) {
  **/
 //%
 Buffer __physGetPacket() {
-    if (superFrameRX && jd_shift_frame(&superFrameRX->pkt) == 0) {
+    if (superFrameRX && jd_shift_frame(&superFrameRX->frame) == 0) {
         free(superFrameRX);
         superFrameRX = NULL;
     }
@@ -186,7 +187,8 @@ Buffer __physGetPacket() {
     if (!superFrameRX)
         return NULL;
 
-    return mkBuffer(&superFrameRX->pkt, JD_PACKET_SIZE(&superFrameRX->pkt));
+    auto pkt = (jd_packet_t *)&superFrameRX->frame;
+    return mkBuffer(pkt, JD_SERIAL_FULL_HEADER_SIZE + pkt->service_size);
 }
 
 /**
