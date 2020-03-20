@@ -47,3 +47,68 @@ uint16_t jd_crc16(const void *data, uint32_t size) {
     }
     return crc;
 }
+
+void jd_compute_crc(jd_frame_t *frame) {
+    frame->crc = jd_crc16((uint8_t *)frame + 2, JD_FRAME_SIZE(frame) - 2);
+}
+
+int jd_shift_frame(jd_frame_t *frame) {
+    int psize = frame->size;
+    jd_packet_t *pkt = (jd_packet_t *)frame;
+    int oldsz = pkt->service_size + 4;
+    if (oldsz >= psize)
+        return 0; // nothing to shift
+
+    int ptr;
+    if (frame->data[oldsz] == 0xff) {
+        ptr = frame->data[oldsz + 1];
+        if (ptr >= psize)
+            return 0; // End-of-frame
+        if (ptr <= oldsz) {
+            DMESG("invalid super-frame");
+            return 0; // don't let it go back, must be some corruption
+        }
+    } else {
+        ptr = oldsz;
+    }
+
+    // assume the first one got the ACK sorted
+    frame->flags &= ~JD_PACKET_FLAG_ACK_REQUESTED;
+
+    uint8_t *src = &frame->data[ptr];
+    int newsz = *src + 4;
+    if (ptr + newsz > frame->size) {
+        DMESG("invalid super-frame");
+        return 0;
+    }
+    uint8_t *dst = frame->data;
+    // don't trust memmove()
+    for (int i = 0; i < newsz; ++i)
+        *dst++ = *src++;
+    // store ptr
+    ptr += newsz;
+    frame->data[newsz] = 0xff;
+    frame->data[newsz + 1] = ptr;
+
+    return 1;
+}
+
+void jd_reset_frame(jd_frame_t *frame) {
+    frame->size = 0x00;
+}
+
+void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,
+                       unsigned service_arg, unsigned service_size) {
+    if ((service_num | service_cmd | service_arg) & ~0xff)
+        jd_panic();
+    uint8_t *dst = frame->data + frame->size;
+    unsigned szLeft = (uint8_t *)frame + sizeof(*frame) - dst;
+    if (service_size + 4 > szLeft)
+        return NULL;
+    *dst++ = service_size;
+    *dst++ = service_num;
+    *dst++ = service_cmd;
+    *dst++ = service_arg;
+    frame->size += service_size + 4;
+    return dst;
+}
