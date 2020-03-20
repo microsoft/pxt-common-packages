@@ -52,11 +52,13 @@ void jd_compute_crc(jd_frame_t *frame) {
     frame->crc = jd_crc16((uint8_t *)frame + 2, JD_FRAME_SIZE(frame) - 2);
 }
 
+#define ALIGN(x) (((x) + 3) & ~3)
+
 int jd_shift_frame(jd_frame_t *frame) {
     int psize = frame->size;
     jd_packet_t *pkt = (jd_packet_t *)frame;
     int oldsz = pkt->service_size + 4;
-    if (oldsz >= psize)
+    if (ALIGN(oldsz) >= psize)
         return 0; // nothing to shift
 
     int ptr;
@@ -65,11 +67,11 @@ int jd_shift_frame(jd_frame_t *frame) {
         if (ptr >= psize)
             return 0; // End-of-frame
         if (ptr <= oldsz) {
-            DMESG("invalid super-frame");
+            DMESG("invalid super-frame %d %d", ptr, oldsz);
             return 0; // don't let it go back, must be some corruption
         }
     } else {
-        ptr = oldsz;
+        ptr = ALIGN(oldsz);
     }
 
     // assume the first one got the ACK sorted
@@ -77,16 +79,17 @@ int jd_shift_frame(jd_frame_t *frame) {
 
     uint8_t *src = &frame->data[ptr];
     int newsz = *src + 4;
-    if (ptr + newsz > frame->size) {
-        DMESG("invalid super-frame");
+    if (ptr + newsz > psize) {
+        DMESG("invalid super-frame %d %d %d", ptr,newsz,psize);
         return 0;
     }
-    uint8_t *dst = frame->data;
+    uint32_t *dst = (uint32_t *)frame->data;
+    uint32_t *srcw = (uint32_t *)src;
     // don't trust memmove()
-    for (int i = 0; i < newsz; ++i)
-        *dst++ = *src++;
+    for (int i = 0; i < newsz; i += 4)
+        *dst++ = *srcw++;
     // store ptr
-    ptr += newsz;
+    ptr += ALIGN(newsz);
     frame->data[newsz] = 0xff;
     frame->data[newsz + 1] = ptr;
 
@@ -109,6 +112,6 @@ void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service
     *dst++ = service_num;
     *dst++ = service_cmd;
     *dst++ = service_arg;
-    frame->size += service_size + 4;
+    frame->size += ALIGN(service_size + 4);
     return dst;
 }
