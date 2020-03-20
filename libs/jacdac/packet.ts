@@ -118,6 +118,7 @@ namespace jacdac {
         set data(buf: Buffer) {
             if (buf.length > JD_SERIAL_MAX_PAYLOAD_SIZE)
                 throw "Too big"
+            this._header[2] = buf.length + 4
             this._header[12] = buf.length
             this._data = buf
         }

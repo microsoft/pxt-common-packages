@@ -36,12 +36,12 @@ void log_pin_set(int line, int v);
 
 // the protocol is:
 // app calls jd_packet_ready()
-// JD stack calls app_pull_packet() when it's ready to send
-// JS stack calls app_packet_sent() when the send is done
-jd_packet_t *app_pull_packet(void);
-void app_packet_sent(jd_packet_t *pkt);
+// JD stack calls app_pull_frame() when it's ready to send
+// JS stack calls app_frame_sent() when the send is done
+jd_frame_t *app_pull_frame(void);
+void app_frame_sent(jd_frame_t *frame);
 void app_queue_annouce(void);
-int app_handle_packet(jd_packet_t *pkt);
+int app_handle_frame(jd_frame_t *frame);
 
 // Provided jdutil.c
 uint32_t jd_random_around(uint32_t v);
@@ -53,13 +53,13 @@ uint16_t jd_crc16(const void *data, uint32_t size);
 // Provided jdlow.c
 void jd_init(void);
 void jd_packet_ready(void);
-void jd_compute_crc(jd_packet_t *pkt);
+void jd_compute_crc(jd_frame_t *pkt);
 // these are to be called by uart implementation
 void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
 void jd_line_falling(void);
 int jd_is_running();
-int jd_shift_frame(jd_packet_t *pkt);
+int jd_shift_frame(jd_frame_t *pkt);
 
 typedef struct {
     uint32_t bus_state;
