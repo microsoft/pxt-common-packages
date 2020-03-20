@@ -12,6 +12,8 @@ extern "C" {
 #define JD_SERIAL_PAYLOAD_SIZE 236
 #define JD_SERIAL_FULL_HEADER_SIZE 16
 
+#define JD_SERVICE_CLASS_CTRL 0x00000000
+
 #define JD_SERVICE_NUMBER_CTRL 0x00
 #define JD_SERVICE_NUMBER_MASK 0x3f
 #define JD_SERVICE_NUMBER_CRC_ACK 0x3f
@@ -87,7 +89,8 @@ struct _jd_frame_t {
 } __attribute__((__packed__, aligned(4)));
 typedef struct _jd_frame_t jd_frame_t;
 
-#define JDSPI_MAGIC 0x7ACDAC01
+#define JDSPI_MAGIC 0x7ACD
+#define JDSPI_MAGIC_NOOP 0xB3CD
 
 #ifdef __cplusplus
 }

@@ -137,10 +137,15 @@ void JDDisplay::step() {
     target_enable_irq();
 
     memset(&sendFrame, 0, JD_SERIAL_FULL_HEADER_SIZE);
-    sendFrame.device_identifier = JDSPI_MAGIC;
+    sendFrame.crc = JDSPI_MAGIC;
+    sendFrame.device_identifier = pxt::getLongSerialNumber();
 
-    if (recvFrame.device_identifier != JDSPI_MAGIC) {
-        DMESG("JDA: magic mismatch %x", (int)recvFrame.device_identifier);
+    if (recvFrame.crc == JDSPI_MAGIC_NOOP) {
+        // empty frame, skip
+    } else if (recvFrame.crc != JDSPI_MAGIC) {
+        DMESG("JDA: magic mismatch %x", (int)recvFrame.crc);
+    } else if (recvFrame.size == 0) {
+        // empty frame, skip
     } else {
         for (;;) {
             handleIncoming((jd_packet_t *)&recvFrame);
