@@ -58,7 +58,7 @@ static void check_announce() {
         // pulse_log_pin();
         if (nextAnnounce)
             app_queue_annouce();
-        nextAnnounce = tim_get_micros() + jd_random_around(400000);
+        nextAnnounce = tim_get_micros() + 499000 + (jd_random() & 0x7ff);
     }
 }
 
@@ -247,4 +247,3 @@ void jd_packet_ready() {
         set_tick_timer(0);
     target_enable_irq();
 }
-
