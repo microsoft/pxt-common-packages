@@ -158,12 +158,13 @@ void __physSendPacket(Buffer buf) {
 
     jd_frame_t *frame = (jd_frame_t *)buf->data;
 
+    jd_compute_crc(frame);
+
     if (copyAndAppend(&txQ, frame, MAX_TX) < 0) {
         frame->crc = 0;
         return;
     }
 
-    jd_compute_crc(frame);
     jd_packet_ready();
 }
 
