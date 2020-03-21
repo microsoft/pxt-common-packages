@@ -49,7 +49,7 @@ namespace jacdac {
 
         sendReport(pkt: JDPacket) {
             pkt.service_number = this.serviceNumber
-            pkt._send(myDevice)
+            pkt._sendReport(myDevice)
         }
 
         constructor(
@@ -164,7 +164,7 @@ namespace jacdac {
             if (this.serviceNumber == null)
                 return
             pkt.service_number = this.serviceNumber
-            pkt._send(this.device)
+            pkt._sendCmd(this.device)
         }
 
         sendPackedCommand(service_command: number, service_argument: number, fmt: string, nums: number[]) {
@@ -264,7 +264,7 @@ namespace jacdac {
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
         JDPacket.packed(CMD_ADVERTISEMENT_DATA, 0, fmt, ids)
-            ._send(selfDevice())
+            ._sendReport(selfDevice())
         announceCallbacks.forEach(f => f())
         gcDevices()
     }
@@ -305,7 +305,7 @@ namespace jacdac {
     }
 
     export function routePacket(pkt: JDPacket) {
-        // log("route: " + pkt.toString())
+        log("route: " + pkt.toString())
         const devId = pkt.device_identifier
         const multiCommandClass = pkt.multicommand_class
 
@@ -317,7 +317,7 @@ namespace jacdac {
                 const crc = pkt.crc
                 const ack = JDPacket.onlyHeader(crc & 0xff, crc >> 8)
                 ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
-                ack._send(selfDevice())
+                ack._sendReport(selfDevice())
             }
         }
 

@@ -157,6 +157,7 @@ void __physSendPacket(Buffer buf) {
         return;
 
     jd_frame_t *frame = (jd_frame_t *)buf->data;
+    frame->size = (buf->length - 12 + 3) & ~3;
 
     jd_compute_crc(frame);
 

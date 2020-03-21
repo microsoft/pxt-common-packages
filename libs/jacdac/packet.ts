@@ -64,7 +64,7 @@ namespace jacdac {
             this._header.write(4, idb)
         }
 
-        get packet_flags() { return this._header[2] }
+        get packet_flags() { return this._header[3] }
 
         get multicommand_class() {
             if (this.packet_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
@@ -81,7 +81,7 @@ namespace jacdac {
         }
         set requires_ack(ack: boolean) {
             if (ack != this.requires_ack)
-                this._header[2] ^= JD_FRAME_FLAG_ACK_REQUESTED
+                this._header[3] ^= JD_FRAME_FLAG_ACK_REQUESTED
         }
 
         get service_number(): number {
@@ -118,7 +118,6 @@ namespace jacdac {
         set data(buf: Buffer) {
             if (buf.length > JD_SERIAL_MAX_PAYLOAD_SIZE)
                 throw "Too big"
-            this._header[2] = buf.length + 4
             this._header[12] = buf.length
             this._data = buf
         }
@@ -136,7 +135,7 @@ namespace jacdac {
         }
 
         toString(): string {
-            let msg = `${this.device_identifier}/${this.service_number}: ${this.service_command}(${this.service_argument}) sz=${this.size}`
+            let msg = `${this.device_identifier}/${this.service_number}[${this.packet_flags}]: ${this.service_command}(${this.service_argument}) sz=${this.size}`
             if (this.size < 20) msg += ": " + this.data.toHex()
             else msg += ": " + this.data.slice(0, 20).toHex() + "..."
             return msg
@@ -150,15 +149,23 @@ namespace jacdac {
                 jacdac.__physSendPacket(this._header)
         }
 
-        _send(dev: Device) {
+        _sendReport(dev: Device) {
             if (!dev)
                 return
             this.device_identifier = dev.deviceId
             this._sendCore()
         }
 
+        _sendCmd(dev: Device) {
+            if (!dev)
+                return
+            this.device_identifier = dev.deviceId
+            this._header[3] |= JD_FRAME_FLAG_COMMAND
+            this._sendCore()
+        }
+
         sendAsMultiCommand(service_class: number) {
-            this._header[2] |= JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
+            this._header[3] |= JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS | JD_FRAME_FLAG_COMMAND
             this._header.setNumber(NumberFormat.UInt32LE, 4, service_class)
             this._header.setNumber(NumberFormat.UInt32LE, 8, 0)
             this._sendCore()
@@ -169,7 +176,7 @@ namespace jacdac {
             if (!dev)
                 return false
             this.requires_ack = true
-            this._send(dev)
+            this._sendCmd(dev)
 
             if (!ackAwaiters) {
                 ackAwaiters = []
