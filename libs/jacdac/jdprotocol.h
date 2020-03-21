@@ -73,11 +73,6 @@ struct _jd_packet_t {
 } __attribute__((__packed__, aligned(4)));
 typedef struct _jd_packet_t jd_packet_t;
 
-typedef struct {
-    jd_packet_t header;
-    uint8_t data[JD_SERIAL_PAYLOAD_SIZE];
-} jd_serial_packet_t;
-
 struct _jd_frame_t {
     uint16_t crc;
     uint8_t size;
