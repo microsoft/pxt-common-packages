@@ -39,7 +39,7 @@ namespace jacdac {
         static from(service_command: number, service_argument: number, data: Buffer) {
             const p = new JDPacket()
             p._header = Buffer.create(JD_SERIAL_HEADER_SIZE)
-            p._data = data
+            p.data = data
             p.service_command = service_command
             p.service_argument = service_argument
             return p
