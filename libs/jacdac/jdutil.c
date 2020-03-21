@@ -75,7 +75,7 @@ int jd_shift_frame(jd_frame_t *frame) {
     }
 
     // assume the first one got the ACK sorted
-    frame->flags &= ~JD_PACKET_FLAG_ACK_REQUESTED;
+    frame->flags &= ~JD_FRAME_FLAG_ACK_REQUESTED;
 
     uint8_t *src = &frame->data[ptr];
     int newsz = *src + 4;

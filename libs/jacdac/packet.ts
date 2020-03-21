@@ -9,11 +9,11 @@ namespace jacdac {
     // the COMMAND flag signifies that the device_identifier is the recipent
     // (i.e., it's a command for the peripheral); the bit clear means device_identifier is the source
     // (i.e., it's a report from peripheral or a broadcast message)
-    export const JD_PACKET_FLAG_COMMAND = 0x01
+    export const JD_FRAME_FLAG_COMMAND = 0x01
     // an ACK should be issued with CRC of this package upon reception
-    export const JD_PACKET_FLAG_ACK_REQUESTED = 0x02
+    export const JD_FRAME_FLAG_ACK_REQUESTED = 0x02
     // the device_identifier contains target service class number
-    export const JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
+    export const JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS = 0x04
 
     const ACK_RETRIES = 3
     let ackAwaiters: AckAwaiter[]
@@ -67,7 +67,7 @@ namespace jacdac {
         get packet_flags() { return this._header[2] }
 
         get multicommand_class() {
-            if (this.packet_flags & JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
+            if (this.packet_flags & JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS)
                 return this._header.getNumber(NumberFormat.UInt32LE, 4)
             return undefined
         }
@@ -77,11 +77,11 @@ namespace jacdac {
         }
 
         get requires_ack(): boolean {
-            return (this.packet_flags & JD_PACKET_FLAG_ACK_REQUESTED) ? true : false;
+            return (this.packet_flags & JD_FRAME_FLAG_ACK_REQUESTED) ? true : false;
         }
         set requires_ack(ack: boolean) {
             if (ack != this.requires_ack)
-                this._header[2] ^= JD_PACKET_FLAG_ACK_REQUESTED
+                this._header[2] ^= JD_FRAME_FLAG_ACK_REQUESTED
         }
 
         get service_number(): number {
@@ -132,7 +132,7 @@ namespace jacdac {
         }
 
         get is_command() {
-            return !!(this.packet_flags & JD_PACKET_FLAG_COMMAND)
+            return !!(this.packet_flags & JD_FRAME_FLAG_COMMAND)
         }
 
         toString(): string {
@@ -158,7 +158,7 @@ namespace jacdac {
         }
 
         sendAsMultiCommand(service_class: number) {
-            this._header[2] |= JD_PACKET_FLAG_IDENTIFIER_IS_SERVICE_CLASS
+            this._header[2] |= JD_FRAME_FLAG_IDENTIFIER_IS_SERVICE_CLASS
             this._header.setNumber(NumberFormat.UInt32LE, 4, service_class)
             this._header.setNumber(NumberFormat.UInt32LE, 8, 0)
             this._sendCore()
