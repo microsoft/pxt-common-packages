@@ -160,7 +160,7 @@ namespace keyboard {
 
     //%
     void __comboKey(int reg, int modifier, KeyboardKeyEvent event) {
-        auto ckey[] = {        
+        codal::Key ckey[] = {        
             { 
             .reg = KEYMAP_KEY_DOWN | reg,
             .modifier = modifier 
