@@ -41,57 +41,57 @@ enum class KeyboardMediaKey
 enum class KeyboardFunctionKey
 {
     //% block="F1"
-    F1Key,  
+    F1Key = KEY_F1,  
     //% block="F2"
-    F2Key,
+    F2Key = KEY_F2,
     //% block="F3"
-    F3Key,
+    F3Key = KEY_F3,
     //% block="F4"
-    F4Key, 
+    F4Key = KEY_F4, 
     //% block="F5"
-    F5Key,
+    F5Key = KEY_F5,
     //% block="F6"
-    F6Key,
+    F6Key = KEY_F6,
     //% block="F7"
-    F7Key,
+    F7Key = KEY_F7,
     //% block="F8"
-    F8Key,
+    F8Key = KEY_F8,
     //% block="F9"
-    F9Key,
+    F9Key = KEY_F9,
     //% block="F0"
-    F10Key,
+    F10Key = KEY_F10,
     //% block="F11"
-    F11Key,
+    F11Key = KEY_F11,
     //% block="F12"
-    F12Key,
+    F12Key = KEY_F12,
 
     //% block="print screen"
-    PrintScreen,
+    PrintScreen = KEY_SYSRQ,
     //% block="scroll lock"
-    ScrollLock,
+    ScrollLock = KEY_SCROLLLOCK,
     //% block="pause"
-    Pause,
+    Pause = KEY_PAUSE,
     //% block="insert"
-    Insert,
+    Insert = KEY_INSERT,
     //% block="home"
-    Home,
+    Home = KEY_HOME,
     //% block="page up"
-    PageUp,
+    PageUp = KEY_PAGEUP,
     //% block="delete"
-    DeleteForward,
+    DeleteForward = KEY_DELETE,
     //% block="end"
-    End,
+    End = KEY_END,
     //% block="page down"
-    PageDown,
+    PageDown = KEY_PAGEDOWN,
 
     //% block="right arrow"
-    RightArrow,
+    RightArrow = KEY_RIGHT,
     //% block="left arrow"
-    LeftArrow,
+    LeftArrow = KEY_LEFT,
     //% block="down arrow"
-    DownArrow,
+    DownArrow = KEY_DOWN,
     //% block="up arrow"
-    UpArrow,
+    UpArrow = KEY_UP,
 };
 
 enum class KeyboardKeyEvent {
@@ -143,7 +143,7 @@ namespace keyboard {
 
     //%
     void __functionKey(KeyboardFunctionKey key, KeyboardKeyEvent event) {
-        codal::FunctionKey ckey = (codal::FunctionKey)((int)codal::FunctionKey::F1Key + (int)key);
+        codal::FunctionKey ckey = (codal::FunctionKey)(int)key;
         switch(event) {
             case KeyboardKeyEvent::Down:
                 pxt::keyboard.keyDown(ckey);
