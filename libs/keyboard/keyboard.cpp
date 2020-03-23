@@ -156,4 +156,25 @@ namespace keyboard {
                 break;
         }
     }
+
+    //%
+    void _comboKey(int reg, int modifier, KeyboardKeyEvent event) {
+        auto ckey[] = {        
+            { 
+            .reg = KEYMAP_KEY_DOWN | reg,
+            .modifier = modifier 
+            },
+        };
+        switch(event) {
+            case KeyboardKeyEvent::Down:
+                pxt::keyboard.keyDown(ckey);
+                break;
+            case KeyboardKeyEvent::Up:
+                pxt::keyboard.keyUp(ckey);
+                break;
+            case KeyboardKeyEvent::Press:
+                pxt::keyboard.press(ckey);
+                break;
+        }    
+    }
 }

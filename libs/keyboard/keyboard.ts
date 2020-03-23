@@ -49,6 +49,10 @@ namespace keyboard {
                 __functionKey(key, event);
         }
 
+        comboKey(key: number, modifier: number, event: KeyboardKeyEvent) {
+            
+        }
+
         private static updateState(downKeys: number[], c: number, event: KeyboardKeyEvent): boolean {
             let i = downKeys.indexOf(c);
             switch (event) {
@@ -145,6 +149,11 @@ namespace keyboard {
     export function functionKey(key: KeyboardFunctionKey, event: KeyboardKeyEvent) {
         const st = state();
         st.functionKey(key, event)
+    }
+
+    export function comboKey(key: number, modifier: number, event: KeyboardKeyEvent) {
+        const st = state();
+        st.comboKey(key, modifier, event);
     }
 
     /**
