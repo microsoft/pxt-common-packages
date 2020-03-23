@@ -158,7 +158,7 @@ namespace keyboard {
     }
 
     //%
-    void _comboKey(int reg, int modifier, KeyboardKeyEvent event) {
+    void __comboKey(int reg, int modifier, KeyboardKeyEvent event) {
         auto ckey[] = {        
             { 
             .reg = KEYMAP_KEY_DOWN | reg,

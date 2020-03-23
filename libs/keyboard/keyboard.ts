@@ -50,7 +50,9 @@ namespace keyboard {
         }
 
         comboKey(key: number, modifier: number, event: KeyboardKeyEvent) {
-            
+            if (!this._keysDown) this._keysDown = [];
+            if (State.updateState(this._keysDown, key, event))
+                __combosKey(key, modifier, modifier, event);      
         }
 
         private static updateState(downKeys: number[], c: number, event: KeyboardKeyEvent): boolean {
