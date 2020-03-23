@@ -1,6 +1,7 @@
 // https://github.com/lancaster-university/codal-core/blob/master/source/drivers/HIDKeyboard.cpp
 
 #include "pxt.h"
+#include "USB_HID_Keys.h"
 
 enum class KeyboardMediaKey
 {

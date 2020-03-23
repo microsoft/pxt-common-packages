@@ -1,3 +1,17 @@
+const enum KeyboardModifier {
+    Control = DAL.KEY_LEFTCTRL,
+    Alt = DAL.KEY_LEFTALT,
+    Shift = DAL.KEY_LEFTSHIFT,
+    RightControl = DAL.KEY_RIGHTCTRL,
+    RightAlt = DAL.KEY_RIGHTALT,
+    RightShift = DAL.KEY_RIGHTSHIFT,
+
+    ControlShift = Control | Alt,
+    ControlAlt = Control | Alt,
+    ControlShiftAlt = Control | Shift | Alt,
+    ShiftAlt = Shift | Alt
+}
+
 /**
  * Keyboard emulation
  */
@@ -153,7 +167,21 @@ namespace keyboard {
         st.functionKey(key, event)
     }
 
-    export function comboKey(key: number, modifier: number, event: KeyboardKeyEvent) {
+    /**
+     * Sends a combo key
+     * @param key a single character string
+     * @param modifier 
+     * @param event 
+     * blockId=keyboardCombo block="keyboard combo $modifier $key $event"
+    //% help=keyboard/combo
+     */
+    export function combo(modifier: KeyboardModifier, key: string, event: KeyboardKeyEvent) {
+        if (!key || !key.length) return;
+        const st = state();
+        st.comboKey(key.getCharAt(0), modifier, event);
+    }
+
+    export function comboKey(key: number, modifier: KeyboardModifier, event: KeyboardKeyEvent) {
         const st = state();
         st.comboKey(key, modifier, event);
     }
