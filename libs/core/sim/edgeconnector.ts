@@ -45,6 +45,7 @@ namespace pxsim {
 
         setPull(pull: number) {
             this.pull = pull;
+            this.value = pull == PinPullMode.PullDown ? 0 : 1023;
         }
 
         analogReadPin(): number {
