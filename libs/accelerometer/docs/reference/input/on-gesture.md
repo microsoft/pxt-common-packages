@@ -25,12 +25,11 @@ input.onGesture(Gesture.Shake,() => {
 
 ## Example: random number #example
 
-Show a random color when you shake the @boardname@.
+Log a message when you shake the @boardname@.
 
 ```blocks
-let pixels = light.createStrip();
-input.onGesture(Gesture.Shake,() => {
-    pixels.setAll(light.hsv(Math.randomRange(0, 256), 255, 127));
+input.onGesture(Gesture.Shake, function() {}
+    console.log("I'm shaking!")
 })
 ```
 

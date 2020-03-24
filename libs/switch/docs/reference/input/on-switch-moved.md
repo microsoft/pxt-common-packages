@@ -3,7 +3,7 @@
 Do something when the slide switch is moved left or right.
 
 ```sig
-input.onSwitchMoved(SwitchDirection.Left, () => {
+input.onSwitchMoved(SwitchDirection.Left, function() {
 
 })
 ```
@@ -14,26 +14,15 @@ input.onSwitchMoved(SwitchDirection.Left, () => {
 
 ## Example #example
 
-Use two ``||input:on switch moved||`` events for `left` and `right`. Make a photon move in opposite directions
-when the switch is moves from one side to the other.
+Use two ``||input:on switch moved||`` events for `left` and `right`. Log a message
+telling which position the switch is in.
 
 ```blocks
-let pixels = light.createStrip();
-
-pixels.setAll(0xff0000);
-input.onSwitchMoved(SwitchDirection.Right, () => {
-    for (let i = 0; i < pixels.length(); i++) {
-        pixels.photonForward(1);
-        pause(50);
-    }
-    pixels.photonFlip();
-});
-input.onSwitchMoved(SwitchDirection.Left, () => {
-    for (let i = 0; i < pixels.length(); i++) {
-        pixels.photonForward(1);
-        pause(50);
-    }
-    pixels.photonFlip();
+input.onSwitchMoved(SwitchDirection.Right, function() {
+    console.log("Switch Right")
+})
+input.onSwitchMoved(SwitchDirection.Left, function() {
+    console.log("Switch Left")
 })
 ```
 

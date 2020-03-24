@@ -35,20 +35,16 @@ is in microseconds (1 second = 1000000 microseconds).
 
 ## Example #example
 
-Check for a `low` pulse on pin `D5` every one-half of a second. Make the first pixel on the pixel strip `red`
-if there was a pulse.
+Check for a `low` pulse on pin `D5` every one-half of a second. Write to the console if there was a pulse.
 
 ```blocks
 let pulseTime = 0;
-let pixels = light.createStrip();
 pins.D5.setPull(PinPullMode.PullUp)
 
 forever(function() {
     pulseTime = pins.D5.pulseIn(PulseValue.Low)
     if (pulseTime > 0) {
-        pixels.setPixelColor(0, 0xff0000)
-    } else {
-        pixels.setPixelColor(0, 0x000000)
+        console.logValue("pulse-time", pulseTime)
     }
     pause(500)
 })
