@@ -13,35 +13,42 @@ and you don't want to wait for some other actions to happen first.
 
 ## Separate tasks #tasks
 
-As an example, you could have a small task to rotate the pixel lights the pixel strip. This is
-placed inside a ``||control:run in parallel||`` block:
+As an example, you could have a small task to rotate a bit in a 16 character
+string of zeros. This is placed inside a ``||control:run in parallel||`` block:
 
 ```blocks
-let spinit = true;
-let pixels = light.createStrip();
+let bitPos = 0
+let rorit = true
+let zeros = ""
 
-control.runInParallel(() => {
-    while (spinit) {
-        pixels.move(LightMove.Rotate, 1);
-        pause(200);
+control.runInParallel(function() {
+    while (rorit) {
+        if (bitPos > 15) {
+            bitPos = 0
+        }
+        zeros = ""
+        for (let i = 0; i < 16; i++) {
+            if (bitPos == i) {
+                zeros = zeros + "1"
+            } else {
+                zeros = zeros + "0"
+            }
+        }
+        console.log(zeros)
+        pause(200)
     }
 })
 ```
 
-Code is added to the main part of the program to turn the pixels on. It turns on one pixel, waits
-for `5` seconds and turns on another pixel. Then, it waits for `5` more seconds and stops the rotate
-loop in the background task.
+Code is added to the main part of the program to turn the bit rotation on, pause for `5` seconds and then turn it off. It pauses for another `5` seconds and then trys to turn the bit rotation back on. However, the parallel task has finished and
+the bit rotation won't start again.
 
 ```blocks
-let spinit = true;
-let pixels = light.createStrip();
-
-pixels.setPixelColor(0, 0x0000ff);
-pause(5000);
-pixels.setPixelColor(0, 0x0000ff);
-pause(5000);
-spinit = false;
-pixels.clear();
+let rorit = true
+pause(5000)
+rorit = false
+pause(5000)
+rorit = true
 ```
 
 ## Parameters
@@ -50,34 +57,19 @@ pixels.clear();
 
 ## Example #example
 
-Automatically rotate lighted pixels as they are added to the pixel strip.
-
-**First**: As a background task, rotate the lighted pixels on the pixel strip.
-
-**Next**: In the main part of the program, slowly add a few more lights to the strip.
-
-**Finally**: When the `A` button is pressed, stop the rotate task and turn off all the all the pixels.
+Use a parallel task to generate a magic number. In the main program check the value of the magic number twice. The first time check the value right away. The
+second time, check `2` seconds later after the parallel task has time to run.
 
 ```blocks
-let spinit = false;
-let pixels = light.createStrip();
+let magic = 0
 
-input.buttonA.onEvent(ButtonEvent.Click, () => {
-    spinit = false;
-    pixels.clear();
-    control.runInParallel(() => {
-        pixels.setPixelColor(0, 0x0000ff);
-        while (spinit) {
-            pixels.move(LightMove.Rotate, 1);
-            pause(250);
-        }
-    })
+control.runInParallel(function() {
+    magic = Math.randomRange(1000, 5000) 
 })
-spinit = true;
-for (let i = 0; i < 5; i++) {
-    pause(1000);
-    pixels.setPixelColor(0, 0x0000ff);
-}
+
+console.logValue("magic", magic)
+pause(2000)
+console.logValue("magic", magic)
 ```
 
 ## #seealso
