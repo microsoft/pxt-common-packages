@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class LCDClient extends ActuatorClient {
         constructor(name: string) {
-            super(name, jacdac.LCD_DEVICE_CLASS, 17);
+            super(name, jd_class.LCD, 17);
             this.setDisplay(true);
         }
 

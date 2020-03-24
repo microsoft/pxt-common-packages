@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class AccelerometerClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
+            super(name, jd_class.ACCELEROMETER);
         }
 
         /**

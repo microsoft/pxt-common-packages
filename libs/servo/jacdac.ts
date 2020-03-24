@@ -2,7 +2,7 @@ namespace jacdac {
     export class ServoService extends ActuatorService {
         servo: servos.Servo;
         constructor(name: string, servo: servos.Servo) {
-            super(name, jacdac.SERVO_DEVICE_CLASS, 8);
+            super(name, jd_class.SERVO, 8);
             this.servo = servo;
         }
 

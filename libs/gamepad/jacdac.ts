@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class GamepadService extends Host {
         constructor() {
-            super("gpad", jacdac.GAMEPAD_DEVICE_CLASS);
+            super("gpad", jd_class.GAMEPAD);
         }
 
         handlePacket(packet: JDPacket) {

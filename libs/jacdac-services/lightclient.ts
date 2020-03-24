@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class LightClient extends Client {
         constructor(name: string) {
-            super(name, jacdac.LIGHT_DEVICE_CLASS);
+            super(name, jd_class.LIGHT);
         }
 
         private setState(cmd: number, value: number) {

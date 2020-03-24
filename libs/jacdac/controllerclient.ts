@@ -16,7 +16,7 @@ namespace jacdac {
         controlData: Buffer
 
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+            super("ctrl", jd_class.CONTROLLER);
             this.controlData = Buffer.create(3)
             this.controlData[0] = JDControllerCommand.ControlClient;
             this.serverAddress = 0;

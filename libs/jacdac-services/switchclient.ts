@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class SwitchClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.SWITCH_DEVICE_CLASS);
+            super(name, jd_class.SWITCH);
         }
 
         /**

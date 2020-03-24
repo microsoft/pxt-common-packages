@@ -2,7 +2,7 @@ namespace jacdac {
     export class TouchButtonService extends SensorHost {
         private button: TouchButton;
         constructor(name: string, button: TouchButton) {
-            super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
+            super(name, jd_class.TOUCHBUTTON);
             this.button = button;
             jacdac.BUTTON_EVENTS.forEach((ev, j) => {
                 control.onEvent(this.button.id(), ev, () => {
@@ -26,7 +26,7 @@ namespace jacdac {
     export class TouchButtonsService extends SensorHost {
         private buttons: TouchButton[];
         constructor(name: string, buttons: TouchButton[]) {
-            super(name, jacdac.TOUCH_BUTTONS_DEVICE_CLASS);
+            super(name, jd_class.TOUCH_BUTTONS);
             this.buttons = buttons;
             this.buttons.forEach((t, i) => {
                 jacdac.BUTTON_EVENTS.forEach((ev, j) => {

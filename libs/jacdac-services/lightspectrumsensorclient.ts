@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class LightSpectrumSensorClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.LIGHT_SPECTRUM_SENSOR_DEVICE_CLASS);
+            super(name, jd_class.LIGHT_SPECTRUM_SENSOR);
         }
 
         /**

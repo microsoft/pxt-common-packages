@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class TouchButtonClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
+            super(name, jd_class.TOUCHBUTTON);
         }
 
         /**
@@ -36,7 +36,7 @@ namespace jacdac {
      */
     export class TouchButtonsClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.TOUCH_BUTTONS_DEVICE_CLASS);
+            super(name, jd_class.TOUCH_BUTTONS);
         }
 
         /**

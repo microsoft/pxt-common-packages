@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class ColorSensorClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.COLOR_SENSOR_DEVICE_CLASS);
+            super(name, jd_class.COLOR_SENSOR);
         }
 
         /**

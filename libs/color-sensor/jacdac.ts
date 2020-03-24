@@ -1,7 +1,7 @@
 namespace jacdac {
     export class ColorSensorService extends SensorHost {
         constructor(name: string) {
-            super(name, jacdac.COLOR_SENSOR_DEVICE_CLASS);
+            super(name, jd_class.COLOR_SENSOR);
         }
 
         serializeState(): Buffer {

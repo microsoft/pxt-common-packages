@@ -6,7 +6,7 @@ namespace jacdac {
         players: string[];
 
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS);
+            super("ctrl", jd_class.CONTROLLER);
             this.players = [];
             this.promptedServers = [];
             this.prompting = false;

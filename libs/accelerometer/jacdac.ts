@@ -1,7 +1,7 @@
 namespace jacdac {
     export class AccelerometerService extends jacdac.SensorHost {
         constructor(name: string) {
-            super("acc", jacdac.ACCELEROMETER_DEVICE_CLASS);
+            super("acc", jd_class.ACCELEROMETER);
             // TODO: catch all event
             input.onGesture(Gesture.Shake, () => this.raiseHostEvent(JDGesture.Shake));
             input.onGesture(Gesture.TiltUp, () => this.raiseHostEvent(JDGesture.TiltUp));

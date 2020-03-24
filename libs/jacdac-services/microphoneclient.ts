@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class MicrophoneClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.MICROPHONE_DEVICE_CLASS);
+            super(name, jd_class.MICROPHONE);
         }
 
         /**

@@ -4,7 +4,7 @@ namespace jacdac {
         minPriority = JDConsolePriority.Silent;
 
         constructor() {
-            super("conh", LOGGER_DEVICE_CLASS);
+            super("conh", jd_class.LOGGER);
             this._lastListenerTime = 0;
         }
 

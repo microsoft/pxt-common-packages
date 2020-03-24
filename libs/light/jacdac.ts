@@ -3,7 +3,7 @@ namespace jacdac {
     export class LightService extends ActuatorService {
         strip: light.NeoPixelStrip;
         constructor(name: string, strip: light.NeoPixelStrip) {
-            super(name, jacdac.LIGHT_DEVICE_CLASS, 5);
+            super(name, jd_class.LIGHT, 5);
             this.strip = strip;
         }
 

@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class ProximityClient extends SensorClient {
         constructor(name: string) {
-            super(name, jacdac.PROXIMITY_DEVICE_CLASS);
+            super(name, jd_class.PROXIMITY);
         }
 
         /**

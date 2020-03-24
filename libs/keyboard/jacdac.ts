@@ -3,7 +3,7 @@ namespace jacdac {
     //% fixedInstances
     export class KeyboardService extends Host {
         constructor() {
-            super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
+            super("keyb", jd_class.KEYBOARD);
         }
 
         handlePacket(packet: JDPacket) {

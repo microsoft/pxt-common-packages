@@ -2,7 +2,7 @@ namespace jacdac {
     //% fixedInstances
     export class MouseService extends Host {
         constructor() {
-            super("mous", jacdac.MOUSE_DEVICE_CLASS);
+            super("mous", jd_class.MOUSE);
         }
 
         handlePacket(packet: JDPacket) {
