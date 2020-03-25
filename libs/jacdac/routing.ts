@@ -223,11 +223,11 @@ namespace jacdac {
         const led = pins.pinByCfg(DAL.CFG_PIN_LED);
         if (!led)
             return
-        for (let i = 0; i < 10; ++i) {
+        for (let i = 0; i < 7; ++i) {
             led.digitalWrite(true)
-            pause(100)
+            pause(50)
             led.digitalWrite(false)
-            pause(100)
+            pause(150)
         }
     }
 
@@ -242,6 +242,9 @@ namespace jacdac {
                     break
                 case CMD_CTRL_IDENTIFY:
                     control.runInBackground(onIdentifyRequest)
+                    break
+                case CMD_CTRL_RESET:
+                    control.reset()
                     break
             }
         }

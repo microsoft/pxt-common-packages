@@ -14,12 +14,15 @@ namespace jacdac {
     export const CMD_GET_STATE = 0x10
     export const CMD_SET_STATE = 0x11
     // is the sensor streaming state
-    export const CMD_SET_STREAMING = 0x12
-    export const CMD_GET_STREAMING = 0x13
+    export const CMD_GET_STREAMING = 0x12
+    export const CMD_SET_STREAMING = 0x13
     // threshold for analog sensor (threshold type in arg; value in payload)
     export const CMD_SET_THRESHOLD = 0x14
     // request to calibrate sensor
     export const CMD_CALIBRATE = 0x15
+    // this is eg. number and type of neopixels connected
+    export const CMD_GET_CONFIG = 0x16
+    export const CMD_SET_CONFIG = 0x17
 
     export const ARG_LOW_THRESHOLD = 0x01
     export const ARG_HIGH_THRESHOLD = 0x02
@@ -29,4 +32,6 @@ namespace jacdac {
     export const CMD_CTRL_NOOP = 0x80
     // blink led or otherwise draw user's attention
     export const CMD_CTRL_IDENTIFY = 0x81
+    // reset device
+    export const CMD_CTRL_RESET = 0x82
 }

@@ -1,4 +1,5 @@
 namespace jd_class {
+    export const CTRL = 0x00000000;
     export const LOGGER = 0x12dc1fca;
     export const BATTERY = 0x1d2a2acd;
     export const ACCELEROMETER = 0x1f140409;

@@ -44,18 +44,23 @@ extern "C" {
 #define JD_CMD_GET_STATE 0x10
 #define JD_CMD_SET_STATE 0x11
 // is the sensor streaming state
-#define JD_CMD_SET_STREAMING 0x12
-#define JD_CMD_GET_STREAMING 0x13
+#define JD_CMD_GET_STREAMING 0x12
+#define JD_CMD_SET_STREAMING 0x13
 // threshold for analog sensor (threshold type in arg; value in payload)
 #define JD_CMD_SET_THRESHOLD 0x14
 // request to calibrate sensor
 #define JD_CMD_CALIBRATE 0x15
+// this is eg. number and type of neopixels connected
+#define JD_CMD_GET_CONFIG 0x16
+#define JD_CMD_SET_CONFIG 0x17
 
 // Commands specific to control service
 // do nothing
 #define JD_CMD_CTRL_NOOP 0x80
 // blink led or otherwise draw user's attention
 #define JD_CMD_CTRL_IDENTIFY 0x81
+// reset device
+#define JD_CMD_CTRL_RESET 0x82
 
 struct _jd_packet_t {
     uint16_t crc;
