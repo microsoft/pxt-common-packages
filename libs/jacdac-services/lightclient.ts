@@ -5,9 +5,18 @@ namespace jacdac {
             super(name, jd_class.LIGHT);
         }
 
-        private setState(cmd: number, value: number) {
+        private setState(cmd: number, duration: number, color: number) {
             this.start()
-            this.sendCommand(JDPacket.packed(CMD_SET_STATE, 0, "bI", [cmd, value]))
+            this.sendCommand(JDPacket.packed(CMD_SET_ENABLED, 1, "", []))
+            this.sendCommand(JDPacket.packed(CMD_SET_STATE, 0, "BBHI", [cmd, 0, duration, color]))
+        }
+
+        setLength(numpixels: number, maxpower = 0): void {
+            this.start()
+            if (maxpower)
+                this.sendCommand(JDPacket.packed(CMD_SET_CONFIG, 0, "HH", [numpixels, maxpower]))
+            else
+                this.sendCommand(JDPacket.packed(CMD_SET_CONFIG, 0, "H", [numpixels]))
         }
 
         /**
@@ -31,7 +40,7 @@ namespace jacdac {
         //% weight=80 blockGap=8
         //% group="Light"
         setAll(rgb: number) {
-            this.setState(JDLightCommand.SetAll, rgb);
+            this.setState(JDLightCommand.SetAll, 0, rgb);
         }
 
         /**
@@ -42,8 +51,8 @@ namespace jacdac {
         //% blockId=jdlight_show_animation block="show %strip animation %animation for %duration=timePicker ms"
         //% weight=90 blockGap=8
         //% group="Light"
-        showAnimation(animation: JDLightAnimation, duration: number) {
-            this.setState(animation, duration);
+        showAnimation(animation: JDLightAnimation, duration: number, color = 0) {
+            this.setState(animation, duration, color);
         }
     }
 
