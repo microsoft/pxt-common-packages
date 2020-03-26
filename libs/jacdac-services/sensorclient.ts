@@ -36,7 +36,6 @@ namespace jacdac {
          * Requests the sensor to calibrate
          */
         public calibrate() {
-            this.start();
             this.sendCommand(JDPacket.onlyHeader(CMD_CALIBRATE, 0))
         }
 
@@ -55,7 +54,7 @@ namespace jacdac {
         }
 
         handlePacket(packet: JDPacket) {
-            this.log(`vpkt ${packet.service_command}`)
+            // this.log(`vpkt ${packet.service_command}`)
             switch (packet.service_command) {
                 case CMD_GET_STATE: {
                     const state = packet.data

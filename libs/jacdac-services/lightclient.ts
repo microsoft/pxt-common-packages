@@ -1,22 +1,38 @@
 namespace jacdac {
     //% fixedInstances
     export class LightClient extends Client {
+        _state: Buffer
+        _config: Buffer
+
         constructor(name: string) {
             super(name, jd_class.LIGHT);
         }
 
-        private setState(cmd: number, duration: number, color: number) {
-            this.start()
-            this.sendCommand(JDPacket.packed(CMD_SET_ENABLED, 1, "", []))
-            this.sendCommand(JDPacket.packed(CMD_SET_STATE, 0, "BBHI", [cmd, 0, duration, color]))
+        private syncConfig() {
+            if (this._config)
+                this.sendCommand(JDPacket.from(CMD_SET_CONFIG, 0, this._config))
         }
 
-        setLength(numpixels: number, maxpower = 0): void {
-            this.start()
-            if (maxpower)
-                this.sendCommand(JDPacket.packed(CMD_SET_CONFIG, 0, "HH", [numpixels, maxpower]))
-            else
-                this.sendCommand(JDPacket.packed(CMD_SET_CONFIG, 0, "H", [numpixels]))
+        private syncState() {
+            if (this._state)
+                this.sendCommand(JDPacket.from(CMD_SET_STATE, 0, this._state))
+        }
+
+        private setState(cmd: number, duration: number, color: number) {
+            if (!this._config)
+                this.setStrip(10)
+            this._state = Buffer.pack("BxHI", [cmd, duration, color])
+            this.syncState()
+        }
+
+        setStrip(numpixels: number, type = 0, maxpower = 500): void {
+            this._config = Buffer.pack("HHB", [numpixels, maxpower, type])
+            this.syncConfig()
+        }
+
+        protected onAttach() {
+            this.syncConfig()
+            this.syncState()
         }
 
         /**
@@ -28,8 +44,8 @@ namespace jacdac {
         //% weight=2 blockGap=8
         //% group="Light"
         setBrightness(brightness: number): void {
-            this.start()
-            this.sendCommand(JDPacket.onlyHeader(CMD_SET_INTENSITY, brightness))
+            this._state[1] = brightness
+            this.syncState()
         }
 
         /**

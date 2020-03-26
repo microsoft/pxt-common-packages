@@ -153,6 +153,7 @@ namespace jacdac {
                 if (!this.device) throw "Invalid detach"
                 this.device = null
                 unattachedClients.push(this)
+                clearAttachCache()
             }
             this.onDetach()
         }
@@ -161,6 +162,7 @@ namespace jacdac {
         protected onDetach() { }
 
         sendCommand(pkt: JDPacket) {
+            this.start()
             if (this.serviceNumber == null)
                 return
             pkt.service_number = this.serviceNumber
@@ -173,6 +175,7 @@ namespace jacdac {
         }
 
         protected registerEvent(value: number, handler: () => void) {
+            this.start()
             control.onEvent(this.eventId, value, handler);
         }
 
@@ -189,6 +192,7 @@ namespace jacdac {
             this.started = true
             jacdac.start()
             unattachedClients.push(this)
+            clearAttachCache()
         }
     }
 
@@ -272,8 +276,15 @@ namespace jacdac {
         gcDevices()
     }
 
+    function clearAttachCache() {
+        for (let d of devices_) {
+            if (d.services)
+                d.services[0]++
+        }
+    }
+
     function reattach(dev: Device) {
-        log(`reattaching services to ${dev.toString()}`)
+        log(`reattaching services to ${dev.toString()}; cl=${unattachedClients.length}`)
         const newClients: Client[] = []
         const occupied = Buffer.create(dev.services.length >> 2)
         for (let c of dev.clients) {
@@ -308,7 +319,7 @@ namespace jacdac {
     }
 
     export function routePacket(pkt: JDPacket) {
-        log("route: " + pkt.toString())
+        // log("route: " + pkt.toString())
         const devId = pkt.device_identifier
         const multiCommandClass = pkt.multicommand_class
 
@@ -339,7 +350,7 @@ namespace jacdac {
                 return // huh? someone's pretending to be us?
             const h = hostServices[pkt.service_number]
             if (h && h.running) {
-                log(`handle pkt at ${h.name} cmd=${pkt.service_command}`)
+                // log(`handle pkt at ${h.name} cmd=${pkt.service_command}`)
                 h.handlePacketOuter(pkt)
             }
         } else {
@@ -380,7 +391,7 @@ namespace jacdac {
                     ? c.serviceClass == service_class
                     : c.serviceNumber == pkt.service_number)
             if (client) {
-                log(`handle pkt at ${client.name} rep=${pkt.service_command}`)
+                // log(`handle pkt at ${client.name} rep=${pkt.service_command}`)
                 client.currentDevice = dev
                 client.handlePacketOuter(pkt)
             }
