@@ -15,12 +15,12 @@ Setting a higher threshold value makes it take longer for a touch event to happe
 
 ## Example #example
 
-Set the touch threshold to `1000`. Test touch sensitivity by making all the pixels on the ring turn red when pin **A1** detects a touch.
+Set the touch threshold to `1000`. Log a message when a touch is a detected.
 
 ```blocks
 input.touchA1.setThreshold(1000);
 input.touchA1.onEvent(ButtonEvent.Click, function () {
-    light.setAll(0xff0000);
+    console.log("Touch pin presssed hard")
 })
 ```
 

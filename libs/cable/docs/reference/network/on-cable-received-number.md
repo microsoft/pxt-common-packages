@@ -21,13 +21,11 @@ This function takes 1 argument:
 
 ## Example #example
 
-Show the value of a number received from an cable data message. The number is shown by lighting the same number of pixels on the pixel strip.
+Log the value of a number received from an cable data message to the console.
 
 ```blocks
-let strip = light.createStrip();
-
 network.onCableReceivedNumber(function (num) {
-    strip.graph(num, 9);
+    console.logValue("cable-value", num)
 })
 ```
 

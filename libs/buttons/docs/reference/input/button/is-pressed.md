@@ -26,17 +26,14 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 
 ## Example #example
 
-Set all the pixels to green when button `A` is pressed. When the button is not pressed, the pixels are red.
+Log a message when button `A` is pressed.
 
 ```blocks
-let pixels = light.createStrip();
-
 forever(function() {
     if (input.buttonA.isPressed()) {
-        pixels.setAll(0x00ff00);
-    } else {
-        pixels.setAll(0xff0000);
+        console.log("Button A is pressed")
     }
+    pause(300)
 })
 ```
 
