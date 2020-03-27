@@ -5,6 +5,8 @@ namespace jacdac {
     export class SensorHost extends Host {
         public streamingInterval: number; // millis
         public isStreaming: boolean;
+        protected lowThreshold: number
+        protected highThreshold: number
 
         constructor(name: string, deviceClass: number) {
             super(name, deviceClass);
@@ -14,33 +16,14 @@ namespace jacdac {
 
         public handlePacket(packet: JDPacket) {
             this.log(`hpkt ${packet.service_command}`);
-            const [val] = packet.data.unpack("i")
+            this.stateUpdated = false
+            this.lowThreshold = this.handleRegInt(packet, REG_LOW_THRESHOLD, this.lowThreshold)
+            this.highThreshold = this.handleRegInt(packet, REG_HIGH_THRESHOLD, this.highThreshold)
+            this.streamingInterval = this.handleRegInt(packet, REG_STREAMING_INTERVAL, this.streamingInterval)
+            const newStr = this.handleRegBool(packet, REG_IS_STREAMING, this.isStreaming)
+            this.setStreaming(newStr)
+
             switch (packet.service_command) {
-                case CMD_SET_STREAMING:
-                    if (packet.service_argument == 1) {
-                        if (val)
-                            this.streamingInterval = Math.max(20, val);
-                        this.startStreaming();
-                    } else if (packet.service_argument == 0) {
-                        this.stopStreaming();
-                    }
-                    break
-                case CMD_GET_STREAMING:
-                    this.sendReport(JDPacket.packed(
-                        CMD_GET_STREAMING,
-                        this.isStreaming ? 1 : 0,
-                        "i", [this.streamingInterval]))
-                    break
-                case CMD_SET_THRESHOLD:
-                    switch (packet.service_argument) {
-                        case ARG_LOW_THRESHOLD:
-                            this.setThreshold(true, val);
-                            break
-                        case ARG_HIGH_THRESHOLD:
-                            this.setThreshold(false, val);
-                            break
-                    }
-                    break
                 case CMD_CALIBRATE:
                     this.handleCalibrateCommand(packet);
                     break
@@ -57,11 +40,6 @@ namespace jacdac {
         }
 
         // override
-        protected setThreshold(low: boolean, value: number) {
-
-        }
-
-        // override
         protected handleCalibrateCommand(pkt: JDPacket) {
         }
 
@@ -69,7 +47,7 @@ namespace jacdac {
         }
 
         protected raiseHostEvent(value: number) {
-            this.sendReport(JDPacket.onlyHeader(CMD_EVENT, value))
+            this.sendReport(JDPacket.packed(CMD_EVENT, "I", [value]))
         }
 
         public setStreaming(on: boolean) {
@@ -91,7 +69,7 @@ namespace jacdac {
                         // did the state change?
                         if (this.isConnected()) {
                             // send state and record time
-                            this.sendReport(JDPacket.from(CMD_GET_STATE, 0, state))
+                            this.sendReport(JDPacket.from(CMD_GET_REG | REG_READING, state))
                         }
                     }
                     // check streaming interval value

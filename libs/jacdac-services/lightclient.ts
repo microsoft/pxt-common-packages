@@ -1,38 +1,14 @@
 namespace jacdac {
     //% fixedInstances
     export class LightClient extends Client {
-        _state: Buffer
-        _config: Buffer
-
         constructor(name: string) {
             super(name, jd_class.LIGHT);
         }
 
-        private syncConfig() {
-            if (this._config)
-                this.sendCommand(JDPacket.from(CMD_SET_CONFIG, 0, this._config))
-        }
-
-        private syncState() {
-            if (this._state)
-                this.sendCommand(JDPacket.from(CMD_SET_STATE, 0, this._state))
-        }
-
-        private setState(cmd: number, duration: number, color: number) {
-            if (!this._config)
-                this.setStrip(10)
-            this._state = Buffer.pack("BxHI", [cmd, duration, color])
-            this.syncState()
-        }
-
         setStrip(numpixels: number, type = 0, maxpower = 500): void {
-            this._config = Buffer.pack("HHB", [numpixels, maxpower, type])
-            this.syncConfig()
-        }
-
-        protected onAttach() {
-            this.syncConfig()
-            this.syncState()
+            this.setRegInt(JDLightReg.NumPixels, numpixels)
+            this.setRegInt(JDLightReg.LightType, type)
+            this.setRegInt(REG_MAX_POWER, maxpower)
         }
 
         /**
@@ -44,8 +20,11 @@ namespace jacdac {
         //% weight=2 blockGap=8
         //% group="Light"
         setBrightness(brightness: number): void {
-            this._state[1] = brightness
-            this.syncState()
+            this.setRegInt(REG_INTENSITY, brightness)
+        }
+
+        private startAnimation(anim: number) {
+            this.config.send(JDPacket.packed(JDLightCommand.StartAnimation, "b", [anim]))
         }
 
         /**
@@ -56,7 +35,8 @@ namespace jacdac {
         //% weight=80 blockGap=8
         //% group="Light"
         setAll(rgb: number) {
-            this.setState(JDLightCommand.SetAll, 0, rgb);
+            this.setRegInt(JDLightReg.Color, 0)
+            this.startAnimation(1)
         }
 
         /**
@@ -68,7 +48,9 @@ namespace jacdac {
         //% weight=90 blockGap=8
         //% group="Light"
         showAnimation(animation: JDLightAnimation, duration: number, color = 0) {
-            this.setState(animation, duration, color);
+            this.setRegInt(JDLightReg.Duration, duration)
+            this.setRegInt(JDLightReg.Color, color)
+            this.startAnimation(animation)
         }
     }
 

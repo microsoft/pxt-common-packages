@@ -61,30 +61,30 @@ namespace jacdac {
     ];
 }
 
+const enum JDLightReg {
+    LightType = 0x80,
+    NumPixels = 0x81,
+    Duration = 0x82,
+    Color = 0x83,
+}
+
 const enum JDLightCommand {
-    None = 0,
-    SetAll = 1,
-    Rainbow = 2,
-    RunningLights = 3,
-    ColorWipe = 4,
-    Comet = 5,
-    TheaterChase = 6,
-    Sparkle = 7
+    StartAnimation = 0x80,
 }
 
 enum JDLightAnimation {
     //% block="rainbow"
-    Rainbow = JDLightCommand.Rainbow,
+    Rainbow = 2,
     //% block="running lights"
-    RunningLights = JDLightCommand.RunningLights,
+    RunningLights = 3,
     //% block="color wipe"
-    ColorWipe = JDLightCommand.ColorWipe,
+    ColorWipe = 4,
     //% block="comet"
-    Comet = JDLightCommand.Comet,
+    Comet = 5,
     //% block="theater chase"
-    TheaterChase = JDLightCommand.TheaterChase,
+    TheaterChase = 6,
     //% block="sparkle"
-    Sparkle = JDLightCommand.Sparkle
+    Sparkle = 7
 }
 
 const enum JDKeyboardCommand {
@@ -111,8 +111,8 @@ const enum JDMusicCommand {
 }
 
 const enum JDConsoleCommand {
-    Message = 0x80,
-    SetMinPriority = 0x81,
+    MessageDbg = 0x80,
+    SetMinPriority = 0x90,
 }
 
 const enum JDConsolePriority {

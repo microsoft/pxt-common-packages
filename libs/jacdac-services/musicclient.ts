@@ -17,7 +17,7 @@ namespace jacdac {
         //% group="Music"
         playTone(frequency: number, ms: number): void {
             this.sendPackedCommand(
-                JDMusicCommand.PlayTone, 0, "II", [frequency, ms])
+                JDMusicCommand.PlayTone, "II", [frequency, ms])
         }
     }
 

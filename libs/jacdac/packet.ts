@@ -36,21 +36,20 @@ namespace jacdac {
             return p
         }
 
-        static from(service_command: number, service_argument: number, data: Buffer) {
+        static from(service_command: number, data: Buffer) {
             const p = new JDPacket()
             p._header = Buffer.create(JD_SERIAL_HEADER_SIZE)
             p.data = data
             p.service_command = service_command
-            p.service_argument = service_argument
             return p
         }
 
-        static onlyHeader(service_command: number, service_argument: number) {
-            return JDPacket.from(service_command, service_argument, Buffer.create(0))
+        static onlyHeader(service_command: number) {
+            return JDPacket.from(service_command, Buffer.create(0))
         }
 
-        static packed(service_command: number, service_argument: number, fmt: string, nums: number[]) {
-            return JDPacket.from(service_command, service_argument, Buffer.pack(fmt, nums))
+        static packed(service_command: number, fmt: string, nums: number[]) {
+            return JDPacket.from(service_command, Buffer.pack(fmt, nums))
         }
 
         get device_identifier() {
@@ -98,17 +97,18 @@ namespace jacdac {
         }
 
         get service_command(): number {
-            return this._header[14]
+            return this._header.getNumber(NumberFormat.UInt16LE, 14)
         }
         set service_command(cmd: number) {
-            this._header[14] = cmd
+            this._header.setNumber(NumberFormat.UInt16LE, 14, cmd)
         }
 
-        get service_argument(): number {
-            return this._header[15]
+        get is_reg_set() {
+            return (this.service_command >> 12) == (CMD_SET_REG >> 12)
         }
-        set service_argument(arg: number) {
-            this._header[15] = arg
+
+        get is_reg_get() {
+            return (this.service_command >> 12) == (CMD_GET_REG >> 12)
         }
 
         get data(): Buffer {
@@ -120,6 +120,45 @@ namespace jacdac {
                 throw "Too big"
             this._header[12] = buf.length
             this._data = buf
+        }
+
+        get intData() {
+            let fmt: NumberFormat
+            switch (this._data.length) {
+                case 0:
+                case 1:
+                    fmt = NumberFormat.Int8LE
+                    break
+                case 2:
+                case 3:
+                    fmt = NumberFormat.Int16LE
+                    break
+                default:
+                    fmt = NumberFormat.Int32LE
+                    break
+            }
+            return this._data.getNumber(fmt, 0)
+        }
+
+        compress(stripped: Buffer[]) {
+            if (stripped.length == 0)
+                return
+            let sz = -4
+            for (let s of stripped) {
+                sz += s.length
+            }
+            const data = Buffer.create(sz)
+            this._header.write(12, stripped[0])
+            data.write(0, stripped[0].slice(4))
+            sz = stripped[0].length - 4
+            for (let s of stripped.slice(1)) {
+                data.write(sz, s)
+                sz += s.length
+            }
+        }
+
+        withFrameStripped() {
+            return this._header.slice(12, 4).concat(this._data)
         }
 
         getNumber(fmt: NumberFormat, offset: number) {
@@ -135,7 +174,7 @@ namespace jacdac {
         }
 
         toString(): string {
-            let msg = `${this.device_identifier}/${this.service_number}[${this.packet_flags}]: ${this.service_command}(${this.service_argument}) sz=${this.size}`
+            let msg = `${this.device_identifier}/${this.service_number}[${this.packet_flags}]: ${this.service_command} sz=${this.size}`
             if (this.size < 20) msg += ": " + this.data.toHex()
             else msg += ": " + this.data.slice(0, 20).toHex() + "..."
             return msg
@@ -235,7 +274,7 @@ namespace jacdac {
             return
         let numNotify = 0
         const srcId = pkt.device_identifier
-        const crc = pkt.service_command | (pkt.service_argument << 8)
+        const crc = pkt.service_command
         for (let a of ackAwaiters) {
             if (a.crc == crc && a.srcId == srcId) {
                 a.added = 0

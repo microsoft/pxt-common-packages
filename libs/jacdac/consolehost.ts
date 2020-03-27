@@ -14,9 +14,10 @@ namespace jacdac {
                     const now = control.millis()
                     // lower the priority immedietly, but tighten it only when no one 
                     // was asking for lower one for some time
-                    if (packet.service_argument <= this.minPriority ||
+                    const d = packet.intData
+                    if (d <= this.minPriority ||
                         now - this._lastListenerTime > 1500) {
-                        this.minPriority = packet.service_argument
+                        this.minPriority = d
                         this._lastListenerTime = now
                     }
                     break;
@@ -49,7 +50,7 @@ namespace jacdac {
             }
 
             for (let buf of Buffer.chunkedFromUTF8(message, JD_SERIAL_MAX_PAYLOAD_SIZE)) {
-                this.sendReport(JDPacket.from(JDConsoleCommand.Message, priority, buf))
+                this.sendReport(JDPacket.from(JDConsoleCommand.MessageDbg + priority, buf))
             }
         }
     }

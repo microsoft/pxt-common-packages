@@ -32,9 +32,8 @@ void JDDisplay::sendDone(Event) {
     Event(DEVICE_ID_DISPLAY, 4242);
 }
 
-void *JDDisplay::queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t service_arg,
-                          uint32_t size) {
-    void *res = jd_push_in_frame(&sendFrame, service_num, service_cmd, service_arg, size);
+void *JDDisplay::queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size) {
+    void *res = jd_push_in_frame(&sendFrame, service_num, service_cmd, size);
     if (res == NULL)
         target_panic(PANIC_SCREEN_ERROR);
     return res;
@@ -79,7 +78,7 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
                pkt->service_command == JD_CMD_CTRL_NOOP) {
         // do nothing
     } else if (pkt->service_number == controlsServiceNum &&
-               pkt->service_command == JD_CMD_GET_STATE) {
+               pkt->service_command == (JD_CMD_GET_REG | JD_REG_READING)) {
         auto report = (jd_arcade_controls_report_entry_t *)pkt->data;
         auto endp = pkt->data + pkt->service_size;
         uint32_t state = 0;
@@ -156,7 +155,7 @@ void JDDisplay::step() {
 
     if (displayServiceNum == 0) {
         // poke the control service to enumerate
-        queuePkt(JD_SERVICE_NUMBER_CTRL, JD_CMD_ADVERTISEMENT_DATA, 0, 0);
+        queuePkt(JD_SERVICE_NUMBER_CTRL, JD_CMD_ADVERTISEMENT_DATA, 0);
         flushSend();
         return;
     }
@@ -164,18 +163,18 @@ void JDDisplay::step() {
     if (palette) {
         {
             auto cmd = (jd_display_palette_t *)queuePkt(displayServiceNum, JD_DISPLAY_CMD_PALETTE,
-                                                        0, sizeof(jd_display_palette_t));
+                                                        sizeof(jd_display_palette_t));
             memcpy(cmd->palette, palette, sizeof(jd_display_palette_t));
             palette = NULL;
         }
         {
             auto cmd = (jd_display_set_window_t *)queuePkt(
-                displayServiceNum, JD_DISPLAY_CMD_SET_WINDOW, 0, sizeof(jd_display_set_window_t));
+                displayServiceNum, JD_DISPLAY_CMD_SET_WINDOW, sizeof(jd_display_set_window_t));
             *cmd = this->addr;
         }
         {
-            queuePkt(displayServiceNum, JD_DISPLAY_CMD_SET_BRIGHTNESS,
-                     this->brightness * 0xff / 100, 0);
+            auto cmd = (uint8_t *)queuePkt(displayServiceNum, JD_DISPLAY_CMD_SET_BRIGHTNESS, 1);
+            *cmd = this->brightness * 0xff / 100;
         }
         flushSend();
         return;
@@ -185,7 +184,7 @@ void JDDisplay::step() {
         uint32_t transfer = bytesPerTransfer;
         if (dataLeft < transfer)
             transfer = dataLeft;
-        auto pixels = queuePkt(displayServiceNum, JD_DISPLAY_CMD_PIXELS, 0, transfer);
+        auto pixels = queuePkt(displayServiceNum, JD_DISPLAY_CMD_PIXELS, transfer);
         memcpy(pixels, dataPtr, transfer);
         dataPtr += transfer;
         dataLeft -= transfer;

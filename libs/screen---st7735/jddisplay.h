@@ -25,7 +25,7 @@ class JDDisplay {
     uint32_t buttonState;
     jd_display_advertisement_data_t displayAd;
 
-    void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t service_arg, uint32_t size);
+    void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size);
     void flushSend();
     void step();
     void sendDone(Event);

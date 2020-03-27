@@ -1,42 +1,29 @@
 namespace jacdac {
     export class ActuatorService extends Host {
-        stateLength: number;
         state: Buffer;
-        enabled = true;
+        intensity: number;
 
         constructor(name: string, deviceClass: number, stateLength: number) {
             super(name, deviceClass);
-            this.stateLength = stateLength;
-            this.state = control.createBuffer(this.stateLength);
+            this.state = control.createBuffer(stateLength);
+            this.intensity = 0
         }
 
         public handlePacket(packet: JDPacket) {
-            switch (packet.service_command) {
-                case CMD_SET_STATE:
-                    this.state = packet.data;
-                    this.handleStateChanged();
-                    break
-                case CMD_GET_STATE:
-                    this.sendReport(JDPacket.from(CMD_GET_STATE, 0, this.state))
-                    break
-                case CMD_SET_ENABLED:
-                    if (packet.service_argument == 0)
-                        this.enabled = false;
-                    else if (packet.service_argument == 1)
-                        this.enabled = true;
-                    this.handleStateChanged();
-                    break
-                case CMD_GET_ENABLED:
-                    JDPacket.onlyHeader(CMD_GET_ENABLED, this.enabled ? 1 : 0)
-                    break
-            }
+            this.stateUpdated = false
+
+            this.intensity = this.handleRegInt(packet, REG_INTENSITY, this.intensity)
+            this.state = this.handleRegBuffer(packet, REG_VALUE, this.state)
+
+            if (this.stateUpdated)
+                this.handleStateChanged();
+            else
+                this.handleCustomCommand(packet)
         }
 
         protected handleCustomCommand(pkt: JDPacket): void { }
 
-        protected handleStateChanged(): void {
-            // if not responding to 'enabled' bit, make sure to set it to true here
-        }
+        protected handleStateChanged(): void { }
     }
 
     export class ActuatorClient extends Client {
@@ -58,7 +45,7 @@ namespace jacdac {
         }
 
         protected notifyChange() {
-            this.sendCommand(JDPacket.from(CMD_SET_STATE, 0, this.state))
+            this.sendCommand(JDPacket.from(CMD_SET_REG | REG_VALUE, this.state))
         }
     }
 }

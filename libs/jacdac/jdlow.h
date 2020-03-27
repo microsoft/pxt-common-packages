@@ -62,8 +62,7 @@ int jd_is_running();
 int jd_shift_frame(jd_frame_t *frame);
 void jd_reset_frame(jd_frame_t *frame);
 void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,
-                       unsigned service_arg, unsigned service_size);
-                       
+                       unsigned service_size);
 
 typedef struct {
     uint32_t bus_state;

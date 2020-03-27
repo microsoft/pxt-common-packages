@@ -115,7 +115,7 @@ namespace jacdac {
         type(type: string) {
             const bufs = Buffer.chunkedFromUTF8(type, JD_SERIAL_MAX_PAYLOAD_SIZE)
             for (let buf of bufs)
-                this.sendCommand(JDPacket.from(JDKeyboardCommand.Type, 0, buf))
+                this.sendCommand(JDPacket.from(JDKeyboardCommand.Type, buf))
         }
 
         /**
@@ -125,8 +125,7 @@ namespace jacdac {
         //% blockGap=8 weight=99
         //% group="Keyboard"
         key(key: string, event: JDKeyboardKeyEvent) {
-            this.sendPackedCommand(
-                JDKeyboardCommand.Key, event, "I", [key.charCodeAt(0)])
+            this.sendPackedCommand(JDKeyboardCommand.Key, "HH", [event, key.charCodeAt(0)])
         }
 
         /**
@@ -136,8 +135,7 @@ namespace jacdac {
         //% blockGap=8
         //% group="Keyboard"
         mediaKey(key: JDKeyboardMediaKey, event: JDKeyboardKeyEvent) {
-            this.sendPackedCommand(
-                JDKeyboardCommand.MediaKey, event, "I", [key])
+            this.sendPackedCommand(JDKeyboardCommand.MediaKey, "HH", [event, key])
         }
 
         /**
@@ -147,8 +145,7 @@ namespace jacdac {
         //% blockGap=8
         //% group="Keyboard"
         functionKey(key: JDKeyboardFunctionKey, event: JDKeyboardKeyEvent) {
-            this.sendPackedCommand(
-                JDKeyboardCommand.FunctionKey, event, "I", [key])
+            this.sendPackedCommand(JDKeyboardCommand.FunctionKey, "HH", [event, key])
         }
     }
 

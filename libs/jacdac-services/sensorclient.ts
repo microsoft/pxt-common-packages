@@ -29,19 +29,14 @@ namespace jacdac {
         public setStreaming(on: boolean) {
             this.start();
             this.isStreaming = on
-            this.sync()
+            this.setRegInt(REG_IS_STREAMING, this.isStreaming ? 1 : 0)
         }
 
         /**
          * Requests the sensor to calibrate
          */
         public calibrate() {
-            this.sendCommand(JDPacket.onlyHeader(CMD_CALIBRATE, 0))
-        }
-
-        private sync() {
-            if (!this.isConnected()) return;
-            this.sendCommand(JDPacket.onlyHeader(CMD_SET_STREAMING, this.isStreaming ? 1 : 0))
+            this.sendCommand(JDPacket.onlyHeader(CMD_CALIBRATE))
         }
 
         public onStateChanged(handler: () => void) {
@@ -49,14 +44,10 @@ namespace jacdac {
             this.start();
         }
 
-        protected onAttach() {
-            this.sync()
-        }
-
         handlePacket(packet: JDPacket) {
             // this.log(`vpkt ${packet.service_command}`)
             switch (packet.service_command) {
-                case CMD_GET_STATE: {
+                case CMD_GET_REG | REG_READING: {
                     const state = packet.data
                     const changed = !state.equals(this._lastState);
                     this.handleVirtualState(state);
@@ -64,11 +55,14 @@ namespace jacdac {
                     this._localTime = control.millis();
                     if (changed && this._stateChangedHandler)
                         this._stateChangedHandler();
+                    break
                 }
                 case CMD_EVENT:
-                    control.raiseEvent(this.eventId, packet.service_argument);
+                    control.raiseEvent(this.eventId, packet.intData);
+                    break
                 default:
                     this.handleCustomCommand(packet);
+                    break
             }
         }
 
@@ -79,9 +73,7 @@ namespace jacdac {
         }
 
         protected setThreshold(low: boolean, value: number) {
-            this.start();
-            const cmd = low ? ARG_LOW_THRESHOLD : ARG_HIGH_THRESHOLD
-            this.sendCommand(JDPacket.packed(CMD_SET_THRESHOLD, cmd, "i", [value]))
+            this.setRegInt(low ? REG_LOW_THRESHOLD : REG_HIGH_THRESHOLD, value)
         }
     }
 }

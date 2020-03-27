@@ -27,11 +27,12 @@ namespace jacdac {
         protected supressLog: boolean;
         running: boolean
         serviceNumber: number
+        stateUpdated: boolean
 
         handlePacketOuter(pkt: JDPacket) {
             if (pkt.service_command == CMD_ADVERTISEMENT_DATA) {
                 this.sendReport(
-                    JDPacket.from(CMD_ADVERTISEMENT_DATA, 0, this.advertisementData()))
+                    JDPacket.from(CMD_ADVERTISEMENT_DATA, this.advertisementData()))
             } else {
                 this.handlePacket(pkt)
             }
@@ -51,6 +52,61 @@ namespace jacdac {
             pkt.service_number = this.serviceNumber
             pkt._sendReport(myDevice)
         }
+
+        handleRegBool(pkt: JDPacket, register: number, current: boolean): boolean {
+            return this.handleRegInt(pkt, register, current ? 1 : 0) != 0
+        }
+
+        handleRegInt(pkt: JDPacket, register: number, current: number): number {
+            const getset = pkt.service_command >> 12
+            if (getset == 0 || getset > 2)
+                return current
+            const reg = pkt.service_command & 0xfff
+            if (reg != register)
+                return current
+            if (!current)
+                current = 0 // make sure there's no null/undefined
+            if (getset == 1) {
+                this.sendReport(JDPacket.packed(pkt.service_command, "i", [current >> 0]))
+            } else {
+                const v = pkt.intData
+                if (v != current) {
+                    this.stateUpdated = true
+                    current = v
+                }
+            }
+            return current
+        }
+
+        handleRegBuffer(pkt: JDPacket, register: number, current: Buffer): Buffer {
+            const getset = pkt.service_command >> 12
+            if (getset == 0 || getset > 2)
+                return current
+            const reg = pkt.service_command & 0xfff
+            if (reg != register)
+                return current
+
+            if (getset == 1) {
+                this.sendReport(JDPacket.from(pkt.service_command, current))
+            } else {
+                let data = pkt.data
+                const diff = current.length - data.length
+                if (diff == 0) { }
+                else if (diff < 0)
+                    data = data.slice(0, current.length)
+                else
+                    data = data.concat(Buffer.create(diff))
+
+                if (!data.equals(current)) {
+                    current.write(0, data)
+                    this.stateUpdated = true
+                }
+
+            }
+            return current
+        }
+
+
 
         constructor(
             public name: string,
@@ -92,6 +148,51 @@ namespace jacdac {
         }
     }
 
+    export class ClientPacketQueue {
+        private pkts: Buffer[] = []
+
+        constructor(public parent: Client) { }
+
+        private updateQueue(pkt: JDPacket) {
+            const cmd = pkt.service_command
+            for (let i = 0; i < this.pkts.length; ++i) {
+                if (this.pkts[i].getNumber(NumberFormat.UInt16LE, 2) == cmd) {
+                    this.pkts[i] = pkt.withFrameStripped()
+                    return
+                }
+            }
+            this.pkts.push(pkt.withFrameStripped())
+        }
+
+        clear() {
+            this.pkts = []
+        }
+
+        send(pkt: JDPacket) {
+            if (pkt.is_reg_set || this.parent.serviceNumber == null)
+                this.updateQueue(pkt)
+            this.parent.sendCommand(pkt)
+        }
+
+        resend() {
+            const sn = this.parent.serviceNumber
+            if (sn == null || this.pkts.length == 0)
+                return
+            let hasNonSet = false
+            for (let p of this.pkts) {
+                p[1] = sn
+                if ((p[3] >> 4) != (CMD_SET_REG >> 12))
+                    hasNonSet = true
+            }
+            const pkt = JDPacket.onlyHeader(0)
+            pkt.compress(this.pkts)
+            this.parent.sendCommand(pkt)
+            // after re-sending only leave set_reg packets
+            if (hasNonSet)
+                this.pkts = this.pkts.filter(p => (p[3] >> 4) == (CMD_SET_REG >> 12))
+        }
+    }
+
     //% fixedInstances
     export class Client {
         requiredDeviceName: string
@@ -104,11 +205,14 @@ namespace jacdac {
         started: boolean;
         advertisementData: Buffer
 
+        config: ClientPacketQueue
+
         constructor(
             public name: string,
             public serviceClass: number
         ) {
             this.eventId = control.allocateNotifyEvent();
+            this.config = new ClientPacketQueue(this)
         }
 
         broadcastDevices() {
@@ -120,7 +224,7 @@ namespace jacdac {
         }
 
         requestAdvertisementData() {
-            this.sendCommand(JDPacket.onlyHeader(CMD_ADVERTISEMENT_DATA, 0))
+            this.sendCommand(JDPacket.onlyHeader(CMD_ADVERTISEMENT_DATA))
         }
 
         handlePacketOuter(pkt: JDPacket) {
@@ -144,11 +248,13 @@ namespace jacdac {
             log(`attached ${dev.toString()}/${serviceNum} to client ${this.name}`)
             dev.clients.push(this)
             this.onAttach()
+            this.config.resend()
             return true
         }
 
         _detach() {
             log(`dettached ${this.name}`)
+            this.serviceNumber = null
             if (!this.broadcast) {
                 if (!this.device) throw "Invalid detach"
                 this.device = null
@@ -169,9 +275,15 @@ namespace jacdac {
             pkt._sendCmd(this.device)
         }
 
-        sendPackedCommand(service_command: number, service_argument: number, fmt: string, nums: number[]) {
-            const pkt = JDPacket.packed(service_command, service_argument, fmt, nums)
+        sendPackedCommand(service_command: number, fmt: string, nums: number[]) {
+            const pkt = JDPacket.packed(service_command, fmt, nums)
             this.sendCommand(pkt)
+        }
+
+        // this will be re-sent on (re)attach
+        setRegInt(reg: number, value: number) {
+            this.start()
+            this.config.send(JDPacket.packed(CMD_SET_REG | reg, "i", [value]))
         }
 
         protected registerEvent(value: number, handler: () => void) {
@@ -270,7 +382,7 @@ namespace jacdac {
     function queueAnnounce() {
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
-        JDPacket.packed(CMD_ADVERTISEMENT_DATA, 0, fmt, ids)
+        JDPacket.packed(CMD_ADVERTISEMENT_DATA, fmt, ids)
             ._sendReport(selfDevice())
         announceCallbacks.forEach(f => f())
         gcDevices()
@@ -329,7 +441,7 @@ namespace jacdac {
             pkt.requires_ack = false // make sure we only do it once
             if (pkt.device_identifier == selfDevice().deviceId) {
                 const crc = pkt.crc
-                const ack = JDPacket.onlyHeader(crc & 0xff, crc >> 8)
+                const ack = JDPacket.onlyHeader(crc)
                 ack.service_number = JD_SERVICE_NUMBER_CRC_ACK
                 ack._sendReport(selfDevice())
             }

@@ -115,9 +115,9 @@ static inline int copyAndAppend(LinkedFrame *volatile *q, jd_frame_t *frame, int
 }
 
 extern "C" int app_handle_frame(jd_frame_t *frame) {
-    // DMESG("PKT from %x/%d sz=%d cmd %d[%d]", (int)frame->device_identifier,
+    // DMESG("PKT from %x/%d sz=%d cmd %x", (int)frame->device_identifier,
     // frame->service_number,
-    //      frame->size, frame->service_command, frame->service_arg);
+    //      frame->size, frame->service_command);
 
     if (((jd_packet_t *)frame)->service_number == 0x42) {
         handle_count_packet((jd_packet_t *)frame);

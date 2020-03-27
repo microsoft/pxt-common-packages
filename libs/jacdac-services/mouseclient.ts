@@ -20,8 +20,7 @@ namespace jacdac {
         //% blockId=jdmouseSetButton block="%mouse button %index|%down=toggleDownUp"
         //% group="Mouse"
         setButton(button: JDMouseButton, down: boolean): void {
-            this.sendPackedCommand(
-                JDMouseCommand.Button, 0, "BB", [button, down ? 1 : 0])
+            this.sendPackedCommand(JDMouseCommand.Button, "BB", [button, down ? 1 : 0])
         }
 
         /**
@@ -33,8 +32,7 @@ namespace jacdac {
         //% y.min=-128 y.max=127
         //% group="Mouse"
         move(x: number, y: number): void {
-            this.sendPackedCommand(
-                JDMouseCommand.Move, 0, "bb", [x, y])
+            this.sendPackedCommand(JDMouseCommand.Move, "bb", [x, y])
         }
 
         /**
@@ -45,8 +43,7 @@ namespace jacdac {
         //% w.min=-128 w.max=127
         //% group="Mouse"
         turnWheel(w: number): void {
-            this.sendPackedCommand(
-                JDMouseCommand.TurnWheel, 0, "b", [w])
+            this.sendPackedCommand(JDMouseCommand.TurnWheel, "b", [w])
         }
     }
 

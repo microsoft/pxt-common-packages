@@ -7,7 +7,7 @@ namespace jacdac {
         }
 
         protected handleStateChanged() {
-            if (!this.enabled)
+            if (!this.intensity)
                 this.servo.stop();
             else {
                 const [angle, pulse] = this.state.unpack("hh")

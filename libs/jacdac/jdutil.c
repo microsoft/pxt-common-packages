@@ -101,8 +101,10 @@ void jd_reset_frame(jd_frame_t *frame) {
 }
 
 void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,
-                       unsigned service_arg, unsigned service_size) {
-    if ((service_num | service_cmd | service_arg) & ~0xff)
+                       unsigned service_size) {
+    if (service_num >> 8)
+        jd_panic();
+    if (service_cmd >> 16)
         jd_panic();
     uint8_t *dst = frame->data + frame->size;
     unsigned szLeft = (uint8_t *)frame + sizeof(*frame) - dst;
@@ -110,8 +112,8 @@ void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service
         return NULL;
     *dst++ = service_size;
     *dst++ = service_num;
-    *dst++ = service_cmd;
-    *dst++ = service_arg;
+    *dst++ = service_cmd & 0xff;
+    *dst++ = service_cmd >> 8;
     frame->size += ALIGN(service_size + 4);
     return dst;
 }
