@@ -155,6 +155,7 @@ namespace jacdac {
                 data.write(sz, s)
                 sz += s.length
             }
+            this._data = data
         }
 
         withFrameStripped() {
