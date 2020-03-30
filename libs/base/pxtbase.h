@@ -146,7 +146,6 @@ unsigned afterProgramPage();
 //%
 void dumpDmesg();
 uint32_t hash_fnv1(const void *data, unsigned len);
-uint32_t hash_fnv1a(const void *data, unsigned len);
 
 // also defined DMESG macro
 // end

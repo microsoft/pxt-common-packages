@@ -2024,12 +2024,4 @@ uint32_t hash_fnv1(const void *data, unsigned len) {
     return h;
 }
 
-uint32_t hash_fnv1a(const void *data, unsigned len) {
-    const uint8_t *d = (const uint8_t *)data;
-    uint32_t h = 0x811c9dc5;
-    while (len--)
-        h = (h ^ *d++) * 0x1000193;
-    return h;
-}
-
 } // namespace pxt
