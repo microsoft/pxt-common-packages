@@ -8,10 +8,11 @@ identification service - led blinking
 */
 
 namespace jacdac {
-    const devNameSettingPrefix = "#jddev:"
+    export const devNameSettingPrefix = "#jddev:"
 
     let hostServices: Host[]
-    let unattachedClients: Client[]
+    export let _unattachedClients: Client[]
+    export let _allClients: Client[]
     let myDevice: Device
     //% whenUsed
     let devices_: Device[] = []
@@ -51,6 +52,22 @@ namespace jacdac {
         sendReport(pkt: JDPacket) {
             pkt.service_number = this.serviceNumber
             pkt._sendReport(myDevice)
+        }
+
+        sendChunkedReport(cmd: number, bufs: Buffer[]) {
+            let sz = 0
+            let prev = 0
+            let i = 0
+            for (i = 0; i < bufs.length; ++i) {
+                if (sz + bufs[i].length > JD_SERIAL_MAX_PAYLOAD_SIZE) {
+                    this.sendReport(JDPacket.from(cmd, Buffer.concat(bufs.slice(prev, i))))
+                    prev = i
+                    sz = 0
+                }
+                sz += bufs[i].length
+            }
+            if (prev != i)
+                this.sendReport(JDPacket.from(cmd, Buffer.concat(bufs.slice(prev, i))))
         }
 
         handleRegBool(pkt: JDPacket, register: number, current: boolean): boolean {
@@ -105,7 +122,6 @@ namespace jacdac {
             }
             return current
         }
-
 
 
         constructor(
@@ -243,7 +259,7 @@ namespace jacdac {
                     return false // don't attach
                 this.device = dev
                 this.serviceNumber = serviceNum
-                unattachedClients.removeElement(this)
+                _unattachedClients.removeElement(this)
             }
             log(`attached ${dev.toString()}/${serviceNum} to client ${this.name}`)
             dev.clients.push(this)
@@ -258,7 +274,7 @@ namespace jacdac {
             if (!this.broadcast) {
                 if (!this.device) throw "Invalid detach"
                 this.device = null
-                unattachedClients.push(this)
+                _unattachedClients.push(this)
                 clearAttachCache()
             }
             this.onDetach()
@@ -303,7 +319,8 @@ namespace jacdac {
             if (this.started) return
             this.started = true
             jacdac.start()
-            unattachedClients.push(this)
+            _unattachedClients.push(this)
+            _allClients.push(this)
             clearAttachCache()
         }
     }
@@ -324,13 +341,14 @@ namespace jacdac {
             return this._name
         }
 
-        set name(n: string) {
-            this._name = n
-            settings.writeString(devNameSettingPrefix + this.deviceId, n)
-        }
-
         toString() {
             return this.deviceId + (this.name ? ` (${this.name})` : ``)
+        }
+
+        static clearNameCache() {
+            for (let d of devices_)
+                d._name = undefined
+            clearAttachCache()
         }
     }
 
@@ -396,7 +414,7 @@ namespace jacdac {
     }
 
     function reattach(dev: Device) {
-        log(`reattaching services to ${dev.toString()}; cl=${unattachedClients.length}`)
+        log(`reattaching services to ${dev.toString()}; cl=${_unattachedClients.length}/${_allClients.length}`)
         const newClients: Client[] = []
         const occupied = Buffer.create(dev.services.length >> 2)
         for (let c of dev.clients) {
@@ -414,14 +432,14 @@ namespace jacdac {
         }
         dev.clients = newClients
 
-        if (unattachedClients.length == 0)
+        if (_unattachedClients.length == 0)
             return
 
         for (let i = 0; i < dev.services.length; i += 4) {
             if (occupied[i >> 2])
                 continue
             const service_class = dev.services.getNumber(NumberFormat.UInt32LE, i)
-            for (let cc of unattachedClients) {
+            for (let cc of _unattachedClients) {
                 if (cc.serviceClass == service_class) {
                     if (cc._attach(dev, i >> 2))
                         break
@@ -533,7 +551,8 @@ namespace jacdac {
 
         hostServices = []
         new ControlService().start()
-        unattachedClients = []
+        _unattachedClients = []
+        _allClients = []
         jacdac.__physStart();
         control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
             let buf: Buffer;
