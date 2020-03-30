@@ -2,6 +2,7 @@
     "name": "jacdac-services",
     "description": "Services for jacdac",
     "files": [
+        "nameservice.ts",
         "sensorclient.ts",
         "consoleclient.ts",
         "buttonclient.ts",
