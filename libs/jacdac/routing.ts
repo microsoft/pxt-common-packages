@@ -330,6 +330,7 @@ namespace jacdac {
         lastSeen: number
         clients: Client[] = []
         private _name: string
+        private _shortId: string
 
         constructor(public deviceId: string) {
             devices_.push(this)
@@ -341,8 +342,23 @@ namespace jacdac {
             return this._name
         }
 
+        // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
+        // 3 letter ID; 1.1%/2.6%/0.05%
+        // 2 letter ID; 25%/6.4%/1.5%
+        get shortId() {
+            if (!this._shortId) {                
+                const h = Buffer.fromHex(this.deviceId).hash(30)
+                this._shortId = 
+                    String.fromCharCode(0x41 + h % 26) +
+                    String.fromCharCode(0x41 + Math.idiv(h, 26) % 26) +
+                    String.fromCharCode(0x41 + Math.idiv(h, 26 * 26) % 26) +
+                    String.fromCharCode(0x41 + Math.idiv(h, 26 * 26 * 26) % 26)
+            }
+            return this._shortId;
+        }
+
         toString() {
-            return this.deviceId + (this.name ? ` (${this.name})` : ``)
+            return this.shortId + (this.name ? ` (${this.name})` : ``)
         }
 
         static clearNameCache() {
