@@ -173,6 +173,16 @@ namespace helpers {
     export function bufferPackAt(buf: Buffer, offset: number, format: string, nums: number[]) {
         Buffer.__packUnpackCore(format, nums, buf, true, offset)
     }
+
+    export function bufferChunked(buf: Buffer, maxBytes: number) {
+        if (buf.length <= maxBytes) return [buf]
+        else {
+            const r: Buffer[] = []
+            for (let i = 0; i < buf.length; i += maxBytes)
+                r.push(buf.slice(i, maxBytes))
+            return r
+        }
+    }
 }
 
 interface Buffer {
@@ -207,6 +217,12 @@ interface Buffer {
      */
     //% helper=bufferEquals
     equals(other: Buffer): boolean;
+
+    /**
+     * Splits buffer into parts no larger than specified
+     */
+    //% helper=bufferChunked
+    chunked(maxSize: number): Buffer[];
 
     // rest defined in buffer.cpp
 }
