@@ -2015,12 +2015,20 @@ void endFinally() {
     throwValue(getThrownValue());
 }
 
-// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
-uint32_t hash_fnv1a(const void *data, unsigned len) {
+// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+uint32_t hash_fnv1(const void *data, unsigned len) {
     const uint8_t *d = (const uint8_t *)data;
     uint32_t h = 0x811c9dc5;
     while (len--)
         h = (h * 0x1000193) ^ *d++;
+    return h;
+}
+
+uint32_t hash_fnv1a(const void *data, unsigned len) {
+    const uint8_t *d = (const uint8_t *)data;
+    uint32_t h = 0x811c9dc5;
+    while (len--)
+        h = (h ^ *d++) * 0x1000193;
     return h;
 }
 
