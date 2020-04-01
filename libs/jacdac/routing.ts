@@ -18,6 +18,7 @@ namespace jacdac {
     let devices_: Device[] = []
     //% whenUsed
     let announceCallbacks: (() => void)[] = [];
+    let newDeviceCallbacks: (() => void)[];
 
     function log(msg: string) {
         console.add(jacdac.consolePriority, msg);
@@ -54,20 +55,37 @@ namespace jacdac {
             pkt._sendReport(myDevice)
         }
 
-        sendChunkedReport(cmd: number, bufs: Buffer[]) {
+        private sendOneChunk(cmd: number, bufs: Buffer[], currno: number, total: number) {
+            if (cmd != null) {
+                bufs.unshift(Buffer.pack("HH", [currno, total]))
+                this.sendReport(JDPacket.from(cmd, Buffer.concat(bufs)))
+            }
+        }
+
+        private sendChunkedReportCore(cmd: number, bufs: Buffer[], total: number) {
             let sz = 0
             let prev = 0
             let i = 0
+            let currno = 0
             for (i = 0; i < bufs.length; ++i) {
-                if (sz + bufs[i].length > JD_SERIAL_MAX_PAYLOAD_SIZE) {
-                    this.sendReport(JDPacket.from(cmd, Buffer.concat(bufs.slice(prev, i))))
+                if (sz + bufs[i].length > JD_SERIAL_MAX_PAYLOAD_SIZE - 4) {
+                    this.sendOneChunk(cmd, bufs.slice(prev, i), currno, total)
+                    currno++
                     prev = i
                     sz = 0
                 }
                 sz += bufs[i].length
             }
-            if (prev != i)
-                this.sendReport(JDPacket.from(cmd, Buffer.concat(bufs.slice(prev, i))))
+            if (prev != i) {
+                currno++
+                this.sendOneChunk(cmd, bufs.slice(prev, i), currno, total)
+            }
+            return currno
+        }
+
+        sendChunkedReport(cmd: number, bufs: Buffer[]) {
+            const total = this.sendChunkedReportCore(null, bufs, 0)
+            this.sendChunkedReportCore(cmd, bufs, total)
         }
 
         handleRegBool(pkt: JDPacket, register: number, current: boolean): boolean {
@@ -283,12 +301,16 @@ namespace jacdac {
         protected onAttach() { }
         protected onDetach() { }
 
-        sendCommand(pkt: JDPacket) {
+        sendCommand(pkt: JDPacket, ack = false) {
             this.start()
             if (this.serviceNumber == null)
                 return
             pkt.service_number = this.serviceNumber
-            pkt._sendCmd(this.device)
+            if (ack) {
+                if (!pkt._sendWithAck(this.device))
+                    throw "No ACK"
+            } else
+                pkt._sendCmd(this.device)
         }
 
         sendPackedCommand(service_command: number, fmt: string, nums: number[]) {
@@ -325,6 +347,17 @@ namespace jacdac {
         }
     }
 
+    // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
+    // 3 letter ID; 1.1%/2.6%/0.05%
+    // 2 letter ID; 25%/6.4%/1.5%
+    export function shortDeviceId(devid: string) {
+        const h = Buffer.fromHex(devid).hash(30)
+        return String.fromCharCode(0x41 + h % 26) +
+            String.fromCharCode(0x41 + Math.idiv(h, 26) % 26) +
+            String.fromCharCode(0x41 + Math.idiv(h, 26 * 26) % 26) +
+            String.fromCharCode(0x41 + Math.idiv(h, 26 * 26 * 26) % 26)
+    }
+
     export class Device {
         services: Buffer
         lastSeen: number
@@ -337,28 +370,34 @@ namespace jacdac {
         }
 
         get name() {
+            // TODO measure if caching is worth it
             if (this._name === undefined)
                 this._name = settings.readString(devNameSettingPrefix + this.deviceId) || null
             return this._name
         }
 
-        // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
-        // 3 letter ID; 1.1%/2.6%/0.05%
-        // 2 letter ID; 25%/6.4%/1.5%
         get shortId() {
-            if (!this._shortId) {                
-                const h = Buffer.fromHex(this.deviceId).hash(30)
-                this._shortId = 
-                    String.fromCharCode(0x41 + h % 26) +
-                    String.fromCharCode(0x41 + Math.idiv(h, 26) % 26) +
-                    String.fromCharCode(0x41 + Math.idiv(h, 26 * 26) % 26) +
-                    String.fromCharCode(0x41 + Math.idiv(h, 26 * 26 * 26) % 26)
-            }
+            // TODO measure if caching is worth it
+            if (!this._shortId)
+                this._shortId = shortDeviceId(this.deviceId)
             return this._shortId;
         }
 
         toString() {
             return this.shortId + (this.name ? ` (${this.name})` : ``)
+        }
+
+        hasService(service_class: number) {
+            for (let i = 4; i < this.services.length; i += 4)
+                if (this.services.getNumber(NumberFormat.UInt32LE, i) == service_class)
+                    return true
+            return false
+        }
+
+        sendCtrlCommand(cmd: number, payload: Buffer = null) {
+            const pkt = payload ? JDPacket.onlyHeader(cmd) : JDPacket.from(cmd, payload)
+            pkt.service_number = JD_SERVICE_NUMBER_CTRL
+            pkt._sendCmd(this)
         }
 
         static clearNameCache() {
@@ -404,13 +443,20 @@ namespace jacdac {
     }
 
     export function selfDevice() {
-        if (!myDevice)
+        if (!myDevice) {
             myDevice = new Device(control.deviceLongSerialNumber().toHex())
+            myDevice.services = Buffer.create(4)
+        }
         return myDevice
     }
 
     export function onAnnounce(cb: () => void) {
         announceCallbacks.push(cb)
+    }
+
+    export function onNewDevice(cb: () => void) {
+        if (!newDeviceCallbacks) newDeviceCallbacks = []
+        newDeviceCallbacks.push(cb)
     }
 
     function queueAnnounce() {
@@ -447,6 +493,10 @@ namespace jacdac {
             }
         }
         dev.clients = newClients
+
+        if (newDeviceCallbacks)
+            for (let f of newDeviceCallbacks)
+                f()
 
         if (_unattachedClients.length == 0)
             return
