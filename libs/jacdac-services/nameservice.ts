@@ -52,6 +52,9 @@ namespace jacdac {
         }
     }
 
+    //% fixedInstance whenUsed block="device name service"
+    export const deviceNameService = new DeviceNameService()
+
     export class Dechunker {
         pending: Buffer[]
         previous: Buffer
@@ -113,8 +116,8 @@ namespace jacdac {
         public remoteNamedDevices: RemoteNamedDevice[] = []
 
         private usedNames: Dechunker
-        constructor() {
-            super("dnsc", jd_class.DEVICE_NAME_SERVICE)
+        constructor(requiredDevice: string = null) {
+            super("dnsc", jd_class.DEVICE_NAME_SERVICE, requiredDevice)
 
             onNewDevice(() => {
                 this.recomputeCandidates()
