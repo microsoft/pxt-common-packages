@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class ProximityClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jd_class.PROXIMITY);
+        constructor(requiredDevice: string = null) {
+            super("proxi", jd_class.PROXIMITY, requiredDevice);
         }
 
         /**
@@ -30,5 +30,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="light sensor client"
-    export const proximityClient = new ProximityClient("proxi");
+    export const proximityClient = new ProximityClient();
 }

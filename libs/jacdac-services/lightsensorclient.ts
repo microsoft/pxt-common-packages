@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class LightSensorClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jd_class.LIGHT_SENSOR);
+        constructor(requiredDevice: string = null) {
+            super("lis", jd_class.LIGHT_SENSOR, requiredDevice);
         }
 
         /**
@@ -40,5 +40,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="light sensor client"
-    export const lightSensorClient = new LightSensorClient("lis");
+    export const lightSensorClient = new LightSensorClient();
 }

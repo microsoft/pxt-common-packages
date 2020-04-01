@@ -5,7 +5,7 @@ namespace jacdac {
         onMessageReceived: (priority: number, dev: Device, message: string) => void;
 
         constructor() {
-            super("conc", jd_class.LOGGER);
+            super("conc", jd_class.LOGGER, null);
             this.broadcast = true
             this.minPriority = JDConsolePriority.Silent; // drop all packets by default
             onAnnounce(() => {

@@ -58,8 +58,8 @@ namespace jacdac {
 
     //% fixedInstances
     export class GamepadClient extends Client {
-        constructor() {
-            super("gpad", jd_class.GAMEPAD);
+        constructor(requiredDevice: string = null) {
+            super("gpad", jd_class.GAMEPAD, requiredDevice);
         }
 
         /** 

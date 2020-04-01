@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class SwitchClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jd_class.SWITCH);
+        constructor(requiredDevice: string = null) {
+            super("switch", jd_class.SWITCH, requiredDevice);
         }
 
         /**
@@ -29,5 +29,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="switch client"
-    export const switchClient = new SwitchClient("switch");
+    export const switchClient = new SwitchClient();
 }

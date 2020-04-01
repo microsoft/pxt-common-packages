@@ -229,7 +229,6 @@ namespace jacdac {
 
     //% fixedInstances
     export class Client {
-        requiredDeviceName: string
         device: Device
         currentDevice: Device
         eventId: number
@@ -243,7 +242,8 @@ namespace jacdac {
 
         constructor(
             public name: string,
-            public serviceClass: number
+            public serviceClass: number,
+            public requiredDeviceName: string
         ) {
             this.eventId = control.allocateNotifyEvent();
             this.config = new ClientPacketQueue(this)

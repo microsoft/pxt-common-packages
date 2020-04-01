@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class MusicClient extends Client {
-        constructor() {
-            super("mus", jd_class.MUSIC);
+        constructor(requiredDevice: string = null) {
+            super("mus", jd_class.MUSIC, requiredDevice);
         }
 
         /**

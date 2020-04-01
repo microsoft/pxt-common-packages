@@ -9,8 +9,8 @@ namespace jacdac {
 
         public isStreaming = false
 
-        constructor(name: string, deviceClass: number) {
-            super(name, deviceClass);
+        constructor(name: string, deviceClass: number, requiredDevice: string) {
+            super(name, deviceClass, requiredDevice);
             this._lastState = control.createBuffer(0);
         }
 

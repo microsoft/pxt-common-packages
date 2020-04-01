@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class ButtonClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jd_class.BUTTON);
+        constructor(requiredDevice: string = null) {
+            super("btn", jd_class.BUTTON, requiredDevice);
         }
 
         /**
@@ -29,6 +29,6 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="button client"
-    export const buttonClient = new ButtonClient("btn");
+    export const buttonClient = new ButtonClient();
 
 }

@@ -10,8 +10,8 @@ const enum JDMouseButton {
 namespace jacdac {
     //% fixedInstances
     export class MouseClient extends Client {
-        constructor() {
-            super("mous", jd_class.MOUSE);
+        constructor(requiredDevice: string = null) {
+            super("mous", jd_class.MOUSE, requiredDevice);
         }
 
         /** 

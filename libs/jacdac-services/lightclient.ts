@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class LightClient extends Client {
-        constructor(name: string) {
-            super(name, jd_class.LIGHT);
+        constructor(requiredDevice: string = null) {
+            super("light", jd_class.LIGHT, requiredDevice);
         }
 
         setStrip(numpixels: number, type = 0, maxpower = 500): void {
@@ -55,5 +55,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="light client"
-    export const lightClient = new LightClient("light");
+    export const lightClient = new LightClient();
 }

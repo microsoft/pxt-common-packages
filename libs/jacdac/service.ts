@@ -1,7 +1,7 @@
 namespace jacdac {
     export class BroadcastClient extends Client {
         constructor(readonly parent: Broadcast) {
-            super(parent.name, parent.serviceClass)
+            super(parent.name, parent.serviceClass, null)
             this.broadcast = true
         }
 

@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class PixelClient extends ActuatorClient {
-        constructor(name: string) {
-            super(name, jd_class.PIXEL, 4);
+        constructor(requiredDevice: string = null) {
+            super("pixel", jd_class.PIXEL, 4, requiredDevice);
         }
 
         /**
@@ -35,5 +35,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="pixel client"
-    export const pixelClient = new PixelClient("pixel");
+    export const pixelClient = new PixelClient();
 }

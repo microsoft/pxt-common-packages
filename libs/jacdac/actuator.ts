@@ -29,8 +29,8 @@ namespace jacdac {
     export class ActuatorClient extends Client {
         protected state: Buffer;
 
-        constructor(name: string, deviceClass: number, stateLength: number) {
-            super(name, deviceClass);
+        constructor(name: string, deviceClass: number, stateLength: number, requiredDevice: string) {
+            super(name, deviceClass, requiredDevice);
             this.state = Buffer.create(stateLength);
             // TODO
             // this.onDriverEvent(JDDriverEvent.Connected, () => this.notifyChange());
