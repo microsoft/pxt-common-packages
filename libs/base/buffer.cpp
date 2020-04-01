@@ -230,9 +230,9 @@ uint32_t hash(Buffer buf, int bits) {
         return 0;
     uint32_t h = hash_fnv1(buf->data, buf->length);
     if (bits >= 32)
-        return fromInt(h);
+        return h;
     else
-        return fromInt((h ^ (h >> bits)) & ((1 << bits) - 1));
+        return ((h ^ (h >> bits)) & ((1 << bits) - 1));
 }
 
 } // namespace BufferMethods
