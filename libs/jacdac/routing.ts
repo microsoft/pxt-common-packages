@@ -395,7 +395,7 @@ namespace jacdac {
         }
 
         sendCtrlCommand(cmd: number, payload: Buffer = null) {
-            const pkt = payload ? JDPacket.onlyHeader(cmd) : JDPacket.from(cmd, payload)
+            const pkt = !payload ? JDPacket.onlyHeader(cmd) : JDPacket.from(cmd, payload)
             pkt.service_number = JD_SERVICE_NUMBER_CTRL
             pkt._sendCmd(this)
         }
