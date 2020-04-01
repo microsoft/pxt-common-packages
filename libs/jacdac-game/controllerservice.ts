@@ -179,7 +179,7 @@ namespace jacdac {
                     d.write(i, Buffer.fromHex(p))
                 i += 8
             }
-            this.sendReport(JDPacket.from(CMD_ADVERTISEMENT_DATA, 0, d))
+            this.sendReport(JDPacket.from(CMD_ADVERTISEMENT_DATA, d))
         }
     }
 
