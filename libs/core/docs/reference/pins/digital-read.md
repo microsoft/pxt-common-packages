@@ -16,17 +16,15 @@ connected to the pin is **on** or has a status of `true`.
 
 ## Example #example
 
-See if a switch on your bread board is on or off. The switch is connected to pin `D4`. If
-the switch is on, change the pixel at position `2` on the pixel strip to `green`.
+See if a switch on your bread board is on or off. The switch is connected to pin `D4`. Write the position of the switch to the console.
 
 ```blocks
-let pixels = light.createStrip();
 let mySwitchOn = pins.D4.digitalRead();
 
 if (mySwitchOn) {
-    pixels.setPixelColor(2, 0x00ff00);
+    console.log("Switch at D4 is ON")
 } else {
-    pixels.setPixelColor(2, 0xff0000);
+    console.log("Switch at D4 is OFF")
 }
 ```
 

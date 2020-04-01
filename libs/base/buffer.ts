@@ -294,8 +294,8 @@ namespace Buffer {
     }
 
     /**
-     * Create a new buffer initalized to bytes from given array.
-     * @param bytes data to initalize with
+     * Create a new buffer initialized to bytes from given array.
+     * @param bytes data to initialize with
      */
     export function fromArray(bytes: number[]) {
         let buf = Buffer.create(bytes.length)

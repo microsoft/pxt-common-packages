@@ -17,19 +17,13 @@ loop is running. This includes other ``||loops:forever||`` loops and the [``||co
 
 ## Example #example
 
-Rotate a blue pixel along the pixel strip (one pixel at a time) and keep it rotating.
+Create an mood generator that writes a current mood to the console every `5` seconds.
 
 ```blocks
-let lightSpot = 0;
-let pixels = light.createStrip();
-forever(() => {
-    if (lightSpot == light.pixels.length()) {
-        lightSpot = 0;
-    }
-    pixels.setPixelColor(lightSpot, 0x0000ff);
-    pause(500);
-    pixels.setPixelColor(lightSpot, 0x000000);
-    lightSpot++;
+let mood = ["happy", "sad", "joyful", "angry"]
+forever(function () {
+    console.log("mood = " + mood[Math.randomRange(0, 3)])
+    pause(5000)
 })
 ```
 
