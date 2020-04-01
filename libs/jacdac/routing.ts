@@ -77,8 +77,8 @@ namespace jacdac {
                 sz += bufs[i].length
             }
             if (prev != i) {
-                currno++
                 this.sendOneChunk(cmd, bufs.slice(prev, i), currno, total)
+                currno++
             }
             return currno
         }
@@ -273,7 +273,7 @@ namespace jacdac {
         _attach(dev: Device, serviceNum: number) {
             if (this.device) throw "Invalid attach"
             if (!this.broadcast) {
-                if (this.requiredDeviceName && this.requiredDeviceName != dev.name)
+                if (this.requiredDeviceName && this.requiredDeviceName != dev.name && this.requiredDeviceName != dev.deviceId)
                     return false // don't attach
                 this.device = dev
                 this.serviceNumber = serviceNum

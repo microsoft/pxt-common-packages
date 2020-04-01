@@ -104,7 +104,13 @@ namespace jacdac {
             public name: string
         ) { }
 
+        isCandidate(ldev: Device) {
+            return this.services.every(s => ldev.hasService(s))
+        }
+
         select(dev: Device) {
+            if (dev == this.boundTo)
+                return
             if (this.boundTo)
                 this.parent.setName(this.boundTo, "")
             this.parent.setName(dev, this.name)
@@ -158,7 +164,13 @@ namespace jacdac {
         private recomputeCandidates() {
             const localDevs = devices()
             for (let dev of this.remoteNamedDevices)
-                dev.candidates = localDevs.filter(ldev => dev.services.every(s => ldev.hasService(s)))
+                dev.candidates = localDevs.filter(ldev => dev.isCandidate(ldev))
+        }
+
+        scan() {
+            pauseUntil(() => this.isConnected())
+            this.sendCommand(JDPacket.onlyHeader(DNS_CMD_LIST_USED_NAMES))
+            pause(100)
         }
 
         clearNames() {
