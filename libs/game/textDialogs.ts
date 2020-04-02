@@ -122,7 +122,7 @@ namespace game {
             const y0 = this.innerTop + rowTo * this.unit;
 
             const xf = (index % 3) * this.unit;
-            const yf = Math.floor(index / 3) * this.unit;
+            const yf = Math.idiv(index, 3) * this.unit;
 
             for (let e = 0; e < this.unit; e++) {
                 for (let t = 0; t < this.unit; t++) {

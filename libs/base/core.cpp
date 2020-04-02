@@ -1935,6 +1935,8 @@ void dumpPerfCounters() {
 }
 
 void startPerfCounter(PerfCounters n) {
+    if (!perfCounters)
+        return;
     auto c = &perfCounters[(uint32_t)n];
     if (c->start)
         oops(50);
@@ -1942,6 +1944,8 @@ void startPerfCounter(PerfCounters n) {
 }
 
 void stopPerfCounter(PerfCounters n) {
+    if (!perfCounters)
+        return;
     auto c = &perfCounters[(uint32_t)n];
     if (!c->start)
         oops(51);
