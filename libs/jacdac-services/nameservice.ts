@@ -97,7 +97,7 @@ namespace jacdac {
     export class RemoteNamedDevice {
         services: number[] = [];
         boundTo: Device;
-        candidates: Device[];
+        candidates: Device[] = [];
 
         constructor(
             public parent: DeviceNameClient,
@@ -147,7 +147,7 @@ namespace jacdac {
 
                     let r = devs.find(d => d.name == name)
                     if (!r)
-                        r = new RemoteNamedDevice(this, name)
+                        devs.push(r = new RemoteNamedDevice(this, name))
                     r.services.push(service_class)
 
                     const dev = localDevs.find(d => d.deviceId == devid)
@@ -158,6 +158,7 @@ namespace jacdac {
                 devs.sort((a, b) => a.name.compare(b.name))
 
                 this.remoteNamedDevices = devs
+                this.recomputeCandidates()
             })
         }
 

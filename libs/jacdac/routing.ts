@@ -475,6 +475,12 @@ namespace jacdac {
         }
     }
 
+    function newDevice() {
+        if (newDeviceCallbacks)
+            for (let f of newDeviceCallbacks)
+                f()
+    }
+
     function reattach(dev: Device) {
         log(`reattaching services to ${dev.toString()}; cl=${_unattachedClients.length}/${_allClients.length}`)
         const newClients: Client[] = []
@@ -494,9 +500,7 @@ namespace jacdac {
         }
         dev.clients = newClients
 
-        if (newDeviceCallbacks)
-            for (let f of newDeviceCallbacks)
-                f()
+        newDevice()
 
         if (_unattachedClients.length == 0)
             return
@@ -596,6 +600,7 @@ namespace jacdac {
 
     function gcDevices() {
         const cutoff = control.millis() - 2000
+        let numdel = 0
         for (let i = 0; i < devices_.length; ++i) {
             const dev = devices_[i]
             if (dev.lastSeen < cutoff) {
@@ -605,8 +610,11 @@ namespace jacdac {
                     c._detach()
                 }
                 dev.clients = null
+                numdel++
             }
         }
+        if (numdel)
+            newDevice()
     }
 
     export function start(): void {
