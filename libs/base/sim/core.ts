@@ -29,7 +29,7 @@ namespace pxsim {
             if (bits >= 32)
                 return h >>> 0
             else
-                return ((h ^ (h >> bits)) & ((1 << bits) - 1)) >>> 0
+                return ((h ^ (h >>> bits)) & ((1 << bits) - 1)) >>> 0
         }
     }
 }
