@@ -535,7 +535,7 @@ namespace jacdac {
             }
         }
 
-        if (multiCommandClass) {
+        if (multiCommandClass != null) {
             if (!pkt.is_command)
                 return // only commands supported in multi-command
             const h = hostServices.find(s => s.serviceClass == multiCommandClass);

@@ -182,11 +182,7 @@ namespace jacdac {
         }
 
         _sendCore() {
-            // TODO would be slightly faster to do concat on the C++ side
-            if (this._data.length > 0)
-                jacdac.__physSendPacket(this._header.concat(this._data))
-            else
-                jacdac.__physSendPacket(this._header)
+            jacdac.__physSendPacket(this._header, this._data)
         }
 
         _sendReport(dev: Device) {
@@ -228,7 +224,7 @@ namespace jacdac {
                 })
             }
 
-            const aw = new AckAwaiter(this)
+            const aw = new AckAwaiter(this, dev.deviceId)
             ackAwaiters.push(aw)
             while (aw.added > 0)
                 control.waitForEvent(DAL.DEVICE_ID_NOTIFY, aw.eventId)
@@ -240,10 +236,10 @@ namespace jacdac {
         added: number
         numTries = 1
         crc: number
-        srcId: string
         eventId: number
         constructor(
             public pkt: JDPacket,
+            public srcId: string
         ) {
             this.crc = pkt.crc
             this.added = control.millis()
@@ -262,6 +258,7 @@ namespace jacdac {
                 continue // already got ack
             if (a.numTries >= ACK_RETRIES) {
                 a.added = -1
+                control.raiseEvent(DAL.DEVICE_ID_NOTIFY, a.eventId)
             } else {
                 a.numTries++
                 a.pkt._sendCore()

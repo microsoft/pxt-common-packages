@@ -85,9 +85,18 @@ extern "C" void app_queue_annouce() {
     Event(DEVICE_ID, EVT_QUEUE_ANNOUNCE);
 }
 
-static inline int copyAndAppend(LinkedFrame *volatile *q, jd_frame_t *frame, int max) {
+static inline int copyAndAppend(LinkedFrame *volatile *q, jd_frame_t *frame, int max,
+                                uint8_t *data = NULL) {
     auto buf = (LinkedFrame *)malloc(JD_FRAME_SIZE(frame) + sizeof(void *));
-    memcpy(&buf->frame, frame, JD_FRAME_SIZE(frame));
+
+    if (data) {
+        memcpy(&buf->frame, frame, JD_SERIAL_FULL_HEADER_SIZE);
+        memcpy(&buf->frame.data[4], data, JD_FRAME_SIZE(frame) - JD_SERIAL_FULL_HEADER_SIZE);
+        jd_compute_crc(&buf->frame);
+        frame->crc = buf->frame.crc;
+    } else {
+        memcpy(&buf->frame, frame, JD_FRAME_SIZE(frame));
+    }
 
     target_disable_irq();
     auto last = *q;
@@ -152,19 +161,15 @@ int __physId() {
  * Write a buffer to the jacdac physical layer.
  **/
 //%
-void __physSendPacket(Buffer buf) {
-    if (!buf || buf->length < 16)
+void __physSendPacket(Buffer header, Buffer data) {
+    if (!header || header->length != JD_SERIAL_FULL_HEADER_SIZE)
+        jd_panic();
+
+    jd_frame_t *frame = (jd_frame_t *)header->data;
+    frame->size = (data->length + 4 + 3) & ~3;
+
+    if (copyAndAppend(&txQ, frame, MAX_TX, data->data) < 0)
         return;
-
-    jd_frame_t *frame = (jd_frame_t *)buf->data;
-    frame->size = (buf->length - 12 + 3) & ~3;
-
-    jd_compute_crc(frame);
-
-    if (copyAndAppend(&txQ, frame, MAX_TX) < 0) {
-        frame->crc = 0;
-        return;
-    }
 
     jd_packet_ready();
 }
