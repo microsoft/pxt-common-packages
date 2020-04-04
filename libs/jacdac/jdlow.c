@@ -183,7 +183,11 @@ void jd_line_falling() {
     p[3] = 0;
 
     // otherwise we can enable RX in the middle of LO pulse
-    uart_wait_high();
+    if (uart_wait_high() < 0) {
+        // line didn't get high in 1ms or so - bail out
+        rx_timeout();
+        return;
+    }
     // pulse1();
     // target_wait_us(2);
 

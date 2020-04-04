@@ -253,7 +253,11 @@ void uart_disable() {
     pin_pulse();
 }
 
-void uart_wait_high() {
-    while (sws->p.getDigitalValue() == 0)
+int uart_wait_high() {
+    int timeout = 1000; // should be around 100-1000us
+    while (timeout-- > 0 && sws->p.getDigitalValue() == 0)
         ;
+    if (timeout <= 0)
+        return -1;
+    return 0;
 }
