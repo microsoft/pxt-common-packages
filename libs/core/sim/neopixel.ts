@@ -38,20 +38,20 @@ namespace pxsim {
         (pin: Pin): CommonNeoPixelState;
     }
 
-    export interface LightBoard extends CommonBoard {
+    export interface LightBoard {
         // Do not laze allocate state
         tryGetNeopixelState(pinId: number): CommonNeoPixelState;
         neopixelState(pinId: number): CommonNeoPixelState;
     }
 
     export function neopixelState(pinId: number) {
-        return (board() as LightBoard).neopixelState(pinId);
+        return (board() as any as LightBoard).neopixelState(pinId);
     }
 }
 
 namespace pxsim.light {
     // Currently only modifies the builtin pixels
-    export function sendBuffer(pin: pins.DigitalInOutPin, clk: pins.DigitalInOutPin, mode: number, b: RefBuffer) {
+    export function sendBuffer(pin: { id: number }, clk: { id: number }, mode: number, b: RefBuffer) {
         const state = neopixelState(pin.id);
         if (!state) return;
         state.mode = mode & 0xff; // TODO RGBW support
