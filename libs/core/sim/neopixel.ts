@@ -37,6 +37,16 @@ namespace pxsim {
     export interface CommonNeoPixelStateConstructor {
         (pin: Pin): CommonNeoPixelState;
     }
+
+    export interface LightBoard extends CommonBoard {
+        // Do not laze allocate state
+        tryGetNeopixelState(pinId: number): CommonNeoPixelState;
+        neopixelState(pinId: number): CommonNeoPixelState;
+    }
+
+    export function neopixelState(pinId: number) {
+        return (board() as LightBoard).neopixelState(pinId);
+    }
 }
 
 namespace pxsim.light {
