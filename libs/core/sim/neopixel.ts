@@ -43,9 +43,21 @@ namespace pxsim.light {
     // Currently only modifies the builtin pixels
     export function sendBuffer(pin: pins.DigitalInOutPin, clk: pins.DigitalInOutPin, mode: number, b: RefBuffer) {
         const state = neopixelState(pin.id);
+        if (!state) return;
         state.mode = mode & 0xff; // TODO RGBW support
         state.buffer = b.data;
 
         runtime.queueDisplayUpdate();
+    }
+}
+
+namespace pxsim {
+    export function sendBufferAsm(buffer: RefBuffer, pin: DigitalPin) {
+        const b = board();
+        if (!b) return;
+        const p = b.edgeConnectorState.getPin(pin);
+        if (!p) return;
+        const mode = NeoPixelMode.RGB; // RGB_RGB
+        pxsim.light.sendBuffer(p, undefined, mode, buffer);
     }
 }
