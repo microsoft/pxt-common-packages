@@ -62,7 +62,7 @@ namespace pxsim.light {
 }
 
 namespace pxsim {
-    export function sendBufferAsm(buffer: RefBuffer, pin: DigitalPin) {
+    export function sendBufferAsm(buffer: RefBuffer, pin: number) {
         const b = board();
         if (!b) return;
         const p = b.edgeConnectorState.getPin(pin);
