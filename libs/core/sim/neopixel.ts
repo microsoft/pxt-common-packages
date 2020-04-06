@@ -67,7 +67,7 @@ namespace pxsim {
         if (!b) return;
         const p = b.edgeConnectorState.getPin(pin);
         if (!p) return;
-        const mode = NeoPixelMode.RGB; // RGB_RGB
+        const mode = NeoPixelMode.RGB_RGB; // RGB_RGB
         pxsim.light.sendBuffer(p, undefined, mode, buffer);
     }
 }
