@@ -58,7 +58,8 @@ void jd_compute_crc(jd_frame_t *frame);
 void jd_tx_completed(int errCode);
 void jd_rx_completed(int dataLeft);
 void jd_line_falling(void);
-int jd_is_running();
+int jd_is_running(void);
+int jd_is_busy(void);
 int jd_shift_frame(jd_frame_t *frame);
 void jd_reset_frame(jd_frame_t *frame);
 void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,

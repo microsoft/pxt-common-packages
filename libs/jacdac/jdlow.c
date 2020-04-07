@@ -74,6 +74,10 @@ int jd_is_running() {
     return nextAnnounce != 0;
 }
 
+int jd_is_busy() {
+    return status != 0;
+}
+
 static void tx_done() {
     signal_write(0);
     set_tick_timer(JD_STATUS_TX_ACTIVE);
@@ -165,7 +169,7 @@ static void setup_rx_timeout() {
 
 void jd_line_falling() {
     LOG("line fall");
-    pulse1();
+    //log_pin_set(1, 1);
     pulse_log_pin();
     signal_read(1);
 
@@ -191,9 +195,8 @@ void jd_line_falling() {
     // pulse1();
     // target_wait_us(2);
 
-    pulse1();
     uart_start_rx(rxFrame, sizeof(*rxFrame));
-    pulse1();
+    //log_pin_set(1, 0);
 
     tim_set_timer(100, setup_rx_timeout);
 
