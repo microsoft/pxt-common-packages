@@ -561,9 +561,10 @@ int length(String s) {
 }
 
 #define isspace(c) ((c) == ' ')
+#define iswhitespace(c) ((c) == 0x0009 || (c) == 0x000B || (c) == 0x000C || (c) == 0x0020 || (c) == 0x00A0 || (c) == 0xFEFF || (c) == 0x000A || (c) == 0x000D || (c) == 0x2028 || (c) == 0x2029)
 
 NUMBER mystrtod(const char *p, char **endp) {
-    while (isspace(*p))
+    while (iswhitespace(*p))
         p++;
     NUMBER m = 1;
     NUMBER v = 0;
@@ -586,13 +587,7 @@ NUMBER mystrtod(const char *p, char **endp) {
                 m /= 10;
         } else if (!dot && *p == '.') {
             dot = 1;
-        } else if (*p == 'e' || *p == 'E') {
-            break;
         } else {
-            while (isspace(*p))
-                p++;
-            if (*p)
-                return NAN;
             break;
         }
         p++;
@@ -600,10 +595,14 @@ NUMBER mystrtod(const char *p, char **endp) {
 
     v *= m;
 
-    if (*p) {
+    if (*p == 'e' || *p == 'E') {
         p++;
         int pw = (int)strtol(p, endp, 10);
-        v *= p10(pw);
+        if (!isnan(pw)) {
+            v *= p10(pw);
+        } else {
+            *endp = (char *)p;
+        }
     } else {
         *endp = (char *)p;
     }
@@ -617,9 +616,7 @@ TNumber toNumber(String s) {
     char *endptr;
     auto data = s->getUTF8Data();
     NUMBER v = mystrtod(data, &endptr);
-    if (endptr != data + s->getUTF8Size())
-        v = NAN;
-    else if (v == 0.0 || v == -0.0) {
+    if (v == 0.0 || v == -0.0) {
         // nothing
     } else if (!isnormal(v))
         v = NAN;
