@@ -324,6 +324,11 @@ namespace jacdac {
             this.config.send(JDPacket.packed(CMD_SET_REG | reg, "i", [value]))
         }
 
+        setRegBuffer(reg: number, value: Buffer) {
+            this.start()
+            this.config.send(JDPacket.from(CMD_SET_REG | reg, value))
+        }
+
         protected registerEvent(value: number, handler: () => void) {
             this.start()
             control.onEvent(this.eventId, value, handler);

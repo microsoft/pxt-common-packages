@@ -23,7 +23,8 @@
         "colorsensorclient.ts",
         "proximityclient.ts",
         "lightspectrumsensorclient.ts",
-        "rotaryencoderclient.ts"
+        "rotaryencoderclient.ts",
+        "pwmlightclient.ts"
     ],
     "testFiles": [
         "test.ts"

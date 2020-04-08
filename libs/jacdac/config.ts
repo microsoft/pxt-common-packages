@@ -27,6 +27,7 @@ namespace jd_class {
     export const SERVOS = 0x182988d8;
     export const ROTARY_ENCODER = 0x10fa29c9;
     export const DEVICE_NAME_SERVICE = 0x117729bd;
+    export const PWM_LIGHT = 0x1fb57453;
     // to generate a new class number, head to https://microsoft.github.io/uf2/patcher/
     // click link at the bottom and replace first digit with '1'
 }
