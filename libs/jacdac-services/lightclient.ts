@@ -35,7 +35,7 @@ namespace jacdac {
         //% weight=80 blockGap=8
         //% group="Light"
         setAll(rgb: number) {
-            this.setRegInt(JDLightReg.Color, 0)
+            this.setRegInt(JDLightReg.Color, rgb)
             this.startAnimation(1)
         }
 
