@@ -569,6 +569,7 @@ NUMBER mystrtod(const char *p, char **endp) {
     NUMBER m = 1;
     NUMBER v = 0;
     int dot = 0;
+    int hasDigit = 0;
     if (*p == '+')
         p++;
     if (*p == '-') {
@@ -585,8 +586,11 @@ NUMBER mystrtod(const char *p, char **endp) {
             v += c;
             if (dot)
                 m /= 10;
+            hasDigit = 1;
         } else if (!dot && *p == '.') {
             dot = 1;
+        } else if (!hasDigit) {
+            return NAN;
         } else {
             break;
         }
