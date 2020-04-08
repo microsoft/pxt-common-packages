@@ -576,9 +576,7 @@ NUMBER mystrtod(const char *p, char **endp) {
         m = -1;
         p++;
     }
-    if (*p == '0' && (p[1] | 0x20) == 'x') {
-        return m * strtol(p, endp, 16);
-    }
+
     while (*p) {
         int c = *p - '0';
         if (0 <= c && c <= 9) {
