@@ -561,7 +561,7 @@ int length(String s) {
 }
 
 #define isspace(c) ((c) == ' ')
-#define iswhitespace(c) ((c) == 0x0009 || (c) == 0x000B || (c) == 0x000C || (c) == 0x0020 || (c) == 0x00A0 || (c) == 0xFEFF || (c) == 0x000A || (c) == 0x000D || (c) == 0x2028 || (c) == 0x2029)
+#define iswhitespace(c) ((c) == 0x09 || (c) == 0x0B || (c) == 0x0C || (c) == 0x20 || (c) == 0xA0 || (c) == 0x0A || (c) == 0x0D)
 
 NUMBER mystrtod(const char *p, char **endp) {
     while (iswhitespace(*p))
@@ -600,11 +600,7 @@ NUMBER mystrtod(const char *p, char **endp) {
     if (*p == 'e' || *p == 'E') {
         p++;
         int pw = (int)strtol(p, endp, 10);
-        if (!isnan(pw)) {
-            v *= p10(pw);
-        } else {
-            *endp = (char *)p;
-        }
+        v *= p10(pw);
     } else {
         *endp = (char *)p;
     }
