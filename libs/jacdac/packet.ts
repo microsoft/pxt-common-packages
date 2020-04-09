@@ -57,7 +57,7 @@ namespace jacdac {
             return this._header.slice(4, 8).toHex()
         }
         set device_identifier(id: string) {
-            const idb = control.createBufferFromHex(id)
+            const idb = Buffer.fromHex(id)
             if (idb.length != 8)
                 error("Invalid id")
             this._header.write(4, idb)

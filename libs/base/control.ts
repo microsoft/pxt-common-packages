@@ -358,20 +358,6 @@ namespace control {
             off += 4
         }
     }
-
-    export function createBufferFromHex(hex: string) {
-        const hexStr = "0123456789abcdef"
-        const res = control.createBuffer(hex.length >> 1)
-        hex = hex.toLowerCase()
-        for (let i = 0; i < hex.length; i += 2) {
-            const p0 = hexStr.indexOf(hex.charAt(i))
-            const p1 = hexStr.indexOf(hex.charAt(i + 1))
-            if (p0 < 0 || p1 < 0)
-                throw "Invalid hex"
-            res[i >> 1] = (p0 << 4) | p1
-        }
-        return res
-    }
 }
 
 /**
