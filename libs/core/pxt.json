@@ -58,6 +58,7 @@
             "pxtapp"
         ],
         "excludePrefix": [
+            "JD_",
             "USB_",
             "REQUEST_",
             "LIS3DH_",
@@ -65,7 +66,12 @@
             "HF2_",
             "PXT_REF_TAG_",
             "MS_",
-            "SCSI_"
+            "SCSI_",
+            "MAG_",
+            "MAG3",
+            "MPU6",
+            "MADCTL",
+            "MMA8"
         ]
     },
     "dependencies": {
