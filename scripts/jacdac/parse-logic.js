@@ -192,6 +192,10 @@ function shortDeviceId(devid) {
         String.fromCharCode(0x41 + idiv(h, 26 * 26 * 26) % 26)
 }
 
+function num2str(n) {
+    return n + " (0x" + n.toString(16) + ")"
+}
+
 function showPkt(pkt) {
     const dev_id = pkt.slice(4, 12).toString("hex")
     const size = pkt[12]
@@ -235,7 +239,25 @@ function showPkt(pkt) {
             pdesc += "; " + "Announce services: " + services.join(", ")
         }
     } else {
-        if (d.length) pdesc += "; " + d.toString("hex")
+        let v0 = null, v1 = null
+        if (d.length == 1) {
+            v0 = d.readUInt8(0)
+            v1 = d.readInt8(0)
+        } else if (d.length == 2) {
+            v0 = d.readUInt16LE(0)
+            v1 = d.readInt16LE(0)
+        } else if (d.length == 4) {
+            v0 = d.readUInt16LE(0)
+            v1 = d.readInt16LE(0)
+        }
+
+        if (v0 != null) {
+            pdesc += "; " + num2str(v0)
+            if (v0 != v1)
+                pdesc += "; signed: " + num2str(v1)
+        } else if (d.length) {
+            pdesc += "; " + d.toString("hex")
+        }
     }
     if (pdesc)
         console.log(Math.round(lastTime * 1000) + "ms: " + pdesc)
