@@ -622,6 +622,8 @@ namespace jacdac {
             newDevice()
     }
 
+    const EVT_DATA_READY = 1;
+
     export function start(): void {
         if (hostServices)
             return // already started
@@ -633,7 +635,7 @@ namespace jacdac {
         _unattachedClients = []
         _allClients = []
         jacdac.__physStart();
-        control.internalOnEvent(jacdac.__physId(), DAL.JD_SERIAL_EVT_DATA_READY, () => {
+        control.internalOnEvent(jacdac.__physId(), EVT_DATA_READY, () => {
             let buf: Buffer;
             while (null != (buf = jacdac.__physGetPacket())) {
                 routePacket(JDPacket.fromBinary(buf))
