@@ -3,43 +3,33 @@ namespace jacdac {
     //% fixedInstances
     export class KeyboardService extends Host {
         constructor() {
-            super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
+            super("keyb", jd_class.KEYBOARD);
         }
 
-        handlePacket(packet: JDPacket): number {
+        handlePacket(packet: JDPacket) {
             const data = packet.data;
-            const cmd = data.getNumber(NumberFormat.UInt8LE, 0);
-            switch (cmd) {
-                case JDKeyboardCommand.Type: {
-                    let s = "";
-                    for (let i = 1; i < data.length; ++i) {
-                        const c = data[i];
-                        if (c)
-                            s += String.fromCharCode(c);
-                    }
-                    keyboard.type(s);
+            const [payload, ev0] = data.unpack("Ib");
+            const ev: KeyboardKeyEvent = ev0;
+            switch (packet.service_command) {
+                case JDKeyboardCommand.Type:
+                    keyboard.type(packet.data.toString());
                     break;
-                }
                 case JDKeyboardCommand.Key: {
-                    const key = String.fromCharCode(data.getNumber(NumberFormat.UInt8LE, 1));
-                    const ev: KeyboardKeyEvent = data.getNumber(NumberFormat.UInt8LE, 2);
+                    const key = String.fromCharCode(payload);
                     keyboard.key(key, ev);
                     break;
                 }
                 case JDKeyboardCommand.MediaKey: {
-                    const key: KeyboardMediaKey = data.getNumber(NumberFormat.UInt8LE, 1);
-                    const ev: KeyboardKeyEvent = data.getNumber(NumberFormat.UInt8LE, 2);
+                    const key: KeyboardMediaKey = payload;
                     keyboard.mediaKey(key, ev);
                     break;
                 }
                 case JDKeyboardCommand.FunctionKey: {
-                    const key: KeyboardFunctionKey = data.getNumber(NumberFormat.UInt8LE, 1);
-                    const ev: KeyboardKeyEvent = data.getNumber(NumberFormat.UInt8LE, 2);
+                    const key: KeyboardFunctionKey = payload;
                     keyboard.functionKey(key, ev);
                     break;
                 }
             }
-            return jacdac.DEVICE_OK;
         }
     }
 

@@ -220,6 +220,21 @@ void write(Buffer buf, int dstOffset, Buffer src) {
     // srcOff and length not supported, we only do up to 4 args :/
     writeBuffer(buf, dstOffset, src, 0, -1);
 }
+
+/**
+ * Compute k-bit FNV-1 non-cryptographic hash of the buffer.
+ */
+//%
+uint32_t hash(Buffer buf, int bits) {
+    if (bits < 1)
+        return 0;
+    uint32_t h = hash_fnv1(buf->data, buf->length);
+    if (bits >= 32)
+        return h;
+    else
+        return ((h ^ (h >> bits)) & ((1 << bits) - 1));
+}
+
 } // namespace BufferMethods
 
 // The functions below are deprecated in control namespace, but they are referenced

@@ -4,7 +4,7 @@ namespace jacdac {
     export class RotaryEncoderHost extends SensorHost {
         encoder: RotaryEncoder;
         constructor(encoder: RotaryEncoder) {
-            super("crank", jacdac.ROTARY_ENCODER_DEVICE_CLASS);
+            super("crank", jd_class.ROTARY_ENCODER);
             this.encoder = encoder;
             this.encoder.onChanged(() => this.raiseHostEvent(JDRotaryEncoderEvent.Changed))
         }

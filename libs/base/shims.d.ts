@@ -11,6 +11,12 @@ declare interface Buffer {
     getUint8(off: int32): int32;
 
     /**
+     * Returns false when the buffer can be written to.
+     */
+    //% shim=BufferMethods::isReadOnly
+    isReadOnly(): boolean;
+
+    /**
      * Writes an unsigned byte at a particular location
      */
     //% shim=BufferMethods::setUint8
@@ -81,6 +87,12 @@ declare interface Buffer {
      */
     //% shim=BufferMethods::write
     write(dstOffset: int32, src: Buffer): void;
+
+    /**
+     * Compute k-bit FNV-1 non-cryptographic hash of the buffer.
+     */
+    //% shim=BufferMethods::hash
+    hash(bits: int32): uint32;
 }
 declare namespace control {
 
@@ -88,14 +100,14 @@ declare namespace control {
      * Create a new zero-initialized buffer.
      * @param size number of bytes in the buffer
      */
-    //% shim=control::createBuffer
+    //% deprecated=1 shim=control::createBuffer
     function createBuffer(size: int32): Buffer;
 
     /**
      * Create a new buffer with UTF8-encoded string
      * @param str the string to put in the buffer
      */
-    //% shim=control::createBufferFromUTF8
+    //% deprecated=1 shim=control::createBufferFromUTF8
     function createBufferFromUTF8(str: string): Buffer;
 }
 declare namespace loops {

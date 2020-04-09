@@ -1,7 +1,7 @@
 namespace jacdac {
     export class MicrophoneService extends jacdac.SensorHost {
         constructor(name: string) {
-            super(name, jacdac.MICROPHONE_DEVICE_CLASS);
+            super(name, jd_class.MICROPHONE);
             input.onLoudSound(() => this.raiseHostEvent(DAL.LEVEL_THRESHOLD_HIGH));
         }
 

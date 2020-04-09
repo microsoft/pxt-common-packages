@@ -96,8 +96,10 @@ namespace pxsim.jacdac {
     /**
      * Write a buffer to the jacdac physical layer.
      **/
-    export function __physSendPacket(buf: RefBuffer): void {
+    export function __physSendPacket(buf: RefBuffer, data: RefBuffer): void {
         const state = getJacDacState();
+        if (data.data.length)
+            U.userError("data not implemented yet")
         if (state)
             state.sendPacket(buf);
     }

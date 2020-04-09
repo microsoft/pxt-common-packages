@@ -1,10 +1,10 @@
 namespace jacdac {
     export class PixelService extends ActuatorService {
         constructor(name: string) {
-            super(name, jacdac.PIXEL_DEVICE_CLASS, 4);
+            super(name, jd_class.PIXEL, 4);
         }
 
-        protected handleStateChanged(): number {
+        protected handleStateChanged() {
             let brightness = 0;
             let color = 0;
             if (this.state.length >= 4) {
@@ -15,9 +15,8 @@ namespace jacdac {
                     this.state.getNumber(NumberFormat.UInt8LE, 3)
                 );
             }
-            pixel.setBrightness(brightness)
+            pixel.setBrightness(this.intensity ? brightness : 0)
             pixel.setColor(color);
-            return jacdac.DEVICE_OK;
         }
     }
 

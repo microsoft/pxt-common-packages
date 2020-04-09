@@ -2,7 +2,7 @@ namespace jacdac {
     export class ButtonService extends SensorHost {
         private button: Button;
         constructor(name: string, button: Button) {
-            super(name, jacdac.BUTTON_DEVICE_CLASS);
+            super(name, jd_class.BUTTON);
             this.button = button;
             jacdac.BUTTON_EVENTS.forEach((ev, j) => {
                 control.onEvent(this.button.id(), ev, () => {

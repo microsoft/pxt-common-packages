@@ -16,8 +16,8 @@ enum JDTemperatureUnit {
 namespace jacdac {
     //% fixedInstances
     export class ThermometerClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jacdac.THERMOMETER_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("temp", jd_class.THERMOMETER, requiredDevice);
         }
 
         /**
@@ -30,7 +30,7 @@ namespace jacdac {
             const s = this.state;
             if (!s || s.length < 2) return 0;
             const t = s.getNumber(NumberFormat.Int16LE, 0);
-            switch(unit) {
+            switch (unit) {
                 case JDTemperatureUnit.Fahrenheit: (t * 18) / 10 + 32;
                 default: return t;
             }
@@ -52,5 +52,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="thermometer client"
-    export const thermometerClient = new ThermometerClient("temp");
+    export const thermometerClient = new ThermometerClient();
 }

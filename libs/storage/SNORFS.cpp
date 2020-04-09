@@ -41,7 +41,7 @@ struct BlockHeader
 
 static uint8_t fnhash(const char *fn)
 {
-    uint32_t h = hash_fnv1a(fn, strlen(fn));
+    uint32_t h = hash_fnv1(fn, strlen(fn));
     h &= 0xff;
     if (h <= 0x02 || h == 0xff)
         return h + 0xf0;

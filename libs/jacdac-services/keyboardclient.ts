@@ -101,8 +101,8 @@ enum JDKeyboardKeyEvent {
 namespace jacdac {
     //% fixedInstances
     export class KeyboardClient extends Client {
-        constructor() {
-            super("keyb", jacdac.KEYBOARD_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("keyb", jd_class.KEYBOARD, requiredDevice);
         }
 
         /**
@@ -113,19 +113,9 @@ namespace jacdac {
         //% text.shadowOptions.toString=true
         //% group="Keyboard"
         type(type: string) {
-            const buf = control.createBuffer(jacdac.JD_SERIAL_MAX_PAYLOAD_SIZE)
-            buf[0] = JDKeyboardCommand.Type;
-            let n = 0;
-            while (n < type.length) {
-                const chunk = type.substr(n, buf.length - 1);
-                let i = 0;
-                for (i = 0; i < chunk.length; ++i)
-                    buf[i + 1] = chunk.charCodeAt(i);
-                if (i != chunk.length)
-                    buf[i] = 0;
-                this.sendPacket(buf);
-                n += chunk.length;
-            }
+            const bufs = Buffer.chunkedFromUTF8(type, JD_SERIAL_MAX_PAYLOAD_SIZE)
+            for (let buf of bufs)
+                this.sendCommand(JDPacket.from(JDKeyboardCommand.Type, buf))
         }
 
         /**
@@ -135,11 +125,7 @@ namespace jacdac {
         //% blockGap=8 weight=99
         //% group="Keyboard"
         key(key: string, event: JDKeyboardKeyEvent) {
-            const buf = control.createBuffer(4);
-            buf[0] = JDKeyboardCommand.Key;
-            buf[1] = key.charCodeAt(0);
-            buf[2] = event;
-            this.sendPacket(buf);
+            this.sendPackedCommand(JDKeyboardCommand.Key, "HH", [event, key.charCodeAt(0)])
         }
 
         /**
@@ -149,11 +135,7 @@ namespace jacdac {
         //% blockGap=8
         //% group="Keyboard"
         mediaKey(key: JDKeyboardMediaKey, event: JDKeyboardKeyEvent) {
-            const buf = control.createBuffer(4);
-            buf[0] = JDKeyboardCommand.MediaKey;
-            buf[1] = key;
-            buf[2] = event;
-            this.sendPacket(buf);
+            this.sendPackedCommand(JDKeyboardCommand.MediaKey, "HH", [event, key])
         }
 
         /**
@@ -163,11 +145,7 @@ namespace jacdac {
         //% blockGap=8
         //% group="Keyboard"
         functionKey(key: JDKeyboardFunctionKey, event: JDKeyboardKeyEvent) {
-            const buf = control.createBuffer(4);
-            buf[0] = JDKeyboardCommand.FunctionKey;
-            buf[1] = key;
-            buf[2] = event;
-            this.sendPacket(buf);
+            this.sendPackedCommand(JDKeyboardCommand.FunctionKey, "HH", [event, key])
         }
     }
 

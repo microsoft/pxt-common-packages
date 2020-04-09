@@ -1,94 +1,36 @@
 namespace jacdac {
-    export enum SensorState {
-        None = 0,
-        Stopped = 0x01,
-        Stopping = 0x02,
-        Streaming = 0x04,
-    }
-
-    export enum SensorCommand {
-        State,
-        Event,
-        StartStream,
-        StopStream,
-        LowThreshold,
-        HighThreshold,
-        Calibrate
-    }
-
-    export function bufferEqual(l: Buffer, r: Buffer): boolean {
-        if (!l || !r) return !!l == !!r;
-        if (l.length != r.length) return false;
-        for (let i = 0; i < l.length; ++i) {
-            if (l.getNumber(NumberFormat.UInt8LE, i) != r.getNumber(NumberFormat.UInt8LE, i))
-                return false;
-        }
-        return true;
-    }
-
-    export function bufferToString(buf: Buffer, offset: number): string {
-        let str = "";
-        for (let i = offset; (i < buf.length) && !!buf[i]; i++)
-            str += String.fromCharCode(buf[i]);
-        return str;
-    }
-    
     /**
      * JacDac service running on sensor and streaming data out
      */
     export class SensorHost extends Host {
         public streamingInterval: number; // millis
+        public isStreaming: boolean;
+        protected lowThreshold: number
+        protected highThreshold: number
 
-        constructor(name: string, deviceClass: number, controlLength = 0) {
-            super(name, deviceClass, 1 + controlLength);
-            this.sensorState = SensorState.Stopped;
+        constructor(name: string, deviceClass: number) {
+            super(name, deviceClass);
             this.streamingInterval = 100;
+            this.isStreaming = false;
         }
 
-        get sensorState(): SensorState {
-            return this.controlData[0];
-        }
+        public handlePacket(packet: JDPacket) {
+            this.log(`hpkt ${packet.service_command}`);
+            this.stateUpdated = false
+            this.lowThreshold = this.handleRegInt(packet, REG_LOW_THRESHOLD, this.lowThreshold)
+            this.highThreshold = this.handleRegInt(packet, REG_HIGH_THRESHOLD, this.highThreshold)
+            this.streamingInterval = this.handleRegInt(packet, REG_STREAMING_INTERVAL, this.streamingInterval)
+            const newStr = this.handleRegBool(packet, REG_IS_STREAMING, this.isStreaming)
+            this.setStreaming(newStr)
 
-        set sensorState(value: SensorState) {
-            this.controlData[0] = value;
-        }
-
-        public updateControlPacket() {
-            // send streaming state in control package
-            const buf = this.sensorControlPacket();
-            if (buf)
-                this.controlData.write(1, buf);
-        }
-
-        protected sensorControlPacket(): Buffer {
-            return undefined;
-        }
-
-        public handlePacket(packet: JDPacket): number {
-            const data = packet.data;
-            const command = data.getNumber(NumberFormat.UInt8LE, 0);
-            this.log(`hpkt ${command}`);
-            switch (command) {
-                case SensorCommand.StartStream:
-                    const interval = data.getNumber(NumberFormat.UInt32LE, 1);
-                    if (interval)
-                        this.streamingInterval = Math.max(20, interval);
-                    this.startStreaming();
-                    return jacdac.DEVICE_OK;
-                case SensorCommand.StopStream:
-                    this.stopStreaming();
-                    return jacdac.DEVICE_OK;
-                case SensorCommand.LowThreshold:                
-                    this.setThreshold(true, data.getNumber(NumberFormat.UInt32LE, 1));
-                    return jacdac.DEVICE_OK;
-                case SensorCommand.HighThreshold:
-                    this.setThreshold(false, data.getNumber(NumberFormat.UInt32LE, 1));
-                    return jacdac.DEVICE_OK;
-                case SensorCommand.Calibrate:
-                    return this.handleCalibrateCommand(packet);
+            switch (packet.service_command) {
+                case CMD_CALIBRATE:
+                    this.handleCalibrateCommand(packet);
+                    break
                 default:
                     // let the user deal with it
-                    return this.handleCustomCommand(command, packet);
+                    this.handleCustomCommand(packet);
+                    break
             }
         }
 
@@ -98,24 +40,14 @@ namespace jacdac {
         }
 
         // override
-        protected setThreshold(low: boolean, value: number) {
-
+        protected handleCalibrateCommand(pkt: JDPacket) {
         }
 
-        // override
-        protected handleCalibrateCommand(pkt: JDPacket): number {
-            return jacdac.DEVICE_OK;
-        }
-
-        protected handleCustomCommand(command: number, pkt: JDPacket): number {
-            return jacdac.DEVICE_OK;
+        protected handleCustomCommand(pkt: JDPacket) {
         }
 
         protected raiseHostEvent(value: number) {
-            const pkt = control.createBuffer(4);
-            pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.Event);
-            pkt.setNumber(NumberFormat.UInt16LE, 1, value);
-            this.sendPacket(pkt);
+            this.sendReport(JDPacket.packed(CMD_EVENT, "I", [value]))
         }
 
         public setStreaming(on: boolean) {
@@ -124,23 +56,20 @@ namespace jacdac {
         }
 
         private startStreaming() {
-            if (this.sensorState != SensorState.Stopped)
+            if (this.isStreaming)
                 return;
 
             this.log(`start`);
-            this.sensorState = SensorState.Streaming;
+            this.isStreaming = true;
             control.runInBackground(() => {
-                while (this.sensorState == SensorState.Streaming) {
+                while (this.isStreaming) {
                     // run callback                    
                     const state = this.serializeState();
                     if (!!state) {
                         // did the state change?
                         if (this.isConnected()) {
                             // send state and record time
-                            const pkt = control.createBuffer(state.length + 1);
-                            pkt.setNumber(NumberFormat.UInt8LE, 0, SensorCommand.State);
-                            pkt.write(1, state);
-                            this.sendPacket(pkt);
+                            this.sendReport(JDPacket.from(CMD_GET_REG | REG_READING, state))
                         }
                     }
                     // check streaming interval value
@@ -149,16 +78,16 @@ namespace jacdac {
                     // waiting for a bit
                     pause(this.streamingInterval);
                 }
-                this.sensorState = SensorState.Stopped;
+                this.isStreaming = false
                 this.log(`stopped`);
             })
         }
 
         private stopStreaming() {
-            if (this.sensorState == SensorState.Streaming) {
+            if (this.isStreaming) {
                 this.log(`stopping`)
-                this.sensorState = SensorState.Stopping;
-                pauseUntil(() => this.sensorState == SensorState.Stopped);
+                this.isStreaming = null
+                pauseUntil(() => this.isStreaming === false);
             }
         }
     }

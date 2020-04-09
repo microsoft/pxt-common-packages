@@ -1,15 +1,14 @@
 namespace jacdac {
     //% fixedInstances
     export class LightClient extends Client {
-        constructor(name: string) {
-            super(name, jacdac.LIGHT_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("light", jd_class.LIGHT, requiredDevice);
         }
 
-        private sendCmd(cmd: number, value: number) {
-            const buf = control.createBuffer(9);
-            buf.setNumber(NumberFormat.UInt8LE, 0, cmd);
-            buf.setNumber(NumberFormat.UInt32LE, 1, value);
-            this.sendPacket(buf);
+        setStrip(numpixels: number, type = 0, maxpower = 500): void {
+            this.setRegInt(JDLightReg.NumPixels, numpixels)
+            this.setRegInt(JDLightReg.LightType, type)
+            this.setRegInt(REG_MAX_POWER, maxpower)
         }
 
         /**
@@ -21,7 +20,11 @@ namespace jacdac {
         //% weight=2 blockGap=8
         //% group="Light"
         setBrightness(brightness: number): void {
-            this.sendCmd(JDLightCommand.SetBrightness, brightness);
+            this.setRegInt(REG_INTENSITY, brightness)
+        }
+
+        private startAnimation(anim: number) {
+            this.config.send(JDPacket.packed(JDLightCommand.StartAnimation, "b", [anim]))
         }
 
         /**
@@ -32,7 +35,8 @@ namespace jacdac {
         //% weight=80 blockGap=8
         //% group="Light"
         setAll(rgb: number) {
-            this.sendCmd(JDLightCommand.SetAll, rgb);
+            this.setRegInt(JDLightReg.Color, rgb)
+            this.startAnimation(1)
         }
 
         /**
@@ -43,11 +47,13 @@ namespace jacdac {
         //% blockId=jdlight_show_animation block="show %strip animation %animation for %duration=timePicker ms"
         //% weight=90 blockGap=8
         //% group="Light"
-        showAnimation(animation: JDLightAnimation, duration: number) {
-            this.sendCmd(animation, duration);
+        showAnimation(animation: JDLightAnimation, duration: number, color = 0) {
+            this.setRegInt(JDLightReg.Duration, duration)
+            this.setRegInt(JDLightReg.Color, color)
+            this.startAnimation(animation)
         }
     }
 
     //% fixedInstance whenUsed block="light client"
-    export const lightClient = new LightClient("light");
+    export const lightClient = new LightClient();
 }

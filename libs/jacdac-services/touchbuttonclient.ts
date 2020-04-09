@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class TouchButtonClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jacdac.TOUCHBUTTON_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("touch", jd_class.TOUCHBUTTON, requiredDevice);
         }
 
         /**
@@ -35,8 +35,8 @@ namespace jacdac {
      * A client of multiple buttons
      */
     export class TouchButtonsClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jacdac.TOUCH_BUTTONS_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("mtouch", jd_class.TOUCH_BUTTONS, requiredDevice);
         }
 
         /**
@@ -68,5 +68,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="touch buttons client"
-    export const touchButtonsClient = new TouchButtonsClient("tch");
+    export const touchButtonsClient = new TouchButtonsClient();
 }

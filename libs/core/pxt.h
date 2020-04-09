@@ -93,6 +93,7 @@ LowLevelTimer* getJACDACTimer();
 #endif
 class PressureButton;
 uint32_t readButtonMultiplexer(int bits);
+void disableButtonMultiplexer();
 }
 
 namespace serial {
@@ -111,5 +112,8 @@ typedef jacdac::JDProxyDriver* JacDacDriverStatus;
 #define DEVICE_ID_MICROPHONE 3001
 #define DEVICE_ID_FIRST_BUTTON 4000
 #define DEVICE_ID_FIRST_TOUCHBUTTON 4100
+
+#define PXT_INTERNAL_KEY_UP 2050
+#define PXT_INTERNAL_KEY_DOWN 2051
 
 #endif

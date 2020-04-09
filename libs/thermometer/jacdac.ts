@@ -1,7 +1,7 @@
 namespace jacdac {
     export class ThermometerService extends jacdac.SensorHost {
         constructor(name: string) {
-            super(name, jacdac.THERMOMETER_DEVICE_CLASS);
+            super(name, jd_class.THERMOMETER);
             input.onTemperatureConditionChanged(TemperatureCondition.Cold, 10, TemperatureUnit.Celsius, () => this.raiseHostEvent(TemperatureCondition.Cold));
             input.onTemperatureConditionChanged(TemperatureCondition.Cold, 30, TemperatureUnit.Celsius, () => this.raiseHostEvent(TemperatureCondition.Hot));
         }

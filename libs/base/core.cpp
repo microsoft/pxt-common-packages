@@ -325,7 +325,7 @@ uint32_t toRealUTF8(String str, uint8_t *dst) {
 }
 #endif
 
-Buffer mkBuffer(const uint8_t *data, int len) {
+Buffer mkBuffer(const void *data, int len) {
     if (len <= 0 && !inGCPrealloc())
         return (Buffer)emptyBuffer;
     Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
@@ -1989,8 +1989,11 @@ void endTry() {
 void throwValue(TValue v) {
     auto ctx = PXT_EXN_CTX();
     auto f = ctx->tryFrame;
-    if (!f)
+    if (!f) {
+        DMESG("unhandled exception, value:");
+        anyPrint(v);
         target_panic(PANIC_UNHANDLED_EXCEPTION);
+    }
     ctx->tryFrame = f->parent;
     TryFrame copy = *f;
     app_free(f);
@@ -2016,8 +2019,8 @@ void endFinally() {
     throwValue(getThrownValue());
 }
 
-// https://tools.ietf.org/html/draft-eastlake-fnv-14#section-3
-uint32_t hash_fnv1a(const void *data, unsigned len) {
+// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
+uint32_t hash_fnv1(const void *data, unsigned len) {
     const uint8_t *d = (const uint8_t *)data;
     uint32_t h = 0x811c9dc5;
     while (len--)

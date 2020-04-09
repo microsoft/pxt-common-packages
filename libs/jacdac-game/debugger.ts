@@ -44,6 +44,7 @@ namespace jacdac.dbg {
         Devices
     }
 
+    /*
     class DebugMenu {
         private started: boolean;
         private mode: Mode;
@@ -179,16 +180,21 @@ namespace jacdac.dbg {
     }
 
     let _menu: DebugMenu;
+    */
+
     /**
      * Shows a basic debugger interface
      */
     export function show() {
+        /*
         if (_menu)
             _menu.stop();
         _menu = new DebugMenu();
         _menu.start();
+        */
     }
 
+    /*
     scene.systemMenu.addEntry(
         () => "jacdac dashboard",
         show, JACDAC_DEBUG_ICON);
@@ -208,4 +214,5 @@ namespace jacdac.dbg {
         },
         JACDAC_CONSOLE_ICON
     );
+    */
 }
