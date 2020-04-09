@@ -6,9 +6,9 @@ namespace jacdac {
 
     export namespace mono {
         //% fixedInstance whenUsed
-        export const slowGlow = new MonoLightAnimation(hex`ffff dc05 000f dc05 ffff 0001`)
+        export const slowGlow = new MonoLightAnimation(hex`000f dc05 ffff dc05 000f 0100`)
         //% fixedInstance whenUsed
-        export const stable = new MonoLightAnimation(hex`ffff 00ff ffff 0000`)
+        export const stable = new MonoLightAnimation(hex`ffff e803 ffff 0000`)
         //% fixedInstance whenUsed
         export const blink = new MonoLightAnimation(hex`ffff f401 ffff 0100 0000 fd01`)
     }
@@ -30,6 +30,7 @@ namespace jacdac {
         setIterations(numIters: number): void {
             numIters |= 0
             if (numIters < 0 || numIters >= 0xffff) numIters = 0xffffffff
+            else if (numIters) numIters--
             this.setRegInt(PwmReg.MaxIterations, numIters)
         }
 
