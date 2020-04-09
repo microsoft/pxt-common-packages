@@ -16,7 +16,7 @@ namespace pxsim {
         function fnv1(data: Uint8Array) {
             let h = 0x811c9dc5
             for (let i = 0; i < data.length; ++i) {
-                h = Math.imul(h, 0x1000193) ^ data[i]
+                h = (Math as any).imul(h, 0x1000193) ^ data[i]
             }
             return h
         }
