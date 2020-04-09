@@ -11,25 +11,4 @@ namespace pxsim {
     export function board(): CommonBoard {
         return runtime.board as CommonBoard;
     }
-
-    export namespace BufferMethods {
-        function fnv1(data: Uint8Array) {
-            let h = 0x811c9dc5
-            for (let i = 0; i < data.length; ++i) {
-                h = (Math as any).imul(h, 0x1000193) ^ data[i]
-            }
-            return h
-        }
-
-        export function hash(buf: RefBuffer, bits: number) {
-            bits |= 0
-            if (bits < 1)
-                return 0
-            const h = fnv1(buf.data)
-            if (bits >= 32)
-                return h >>> 0
-            else
-                return ((h ^ (h >>> bits)) & ((1 << bits) - 1)) >>> 0
-        }
-    }
 }
