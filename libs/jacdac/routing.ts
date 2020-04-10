@@ -374,6 +374,10 @@ namespace jacdac {
             devices_.push(this)
         }
 
+        get isConnected() {
+            return this.clients != null
+        }
+
         get name() {
             // TODO measure if caching is worth it
             if (this._name === undefined)
