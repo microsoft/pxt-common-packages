@@ -2,7 +2,7 @@ namespace jacdac {
     export class ServoService extends ActuatorService {
         servo: servos.Servo;
         constructor(name: string, servo: servos.Servo) {
-            super(name, jd_class.SERVO, 8);
+            super(name, jd_class.SERVO, 2);
             this.servo = servo;
         }
 
@@ -10,10 +10,8 @@ namespace jacdac {
             if (!this.intensity)
                 this.servo.stop();
             else {
-                const [angle, pulse] = this.state.unpack("hh")
-                if (pulse)
-                    this.servo.setPulse(pulse);
-                this.servo.setAngle(angle);
+                const pulse = this.state.unpack("h")[0]
+                this.servo.setPulse(pulse);
             }
         }
     }
