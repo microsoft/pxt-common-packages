@@ -68,7 +68,7 @@ enum class KeyboardFunctionKey
     //% block="F13"
     F13Key = KEY_F13,
     //% block="F14"
-    F14Key = KEY_F14
+    F14Key = KEY_F14,
     //% block="F15"
     F15Key = KEY_F15,
     //% block="F16"
@@ -76,7 +76,7 @@ enum class KeyboardFunctionKey
     //% block="F17"
     F17Key = KEY_F17,
     //% block="F18"
-    F18Key = KEY_F18
+    F18Key = KEY_F18,
     //% block="F19"
     F19Key = KEY_F19,
     //% block="F20"
