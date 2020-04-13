@@ -106,21 +106,21 @@ enum class KeyboardKeyEvent {
 
 enum class KeyboardModifierKey {
     //% block="CTRL"
-    Control = 1,
+    Control = KEY_MOD_LCTRL,
     //% block="SHIFT"
-    Shift,
+    Shift = KEY_MOD_LSHIFT,
     //% block="ALT"
-    Alt,
+    Alt = KEY_MOD_LALT,
     //% block="META"
-    Meta,
+    Meta = KEY_MOD_LMETA,
     //% block="Right CTRL"
-    RightControl,
+    RightControl = KEY_MOD_RCTRL,
     //% block="Right SHIFT"
-    RightShift,
+    RightShift = KEY_MOD_RSHIFT,
     //% block="Right ALT"
-    RightAlt,
+    RightAlt = KEY_MOD_RALT,
     //% block="Right META"
-    RightMeta
+    RightMeta = KEY_MOD_RMETA
 };
 
 namespace keyboard {
@@ -179,19 +179,7 @@ namespace keyboard {
 
     //%
     void __modifierKey(KeyboardModifierKey modifier, KeyboardKeyEvent event) {
-        uint8_t k = 0;
-        switch(modifier) {
-            case KeyboardModifierKey::Control: k = KEY_MOD_LCTRL; break;
-            case KeyboardModifierKey::Shift: k = KEY_MOD_RSHIFT; break;
-            case KeyboardModifierKey::Alt: k = KEY_MOD_LALT; break;
-            case KeyboardModifierKey::Meta: k = KEY_MOD_LMETA; break;
-            case KeyboardModifierKey::RightControl: k = KEY_MOD_RCTRL; break;
-            case KeyboardModifierKey::RightShift: k = KEY_MOD_RSHIFT; break;
-            case KeyboardModifierKey::RightAlt: k = KEY_MOD_RALT; break;
-            case KeyboardModifierKey::RightMeta: k = KEY_MOD_RMETA; break;
-            default: return;
-        }
-       const Key key = { .reg = KEYMAP_KEY_DOWN | KEYMAP_MODIFIER_KEY | k };
+       const Key key = { .reg = KEYMAP_KEY_DOWN | KEYMAP_MODIFIER_KEY | modifier };
         // send keys
         switch(event) {
             case KeyboardKeyEvent::Down:
