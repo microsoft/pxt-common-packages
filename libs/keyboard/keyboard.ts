@@ -1,3 +1,30 @@
+const enum KeyboardModifierKey {
+    //% block="CTRL"
+    Control = DAL.KEY_MOD_LCTRL,
+    //% block="SHIFT"
+    Shift = DAL.KEY_MOD_LSHIFT,
+    //% block="ALT"
+    Alt = DAL.KEY_MOD_LALT,
+    //% block="Ctrl+Shift"
+    CtrlShift = Control | Shift,
+    //% block="Ctrl+Alt"
+    CtrlAlt = Control | Alt,
+    //% block="Shift+Alt"
+    ShiftAlt = Shift | Alt,
+    //% block="Ctrl+Shift+Alt"
+    ControlShiftAlt = Control | Shift | Alt,
+    //% block="Right Ctrl"
+    RightControl = DAL.KEY_MOD_RCTRL,
+    //% block="Right Shift"
+    RightShift = DAL.KEY_MOD_RSHIFT,
+    //% block="Right Alt"
+    RightAlt = DAL.KEY_MOD_RALT,
+    //% block="Meta"
+    Meta = DAL.KEY_MOD_LMETA,
+    //% block="Right Meta"
+    RightMeta = DAL.KEY_MOD_RMETA
+}
+
 /**
  * Keyboard emulation
  */
