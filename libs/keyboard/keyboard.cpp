@@ -106,7 +106,7 @@ enum class KeyboardKeyEvent {
 
 enum class KeyboardModifierKey {
     //% block="CTRL"
-    Control,
+    Control = 1,
     //% block="SHIFT"
     Shift,
     //% block="ALT"
