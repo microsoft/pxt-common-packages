@@ -117,7 +117,7 @@ enum class KeyboardFunctionKey
     //% block="down arrow"
     DownArrow = KEY_DOWN,
     //% block="up arrow"
-    UpArrow = KEY_UP,
+    UpArrow = KEY_UP
 };
 
 enum class KeyboardKeyEvent {
