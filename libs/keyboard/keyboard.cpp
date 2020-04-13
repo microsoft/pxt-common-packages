@@ -129,25 +129,6 @@ enum class KeyboardKeyEvent {
     Down
 };
 
-enum class KeyboardModifierKey {
-    //% block="CTRL"
-    Control = KEY_MOD_LCTRL,
-    //% block="SHIFT"
-    Shift = KEY_MOD_LSHIFT,
-    //% block="ALT"
-    Alt = KEY_MOD_LALT,
-    //% block="META"
-    Meta = KEY_MOD_LMETA,
-    //% block="Right CTRL"
-    RightControl = KEY_MOD_RCTRL,
-    //% block="Right SHIFT"
-    RightShift = KEY_MOD_RSHIFT,
-    //% block="Right ALT"
-    RightAlt = KEY_MOD_RALT,
-    //% block="Right META"
-    RightMeta = KEY_MOD_RMETA
-};
-
 namespace keyboard {
     //% 
     void __type(String text) {
