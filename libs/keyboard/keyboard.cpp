@@ -179,7 +179,7 @@ namespace keyboard {
 
     //%
     void __modifierKey(KeyboardModifierKey modifier, KeyboardKeyEvent event) {
-       const Key key = { .reg = KEYMAP_KEY_DOWN | KEYMAP_MODIFIER_KEY | modifier };
+       const Key key = { .reg = KEYMAP_KEY_DOWN | KEYMAP_MODIFIER_KEY | (uint8_t)modifier };
         // send keys
         switch(event) {
             case KeyboardKeyEvent::Down:
