@@ -117,16 +117,16 @@ const enum KeyboardFunctionKey
 }
 
 const enum KeyboardModifierKey {
-    //% block="CTRL"
+    //% block="Ctrl"
     Control = DAL.KEY_MOD_LCTRL,
-    //% block="SHIFT"
+    //% block="Shift"
     Shift = DAL.KEY_MOD_LSHIFT,
-    //% block="ALT"
+    //% block="Alt"
     Alt = DAL.KEY_MOD_LALT,
     //% block="Ctrl+Shift"
-    CtrlShift = Control | Shift,
+    ControlShift = Control | Shift,
     //% block="Ctrl+Alt"
-    CtrlAlt = Control | Alt,
+    ControlAlt = Control | Alt,
     //% block="Shift+Alt"
     ShiftAlt = Shift | Alt,
     //% block="Ctrl+Shift+Alt"
