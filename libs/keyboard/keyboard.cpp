@@ -35,7 +35,7 @@ namespace keyboard {
     }
 
     //%
-    void __mediaKey(uint16 key, KeyboardKeyEvent event) {
+    void __mediaKey(uint16_t key, KeyboardKeyEvent event) {
         codal::MediaKey ckey = (codal::MediaKey)((int)codal::MediaKey::Mute + (int)key);
         switch(event) {
             case KeyboardKeyEvent::Down:
@@ -51,7 +51,7 @@ namespace keyboard {
     }
 
     //%
-    void __functionKey(uint16 key, KeyboardKeyEvent event) {
+    void __functionKey(uint16_t key, KeyboardKeyEvent event) {
         codal::FunctionKey ckey = (codal::FunctionKey)key;
         switch(event) {
             case KeyboardKeyEvent::Down:
