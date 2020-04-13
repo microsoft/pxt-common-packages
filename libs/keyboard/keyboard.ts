@@ -51,6 +51,12 @@ namespace keyboard {
                 __functionKey(key, event);
         }
 
+        modifierKey(key: KeyboardModifierKey, event: KeyboardKeyEvent) {
+            if (!this._modifiersDown) this._modifiersDown = [];
+            if (State.updateState(this._modifiersDown, key, event))
+                __modifierKey(key, event);
+        }
+
         private static updateState(downKeys: number[], c: number, event: KeyboardKeyEvent): boolean {
             let i = downKeys.indexOf(c);
             switch (event) {
@@ -161,7 +167,7 @@ namespace keyboard {
     //% help=keyboard/modifier-key
     export function modifierKey(key: KeyboardModifierKey, event: KeyboardKeyEvent) {
         const st = state();
-        st.functionKey(key, event)
+        st.modifierKey(key, event)
     }
 
     /**
