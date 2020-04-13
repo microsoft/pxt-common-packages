@@ -42,57 +42,82 @@ enum class KeyboardMediaKey
 enum class KeyboardFunctionKey
 {
     //% block="F1"
-    F1Key,  
+    F1Key = KEY_F1,  
     //% block="F2"
-    F2Key,
+    F2Key = KEY_F2,
     //% block="F3"
-    F3Key,
+    F3Key = KEY_F3,
     //% block="F4"
-    F4Key, 
+    F4Key = KEY_F4, 
     //% block="F5"
-    F5Key,
+    F5Key = KEY_F5,
     //% block="F6"
-    F6Key,
+    F6Key = KEY_F6,
     //% block="F7"
-    F7Key,
+    F7Key = KEY_F7,
     //% block="F8"
-    F8Key,
+    F8Key = KEY_F8,
     //% block="F9"
-    F9Key,
+    F9Key = KEY_F9,
     //% block="F0"
-    F10Key,
+    F10Key = KEY_F10,
     //% block="F11"
-    F11Key,
+    F11Key = KEY_F11,
     //% block="F12"
-    F12Key,
+    F12Key = KEY_F12,
+    //% block="F13"
+    F13Key = KEY_F13,
+    //% block="F14"
+    F14Key = KEY_F14
+    //% block="F15"
+    F15Key = KEY_F15,
+    //% block="F16"
+    F16Key = KEY_F16,
+    //% block="F17"
+    F17Key = KEY_F17,
+    //% block="F18"
+    F18Key = KEY_F18
+    //% block="F19"
+    F19Key = KEY_F19,
+    //% block="F20"
+    F20Key = KEY_F20,
+    //% block="F21"
+    F21Key = KEY_F21,
+    //% block="F22"
+    F22Key = KEY_F22,
+    //% block="F23"
+    F23Key = KEY_F23,
+    //% block="F24"
+    F24Key = KEY_F24,
+
 
     //% block="print screen"
-    PrintScreen,
+    PrintScreen = KEY_SYSRQ,
     //% block="scroll lock"
-    ScrollLock,
+    ScrollLock = KEY_SCROLLLOCK,
     //% block="pause"
-    Pause,
+    Pause = KEY_PAUSE,
     //% block="insert"
-    Insert,
+    Insert = KEY_INSERT,
     //% block="home"
-    Home,
+    Home = KEY_HOME,
     //% block="page up"
-    PageUp,
+    PageUp = KEY_PAGEUP,
     //% block="delete"
-    DeleteForward,
+    DeleteForward = KEY_DELETE,
     //% block="end"
-    End,
+    End = KEY_END,
     //% block="page down"
-    PageDown,
+    PageDown = KEY_PAGEDOWN,
 
     //% block="right arrow"
-    RightArrow,
+    RightArrow = KEY_RIGHT,
     //% block="left arrow"
-    LeftArrow,
+    LeftArrow = KEY_LEFT,
     //% block="down arrow"
-    DownArrow,
+    DownArrow = KEY_DOWN,
     //% block="up arrow"
-    UpArrow,
+    UpArrow = KEY_UP,
 };
 
 enum class KeyboardKeyEvent {
@@ -163,7 +188,7 @@ namespace keyboard {
 
     //%
     void __functionKey(KeyboardFunctionKey key, KeyboardKeyEvent event) {
-        codal::FunctionKey ckey = (codal::FunctionKey)((int)codal::FunctionKey::F1Key + (int)key);
+        codal::FunctionKey ckey = (codal::FunctionKey)key;
         switch(event) {
             case KeyboardKeyEvent::Down:
                 pxt::keyboard.keyDown(ckey);
