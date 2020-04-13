@@ -321,6 +321,7 @@ namespace keyboard {
     //% blockId=keyboardClear block="keyboard clear all"
     //% blockGap=8
     //% help=keyboard/clear-all-keys
+    //% weight=10
     export function clearAllKeys() {
         const st = state();
         st.clear();
