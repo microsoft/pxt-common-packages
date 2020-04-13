@@ -262,13 +262,18 @@ namespace keyboard {
     /**
     * Send a sequence of keystrokes to the keyboard
     */
-    //% blockId=keyboardType block="keyboard type %text"
+    //% blockId=keyboardType block="keyboard type $text||with $modifiers"
     //% blockGap=8 weight=100
     //% text.shadowOptions.toString=true
     //% help=keyboard/type
-    export function type(text: string) {
+    //% weight=100
+    export function type(text: string, modifiers?: KeyboardModifierKey) {
         const st = state();
+        if (modifiers)
+            st.modifierKey(modifiers, KeyboardKeyEvent.Down);
         st.type(text);
+        if (modifiers)
+            st.modifierKey(modifiers, KeyboardKeyEvent.Up);
     }
 
     /**
@@ -285,7 +290,7 @@ namespace keyboard {
     /**
     * Send a media key command
     */
-    //% blockId=keyboardMediaKey block="keyboard media key %key|%event"
+    //% blockId=keyboardMediaKey block="keyboard media %key|%event"
     //% blockGap=8
     //% help=keyboard/media-key
     export function mediaKey(key: KeyboardMediaKey, event: KeyboardKeyEvent) {
@@ -296,7 +301,7 @@ namespace keyboard {
     /**
     * Send a function key command
     */
-    //% blockId=keyboardFunctionKey block="keyboard function key %key|%event"
+    //% blockId=keyboardFunctionKey block="keyboard function %key|%event"
     //% blockGap=8
     //% help=keyboard/function-key
     export function functionKey(key: KeyboardFunctionKey, event: KeyboardKeyEvent) {
@@ -307,7 +312,7 @@ namespace keyboard {
     /**
     * Send a modifier key command
     */
-    //% blockId=keyboardModiferKey block="keyboard modifier key %key|%event"
+    //% blockId=keyboardModiferKey block="keyboard modifier %key|%event"
     //% blockGap=8
     //% help=keyboard/modifier-key
     export function modifierKey(key: KeyboardModifierKey, event: KeyboardKeyEvent) {
