@@ -19,4 +19,8 @@ namespace pxsim.keyboard {
     export function __functionKey(key: number, event: number): void {
         console.log(`kb: function ${key} ${events[event]}`);
     }
+
+    export function __modifierKey(key: number, event: number): void {
+        console.log(`kb: modifier ${key} ${events[event]}`);
+    }
 }
