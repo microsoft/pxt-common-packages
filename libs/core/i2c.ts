@@ -123,5 +123,14 @@ namespace pins {
         public ok() {
             return !this._hasError
         }
+
+        public Transfer(command: Buffer, response: Buffer, responseStart?: number, responseEnd?: number) {
+            this.begin();
+            if (command)
+                this.write(command);
+            if (response)
+                this.readInto(response, false, responseStart, responseEnd);
+            this.end();
+        }    
     }
 }
