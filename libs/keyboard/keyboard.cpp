@@ -1,6 +1,7 @@
 // https://github.com/lancaster-university/codal-core/blob/master/source/drivers/HIDKeyboard.cpp
 
 #include "pxt.h"
+#include "USB_HID_Keys.h"
 
 enum class KeyboardMediaKey
 {
@@ -103,6 +104,25 @@ enum class KeyboardKeyEvent {
     Down
 };
 
+enum class KeyboardModifierKey {
+    //% block="CTRL"
+    Control,
+    //% block="SHIFT"
+    Shift,
+    //% block="ALT"
+    Alt,
+    //% block="META"
+    Meta,
+    //% block="Right CTRL"
+    RightControl,
+    //% block="Right SHIFT"
+    RightShift,
+    //% block="Right ALT"
+    RightAlt,
+    //% block="Right META"
+    RightMeta
+};
+
 namespace keyboard {
     //% 
     void __type(String text) {
@@ -155,5 +175,34 @@ namespace keyboard {
                 pxt::keyboard.press(ckey);
                 break;
         }
+    }
+
+    //%
+    void __modifierKey(KeyboardModifierKey modifier, KeyboardKeyEvent event) {
+        uint8_t k = 0;
+        switch(modifier) {
+            case KeyboardModifierKey::Control: k = KEY_MOD_LCTRL; break;
+            case KeyboardModifierKey::Shift: k = KEY_MOD_RSHIFT; break;
+            case KeyboardModifierKey::Alt: k = KEY_MOD_LALT; break;
+            case KeyboardModifierKey::Meta: k = KEY_MOD_LMETA; break;
+            case KeyboardModifierKey::RightControl: k = KEY_MOD_RCTRL; break;
+            case KeyboardModifierKey::RightShift: k = KEY_MOD_RSHIFT; break;
+            case KeyboardModifierKey::RightAlt: k = KEY_MOD_RALT; break;
+            case KeyboardModifierKey::RightMeta: k = KEY_MOD_RMETA; break;
+            default: return;
+        }
+       const Key key = { .reg = KEYMAP_KEY_DOWN | KEYMAP_MODIFIER_KEY | k };
+        // send keys
+        switch(event) {
+            case KeyboardKeyEvent::Down:
+                pxt::keyboard.keyDown(key);
+                break;
+            case KeyboardKeyEvent::Up:
+                pxt::keyboard.keyUp(key);
+                break;
+            case KeyboardKeyEvent::Press:
+                pxt::keyboard.press(key);
+                break;
+        };
     }
 }

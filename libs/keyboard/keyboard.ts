@@ -8,10 +8,12 @@ namespace keyboard {
         private _keysDown: number[];
         private _mediasDown: number[];
         private _functionsDown: number[];
+        private _modifiersDown: number[];
         constructor() {
             this._keysDown = undefined;
             this._mediasDown = undefined;
             this._functionsDown = undefined;
+            this._modifiersDown = undefined;
         }
 
         type(text: string) {
@@ -92,6 +94,10 @@ namespace keyboard {
                 const c = this._functionsDown.pop();
                 __functionKey(c, KeyboardKeyEvent.Up);
             }
+            while (this._modifiersDown && this._modifiersDown.length) {
+                const c = this._modifiersDown.pop();
+                __modifierKey(c, KeyboardKeyEvent.Up);
+            }
         }
     }
 
@@ -143,6 +149,17 @@ namespace keyboard {
     //% blockGap=8
     //% help=keyboard/function-key
     export function functionKey(key: KeyboardFunctionKey, event: KeyboardKeyEvent) {
+        const st = state();
+        st.functionKey(key, event)
+    }
+
+    /**
+    * Send a modifier key command
+    */
+    //% blockId=keyboardModiferKey block="keyboard modifier key %key|%event"
+    //% blockGap=8
+    //% help=keyboard/modifier-key
+    export function modifierKey(key: KeyboardModifierKey, event: KeyboardKeyEvent) {
         const st = state();
         st.functionKey(key, event)
     }
