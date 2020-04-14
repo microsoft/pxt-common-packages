@@ -126,7 +126,7 @@ namespace pins {
             return !this._hasError
         }
 
-        public Transfer(command: Buffer, response: Buffer, responseStart?: number, responseEnd?: number) {
+        public transfer(command: Buffer, response: Buffer, responseStart?: number, responseEnd?: number) {
             this.begin();
             if (command)
                 this.write(command);
