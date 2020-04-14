@@ -81,7 +81,7 @@ namespace pins {
      * Gets the default I2C bus
      */
     //%
-    export function i2c() {
+    export function i2c(): I2C {
         if (!_i2c) {
             const sda = pins.pinByCfg(DAL.CFG_PIN_SDA);
             const scl = pins.pinByCfg(DAL.CFG_PIN_SCL);
@@ -92,16 +92,18 @@ namespace pins {
 
     export class I2CDevice {
         public address: number;
+        public bus: I2C;
         private _hasError: boolean;
-        constructor(address: number) {
-            this.address = address
+        constructor(address: number, bus?: I2C) {
+            this.address = address;
+            this.bus = bus || i2c();
         }
         public readInto(buf: Buffer, repeat = false, start = 0, end: number = null) {
             if (end === null)
                 end = buf.length
             if (start >= end)
                 return
-            let res = i2cReadBuffer(this.address, end - start, repeat)
+            let res = this.bus.readBuffer(this.address, end - start, repeat)
             if (!res) {
                 this._hasError = true
                 return
@@ -109,7 +111,7 @@ namespace pins {
             buf.write(start, res)
         }
         public write(buf: Buffer, repeat = false) {
-            let res = i2cWriteBuffer(this.address, buf, repeat)
+            let res = this.bus.writeBuffer(this.address, buf, repeat)
             if (res) {
                 this._hasError = true
             }
@@ -123,5 +125,14 @@ namespace pins {
         public ok() {
             return !this._hasError
         }
+
+        public transfer(command: Buffer, response: Buffer, responseStart?: number, responseEnd?: number) {
+            this.begin();
+            if (command)
+                this.write(command);
+            if (response)
+                this.readInto(response, false, responseStart, responseEnd);
+            this.end();
+        }    
     }
 }
