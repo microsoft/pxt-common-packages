@@ -56,7 +56,7 @@ namespace matrixKeypad {
             // check the column pins, which ones are pulled down
             this.columnPins.forEach((col, x) => {
                 const pressed = col.digitalRead();
-                const idx = x * this.columnPins.length + y;
+                const idx = x * this.columns + y;
                 const wasPressed = !!this.timePressed[idx];
                 if (wasPressed != pressed) {
                     control.raiseEvent(this.messageBusId, this.evId(x, y, pressed ? MatrixKeypadEvent.Pressed : MatrixKeypadEvent.Released));
