@@ -38,7 +38,7 @@ namespace matrixKeypad {
         }
 
         private evId(x: number, y: number, ev: number) {
-            return 1 + (x * this.rowPins.length + y) * 2;
+            return 1 + (x * this.columns + y) * 2 + (ev == MatrixKeypadEvent.Pressed ? 1 : 0);
         }
 
         private pulseRows() {
