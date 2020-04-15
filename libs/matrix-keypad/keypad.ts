@@ -6,29 +6,29 @@ enum MatrixKeypadEvent {
 namespace input {
     //% fixedInstances
     export class MatrixKeypad {
-        rowPins: DigitalInOutPin[];
-        columnPins: DigitalInOutPin[];
-        messageBusId: number;
-        timePressed: number[];
+        private timePressed: number[];
 
-        constructor() {
-            this.messageBusId = pxt.getConfig(DAL.CFG_MATRIX_KEYPAD_MESSAGE_ID) || 7452;
+        static fromCfg(): MatrixKeypad {
+            const messageBusId = pxt.getConfig(DAL.CFG_MATRIX_KEYPAD_MESSAGE_ID) || 7452;
             
             const rows = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_ROWS, 0);
             const columns = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_COLS, 0);
             
-            this.rowPins = [];
+            const rowPins: DigitalInOutPin[] = [];
             for(let i = 0; i < rows; ++i) {
                 const p = pxt.getPinCfg(DAL.CFG_MATRIX_KEYPAD_ROW0 + i);
-                this.rowPins.push(p);
+                rowPins.push(p);
             }
-            this.columnPins = [];
+            const columnPins: DigitalInOutPin[] = [];
             for(let i = 0; i < columns; ++i) {
                 const p = pxt.getPinCfg(DAL.CFG_MATRIX_KEYPAD_COL0 + i);
-                this.columnPins.push(p);
+                columnPins.push(p);
             }
-            this.timePressed = [];
+            return new MatrixKeypad(messageBusId, rowPins, columnPins);
+        }
 
+        constructor(private messageBusId: number, private rowPins: DigitalInOutPin[], columnPins: DigitalInOutPin[]) {
+            this.timePressed = [];
             this.pulseRows();
         }
 
@@ -121,5 +121,5 @@ namespace input {
     }
 
     //% fixedInstance whenUsed block="keypad"
-    export const keypad = new MatrixKeypad();
+    export const keypad = MatrixKeypad.fromCfg();
 }
