@@ -71,6 +71,22 @@ namespace input {
         }
 
         /**
+         * Gets the number of rows
+         */
+        //% blockId=mkeypadrows block="keypad %keypad rows"
+        get rows(): number {
+            return this.rowPins.length;
+        }
+
+        /**
+         * Gets the number of columns
+         */
+        //% blockId=mkeypadcolumns block="keypad %keypad columns"
+        get columns(): number {
+            return this.columnPins.length;
+        }
+
+        /**
          * Register an event handler
          * @param x 
          * @param y 
@@ -79,9 +95,9 @@ namespace input {
          */
         //% blockId=mkeypadonevent block="on keypad %keypad button at x %x y %y %ev"
         onEvent(x: number, y: number, ev: MatrixKeypadEvent, handler: () => void) {
-            x = x >> 0;
-            y = y >> 0;
-            if (x < 0 || y < 0 || x >= this.columnPins.length || y >= this.rowPins.length)
+            x = x | 0;
+            y = y | 0;
+            if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
                 return;
 
             control.onEvent(this.messageBusId, this.evId(x, y, ev), handler);
@@ -95,7 +111,12 @@ namespace input {
          */
         //% blockId=mkeypadispressed block="is keypad %keypad button pressed at x %x y %y"
         isPressed(x: number, y: number): boolean {
-            return !!this.timePressed[x * this.columnPins.length + y];
+            x = x | 0;
+            y = y | 0;
+            if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
+                return false;
+
+            return !!this.timePressed[x * this.columns + y];
         }
     }
 
