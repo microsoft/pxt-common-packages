@@ -25,7 +25,7 @@ namespace input {
             this.columnPins = [];
             for(let i = 0; i < columns; ++i) {
                 const p = pxt.getPinCfg(DAL.CFG_MATRIX_KEYPAD_COL0 + i);
-                this.rowPins.push(p);
+                this.columnPins.push(p);
             }
             this.timePressed = [];
 
