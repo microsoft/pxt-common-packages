@@ -315,6 +315,11 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
 #endif
 
+static HF2 *jdLogger;
+static void jdLog(const uint8_t *frame) {
+    uint8_t sz = frame[2] + 12;
+}
+
 int HF2::endpointRequest() {
     if (!allocateEP && !ctrlWaiting)
         return 0;
@@ -414,6 +419,15 @@ int HF2::endpointRequest() {
 
     case HF2_DBG_GET_STACK:
         return sendResponseWithData(stackCopy, stackSize);
+
+    case HF2_CMD_JDS_CONFIG:
+        if (cmd->data8[0]) {
+            jdLogger = this;
+            pxt::logJDFrame = jdLog;
+        } else {
+            pxt::logJDFrame = NULL;
+        }
+        break;
 
     default:
         // command not understood
