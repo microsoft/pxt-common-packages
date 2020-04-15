@@ -38,7 +38,7 @@ namespace matrixKeypad {
         }
 
         private evId(x: number, y: number, ev: number) {
-            return 1 + (x * this.columns + y) * 2 + (ev == MatrixKeypadEvent.Pressed ? 1 : 0);
+            return 1 + (x + y * this.columns) * 2 + (ev == MatrixKeypadEvent.Pressed ? 1 : 0);
         }
 
         private pulseRows() {
@@ -56,7 +56,7 @@ namespace matrixKeypad {
             // check the column pins, which ones are pulled down
             this.columnPins.forEach((col, x) => {
                 const pressed = col.digitalRead();
-                const idx = x * this.columns + y;
+                const idx = x + y * this.columns;
                 const wasPressed = !!this.timePressed[idx];
                 if (wasPressed != pressed) {
                     control.raiseEvent(this.messageBusId, this.evId(x, y, pressed ? MatrixKeypadEvent.Pressed : MatrixKeypadEvent.Released));
@@ -116,7 +116,7 @@ namespace matrixKeypad {
             if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
                 return false;
 
-            return !!this.timePressed[x * this.columns + y];
+            return !!this.timePressed[x + y * this.columns];
         }
     }
 
