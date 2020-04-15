@@ -1,8 +1,3 @@
-enum MatrixKeypadEvent {
-    Pressed = PinEvent.PulseHigh,
-    Released = PinEvent.PulseLow
-}
-
 namespace matrixKeypad {
     //% fixedInstances
     export class MatrixKeypad {
@@ -32,6 +27,12 @@ namespace matrixKeypad {
         constructor(private messageBusId: number, private rowPins: DigitalInOutPin[], private columnPins: DigitalInOutPin[]) {
             this.timePressed = [];
             this.pulseRows();
+            control.runInParallel(function() {
+                while(true) {
+                    this.pulseRows();
+                    pause(50);
+                }
+            })
         }
 
         static setInput(p: DigitalInOutPin) {
@@ -40,14 +41,13 @@ namespace matrixKeypad {
         }
 
         private evId(x: number, y: number, ev: number) {
-            return 1 + (x + y * this.columns) * 2 + (ev == MatrixKeypadEvent.Pressed ? 1 : 0);
+            return 1 + (x + y * this.columns) * 8 + ev;
         }
 
         private pulseRows() {
             this.rowPins.forEach(p => MatrixKeypad.setInput(p));
             this.columnPins.forEach(p => MatrixKeypad.setInput(p));
             this.rowPins.forEach((row, y) => this.pulseRow(y));
-            this.rowPins.forEach(p => MatrixKeypad.setInput(p));
         }
 
         private pulseRow(y: number) {
@@ -59,16 +59,22 @@ namespace matrixKeypad {
             this.columnPins.forEach((col, x) => {
                 const pressed = col.digitalRead();
                 const idx = x + y * this.columns;
-                const wasPressed = !!this.timePressed[idx];
+                const lastTime = this.timePressed[idx];
+                const wasPressed = !!lastTime;
                 if (wasPressed != pressed) {
                     this.timePressed[idx] = pressed ? time : 0;
-                    control.raiseEvent(this.messageBusId, this.evId(x, y, pressed ? MatrixKeypadEvent.Pressed : MatrixKeypadEvent.Released));
+                    control.raiseEvent(this.messageBusId, this.evId(x, y, pressed ? ButtonEvent.Down : ButtonEvent.Up));
+                    if (!pressed) {
+                        const elapsed = time - lastTime;
+                        if (elapsed >= DAL.DEVICE_BUTTON_LONG_CLICK_TIME) {
+                            control.raiseEvent(this.messageBusId, this.evId(x, y, ButtonEvent.LongClick));
+                        } else {
+                            control.raiseEvent(this.messageBusId, this.evId(x, y, ButtonEvent.Click));
+                        }
+                    }
                 }
             });
             MatrixKeypad.setInput(row);
-            // reset events
-           // row.onEvent(PinEvent.Fall, () => this.pulseRow(y));
-           // row.onEvent(PinEvent.Rise, () => this.pulseRow(y));
         }
 
         /**
@@ -97,7 +103,7 @@ namespace matrixKeypad {
          * @param handler 
          */
         //% blockId=mkeypadonevent block="on keypad %keypad button at x %x y %y %ev"
-        onEvent(x: number, y: number, ev: MatrixKeypadEvent, handler: () => void) {
+        onEvent(x: number, y: number, ev: ButtonEvent, handler: () => void) {
             x = x | 0;
             y = y | 0;
             if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
@@ -118,8 +124,6 @@ namespace matrixKeypad {
             y = y | 0;
             if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
                 return false;
-
-            this.pulseRows();
             return !!this.timePressed[x + y * this.columns];
         }
     }
