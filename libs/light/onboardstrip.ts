@@ -1,7 +1,7 @@
 namespace light {
     let _onboardStrip: light.LightStrip;
     /**
-     * Get the default light strip.
+     * Get the onboard light strip.
      */
     //% help=light/onboard-strip
     //% blockId="neopixel_onboard_strip" block="onboard strip"
@@ -23,6 +23,6 @@ namespace light {
         } else {
             _onboardStrip = light.createNeoPixelStrip(undefined, 0);
         }
-        return _onboardStrip;
+        return _onboardStrip = defaultStrip();
     }
 }
