@@ -1,3 +1,17 @@
+/**
+ * User interaction on keypad buttons
+ */
+const enum MatrixKeypadButtonEvent {
+    //% block="click"
+    Click = DAL.DEVICE_BUTTON_EVT_CLICK,
+    //% block="long click"
+    LongClick = DAL.DEVICE_BUTTON_EVT_LONG_CLICK,
+    //% block="up"
+    Up = DAL.DEVICE_BUTTON_EVT_UP,
+    //% block="down"
+    Down = DAL.DEVICE_BUTTON_EVT_DOWN
+};
+
 namespace matrixKeypad {
     //% fixedInstances
     export class MatrixKeypad {
@@ -63,13 +77,13 @@ namespace matrixKeypad {
                 const wasPressed = !!lastTime;
                 if (wasPressed != pressed) {
                     this.timePressed[idx] = pressed ? time : 0;
-                    control.raiseEvent(this.messageBusId, this.evId(x, y, pressed ? ButtonEvent.Down : ButtonEvent.Up));
+                    control.raiseEvent(this.messageBusId, this.evId(x, y, pressed ? MatrixKeypadButtonEvent.Down : MatrixKeypadButtonEvent.Up));
                     if (!pressed) {
                         const elapsed = time - lastTime;
                         if (elapsed >= DAL.DEVICE_BUTTON_LONG_CLICK_TIME) {
-                            control.raiseEvent(this.messageBusId, this.evId(x, y, ButtonEvent.LongClick));
+                            control.raiseEvent(this.messageBusId, this.evId(x, y, MatrixKeypadButtonEvent.LongClick));
                         } else {
-                            control.raiseEvent(this.messageBusId, this.evId(x, y, ButtonEvent.Click));
+                            control.raiseEvent(this.messageBusId, this.evId(x, y, MatrixKeypadButtonEvent.Click));
                         }
                     }
                 }
@@ -103,7 +117,7 @@ namespace matrixKeypad {
          * @param handler 
          */
         //% blockId=mkeypadonevent block="on keypad %keypad button at x %x y %y %ev"
-        onEvent(x: number, y: number, ev: ButtonEvent, handler: () => void) {
+        onEvent(x: number, y: number, ev: MatrixKeypadButtonEvent, handler: () => void) {
             x = x | 0;
             y = y | 0;
             if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
