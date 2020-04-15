@@ -34,6 +34,7 @@
 #define CFG_PIN_MIC_DATA 17
 #define CFG_PIN_MISO 18
 #define CFG_PIN_MOSI 19
+// the preferred pin to drive an external neopixel strip
 #define CFG_PIN_NEOPIXEL 20
 #define CFG_PIN_RX 21
 #define CFG_PIN_RXLED 22
@@ -212,6 +213,8 @@
 #define CFG_ANALOG_JOYSTICK_MIN 216
 #define CFG_ANALOG_JOYSTICK_MAX 217
 #define CFG_TIMERS_TO_USE 218
+// configs to specify the onboard (built-in) dotstar or neopixel strips
+// some boards have a combination of dotstar, neopixel strips like neotrellis
 #define CFG_PIN_ONBOARD_DOTSTAR_CLOCK 219
 #define CFG_PIN_ONBOARD_DOTSTAR_DATA 220
 #define CFG_NUM_ONBOARD_DOTSTARS 221
