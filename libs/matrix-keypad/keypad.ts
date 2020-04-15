@@ -12,7 +12,7 @@ namespace input {
         timePressed: number[];
 
         constructor() {
-            this.messageBusId = pxt.getConfig(DAL.CFG_MATRIX_KEYPAD_MESSAGE_ID);
+            this.messageBusId = pxt.getConfig(DAL.CFG_MATRIX_KEYPAD_MESSAGE_ID) || 7452;
             
             const rows = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_ROWS, 0);
             const columns = pxt.getConfig(DAL.CFG_NUM_MATRIX_KEYPAD_COLS, 0);
