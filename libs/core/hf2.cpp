@@ -54,7 +54,7 @@ static const HIDReportDescriptor reportDesc = {
 };
 
 static const InterfaceInfo ifaceInfoHID = {
-   &reportDesc,
+    &reportDesc,
     sizeof(reportDesc),
     1,
     {
@@ -102,21 +102,16 @@ static const InterfaceInfo ifaceInfoEP = {
     {USB_EP_TYPE_BULK, 0},
 };
 
-int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup)
-{
+int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
 #ifdef HF2_HID
     if (!useHID)
         return DEVICE_NOT_SUPPORTED;
-    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR)
-    {
-        if (setup.wValueH == 0x21)
-        {
+    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR) {
+        if (setup.wValueH == 0x21) {
             InterfaceDescriptor tmp;
             fillInterfaceInfo(&tmp);
             return ctrl.write(&tmp, sizeof(tmp));
-        }
-        else if (setup.wValueH == 0x22)
-        {
+        } else if (setup.wValueH == 0x22) {
             return ctrl.write(hidDescriptor, sizeof(hidDescriptor));
         }
     }
@@ -429,8 +424,8 @@ int HF2::endpointRequest() {
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p) : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true), useHID(false) {}
-
+HF2::HF2(HF2_Buffer &p)
+    : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true), useHID(false) {}
 
 static const InterfaceInfo dummyIfaceInfo = {
     NULL,
@@ -439,15 +434,14 @@ static const InterfaceInfo dummyIfaceInfo = {
     {
         0,    // numEndpoints
         0xff, /// class code - vendor-specific
-        0xff,   // subclass
-        0xff,    // protocol
+        0xff, // subclass
+        0xff, // protocol
         0x00, // string
         0x00, // alt
     },
     {0, 0},
     {0, 0},
 };
-
 
 const InterfaceInfo *DummyIface::getInterfaceInfo() {
     return &dummyIfaceInfo;
