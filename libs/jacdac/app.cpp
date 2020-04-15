@@ -171,6 +171,15 @@ void __physSendPacket(Buffer header, Buffer data) {
     if (copyAndAppend(&txQ, frame, MAX_TX, data->data) < 0)
         return;
 
+    if (pxt::logJDFrame) {
+        auto buf = (uint8_t *)malloc(JD_FRAME_SIZE(frame));
+        memcpy(buf, frame, JD_SERIAL_FULL_HEADER_SIZE);
+        memcpy(buf + JD_SERIAL_FULL_HEADER_SIZE, data->data,
+               JD_FRAME_SIZE(frame) - JD_SERIAL_FULL_HEADER_SIZE);
+        pxt::logJDFrame(buf);
+        free(buf);
+    }
+
     jd_packet_ready();
 }
 
@@ -189,6 +198,8 @@ Buffer __physGetPacket() {
         if ((superFrameRX = rxQ) != NULL)
             rxQ = rxQ->next;
         target_enable_irq();
+        if (pxt::logJDFrame)
+            pxt::logJDFrame((uint8_t*)&superFrameRX->frame);
     }
 
     if (!superFrameRX)

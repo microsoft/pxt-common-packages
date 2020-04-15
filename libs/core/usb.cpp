@@ -170,4 +170,7 @@ void dumpDmesg() {
     sendSerial(codalLogStore.buffer, codalLogStore.ptr);
     sendSerial("\n\n", 2);
 }
+
+void (*logJDFrame)(const uint8_t *data);
+
 } // namespace pxt

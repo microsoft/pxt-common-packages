@@ -70,6 +70,8 @@ extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 
 void set_usb_strings(const char *uf2_info);
+extern void (*logJDFrame)(const uint8_t *data);
+
 
 } // namespace pxt
 
