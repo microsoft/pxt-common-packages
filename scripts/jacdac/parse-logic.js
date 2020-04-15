@@ -69,6 +69,7 @@ const service_classes = {
     ROTARY_ENCODER: 0x10fa29c9,
     DNS: 0x117729bd,
     PWM_LIGHT: 0x1fb57453,
+    BOOTLOADER: 0x1ffa9948,
 }
 
 const generic_commands = {
