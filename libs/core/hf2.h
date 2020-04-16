@@ -30,6 +30,8 @@ class HF2 : public CodalUSBInterface {
     uint32_t dataToSendPrepend;
     uint8_t dataToSendFlag;
 
+    uint32_t lastExchange;
+
     bool gotSomePacket;
     bool ctrlWaiting;
 

@@ -151,7 +151,15 @@ void HF2::prepBuffer(uint8_t *buf) {
 }
 
 void HF2::pokeSend() {
-    if (!allocateEP || !CodalUSB::usbInstance->isInitialised())
+    if (!allocateEP) {
+        if (!lastExchange || current_time_ms() - lastExchange > 1000) {
+            lastExchange = 0;
+            dataToSendLength = 0;
+        }
+        return;
+    }
+
+    if (!CodalUSB::usbInstance->isInitialised())
         return;
 
     uint8_t buf[64];
@@ -183,6 +191,7 @@ int HF2::classRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
         if (setup.wLength != 64)
             return DEVICE_NOT_SUPPORTED;
 
+        lastExchange = current_time_ms();
         uint8_t buf[64];
         prepBuffer(buf);
         ctrl.write(buf, sizeof(buf));
@@ -354,6 +363,7 @@ int HF2::endpointRequest() {
 
 #define checkDataSize(str, add) usb_assert(sz == 8 + (int)sizeof(cmd->str) + (int)(add))
 
+    lastExchange = current_time_ms();
     gotSomePacket = true;
 
     switch (cmdId) {
@@ -454,7 +464,9 @@ int HF2::endpointRequest() {
 }
 
 HF2::HF2(HF2_Buffer &p)
-    : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true), useHID(false) {}
+    : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true), useHID(false) {
+    lastExchange = 0;
+}
 
 static const InterfaceInfo dummyIfaceInfo = {
     NULL,
