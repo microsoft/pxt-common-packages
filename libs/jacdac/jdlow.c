@@ -110,8 +110,13 @@ static void flush_tx_queue() {
     target_enable_irq();
 
     txPending = 0;
-    if (!txFrame)
+    if (!txFrame) {
         txFrame = app_pull_frame();
+        if (!txFrame) {
+            tx_done();
+            return;
+        }
+    }
 
     signal_write(1);
     if (uart_start_tx(txFrame, JD_FRAME_SIZE(txFrame)) < 0) {
