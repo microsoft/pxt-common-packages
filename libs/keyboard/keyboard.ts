@@ -123,23 +123,31 @@ const enum KeyboardModifierKey {
     Shift = DAL.KEY_MOD_LSHIFT,
     //% block="Alt"
     Alt = DAL.KEY_MOD_LALT,
+    //% block="Command"
+    Meta = DAL.KEY_MOD_LMETA,
     //% block="Ctrl+Shift"
     ControlShift = Control | Shift,
     //% block="Ctrl+Alt"
     ControlAlt = Control | Alt,
     //% block="Shift+Alt"
     ShiftAlt = Shift | Alt,
+    //% block="Ctrl+Cmd"
+    ControlCommand = Control | Meta,
+    //% block="Ctrl+Cmd"
+    ShiftCommand = Shift | Meta,
+    //% block="Alt+Cmd"
+    AltCommand = Alt | Meta,
     //% block="Ctrl+Shift+Alt"
     ControlShiftAlt = Control | Shift | Alt,
+    //% block="Ctrl+Cmd+Shift+Alt"
+    ControlCommandShiftAlt = Control | Meta | Shift | Alt,
     //% block="Right Ctrl"
     RightControl = DAL.KEY_MOD_RCTRL,
     //% block="Right Shift"
     RightShift = DAL.KEY_MOD_RSHIFT,
     //% block="Right Alt"
     RightAlt = DAL.KEY_MOD_RALT,
-    //% block="Meta"
-    Meta = DAL.KEY_MOD_LMETA,
-    //% block="Right Meta"
+    //% block="Right Command"
     RightMeta = DAL.KEY_MOD_RMETA
 }
 
