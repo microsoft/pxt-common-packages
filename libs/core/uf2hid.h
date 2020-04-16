@@ -66,6 +66,7 @@ struct HF2_WRITE_WORDS_Command {
 #define HF2_EV_MASK 0x800000
 
 #define HF2_CMD_JDS_CONFIG 0x0020
+#define HF2_CMD_JDS_SEND 0x0021
 #define HF2_EV_JDS_PACKET 0x800020
 
 typedef struct {
@@ -116,5 +117,6 @@ typedef struct {
 
 #define HF2_STATUS_OK 0x00
 #define HF2_STATUS_INVALID_CMD 0x01
+#define HF2_STATUS_INVALID_STATE 0x02
 
 #endif

@@ -172,5 +172,6 @@ void dumpDmesg() {
 }
 
 void (*logJDFrame)(const uint8_t *data);
+void (*sendJDFrame)(const uint8_t *data);
 
 } // namespace pxt

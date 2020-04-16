@@ -199,7 +199,7 @@ Buffer __physGetPacket() {
             rxQ = rxQ->next;
         target_enable_irq();
         if (pxt::logJDFrame)
-            pxt::logJDFrame((uint8_t*)&superFrameRX->frame);
+            pxt::logJDFrame((uint8_t *)&superFrameRX->frame);
     }
 
     if (!superFrameRX)
@@ -225,12 +225,18 @@ bool __physIsRunning() {
     return jd_is_running() != 0;
 }
 
+static void sendFrame(const uint8_t *data) {
+    jd_frame_t *frame = (jd_frame_t *)data;
+    copyAndAppend(&txQ, frame, MAX_TX);
+}
+
 /**
  * Starts the JACDAC physical layer.
  **/
 //%
 void __physStart() {
     jd_init();
+    sendJDFrame = sendFrame;
 }
 
 /**
