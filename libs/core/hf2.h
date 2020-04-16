@@ -23,10 +23,11 @@ typedef struct {
 class HF2 : public CodalUSBInterface {
     void prepBuffer(uint8_t *buf);
     void pokeSend();
+    void sendCore(uint8_t flag, uint32_t prepend, const void *data, int size);
 
     const uint8_t *dataToSend;
     volatile uint32_t dataToSendLength;
-    bool dataToSendPrepend;
+    uint32_t dataToSendPrepend;
     uint8_t dataToSendFlag;
 
     bool gotSomePacket;
@@ -41,6 +42,7 @@ class HF2 : public CodalUSBInterface {
     int sendResponse(int size);
     int recv();
     int sendResponseWithData(const void *data, int size);
+    int sendEvent(uint32_t evId, const void *data, int size);
 
     HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();

@@ -288,7 +288,15 @@ function displayPkt(msg) {
 }
 
 for (let ln of fs.readFileSync(process.argv[2], "utf8").split(/\r?\n/)) {
-    const m = /^([\d\.]+),Async Serial,.*(0x[A-F0-9][A-F0-9])/.exec(ln)
+    let m = /^JD (\d+) ([0-9a-f]+)/i.exec(ln)
+    if (m) {
+        frameBytes = Buffer.from(m[2], "hex")
+        lastTime = parseInt(m[1]) / 1000
+        displayPkt("")
+        continue
+    }
+
+    m = /^([\d\.]+),Async Serial,.*(0x[A-F0-9][A-F0-9])/.exec(ln)
     if (!m)
         continue
     const tm = parseFloat(m[1])

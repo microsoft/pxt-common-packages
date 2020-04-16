@@ -13,8 +13,6 @@
 
 static void *stackCopy;
 static uint32_t stackSize;
-//#define LOG DMESG
-#define LOG(...) ((void)0)
 
 //#define LOG DMESG
 #define LOG(...) ((void)0)
@@ -130,9 +128,9 @@ void HF2::prepBuffer(uint8_t *buf) {
     target_disable_irq();
     if (dataToSendLength) {
         if (dataToSendPrepend) {
-            dataToSendPrepend = false;
             buf[0] = HF2_FLAG_CMDPKT_BODY | 4;
-            memcpy(buf + 1, pkt.buf, 4);
+            memcpy(buf + 1, &dataToSendPrepend, 4);
+            dataToSendPrepend = 0;
         } else {
             int flag = dataToSendFlag;
             int s = 63;
@@ -201,10 +199,7 @@ const InterfaceInfo *HF2::getInterfaceInfo() {
     return allocateEP ? &ifaceInfoEP : &ifaceInfo;
 }
 
-int HF2::sendSerial(const void *data, int size, int isError) {
-    if (!gotSomePacket)
-        return DEVICE_OK;
-
+void HF2::sendCore(uint8_t flag, uint32_t prepend, const void *data, int size) {
     for (;;) {
         pokeSend();
 
@@ -220,13 +215,25 @@ int HF2::sendSerial(const void *data, int size, int isError) {
         // there could be a race
         if (!dataToSendLength) {
             dataToSend = (const uint8_t *)data;
-            dataToSendPrepend = false;
-            dataToSendFlag = isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT;
+            dataToSendPrepend = prepend;
+            dataToSendFlag = flag;
             dataToSendLength = size;
             size = -1;
         }
         target_enable_irq();
     }
+}
+
+int HF2::sendEvent(uint32_t evId, const void *data, int size) {
+    sendCore(HF2_FLAG_CMDPKT_LAST, evId, data, size);
+    return 0;
+}
+
+int HF2::sendSerial(const void *data, int size, int isError) {
+    if (!gotSomePacket)
+        return DEVICE_OK;
+
+    sendCore(isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT, 0, data, size);
 
     return 0;
 }
@@ -274,7 +281,7 @@ int HF2::recv() {
 
 int HF2::sendResponse(int size) {
     dataToSend = pkt.buf;
-    dataToSendPrepend = false;
+    dataToSendPrepend = 0;
     dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
     dataToSendLength = 4 + size;
     pokeSend();
@@ -282,14 +289,13 @@ int HF2::sendResponse(int size) {
 }
 
 int HF2::sendResponseWithData(const void *data, int size) {
-    if (dataToSendLength)
-        oops(90);
+    // if there already is dataToSend, too bad, we'll just overwrite it
     if (size <= (int)sizeof(pkt.buf) - 4) {
         memcpy(pkt.resp.data8, data, size);
         return sendResponse(size);
     } else {
         dataToSend = (const uint8_t *)data;
-        dataToSendPrepend = true;
+        dataToSendPrepend = pkt.resp.eventId;
         dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
         dataToSendLength = size;
         pokeSend();
@@ -317,7 +323,7 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 
 static HF2 *jdLogger;
 static void jdLog(const uint8_t *frame) {
-    uint8_t sz = frame[2] + 12;
+    jdLogger->sendEvent(HF2_EV_JDS_PACKET, frame, frame[2] + 12);
 }
 
 int HF2::endpointRequest() {
@@ -427,7 +433,16 @@ int HF2::endpointRequest() {
         } else {
             pxt::logJDFrame = NULL;
         }
-        break;
+        return sendResponse(0);
+
+    case HF2_CMD_JDS_SEND:
+        if (pxt::sendJDFrame) {
+            pxt::sendJDFrame(cmd->data8);
+            return sendResponse(0);
+        } else {
+            resp->status16 = HF2_STATUS_INVALID_STATE;
+            return sendResponse(0);
+        }
 
     default:
         // command not understood
