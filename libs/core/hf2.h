@@ -6,7 +6,8 @@
 #include "HID.h"
 #include "uf2hid.h"
 
-#define HF2_BUF_SIZE 256
+// 260 bytes needed for biggest JD packets (with overheads)
+#define HF2_BUF_SIZE 260
 
 typedef struct {
     uint16_t size;

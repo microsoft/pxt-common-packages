@@ -228,6 +228,7 @@ bool __physIsRunning() {
 static void sendFrame(const uint8_t *data) {
     jd_frame_t *frame = (jd_frame_t *)data;
     copyAndAppend(&txQ, frame, MAX_TX);
+    jd_packet_ready();
 }
 
 /**
