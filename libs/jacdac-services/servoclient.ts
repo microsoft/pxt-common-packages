@@ -6,8 +6,11 @@ namespace jacdac {
         }
 
         private pulse: number
+        private autoOff: number
+        private lastSet: number
 
         private sync(n: number) {
+            this.lastSet = control.millis()
             if (n === this.pulse)
                 return
             if (n == null) {
@@ -19,6 +22,18 @@ namespace jacdac {
             this.pulse = n
         }
 
+        setAutoOff(ms: number) {
+            if (!ms) ms = 0
+            this.lastSet = control.millis()
+            if (this.autoOff === undefined)
+                jacdac.onAnnounce(() => {
+                    if (this.pulse != null && this.autoOff && control.millis() - this.lastSet > this.autoOff) {
+                        this.turnOff()
+                    }
+                })
+
+            this.autoOff = ms
+        }
 
         turnOff() {
             this.sync(undefined)
