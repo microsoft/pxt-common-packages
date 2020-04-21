@@ -363,12 +363,19 @@ namespace jacdac {
             String.fromCharCode(0x41 + Math.idiv(h, 26 * 26 * 26) % 26)
     }
 
+    class RegQuery {
+        lastQuery = 0
+        value: Buffer
+        constructor(public reg: number) { }
+    }
+
     export class Device {
         services: Buffer
         lastSeen: number
         clients: Client[] = []
         private _name: string
         private _shortId: string
+        private queries: RegQuery[]
 
         constructor(public deviceId: string) {
             devices_.push(this)
@@ -394,6 +401,59 @@ namespace jacdac {
 
         toString() {
             return this.shortId + (this.name ? ` (${this.name})` : ``)
+        }
+
+        private lookupQuery(reg: number) {
+            if (!this.queries) this.queries = []
+            return this.queries.find(q => q.reg == reg)
+        }
+
+        queryInt(reg: number, refreshRate = 1000) {
+            const v = this.query(reg, refreshRate)
+            if (!v) return undefined
+            return intOfBuffer(v)
+        }
+
+        query(reg: number, refreshRate = 1000) {
+            let q = this.lookupQuery(reg)
+            if (!q)
+                this.queries.push(q = new RegQuery(reg))
+
+            const now = control.millis()
+            if (!q.lastQuery || (refreshRate != null && now - q.lastQuery > refreshRate)) {
+                q.lastQuery = now
+                this.sendCtrlCommand(CMD_GET_REG | reg)
+            }
+            return q.value
+        }
+
+        get classDescription() {
+            const v = this.query(REG_CTRL_DEVICE_DESCRIPTION, null)
+            if (v) return v.toString()
+            else {
+                const num = this.query(REG_CTRL_DEVICE_CLASS, null)
+                if (num)
+                    return "0x" + num.toHex()
+                else
+                    return ""
+            }
+        }
+
+        get temperature() {
+            return this.queryInt(REG_CTRL_TEMPERATURE)
+        }
+
+        get lightLevel() {
+            return this.queryInt(REG_CTRL_LIGHT_LEVEL)
+        }
+
+        handleCtrlReport(pkt: JDPacket) {
+            if ((pkt.service_command & CMD_TYPE_MASK) == CMD_GET_REG) {
+                const reg = pkt.service_command & CMD_REG_MASK
+                const q = this.lookupQuery(reg)
+                pkt.intData
+                q.value = pkt.data
+            }
         }
 
         hasService(service_class: number) {
@@ -578,8 +638,10 @@ namespace jacdac {
                         reattach(dev)
                     }
                 }
-                if (dev)
+                if (dev) {
+                    dev.handleCtrlReport(pkt)
                     dev.lastSeen = control.millis()
+                }
                 return
             } else if (pkt.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
                 _gotAck(pkt)
