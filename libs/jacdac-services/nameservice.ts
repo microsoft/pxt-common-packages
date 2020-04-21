@@ -94,7 +94,7 @@ namespace jacdac {
         }
     }
 
-    export class RemoteNamedDevice {
+    export class RemoteRequestedDevice {
         services: number[] = [];
         boundTo: Device;
         candidates: Device[] = [];
@@ -119,7 +119,7 @@ namespace jacdac {
     }
 
     export class DeviceNameClient extends Client {
-        public remoteNamedDevices: RemoteNamedDevice[] = []
+        public remoteRequestedDevices: RemoteRequestedDevice[] = []
 
         private usedNames: Dechunker
         constructor(requiredDevice: string = null) {
@@ -135,7 +135,7 @@ namespace jacdac {
 
             this.usedNames = new Dechunker(DNS_CMD_LIST_USED_NAMES, buf => {
                 let off = 0
-                const devs: RemoteNamedDevice[] = []
+                const devs: RemoteRequestedDevice[] = []
                 const localDevs = devices()
                 while (off < buf.length) {
                     const devid = buf.slice(off, 8).toHex()
@@ -147,7 +147,7 @@ namespace jacdac {
 
                     let r = devs.find(d => d.name == name)
                     if (!r)
-                        devs.push(r = new RemoteNamedDevice(this, name))
+                        devs.push(r = new RemoteRequestedDevice(this, name))
                     r.services.push(service_class)
 
                     const dev = localDevs.find(d => d.deviceId == devid)
@@ -157,14 +157,14 @@ namespace jacdac {
 
                 devs.sort((a, b) => a.name.compare(b.name))
 
-                this.remoteNamedDevices = devs
+                this.remoteRequestedDevices = devs
                 this.recomputeCandidates()
             })
         }
 
         private recomputeCandidates() {
             const localDevs = devices()
-            for (let dev of this.remoteNamedDevices)
+            for (let dev of this.remoteRequestedDevices)
                 dev.candidates = localDevs.filter(ldev => dev.isCandidate(ldev))
         }
 
