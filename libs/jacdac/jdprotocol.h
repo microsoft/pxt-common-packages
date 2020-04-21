@@ -75,6 +75,14 @@ extern "C" {
 #define JD_CMD_CTRL_IDENTIFY 0x81
 // reset device
 #define JD_CMD_CTRL_RESET 0x82
+// identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C)
+#define JD_REG_CTRL_DEVICE_DESCRIPTION 0x180
+// a numeric code for the string above; used to mark firmware images
+#define JD_REG_CTRL_DEVICE_CLASS 0x181
+// MCU temperature in Celsius
+#define JD_REG_CTRL_TEMPERATURE 0x182
+// this is very approximate; ADC reading from backward-biasing the identification LED
+#define JD_REG_CTRL_LIGHT_LEVEL 0x183
 
 struct _jd_packet_t {
     uint16_t crc;

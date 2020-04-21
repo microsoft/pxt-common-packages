@@ -26,6 +26,8 @@ namespace jacdac {
 
     export const CMD_GET_REG = 0x1000
     export const CMD_SET_REG = 0x2000
+    export const CMD_TYPE_MASK = 0xf000
+    export const CMD_REG_MASK = 0x0fff
 
     // Commands 0x000-0x07f - common to all services
     // Commands 0x080-0xeff - defined per-service
@@ -46,4 +48,13 @@ namespace jacdac {
     export const CMD_CTRL_IDENTIFY = 0x81
     // reset device
     export const CMD_CTRL_RESET = 0x82
+
+    // identifies the type of hardware (eg., ACME Corp. Servo X-42 Rev C)
+    export const REG_CTRL_DEVICE_DESCRIPTION = 0x180
+    // a numeric code for the string above; used to mark firmware images
+    export const REG_CTRL_DEVICE_CLASS = 0x181
+    // MCU temperature in Celsius
+    export const REG_CTRL_TEMPERATURE = 0x182
+    // this is very approximate; ADC reading from backward-biasing the identification LED
+    export const REG_CTRL_LIGHT_LEVEL = 0x183
 }
