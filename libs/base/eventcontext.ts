@@ -15,7 +15,7 @@ namespace control {
             ctx.registerHandler(src, value, handler, flags);
     }
 
-    class FrameCallback {
+    export class FrameCallback {
         order: number
         handler: () => void
     }
