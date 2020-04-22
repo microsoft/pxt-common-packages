@@ -659,6 +659,15 @@ class Sprite extends sprites.BaseSprite {
             this.destroy()
         }
 
+        this.bounceOnWalls(camera);
+
+        // Say text
+        if (this.updateSay) {
+            this.updateSay(dt, camera);
+        }
+    }
+
+    private bounceOnWalls(camera: scene.Camera) {
         const bounce = this.flags & sprites.Flag.BounceOnWall;
         const tm = game.currentScene().tileMap;
         if (this.flags & sprites.Flag.StayInScreen || (bounce && !tm)) {
@@ -679,12 +688,7 @@ class Sprite extends sprites.BaseSprite {
                 this.bottom = camera.offsetY + screen.height;
                 if (bounce) this.vy = -this.vy;
             }
-        }
-
-        // Say text
-        if (this.updateSay) {
-            this.updateSay(dt, camera);
-        }
+        }        
     }
 
     /**
