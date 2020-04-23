@@ -350,6 +350,16 @@ namespace jacdac {
             _allClients.push(this)
             clearAttachCache()
         }
+
+        destroy() {
+            if (this.device)
+                this.device.clients.removeElement(this)
+            _unattachedClients.removeElement(this)
+            _allClients.removeElement(this)
+            this.serviceNumber = null
+            this.device = null
+            clearAttachCache()
+        }
     }
 
     // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
