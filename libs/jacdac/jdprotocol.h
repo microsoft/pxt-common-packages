@@ -83,6 +83,8 @@ extern "C" {
 #define JD_REG_CTRL_TEMPERATURE 0x182
 // this is very approximate; ADC reading from backward-biasing the identification LED
 #define JD_REG_CTRL_LIGHT_LEVEL 0x183
+// typically the same as JD_REG_CTRL_DEVICE_CLASS; the bootloader will respond to that code
+#define JD_REG_CTRL_BL_DEVICE_CLASS 0x184
 
 struct _jd_packet_t {
     uint16_t crc;
