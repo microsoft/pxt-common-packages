@@ -102,24 +102,16 @@ void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
 }
 
 /**
- * Measure pin capacitance (via discharge time).
+ * Measure pin capacitance.
  */
 //%
 int readCapacitance(DigitalInOutPin pin) {
+    // on STM32F4 this requires 2M pulldown
+    // other chips to be tested
     pin->setDigitalValue(1);
-    pin->getAnalogValue();
-    sleep_us(5);
-    return pin->getAnalogValue();
-    
-    /*
+    pin->getDigitalValue(PullMode::None);
     sleep_us(50);
-    auto t0 = current_time_us();
-    int n = 0;
-    while (current_time_us() - t0 < 3000 && pin->getDigitalValue())
-        n++;
-    int diff = current_time_us() - t0;
-    return diff;    
-    */
+    return pin->getAnalogValue();
 }
 
 /**
