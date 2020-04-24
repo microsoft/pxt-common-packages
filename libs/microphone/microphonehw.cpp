@@ -3,12 +3,19 @@
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
 
-#ifdef NRF52_SERIES
+#if defined(NRF52_SERIES)
 #include "NRF52PDM.h"
 #define PDMDevice NRF52PDM
-#else
+#elif defined(SAMD21) || defined(SAMD51)
 #include "SAMDPDM.h"
 #define PDMDevice SAMD21PDM
+#else // STM?
+class PanicPDM {
+    PanicPDM(Pin &sd, Pin &sck) {
+        target_panic(PANIC_MICROPHONE_MISSING);
+    }
+};
+#define PDMDevice PanicPDM
 #endif
 
 namespace pxt {
