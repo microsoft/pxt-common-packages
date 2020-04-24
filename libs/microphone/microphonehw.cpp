@@ -11,9 +11,12 @@
 #define PDMDevice SAMD21PDM
 #else // STM?
 class PanicPDM {
-    PanicPDM(Pin &sd, Pin &sck) {
-        target_panic(PANIC_MICROPHONE_MISSING);
-    }
+    public:
+        uint8_t level;
+        
+        PanicPDM(Pin &sd, Pin &sck) {
+            target_panic(PANIC_MICROPHONE_MISSING);
+        }
 };
 #define PDMDevice PanicPDM
 #endif
