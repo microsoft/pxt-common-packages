@@ -11,14 +11,26 @@
 #include "SAMDPDM.h"
 #define PDMDevice SAMD21PDM
 #else // STM?
+class DummyDataSource : public codal::DataSource {
+    public:
+        DummyDataSource() {}
+};
 class PanicPDM {
     public:
         uint8_t level;
+        DummyDataSource source;
         codal::DataStream output;
 
         PanicPDM(Pin &sd, Pin &sck):
-            output(new codal::DataSource()) {
+            output(source) 
+        {
             target_panic(PANIC_MICROPHONE_MISSING);
+        }
+        void enable() {
+
+        }
+        void disabled() {
+
         }
 };
 #define PDMDevice PanicPDM
