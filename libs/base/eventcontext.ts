@@ -86,7 +86,7 @@ namespace control {
                 EventContext.lastStats = `fps:${Math.round(fps)}`;
                 if (fps < 99)
                     EventContext.lastStats += "." + (Math.round(fps * 10) % 10)
-                if (control.profilingEnabled()) {
+                if (control.ramSize() > 2000000 && control.profilingEnabled()) {
                     control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
                     control.gc()
                     control.dmesgPerfCounters()

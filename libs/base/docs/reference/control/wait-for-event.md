@@ -21,7 +21,7 @@ events like this:
 const myTimer = 6;
 const timerTimeout = 1;
 
-control.runInParallel(() => {
+control.runInParallel(function() {
     while (true) {
         control.waitMicros(100000)
         control.raiseEvent(myTimer, timerTimeout)
@@ -38,24 +38,24 @@ control.waitForEvent(myTimer, timerTimeout)
 
 ## Example #example
 
-Make a timeout timer to signal every 2 seconds. Wait two times and light a pixel each time.
+Make a timeout timer to signal every 2 seconds. Wait two times and write to the
+console each time.
 
 ```blocks
 const myTimer = 6;
 const timerTimeout = 1;
-let pixels = light.createStrip();
 
-control.runInParallel(() => {
+control.runInParallel(function() {
     while (true) {
-        pause(2000);
-        control.raiseEvent(myTimer, timerTimeout);
+        pause(2000)
+        control.raiseEvent(myTimer, timerTimeout)
     }
 })
 
-control.waitForEvent(myTimer, timerTimeout);
-pixels.setPixelColor(0, 0xff0000);
-control.waitForEvent(myTimer, timerTimeout);
-pixels.setPixelColor(0, 0xffff00);
+control.waitForEvent(myTimer, timerTimeout)
+console.log("Timer timeout")
+control.waitForEvent(myTimer, timerTimeout)
+console.log("Timer timeout")
 ```
 
 ## See also #seealso

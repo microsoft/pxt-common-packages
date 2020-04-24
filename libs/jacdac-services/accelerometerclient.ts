@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class AccelerometerClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jacdac.ACCELEROMETER_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("acc", jd_class.ACCELEROMETER, requiredDevice);
         }
 
         /**
@@ -75,5 +75,5 @@ namespace jacdac {
     }
 
     //% fixedInstance whenUsed block="accelerometer client"
-    export const accelerometerClient = new AccelerometerClient("acc");
+    export const accelerometerClient = new AccelerometerClient();
 }

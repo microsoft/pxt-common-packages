@@ -2,26 +2,38 @@ namespace jacdac {
     //% fixedInstances
     export class LightService extends ActuatorService {
         strip: light.NeoPixelStrip;
+        duration = 500
+        color = 0
+
         constructor(name: string, strip: light.NeoPixelStrip) {
-            super(name, jacdac.LIGHT_DEVICE_CLASS, 5);
+            super(name, jd_class.LIGHT, 8);
             this.strip = strip;
         }
 
-        protected handleStateChanged(): number {
-            const animation = this.state.getNumber(NumberFormat.UInt8LE, 0);
-            const value = this.state.getNumber(NumberFormat.UInt32LE, 1);
-            const range = this.strip;
-            switch (animation) {
-                case JDLightCommand.SetAll: range.setAll(value); break;
-                case JDLightCommand.SetBrightness: range.setBrightness(value);
-                case JDLightCommand.Rainbow: range.showAnimation(light.rainbowAnimation, value); break;
-                case JDLightCommand.RunningLights: range.showAnimation(light.runningLightsAnimation, value); break;
-                case JDLightCommand.ColorWipe: range.showAnimation(light.colorWipeAnimation, value); break;
-                case JDLightCommand.TheaterChase: range.showAnimation(light.theaterChaseAnimation, value); break;
-                case JDLightCommand.Comet: range.showAnimation(light.cometAnimation, value); break;
-                case JDLightCommand.Sparkle: range.showAnimation(light.sparkleAnimation, value); break;
+        protected handleCustomCommand(pkt: JDPacket): void {
+            this.duration = this.handleRegInt(pkt, JDLightReg.Duration, this.duration)
+            this.color = this.handleRegInt(pkt, JDLightReg.Color, this.color)
+
+            switch (pkt.service_command) {
+                case JDLightCommand.StartAnimation:
+                    const range = this.strip
+                    const duration = this.duration
+                    // TODO use color in animations
+                    switch (pkt.intData) {
+                        case 1: range.setAll(this.color); break;
+                        case JDLightAnimation.Rainbow: range.showAnimation(light.rainbowAnimation, duration); break;
+                        case JDLightAnimation.RunningLights: range.showAnimation(light.runningLightsAnimation, duration); break;
+                        case JDLightAnimation.ColorWipe: range.showAnimation(light.colorWipeAnimation, duration); break;
+                        case JDLightAnimation.TheaterChase: range.showAnimation(light.theaterChaseAnimation, duration); break;
+                        case JDLightAnimation.Comet: range.showAnimation(light.cometAnimation, duration); break;
+                        case JDLightAnimation.Sparkle: range.showAnimation(light.sparkleAnimation, duration); break;
+                    }
+                    break
             }
-            return jacdac.DEVICE_OK;
+        }
+
+        protected handleStateChanged() {
+            this.strip.setBrightness(this.intensity)
         }
     }
 }

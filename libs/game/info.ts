@@ -134,11 +134,10 @@ namespace info {
                         t = 0;
                         if (!infoState.countdownExpired) {
                             infoState.countdownExpired = true;
+                            infoState.gameEnd = undefined;
                             if (infoState.countdownEndHandler) {
                                 infoState.countdownEndHandler();
-                                infoState.gameEnd = undefined;
-                            }
-                            else {
+                            } else {
                                 game.over();
                             }
                         }
@@ -384,8 +383,8 @@ namespace info {
     }
 
     /**
-     * Set whether score should be displayed
-     * @param on if true, score is shown; otherwise, score is hidden
+     * Set whether countdown should be displayed
+     * @param on if true, countdown is shown; otherwise, countdown is hidden
      */
     //% group="Countdown"
     export function showCountdown(on: boolean) {
@@ -605,7 +604,7 @@ namespace info {
 
         /**
          * Change the score of a player
-         * @param value 
+         * @param value
          */
         //% group="Multiplayer"
         //% blockId=pichangescore block="change %player score by %value"
@@ -654,7 +653,7 @@ namespace info {
 
         /**
          * Change the life of a player
-         * @param value 
+         * @param value
          */
         //% group="Multiplayer"
         //% blockId=pichangelife block="change %player life by %value"
@@ -679,7 +678,7 @@ namespace info {
 
         /**
          * Runs code when life reaches zero
-         * @param handler 
+         * @param handler
          */
         //% group="Multiplayer"
         //% blockId=playerinfoonlifezero block="on %player life zero"

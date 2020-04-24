@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class ColorSensorClient extends SensorClient {
-        constructor(name: string) {
-            super(name, jacdac.COLOR_SENSOR_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("cols", jd_class.COLOR_SENSOR, requiredDevice);
         }
 
         /**
@@ -67,7 +67,7 @@ namespace jacdac {
         }
     }
 
-    //% fixedInstance whenUsed block="button client"
-    export const colorSensorClient = new ColorSensorClient("btn");
+    //% fixedInstance whenUsed block="color sensor"
+    export const colorSensorClient = new ColorSensorClient();
 
 }

@@ -2,26 +2,27 @@ namespace jacdac {
     //% fixedInstances
     export class GamepadService extends Host {
         constructor() {
-            super("gpad", jacdac.GAMEPAD_DEVICE_CLASS);
+            super("gpad", jd_class.GAMEPAD);
         }
 
-        handlePacket(packet: JDPacket): number {
+        handlePacket(packet: JDPacket) {
             const data = packet.data;
             const cmd: JDGamepadCommand = data[0];
-            switch (cmd) {
+            switch (packet.service_command) {
                 case JDGamepadCommand.Button:
-                    gamepad.setButton(data[1], !!data[2]);
+                    gamepad.setButton(data[0], !!data[1]);
                     break;
-                case JDGamepadCommand.Move:
-                    const x = data.getNumber(NumberFormat.Int8LE, 2);
-                    const y = data.getNumber(NumberFormat.Int8LE, 3);
-                    gamepad.move(data[1], x, y)
+                case JDGamepadCommand.Move: {
+                    const [idx, x, y] = data.unpack("Bbb");
+                    gamepad.move(idx, x, y)
                     break;
-                case JDGamepadCommand.Throttle:
-                    gamepad.setThrottle(data[1], data.getNumber(NumberFormat.Int8LE, 2));
+                }
+                case JDGamepadCommand.Throttle: {
+                    const [idx, val] = data.unpack("Bb");
+                    gamepad.setThrottle(idx, val);
                     break;
+                }
             }
-            return jacdac.DEVICE_OK;
         }
     }
 

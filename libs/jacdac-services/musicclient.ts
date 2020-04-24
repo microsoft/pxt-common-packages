@@ -1,8 +1,8 @@
 namespace jacdac {
     //% fixedInstances
     export class MusicClient extends Client {
-        constructor() {
-            super("mus", jacdac.MUSIC_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("mus", jd_class.MUSIC, requiredDevice);
         }
 
         /**
@@ -16,11 +16,8 @@ namespace jacdac {
         //% weight=76 blockGap=8
         //% group="Music"
         playTone(frequency: number, ms: number): void {
-            const buf = control.createBuffer(9);
-            buf[0] = JDMusicCommand.PlayTone;
-            buf.setNumber(NumberFormat.UInt32LE, 1, frequency);
-            buf.setNumber(NumberFormat.UInt32LE, 5, ms);
-            this.sendPacket(buf);
+            this.sendPackedCommand(
+                JDMusicCommand.PlayTone, "II", [frequency, ms])
         }
     }
 

@@ -8,16 +8,14 @@ namespace jacdac {
 
         static NAME = "bus";
         constructor() {
-            super(MessageBusService.NAME, jacdac.MESSAGE_BUS_DEVICE_CLASS);
+            super(MessageBusService.NAME, jd_class.MESSAGE_BUS);
             this.suppressForwarding = false;
         }
 
         raiseEvent(id: number, value: number) {
             this.start();
-            const event = control.createBuffer(4);
-            event.setNumber(NumberFormat.UInt16LE, 0, id);
-            event.setNumber(NumberFormat.UInt16LE, 2, value);
-            this.sendPacket(event);
+            this.sendReport(
+                JDPacket.packed(CMD_EVENT,  "II", [id, value]))
         }
 
         broadcastEvent(id: number, value: number) {
@@ -26,17 +24,16 @@ namespace jacdac {
             control.onEvent(id, value, () => {
                 if (this.suppressForwarding) return;
                 this.raiseEvent(id, value);
-            }, DAL.MESSAGE_BUS_LISTENER_IMMEDIATE)
+            })
         }
 
-        handlePacket(packet: JDPacket): number {
-            const data = packet.data;
-            const id = data.getNumber(NumberFormat.UInt16LE, 0);
-            const value = data.getNumber(NumberFormat.UInt16LE, 2);
-            this.suppressForwarding = true;
-            control.raiseEvent(id, value);
-            this.suppressForwarding = false;
-            return jacdac.DEVICE_OK;
+        handlePacket(packet: JDPacket) {
+            if (packet.service_command == CMD_EVENT) {
+                const [id, value] = packet.data.unpack("II")
+                this.suppressForwarding = true;
+                control.raiseEvent(id, value);
+                this.suppressForwarding = false;
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 namespace jacdac {
     export class ProximityService extends SensorHost {
         constructor(name: string) {
-            super(name, jacdac.PROXIMITY_DEVICE_CLASS);
+            super(name, jd_class.PROXIMITY);
             input.onDistanceEvent(PromixityEvent.Close, () => this.raiseHostEvent(PromixityEvent.Close));
             input.onDistanceEvent(PromixityEvent.Far, () => this.raiseHostEvent(PromixityEvent.Far));
         }

@@ -1,7 +1,7 @@
 namespace jacdac {
     export class SwitchService extends SensorHost {
         constructor(name: string) {
-            super(name, jacdac.SWITCH_DEVICE_CLASS);
+            super(name, jd_class.SWITCH);
             input.onSwitchMoved(SwitchDirection.Left, () => this.raiseHostEvent(SwitchDirection.Left));
             input.onSwitchMoved(SwitchDirection.Right, () => this.raiseHostEvent(SwitchDirection.Right));
         }

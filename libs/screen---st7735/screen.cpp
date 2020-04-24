@@ -7,12 +7,15 @@
 #include "FSMCIO.h"
 #endif
 
+#include "jddisplay.h"
+
 namespace pxt {
 
 class WDisplay {
   public:
     ScreenIO *io;
     ST7735 *lcd;
+    JDDisplay *smart;
 
     uint32_t currPalette[16];
     bool newPalette;
@@ -31,10 +34,26 @@ class WDisplay {
         uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
         int conn = cfg2 >> 24;
 
+        uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
+        uint32_t frmctr1 = getConfig(CFG_DISPLAY_CFG1, 0x000603);
+
+        int dispTp = getConfig(CFG_DISPLAY_TYPE, DISPLAY_TYPE_ST7735);
+
+        doubleSize = false;
+        smart = NULL;
+
+        auto miso = LOOKUP_PIN(DISPLAY_MISO);
+
+        if (dispTp == DISPLAY_TYPE_SMART) {
+            dispTp = smartConfigure(&cfg0, &frmctr1, &cfg2);
+        }
+
+        if (dispTp != DISPLAY_TYPE_SMART)
+            miso = NULL; // only JDDisplay needs MISO, otherwise leave free
+
         SPI *spi = NULL;
         if (conn == 0) {
-            spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *LOOKUP_PIN(DISPLAY_MISO),
-                                *LOOKUP_PIN(DISPLAY_SCK));
+            spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *miso, *LOOKUP_PIN(DISPLAY_SCK));
             io = new SPIScreenIO(*spi);
         } else if (conn == 1) {
 #ifdef CODAL_CREATE_PARALLEL_SCREEN_IO
@@ -47,20 +66,17 @@ class WDisplay {
             target_panic(PANIC_SCREEN_ERROR);
         }
 
-        int dispTp = getConfig(CFG_DISPLAY_TYPE, DISPLAY_TYPE_ST7735);
-
-        doubleSize = false;
-
         if (dispTp == DISPLAY_TYPE_ST7735)
             lcd = new ST7735(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
             lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
+        } else if (dispTp == DISPLAY_TYPE_SMART) {
+            lcd = NULL;
+            smart = new JDDisplay(spi, LOOKUP_PIN(DISPLAY_CS), LOOKUP_PIN(DISPLAY_DC));
         } else
             target_panic(PANIC_SCREEN_ERROR);
 
-        uint32_t cfg0 = getConfig(CFG_DISPLAY_CFG0, 0x40);
-        uint32_t frmctr1 = getConfig(CFG_DISPLAY_CFG1, 0x000603);
         palXOR = (cfg0 & 0x1000000) ? 0xffffff : 0x000000;
         auto madctl = cfg0 & 0xff;
         offX = (cfg0 >> 8) & 0xff;
@@ -74,6 +90,10 @@ class WDisplay {
                 freq = 15;
             spi->setFrequency(freq * 1000000);
             spi->setMode(0);
+            auto cs = LOOKUP_PIN(DISPLAY_CS);
+            if (cs)
+                cs->setDigitalValue(1);
+
             // make sure the SPI peripheral is initialized before toggling reset
             spi->write(0);
         }
@@ -86,13 +106,16 @@ class WDisplay {
             fiber_sleep(20);
         }
 
-        auto bl = LOOKUP_PIN(DISPLAY_BL);
-        if (bl) {
-            bl->setDigitalValue(1);
+        if (lcd) {
+            auto bl = LOOKUP_PIN(DISPLAY_BL);
+            if (bl) {
+                bl->setDigitalValue(1);
+            }
+
+            lcd->init();
+            lcd->configure(madctl, frmctr1);
         }
 
-        lcd->init();
-        lcd->configure(madctl, frmctr1);
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
         height = getConfig(CFG_DISPLAY_HEIGHT, 128);
         displayHeight = height;
@@ -106,16 +129,102 @@ class WDisplay {
         inUpdate = false;
     }
 
-    void setAddrStatus() {
-        lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+    uint32_t smartConfigure(uint32_t *cfg0, uint32_t *cfg1, uint32_t *cfg2) {
+        uint32_t hc;
+
+        DMESG("74HC: waiting...");
+
+        // wait while nothing is connected
+        for (;;) {
+            auto rst = LOOKUP_PIN(DISPLAY_RST);
+            if (rst) {
+                rst->setDigitalValue(0);
+                target_wait_us(10);
+                rst->setDigitalValue(1);
+                fiber_sleep(3); // in reality we need around 1.2ms
+            }
+
+            hc = readButtonMultiplexer(17);
+            if (hc != 0)
+                break;
+
+            fiber_sleep(100);
+        }
+
+        DMESG("74HC: %x", hc);
+
+        // is the line forced up? if so, assume JDDisplay
+        if (hc == 0x1FFFF) {
+            disableButtonMultiplexer();
+            return DISPLAY_TYPE_SMART;
+        }
+
+        // SER pin (or first bit of second HC) is orientation
+        if (hc & 0x100)
+            *cfg0 = 0x80;
+        else
+            *cfg0 = 0x40;
+
+        uint32_t configId = (hc >> 14) & 0x7;
+
+        switch (configId) {
+        case 1:
+            *cfg1 = 0x0603; // ST7735
+            break;
+        case 2:
+            *cfg1 = 0xe14ff; // ILI9163C
+            *cfg0 |= 0x08;   // BGR colors
+            break;
+        case 3:
+            *cfg1 = 0x0603;     // ST7735
+            *cfg0 |= 0x1000000; // inverted colors
+            break;
+        default:
+            target_panic(PANIC_SCREEN_ERROR);
+            break;
+        }
+
+        DMESG("config type: %d; cfg0=%x cfg1=%x", configId, *cfg0, *cfg1);
+
+        *cfg2 = 32; // Damn the torpedoes! 32MHz
+
+        return DISPLAY_TYPE_ST7735;
     }
-    void setAddrMain() { lcd->setAddrWindow(offX, offY, width, displayHeight); }
+
+    void setAddrStatus() {
+        if (lcd)
+            lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+        else
+            smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+    }
+    void setAddrMain() {
+        if (lcd)
+            lcd->setAddrWindow(offX, offY, width, displayHeight);
+        else
+            smart->setAddrWindow(offX, offY, width, displayHeight);
+    }
+    void waitForSendDone() {
+        if (lcd)
+            lcd->waitForSendDone();
+        else
+            smart->waitForSendDone();
+    }
+    int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette) {
+        if (lcd)
+            return lcd->sendIndexedImage(src, width, height, palette);
+        else
+            return smart->sendIndexedImage(src, width, height, palette);
+    }
 };
 
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
 
 //%
 int setScreenBrightnessSupported() {
+    auto display = getWDisplay();
+    if (display && display->smart)
+        return 1;
+
     auto bl = LOOKUP_PIN(DISPLAY_BL);
     if (!bl)
         return 0;
@@ -123,19 +232,30 @@ int setScreenBrightnessSupported() {
     if (bl->name == PA06)
         return 0;
 #endif
+#ifdef NRF52_SERIES
+    // PWM not implemented yet
+    return 0;
+#else
     return 1;
+#endif
 }
 
 //%
 void setScreenBrightness(int level) {
-    auto bl = LOOKUP_PIN(DISPLAY_BL);
-    if (!bl)
-        return;
-
     if (level < 0)
         level = 0;
     if (level > 100)
         level = 100;
+
+    auto display = getWDisplay();
+    if (display && display->smart) {
+        display->smart->brightness = level;
+        return;
+    }
+
+    auto bl = LOOKUP_PIN(DISPLAY_BL);
+    if (!bl)
+        return;
 
     if (level == 0)
         bl->setDigitalValue(0);
@@ -206,32 +326,34 @@ void updateScreen(Image_ img) {
             target_panic(PANIC_SCREEN_ERROR);
 
         // DMESG("wait for done");
-        display->lcd->waitForSendDone();
+        display->waitForSendDone();
 
         auto palette = display->currPalette;
 
         if (display->newPalette) {
             display->newPalette = false;
         } else {
-            palette = NULL;
+            // smart mode always sends palette
+            if (!display->smart)
+                palette = NULL;
         }
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
 
         // DMESG("send");
-        display->lcd->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
     }
 
     if (display->lastStatus && !display->doubleSize) {
-        display->lcd->waitForSendDone();
+        display->waitForSendDone();
         img = display->lastStatus;
         auto barHeight = display->height - display->displayHeight;
         if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
             target_panic(PANIC_SCREEN_ERROR);
         memcpy(display->screenBuf, img->pix(), img->pixLength());
         display->setAddrStatus();
-        display->lcd->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
-        display->lcd->waitForSendDone();
+        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
+        display->waitForSendDone();
         display->setAddrMain();
         display->lastStatus = NULL;
     }
@@ -243,4 +365,5 @@ void updateScreen(Image_ img) {
 void updateStats(String msg) {
     // ignore...
 }
+
 } // namespace pxt

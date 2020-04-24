@@ -4,8 +4,8 @@
     "files": [
         "README.md",
         "microphone.cpp",
+        "microphonehw.cpp",
         "jacdac.ts",
-        "ns.ts",
         "enums.d.ts",
         "shims.d.ts"
     ],

@@ -2,7 +2,9 @@
     "name": "jacdac-services",
     "description": "Services for jacdac",
     "files": [
+        "nameservice.ts",
         "sensorclient.ts",
+        "consoleclient.ts",
         "buttonclient.ts",
         "lightsensorclient.ts",
         "accelerometerclient.ts",
@@ -21,7 +23,8 @@
         "colorsensorclient.ts",
         "proximityclient.ts",
         "lightspectrumsensorclient.ts",
-        "rotaryencoderclient.ts"
+        "rotaryencoderclient.ts",
+        "pwmlightclient.ts"
     ],
     "testFiles": [
         "test.ts"

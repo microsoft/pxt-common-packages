@@ -19,6 +19,7 @@ namespace pxsim {
         pull = 0; // PullDown
         eventMode = 0;
         used: boolean = false;
+        servoContinuous: boolean;
 
         setValue(value: number) {
             // value set from the simulator
@@ -44,6 +45,11 @@ namespace pxsim {
 
         setPull(pull: number) {
             this.pull = pull;
+            switch(pull) {
+                case 2 /*PinPullMode.PullDown*/: this.value = 0; break;
+                case 1 /*PinPullMode.PullUp*/: this.value = 1023; break;
+                default: this.value = Math_.randomRange(0, 1023); break;
+            }
         }
 
         analogReadPin(): number {
@@ -69,6 +75,10 @@ namespace pxsim {
             this.analogSetPeriod(20000);
             this.servoAngle = Math.max(0, Math.min(180, value));
             runtime.queueDisplayUpdate();
+        }
+
+        servoSetContinuous(continuous: boolean) {
+            this.servoContinuous = continuous;
         }
 
         servoSetPulse(pinId: number, micros: number) {

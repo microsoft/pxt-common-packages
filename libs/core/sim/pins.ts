@@ -119,6 +119,11 @@ namespace pxsim.PwmOnlyPinMethods {
         name.servoWritePin(value);
     }
 
+    export function servoSetContinuous(name: pins.PwmOnlyPin, continuous: boolean): void {
+        pins.markUsed(name);
+        name.servoSetContinuous(continuous);
+    }
+
     export function servoSetPulse(name: pins.PwmOnlyPin, micros: number): void {
         pins.markUsed(name);
         name.servoSetPulse(name.id, micros);

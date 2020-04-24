@@ -47,7 +47,7 @@ If you don't follow the sprite with the _camera_ or check for when the sprite re
 
 Speed, or velocity, is how much distance an object moves during some period of time. A car can travel 50 kilometers in one hour so it moves at 50 kilometers per hour (50 km/h). A jet airplane can fly as fast as 913 k/mh and travel across some continents in 3 or 4 hours.
 
-Distance in your game is measured in pixels so the speed of a sprite is in _pixels per second_. If the screen is 120 pixels high, then a sprite with a speed of 40 pixels per second will move across the screen in 4 seconds.
+Distance in your game is measured in pixels so the speed of a sprite is in _pixels per second_. If the screen is 120 pixels high, then a sprite with a speed of 40 pixels per second will move across the screen in 3 seconds.
 
 ### ~
 

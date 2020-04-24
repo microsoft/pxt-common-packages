@@ -10,8 +10,8 @@ const enum JDMouseButton {
 namespace jacdac {
     //% fixedInstances
     export class MouseClient extends Client {
-        constructor() {
-            super("mous", jacdac.MOUSE_DEVICE_CLASS);
+        constructor(requiredDevice: string = null) {
+            super("mous", jd_class.MOUSE, requiredDevice);
         }
 
         /** 
@@ -20,11 +20,7 @@ namespace jacdac {
         //% blockId=jdmouseSetButton block="%mouse button %index|%down=toggleDownUp"
         //% group="Mouse"
         setButton(button: JDMouseButton, down: boolean): void {
-            const buf = control.createBuffer(4);
-            buf[0] = JDMouseCommand.Button;
-            buf[1] = button;
-            buf[2] = down ? 1 : 0;
-            this.sendPacket(buf);
+            this.sendPackedCommand(JDMouseCommand.Button, "BB", [button, down ? 1 : 0])
         }
 
         /**
@@ -36,11 +32,7 @@ namespace jacdac {
         //% y.min=-128 y.max=127
         //% group="Mouse"
         move(x: number, y: number): void {
-            const buf = control.createBuffer(4);
-            buf[0] = JDMouseCommand.Move;
-            buf.setNumber(NumberFormat.Int8LE, 1, x);
-            buf.setNumber(NumberFormat.Int8LE, 2, y);
-            this.sendPacket(buf);
+            this.sendPackedCommand(JDMouseCommand.Move, "bb", [x, y])
         }
 
         /**
@@ -51,10 +43,7 @@ namespace jacdac {
         //% w.min=-128 w.max=127
         //% group="Mouse"
         turnWheel(w: number): void {
-            const buf = control.createBuffer(2);
-            buf[0] = JDMouseCommand.TurnWheel;
-            buf.setNumber(NumberFormat.Int8LE, 1, w);
-            this.sendPacket(buf);
+            this.sendPackedCommand(JDMouseCommand.TurnWheel, "b", [w])
         }
     }
 

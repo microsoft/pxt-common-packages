@@ -26,8 +26,9 @@ namespace console {
         function (priority: ConsolePriority, text: string) { control.__log(priority, text); }
     ];
 
-    export function add(priority: ConsolePriority, text: string) {
+    export function add(priority: ConsolePriority, message: any) {
         if (priority < minPriority) return;
+        let text = inspect(message);
         // add new line
         text += "\n";
         // send to listeners
@@ -35,15 +36,15 @@ namespace console {
             listeners[i](priority, text);
     }
 
-    export function debug(text: string) {
+    export function debug(text: any) {
         add(ConsolePriority.Debug, text);
     }
 
-    export function warn(text: string) {
+    export function warn(text: any) {
         add(ConsolePriority.Warning, text);
     }
 
-    export function error(text: string) {
+    export function error(text: any) {
         add(ConsolePriority.Error, text);
     }
 
@@ -56,7 +57,7 @@ namespace console {
     //% blockId=console_log block="console log $value"
     //% value.shadow=text
     export function log(value: any): void {
-        add(ConsolePriority.Log, inspect(value));
+        add(ConsolePriority.Log, value);
     }
 
     /**
@@ -67,8 +68,9 @@ namespace console {
     //% weight=88 blockGap=8
     //% help=console/log-value
     //% blockId=console_log_value block="console|log value %name|= %value"
-    export function logValue(name: string, value: number): void {
-        log(name ? `${name}: ${value}` : `${value}`)
+    //% name.shadow=text
+    export function logValue(name: any, value: number): void {
+        log(name ? `${inspect(name)}: ${value}` : `${value}`)
     }
 
     /**
@@ -123,7 +125,7 @@ namespace console {
 
     /**
      * Removes a listener
-     * @param listener 
+     * @param listener
      */
     //%
     export function removeListener(listener: (priority: ConsolePriority, text: string) => void) {

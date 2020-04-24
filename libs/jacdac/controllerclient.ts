@@ -1,20 +1,29 @@
 namespace jacdac {
+    export enum SensorStateTODO {
+        None = 0,
+        Stopped = 0x01,
+        Stopping = 0x02,
+        Streaming = 0x04,
+    }
+
     //% fixedInstances
     export class ControllerClient extends Broadcast {
         state: Buffer;
-        streamingState: jacdac.SensorState;
+        streamingState: jacdac.SensorStateTODO;
         streamingInterval: number;
         stateUpdateHandler: () => void;
         lastServerTime: number;
+        controlData: Buffer
 
         constructor() {
-            super("ctrl", jacdac.CONTROLLER_DEVICE_CLASS, 3);
+            super("ctrl", jd_class.CONTROLLER);
+            this.controlData = Buffer.create(3)
             this.controlData[0] = JDControllerCommand.ControlClient;
             this.serverAddress = 0;
             this.playerIndex = 0;
             this.state = control.createBuffer(2);
             this.state[0] = JDControllerCommand.ClientButtons;
-            this.streamingState = jacdac.SensorState.Stopped;
+            this.streamingState = jacdac.SensorStateTODO.Stopped;
             this.streamingInterval = 25;
             this.lastServerTime = 0;
         }
@@ -129,25 +138,16 @@ namespace jacdac {
         }
 
         isActive(): boolean {
-            return !!this.serverAddress && this.isConnected();
+            return !!this.serverAddress && this.client.isConnected()
         }
 
-        handleServiceInformation(device: JDDevice, serviceInfo: JDServiceInformation): number {
-            const data = serviceInfo.data;
-            return this.processPacket(device.device_address, data);
-        }
-
-        handlePacket(packet: JDPacket): number {
+        handlePacket(packet: JDPacket) {
             const data = packet.data;
-            return this.processPacket(packet.device_address, data);
-        }
-
-        private processPacket(packetAddress: number, data: Buffer): number {
             const cmd: JDControllerCommand = data[0];
             // received a packet from the server
             if (cmd == JDControllerCommand.ControlServer) {
-                this.log(`server ${toHex8(packetAddress)}`)
-                const address = this.deviceAddress;
+                this.log(`server ${packet.device_identifier}`)
+                /* JDTODO
                 for (let i = 1; i <= 4; ++i) {
                     if (data[i] == address) {
                         // check that we are still connected to the same server
@@ -169,11 +169,11 @@ namespace jacdac {
                     this.playerIndex = 0;
                     this.stopStreaming();
                 }
+                */
 
                 // nope, doesn't seem to be our server
                 // do nothing
             }
-            return jacdac.DEVICE_OK;
         }
 
         start() {
@@ -182,21 +182,22 @@ namespace jacdac {
         }
 
         private startStreaming() {
-            if (this.streamingState != SensorState.Stopped)
+            if (this.streamingState != SensorStateTODO.Stopped)
                 return;
 
             this.log(`start`);
-            this.streamingState = SensorState.Streaming;
+            this.streamingState = SensorStateTODO.Streaming;
             control.runInBackground(() => this.stream());
         }
 
         private stream() {
-            while (this.streamingState == SensorState.Streaming) {
+            while (this.streamingState == SensorStateTODO.Streaming) {
                 // alllow handle to update state
                 if (this.stateUpdateHandler)
                     this.stateUpdateHandler();
                 // send state
-                this.sendPacket(this.state);
+                this.sendReport(
+                    JDPacket.from(CMD_GET_REG | REG_READING, this.state))
                 // waiting for a bit
                 pause(this.streamingInterval);
                 // check if server still alive
@@ -204,15 +205,15 @@ namespace jacdac {
                     this.serverAddress = 0; // inactive
                 }
             }
-            this.streamingState = SensorState.Stopped;
+            this.streamingState = SensorStateTODO.Stopped;
             this.log(`stopped`);
         }
 
         private stopStreaming() {
-            if (this.streamingState == SensorState.Streaming) {
+            if (this.streamingState == SensorStateTODO.Streaming) {
                 this.log(`stopping`)
-                this.streamingState = SensorState.Stopping;
-                pauseUntil(() => this.streamingState == SensorState.Stopped);
+                this.streamingState = SensorStateTODO.Stopping;
+                pauseUntil(() => this.streamingState == SensorStateTODO.Stopped);
             }
         }
     }

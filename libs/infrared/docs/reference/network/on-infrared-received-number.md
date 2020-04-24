@@ -21,14 +21,12 @@ This function has one argument:
 
 ## Example #example
 
-Show the value of a number received from an infrared data message. The number is shown by lighting the same number of pixels on the pixel strip.
+Show the value of a number received from an infrared data message in the console log.
 
 ```blocks
-let strip = light.createStrip();
-
 network.onInfraredReceivedNumber(function (num) {
     if (num > 0) { 
-        strip.graph(num, 9);
+        console.log("Infrared msg: " + num)
     } 
 })
 ```

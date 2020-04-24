@@ -13,15 +13,15 @@ A pin detects that it was touched by measuring some amount of electrical charge 
 
 ## Example #example
 
-Measure the touch values at pin **A1**. If they are greater than `512`, then flash green light on the pixels.
+Measure the touch values at pin **A1**. If they are greater than `512`, then log
+them to the console.
 
 ```blocks
-input.touchA1.setThreshold(100)
+let touchValue = 0
 forever(function () {
-    if (input.touchA1.value() > 512) {
-        light.setAll(0x00ff00)
-        pause(100)
-        light.setAll(0x000000)
+    touchValue = input.touchA1.value()
+    if ( touchValue> 512) {
+        console.logValue("touch-value", touchValue) {
     }
     pause(500)
 })

@@ -53,7 +53,7 @@ struct FSHeader {
 };
 
 static uint16_t fnhash(const char *fn) {
-    uint32_t h = hash_fnv1a(fn, strlen(fn));
+    uint32_t h = hash_fnv1(fn, strlen(fn));
     return h ^ (h >> 16);
 }
 

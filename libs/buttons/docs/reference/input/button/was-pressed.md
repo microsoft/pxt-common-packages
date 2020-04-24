@@ -31,15 +31,14 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 
 ## Example #example
 
-Set all the pixels to green if button `A` was pressed before button `B`. If not, turn all pixels off when button `B`is pressed.
+Log a message telling whether button `A` or `B` was pressed.
 
 ```blocks
-let pixels = light.createStrip();
 input.buttonB.onEvent(ButtonEvent.Click, function() {
     if (input.buttonA.wasPressed()) {
-        pixels.setAll(0x00ff00)
+        console.log("Button A Pressed")
     } else {
-        pixels.setAll(0x000000)
+        console.log("Button B Pressed")
     }
 })
 ```

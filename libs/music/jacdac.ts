@@ -2,20 +2,17 @@ namespace jacdac {
     //% fixedInstances
     export class MusicService extends Host {
         constructor() {
-            super("mus", jacdac.MUSIC_DEVICE_CLASS);
+            super("mus", jd_class.MUSIC);
         }
 
-        handlePacket(packet: JDPacket): number {
+        handlePacket(packet: JDPacket) {
             const data = packet.data;
-            const cmd: JDMusicCommand = data[0];
-            switch(cmd) {
+            switch (packet.service_command) {
                 case JDMusicCommand.PlayTone:
-                    const freq = data.getNumber(NumberFormat.UInt32LE, 1);
-                    const duration = data.getNumber(NumberFormat.UInt32LE, 5);
+                    const [freq, duration]  = data.unpack("II")
                     music.playTone(freq, duration);
                     break;
             }
-            return jacdac.DEVICE_OK;
         }
     }
 

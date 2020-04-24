@@ -56,11 +56,11 @@ const enum ColorHues {
 //% advanced=1
 namespace color {
     /**
- * Converts red, green, blue channels into a RGB color
- * @param red value of the red channel between 0 and 255. eg: 255
- * @param green value of the green channel between 0 and 255. eg: 255
- * @param blue value of the blue channel between 0 and 255. eg: 255
- */
+     * Converts red, green, blue channels into a RGB color
+     * @param red value of the red channel between 0 and 255. eg: 255
+     * @param green value of the green channel between 0 and 255. eg: 255
+     * @param blue value of the blue channel between 0 and 255. eg: 255
+     */
     //% blockId="colorsrgb" block="red %red|green %green|blue %blue"
     //% red.min=0 red.max=255 green.min=0 green.max=255 blue.min=0 blue.max=255
     //% help="colors/rgb"
@@ -105,20 +105,20 @@ namespace color {
         h = (h * 192 / 255) >> 0;
 
         //reference: based on FastLED's hsv2rgb rainbow algorithm [https://github.com/FastLED/FastLED](MIT)
-        let invsat = 255 - sat;
-        let brightness_floor = ((val * invsat) / 255) >> 0;
-        let color_amplitude = val - brightness_floor;
-        let section = (h / 0x40) >> 0; // [0..2]
-        let offset = (h % 0x40) >> 0; // [0..63]
+        const invsat = 255 - sat;
+        const brightness_floor = ((val * invsat) / 255) >> 0;
+        const color_amplitude = val - brightness_floor;
+        const section = (h / 0x40) >> 0; // [0..2]
+        const offset = (h % 0x40) >> 0; // [0..63]
 
-        let rampup = offset;
-        let rampdown = (0x40 - 1) - offset;
+        const rampup = offset;
+        const rampdown = (0x40 - 1) - offset;
 
-        let rampup_amp_adj = ((rampup * color_amplitude) / (255 / 4)) >> 0;
-        let rampdown_amp_adj = ((rampdown * color_amplitude) / (255 / 4)) >> 0;
+        const rampup_amp_adj = ((rampup * color_amplitude) / (255 / 4)) >> 0;
+        const rampdown_amp_adj = ((rampdown * color_amplitude) / (255 / 4)) >> 0;
 
-        let rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
-        let rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
+        const rampup_adj_with_floor = (rampup_amp_adj + brightness_floor);
+        const rampdown_adj_with_floor = (rampdown_amp_adj + brightness_floor);
 
         let r: number;
         let g: number;

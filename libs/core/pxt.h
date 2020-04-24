@@ -82,6 +82,8 @@ typedef pins::CodalI2CProxy* I2C_;
 typedef pins::CodalSPIProxy* SPI_;
 
 namespace pxt {
+codal::LowLevelTimer *allocateTimer();
+
 #ifdef CODAL_I2C
 CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 #endif
@@ -90,6 +92,8 @@ CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sc
 LowLevelTimer* getJACDACTimer();
 #endif
 class PressureButton;
+uint32_t readButtonMultiplexer(int bits);
+void disableButtonMultiplexer();
 }
 
 namespace serial {
@@ -108,5 +112,8 @@ typedef jacdac::JDProxyDriver* JacDacDriverStatus;
 #define DEVICE_ID_MICROPHONE 3001
 #define DEVICE_ID_FIRST_BUTTON 4000
 #define DEVICE_ID_FIRST_TOUCHBUTTON 4100
+
+#define PXT_INTERNAL_KEY_UP 2050
+#define PXT_INTERNAL_KEY_DOWN 2051
 
 #endif
