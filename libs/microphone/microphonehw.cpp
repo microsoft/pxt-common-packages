@@ -2,6 +2,7 @@
 #include "dmac.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
+#include "DataStream.h"
 
 #if defined(NRF52_SERIES)
 #include "NRF52PDM.h"
@@ -13,8 +14,10 @@
 class PanicPDM {
     public:
         uint8_t level;
-        
-        PanicPDM(Pin &sd, Pin &sck) {
+        codal::DataStream output;
+
+        PanicPDM(Pin &sd, Pin &sck):
+            output(new codal::DataSource()) {
             target_panic(PANIC_MICROPHONE_MISSING);
         }
 };
