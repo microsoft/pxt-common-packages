@@ -39,9 +39,6 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-#include "USBJACDAC.h"
-#endif
 #endif
 
 namespace pxt {
@@ -57,9 +54,6 @@ extern USBHIDKeyboard keyboard;
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
-#endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-extern USBJACDAC *jacdacDebug;
 #endif
 #endif
 

@@ -23,9 +23,6 @@ USBHIDKeyboard keyboard;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 USBHIDJoystick joystick;
 #endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-USBJACDAC *jacdacDebug;
-#endif
 
 static const DeviceDescriptor device_desc = {
     0x12,   // bLength
@@ -47,7 +44,7 @@ static const DeviceDescriptor device_desc = {
 static void start_usb() {
     // start USB with a delay, so that user code can add new interfaces if needed
     // (eg USB HID keyboard, or MSC)
-    fiber_sleep(100);
+    fiber_sleep(500);
     usb.start();
 }
 
@@ -117,10 +114,6 @@ void usb_init() {
 #endif
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
     usb.add(joystick);
-#endif
-    // USBJACDAC ctor does a bunch of stuff, which we don't want in a static initializer
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-    usb.add(*(jacdacDebug = new USBJACDAC()));
 #endif
 
     create_fiber(start_usb);
