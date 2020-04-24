@@ -99,3 +99,7 @@ controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
 [tile hit from](/reference/sprites/sprite/tile-hit-from),
 [overlaps with](/reference/sprites/sprite/overlaps-with),
 [set flag](/reference/sprites/sprite/set-flag)
+
+```package
+color-coded-tilemap
+```

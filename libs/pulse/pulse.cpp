@@ -317,7 +317,6 @@ void PulseBase::packetEnd(Event) {
 
     if (!outBuffer)
         registerGC((TValue*)&outBuffer);
-    decrRC(outBuffer);
     outBuffer = pins::createBuffer(ptr);
     memcpy(outBuffer->data, buf, ptr);
     if (crc != pktCrc)
@@ -367,7 +366,6 @@ bool PulseBase::isReceiving() {
 }
 
 Buffer PulseBase::getBuffer() {
-    incrRC(outBuffer);
     return outBuffer;
 }
 

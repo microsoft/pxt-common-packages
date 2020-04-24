@@ -367,8 +367,6 @@ void initRuntime() {
     systemReset();
 }
 
-#ifdef PXT_GC
-
 #ifdef PXT64
 #define GC_BASE 0x2000000000
 #define GC_PAGE_SIZE (64 * 1024)
@@ -429,7 +427,7 @@ void gcProcessStacks(int flags) {
         }
     }
 }
-#endif
+
 
 #define MAX_RESET_FN 32
 static reset_fn_t resetFunctions[MAX_RESET_FN];
