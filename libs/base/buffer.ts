@@ -183,6 +183,15 @@ namespace helpers {
             return r
         }
     }
+
+    export function bufferToArray(buf: Buffer, format: NumberFormat) {
+        const sz = Buffer.sizeOfNumberFormat(format)
+        const len = buf.length - sz
+        const r: number[] = []
+        for (let i = 0; i <= len; i += sz)
+            r.push(buf.getNumber(format, i))
+        return r
+    }
 }
 
 interface Buffer {
@@ -223,6 +232,13 @@ interface Buffer {
      */
     //% helper=bufferChunked
     chunked(maxSize: number): Buffer[];
+
+
+    /**
+     * Read contents of buffer as an array in specified format
+     */
+    //% helper=bufferToArray
+    toArray(format: NumberFormat): number[];
 
     // rest defined in buffer.cpp
 }
