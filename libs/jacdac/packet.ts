@@ -160,6 +160,10 @@ namespace jacdac {
             return !!(this.packet_flags & JD_FRAME_FLAG_COMMAND)
         }
 
+        get is_report() {
+            return !(this.packet_flags & JD_FRAME_FLAG_COMMAND)
+        }
+
         toString(): string {
             let msg = `${this.device_identifier}/${this.service_number}[${this.packet_flags}]: ${this.service_command} sz=${this.size}`
             if (this.size < 20) msg += ": " + this.data.toHex()
