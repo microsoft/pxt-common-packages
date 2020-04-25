@@ -19,6 +19,7 @@ namespace jacdac {
     //% whenUsed
     let announceCallbacks: (() => void)[] = [];
     let newDeviceCallbacks: (() => void)[];
+    let pktCallbacks: ((p: JDPacket) => void)[];
 
     function log(msg: string) {
         console.add(jacdac.consolePriority, msg);
@@ -538,6 +539,11 @@ namespace jacdac {
         newDeviceCallbacks.push(cb)
     }
 
+    export function onRawPacket(cb: (pkt: JDPacket) => void) {
+        if (!pktCallbacks) pktCallbacks = []
+        pktCallbacks.push(cb)
+    }
+
     function queueAnnounce() {
         const fmt = "<" + hostServices.length + "I"
         const ids = hostServices.map(h => h.running ? h.serviceClass : -1)
@@ -613,6 +619,10 @@ namespace jacdac {
                 ack._sendReport(selfDevice())
             }
         }
+
+        if (pktCallbacks)
+            for (let f of pktCallbacks)
+                f(pkt)
 
         if (multiCommandClass != null) {
             if (!pkt.is_command)
