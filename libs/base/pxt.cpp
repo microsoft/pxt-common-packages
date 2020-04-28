@@ -4,7 +4,6 @@ using namespace std;
 
 namespace pxt {
 
-
 Action mkAction(int totallen, RefAction *act) {
     check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
 #ifdef PXT_VM
@@ -77,8 +76,7 @@ void RefObject::printVT() {
     ((RefObjectMethod)getVTable(this)->methods[1])(this);
 }
 
-void RefRecord_destroy(RefRecord *) {
-}
+void RefRecord_destroy(RefRecord *) {}
 
 void RefRecord_print(RefRecord *r) {
     DMESG("RefRecord %p size=%d bytes", r, getVTable(r)->numbytes);
@@ -313,16 +311,15 @@ PXT_VTABLE(RefAction, ValType::Function)
 RefAction::RefAction() : PXT_VTABLE_INIT(RefAction) {}
 
 // fields[] contain captured locals
-void RefAction::destroy(RefAction *t) {
-}
+void RefAction::destroy(RefAction *t) {}
 
 void RefAction::print(RefAction *t) {
 #ifdef PXT_VM
     DMESG("RefAction %p pc=%X size=%d", t,
           (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
 #else
-    DMESG("RefAction %p pc=%X size=%d", t,
-          (const uint8_t *)t->func - (const uint8_t *)bytecode, t->len);
+    DMESG("RefAction %p pc=%X size=%d", t, (const uint8_t *)t->func - (const uint8_t *)bytecode,
+          t->len);
 #endif
 }
 
@@ -427,6 +424,11 @@ String programName() {
 #endif
 
 #ifndef PXT_VM
+void variantNotSupported(const char *v) {
+    DMESG("variant not supported: %s", v);
+    target_panic(PANIC_VARIANT_NOT_SUPPORTED);
+}
+
 void exec_binary(unsigned *pc) {
     // XXX re-enable once the calibration code is fixed and [editor/embedded.ts]
     // properly prepends a call to [internal_main].
@@ -439,6 +441,12 @@ void exec_binary(unsigned *pc) {
     checkStr(ver == 0x4210, ":( Bad runtime version");
 
     bytecode = *((uint16_t **)pc++); // the actual bytecode is here
+
+    if (((uint32_t *)bytecode)[0] == 0x923B8E71) {
+        variantNotSupported((const char *)bytecode + 16);
+        return;
+    }
+
     globals = (TValue *)app_alloc(sizeof(TValue) * getNumGlobals());
     memset(globals, 0, sizeof(TValue) * getNumGlobals());
 
