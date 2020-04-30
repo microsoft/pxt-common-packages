@@ -226,7 +226,7 @@ namespace pxsim.visuals {
             }
             .sim-neopixel-canvas-parent:hover {
                 transform-origin: center;
-                transform: scale(4) translateY(-60px);
+                transform: scale(4) translateY(-220px);
                 -moz-transform: scale(4) translateY(-220px);
             }
             .sim-neopixel-canvas .hidden {
