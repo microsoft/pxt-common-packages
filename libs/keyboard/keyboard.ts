@@ -292,7 +292,8 @@ namespace keyboard {
     //% help=keyboard/key
     export function key(key: string, event: KeyboardKeyEvent) {
         const st = state();
-        st.key(key, event);
+        for(const c of key)
+            st.key(c, event);
     }
 
     /**
