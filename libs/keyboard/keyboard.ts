@@ -161,12 +161,10 @@ namespace keyboard {
         private _keysDown: number[];
         private _mediasDown: number[];
         private _functionsDown: number[];
-        private _modifiersDown: number[];
         constructor() {
             this._keysDown = undefined;
             this._mediasDown = undefined;
             this._functionsDown = undefined;
-            this._modifiersDown = undefined;
         }
 
         type(text: string) {
@@ -205,9 +203,7 @@ namespace keyboard {
         }
 
         modifierKey(key: KeyboardModifierKey, event: KeyboardKeyEvent) {
-            if (!this._modifiersDown) this._modifiersDown = [];
-            if (State.updateState(this._modifiersDown, key, event))
-                __modifierKey(key, event);
+            __modifierKey(key, event);
         }
 
         private static updateState(downKeys: number[], c: number, event: KeyboardKeyEvent): boolean {
@@ -252,10 +248,6 @@ namespace keyboard {
             while (this._functionsDown && this._functionsDown.length) {
                 const c = this._functionsDown.pop();
                 __functionKey(c, KeyboardKeyEvent.Up);
-            }
-            while (this._modifiersDown && this._modifiersDown.length) {
-                const c = this._modifiersDown.pop();
-                __modifierKey(c, KeyboardKeyEvent.Up);
             }
         }
     }
