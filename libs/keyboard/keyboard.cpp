@@ -13,6 +13,11 @@ enum class KeyboardKeyEvent {
 };
 
 namespace keyboard {
+    //%
+    void __flush() {
+        pxt::keyboard.flush();
+    }
+
     //% 
     void __type(String text) {
         if (NULL != text)
