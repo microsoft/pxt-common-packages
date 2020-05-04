@@ -4,6 +4,11 @@ namespace pxsim.keyboard {
         "up",
         "down"
     ]
+
+    export function __flush() {
+        console.log(`kb: flush`)
+    }
+
     export function __type(s: string) {
         console.log(`kb: type ${s}`);
     }
