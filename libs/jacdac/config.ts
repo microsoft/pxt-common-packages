@@ -114,9 +114,13 @@ const enum JDMusicCommand {
     PlayTone = 0x80,
 }
 
+const enum JDConsoleReg {
+    MinPriority = 0x80
+}
+
 const enum JDConsoleCommand {
     MessageDbg = 0x80,
-    SetMinPriority = 0x90,
+    SetMinPriority = 0x2000 | JDConsoleReg.MinPriority,
 }
 
 const enum JDConsolePriority {
