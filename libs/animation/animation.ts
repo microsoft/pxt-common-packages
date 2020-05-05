@@ -424,6 +424,8 @@ namespace animation {
 
                 game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
                     state.animations = state.animations.filter((anim: SpriteAnimation) => {
+                        if (this.sprite.flags & sprites.Flag.Destroyed)
+                            return true;
                         return !anim.update(); // If update returns true, the animation is done and will be removed
                     });
                 });
@@ -450,26 +452,22 @@ namespace animation {
 
         constructor(sprite: Sprite, private frames: Image[], private frameInterval: number, loop?: boolean) {
             super(sprite, loop);
-
             this.lastFrame = -1;
         }
 
         public update(): boolean {
-            if (this.sprite.flags & sprites.Flag.Destroyed) return true;
-
-            if (this.startedAt == null) this.startedAt = control.millis();
+            if (this.startedAt == null)
+                this.startedAt = control.millis();
             const runningTime = control.millis() - this.startedAt;
             const frameIndex = Math.floor(runningTime / this.frameInterval);
 
-            if (this.lastFrame > -1 && this.lastFrame < frameIndex && this.frames.length) { // Applies the first frame after the first interval has passed
-                const newImage = this.frames[frameIndex - 1];
+            if (this.lastFrame != frameIndex && this.frames.length) {
+                if (!this.loop && frameIndex >= this.frames.length) {
+                    return true;
+                }
+                const newImage = this.frames[frameIndex % this.frames.length];
                 if (this.sprite.image !== newImage) {
                     this.sprite.setImage(newImage);
-                }
-
-                if (frameIndex >= this.frames.length) {
-                    if (!this.loop) return true;
-                    this.startedAt = control.millis();
                 }
             }
             this.lastFrame = frameIndex;
@@ -485,8 +483,6 @@ namespace animation {
         }
 
         public update(): boolean {
-            if (this.sprite.flags & sprites.Flag.Destroyed) return true;
-
             if (this.startedAt == null) this.startedAt = control.millis();
 
             let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
