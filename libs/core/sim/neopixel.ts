@@ -220,27 +220,13 @@ namespace pxsim.visuals {
         }
     };
 
-    function digitalPinToPinNumber(gpioPin: string): number {
-        const MICROBIT_ID_IO_P0 = 7; //TODO: don't hardcode this, import enums.d.ts
-        if (gpioPin == "*") {
-            return MICROBIT_ID_IO_P0;
-        }
-        const pin = /^(\w+)\.((P|A|D)(\d+))$/.exec(gpioPin);
-        //TODO: fix assert
-        //let pinSplit = gpioPin.split("DigitalPin.P");
-        //U.assert(pinSplit.length === 2, "Unknown format for pin (for NeoPixel): " + gpioPin);
-        //let pinNumStr = pinSplit[1];
-        let pinNum = Number(pin[4]) + MICROBIT_ID_IO_P0;
-        return pinNum
-    }
-
     export class NeoPixelView implements IBoardPart<CommonNeoPixelStateConstructor> {
         public style: string = `
             .sim-neopixel-canvas {
             }
             .sim-neopixel-canvas-parent:hover {
                 transform-origin: center;
-                transform: scale(4) translateY(-60px);
+                transform: scale(4) translateY(-220px);
                 -moz-transform: scale(4) translateY(-220px);
             }
             .sim-neopixel-canvas .hidden {

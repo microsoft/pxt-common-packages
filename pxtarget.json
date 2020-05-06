@@ -54,6 +54,7 @@
         "libs/rotary-encoder",
         "libs/palette",
         "libs/radio",
-        "libs/radio-broadcast"
+        "libs/radio-broadcast",
+        "libs/matrix-keypad"
     ]
 }

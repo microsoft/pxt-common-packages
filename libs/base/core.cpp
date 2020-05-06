@@ -561,22 +561,22 @@ int length(String s) {
 }
 
 #define isspace(c) ((c) == ' ')
+#define iswhitespace(c) ((c) == 0x09 || (c) == 0x0B || (c) == 0x0C || (c) == 0x20 || (c) == 0xA0 || (c) == 0x0A || (c) == 0x0D)
 
 NUMBER mystrtod(const char *p, char **endp) {
-    while (isspace(*p))
+    while (iswhitespace(*p))
         p++;
     NUMBER m = 1;
     NUMBER v = 0;
     int dot = 0;
+    int hasDigit = 0;
     if (*p == '+')
         p++;
     if (*p == '-') {
         m = -1;
         p++;
     }
-    if (*p == '0' && (p[1] | 0x20) == 'x') {
-        return m * strtol(p, endp, 16);
-    }
+
     while (*p) {
         int c = *p - '0';
         if (0 <= c && c <= 9) {
@@ -584,15 +584,12 @@ NUMBER mystrtod(const char *p, char **endp) {
             v += c;
             if (dot)
                 m /= 10;
+            hasDigit = 1;
         } else if (!dot && *p == '.') {
             dot = 1;
-        } else if (*p == 'e' || *p == 'E') {
-            break;
+        } else if (!hasDigit) {
+            return NAN;
         } else {
-            while (isspace(*p))
-                p++;
-            if (*p)
-                return NAN;
             break;
         }
         p++;
@@ -600,7 +597,7 @@ NUMBER mystrtod(const char *p, char **endp) {
 
     v *= m;
 
-    if (*p) {
+    if (*p == 'e' || *p == 'E') {
         p++;
         int pw = (int)strtol(p, endp, 10);
         v *= p10(pw);
@@ -617,9 +614,7 @@ TNumber toNumber(String s) {
     char *endptr;
     auto data = s->getUTF8Data();
     NUMBER v = mystrtod(data, &endptr);
-    if (endptr != data + s->getUTF8Size())
-        v = NAN;
-    else if (v == 0.0 || v == -0.0) {
+    if (v == 0.0 || v == -0.0) {
         // nothing
     } else if (!isnormal(v))
         v = NAN;
