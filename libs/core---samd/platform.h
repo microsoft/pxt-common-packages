@@ -10,13 +10,15 @@
 #include "ZI2C.h"
 #include "ZSingleWireSerial.h"
 #include "SAMDNVM.h"
-
+#include "SAMDPDM.h"
 #include "SAMDSerial.h"
 
 // cap touch not available on 51 yet
 #ifdef SAMD21
 #include "CapTouchButton.h"
 #endif
+
+#define MIC_DEVICE SAMD21PDM
 
 #ifdef SAMD21
 #define OUTPUT_BITS 10
