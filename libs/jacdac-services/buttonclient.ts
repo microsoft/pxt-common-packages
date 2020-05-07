@@ -9,6 +9,7 @@ namespace jacdac {
         }
 
         connectControllerButton(controllerButton: number) {
+            this.start()
             control.internalOnEvent(this.eventId, JDButtonEvent.Down,
                 () => control.raiseEvent(INTERNAL_KEY_DOWN, controllerButton))
             control.internalOnEvent(this.eventId, JDButtonEvent.Up,
