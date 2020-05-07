@@ -39,7 +39,7 @@ namespace mouse {
     * Turn the mouse wheel
     **/
     //% help=mouse/turn-wheel
-    //% blockId=mouseWheel block="turn wheel %w"
+    //% blockId=mouseWheel block="mouse turn wheel %w"
     //% w.min=-128 w.max=127
     void turnWheel(int w) {
         pxt::mouse.moveWheel(w);
