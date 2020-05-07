@@ -165,7 +165,7 @@ namespace jacdac {
         }
 
         toString(): string {
-            let msg = `${this.device_identifier}/${this.service_number}[${this.packet_flags}]: ${this.service_command} sz=${this.size}`
+            let msg = `${jacdac.shortDeviceId(this.device_identifier)}/${this.service_number}[${this.packet_flags}]: ${this.service_command} sz=${this.size}`
             if (this.size < 20) msg += ": " + this.data.toHex()
             else msg += ": " + this.data.slice(0, 20).toHex() + "..."
             return msg
