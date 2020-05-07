@@ -24,6 +24,7 @@
         "proximityclient.ts",
         "lightspectrumsensorclient.ts",
         "rotaryencoderclient.ts",
+        "arcadecontrolsclient.ts",
         "pwmlightclient.ts"
     ],
     "testFiles": [
