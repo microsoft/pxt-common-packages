@@ -265,8 +265,11 @@ namespace jacdac {
         handlePacketOuter(pkt: JDPacket) {
             if (pkt.service_command == CMD_ADVERTISEMENT_DATA)
                 this.advertisementData = pkt.data
-            else
-                this.handlePacket(pkt)
+
+            if (pkt.service_command == CMD_EVENT)
+                control.raiseEvent(this.eventId, pkt.intData)
+
+            this.handlePacket(pkt)
         }
 
         handlePacket(pkt: JDPacket) { }
