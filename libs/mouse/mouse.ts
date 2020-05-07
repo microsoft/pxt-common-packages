@@ -8,7 +8,7 @@ namespace mouse {
      * @param button the button to click
      */
     //% help=mouse/click
-    //% blockId=mouseClick block="mouse click button %index"
+    //% blockId=mouseClick block="mouse click button $button"
     //% weight=100
     export function click(button: MouseButton) {
         mouse.setButton(button, true)
