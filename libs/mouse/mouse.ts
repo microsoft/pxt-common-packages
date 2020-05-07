@@ -10,7 +10,7 @@ namespace mouse {
     //% help=mouse/click
     //% blockId=mouseClick block="mouse click button $button"
     //% weight=100
-    export function click(button: MouseButton) {
+    export function click(button: MouseButton): void {
         mouse.setButton(button, true)
         mouse.setButton(button, false)
     }
