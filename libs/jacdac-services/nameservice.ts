@@ -5,6 +5,71 @@ namespace jacdac {
     const DNS_CMD_LIST_USED_NAMES = 0x83
     const DNS_CMD_CLEAR_STORED_IDS = 0x84
 
+    export function autoBind() {
+        function log(msg: string) {
+            control.dmesg("autobind: " + msg)
+        }
+
+        function pending() {
+            return _allClients.filter(c => !!c.requiredDeviceName && !c.isConnected())
+        }
+
+        pauseUntil(() => pending().length == 0, 1000)
+
+        const plen = pending().length
+        log(`pending: ${plen}`)
+        if (plen == 0) return
+
+        pause(1000) // wait for everyone to enumerate
+
+        const requested: RemoteRequestedDevice[] = []
+
+        for (const client of _allClients) {
+            if (client.requiredDeviceName) {
+                const r = addRequested(requested, client.requiredDeviceName, client.serviceClass, null)
+                r.boundTo = client.device
+            }
+        }
+
+        if (!requested.length)
+            return
+
+        function nameFree(d: Device) {
+            return !d.name || requested.every(r => r.boundTo != d)
+        }
+
+        requested.sort((a, b) => a.name.compare(b.name))
+
+        let numSel = 0
+        recomputeCandidates(requested)
+        for (const r of requested) {
+            if (r.boundTo)
+                continue
+            const cand = r.candidates.filter(nameFree)
+            log(`name: ${r.name}, ${cand.length} candidate(s)`)
+            if (cand.length > 0) {
+                // take ones without existing names first
+                cand.sort((a, b) => (a.name || "").compare(b.name || "") || a.deviceId.compare(b.deviceId))
+                log(`setting to ${cand[0].toString()}`)
+                r.select(cand[0])
+                numSel++
+            }
+        }
+    }
+
+    export function clearAllNames() {
+        settings.list(devNameSettingPrefix).forEach(settings.remove)
+    }
+
+    function setDevName(id: string, name: string) {
+        const devid = devNameSettingPrefix + id
+        if (name.length == 0)
+            settings.remove(devid)
+        else
+            settings.writeString(devid, name)
+        Device.clearNameCache()
+    }
+
     export class DeviceNameService extends Host {
         constructor() {
             super("dns", jd_class.DEVICE_NAME_SERVICE)
@@ -19,15 +84,8 @@ namespace jacdac {
                     }
                     break
                 case DNS_CMD_SET_NAME:
-                    if (packet.data.length >= 8) {
-                        const devid = devNameSettingPrefix + packet.data.slice(0, 8).toHex()
-                        const name = packet.data.slice(8)
-                        if (name.length == 0)
-                            settings.remove(devid)
-                        else
-                            settings.writeBuffer(devid, name)
-                        Device.clearNameCache()
-                    }
+                    if (packet.data.length >= 8)
+                        setDevName(packet.data.slice(0, 8).toHex(), packet.data.slice(8).toString())
                     break
                 case DNS_CMD_LIST_STORED_IDS:
                     this.sendChunkedReport(DNS_CMD_LIST_STORED_IDS,
@@ -39,7 +97,7 @@ namespace jacdac {
                     this.sendChunkedReport(DNS_CMD_LIST_USED_NAMES, attachedClients.map(packName))
                     break
                 case DNS_CMD_CLEAR_STORED_IDS:
-                    settings.list(devNameSettingPrefix).forEach(settings.remove)
+                    clearAllNames()
                     break
             }
 
@@ -111,12 +169,31 @@ namespace jacdac {
         select(dev: Device) {
             if (dev == this.boundTo)
                 return
-            if (this.boundTo)
-                this.parent.setName(this.boundTo, "")
-            this.parent.setName(dev, this.name)
+            if (this.parent == null) {
+                setDevName(dev.deviceId, this.name)
+            } else {
+                if (this.boundTo)
+                    this.parent.setName(this.boundTo, "")
+                this.parent.setName(dev, this.name)
+            }
             this.boundTo = dev
         }
     }
+
+    function recomputeCandidates(remotes: RemoteRequestedDevice[]) {
+        const localDevs = devices()
+        for (let dev of remotes)
+            dev.candidates = localDevs.filter(ldev => dev.isCandidate(ldev))
+    }
+
+    function addRequested(devs: RemoteRequestedDevice[], name: string, service_class: number, parent: DeviceNameClient) {
+        let r = devs.find(d => d.name == name)
+        if (!r)
+            devs.push(r = new RemoteRequestedDevice(parent, name))
+        r.services.push(service_class)
+        return r
+    }
+
 
     export class DeviceNameClient extends Client {
         public remoteRequestedDevices: RemoteRequestedDevice[] = []
@@ -126,7 +203,7 @@ namespace jacdac {
             super("dnsc", jd_class.DEVICE_NAME_SERVICE, requiredDevice)
 
             onNewDevice(() => {
-                this.recomputeCandidates()
+                recomputeCandidates(this.remoteRequestedDevices)
             })
 
             onAnnounce(() => {
@@ -145,11 +222,7 @@ namespace jacdac {
                     const name = buf.slice(off, nameBytes).toString()
                     off += nameBytes
 
-                    let r = devs.find(d => d.name == name)
-                    if (!r)
-                        devs.push(r = new RemoteRequestedDevice(this, name))
-                    r.services.push(service_class)
-
+                    const r = addRequested(devs, name, service_class, this)
                     const dev = localDevs.find(d => d.deviceId == devid)
                     if (dev)
                         r.boundTo = dev
@@ -158,14 +231,8 @@ namespace jacdac {
                 devs.sort((a, b) => a.name.compare(b.name))
 
                 this.remoteRequestedDevices = devs
-                this.recomputeCandidates()
+                recomputeCandidates(this.remoteRequestedDevices)
             })
-        }
-
-        private recomputeCandidates() {
-            const localDevs = devices()
-            for (let dev of this.remoteRequestedDevices)
-                dev.candidates = localDevs.filter(ldev => dev.isCandidate(ldev))
         }
 
         scan() {
