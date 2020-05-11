@@ -24,6 +24,7 @@
         "control.ts",
         "interval.ts",
         "gcstats.ts",
+        "poll.ts",
         "console.ts",
         "json.ts",
         "templates.ts",
