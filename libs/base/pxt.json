@@ -22,6 +22,7 @@
         "ns.ts",
         "control.cpp",
         "control.ts",
+        "interval.ts",
         "console.ts",
         "json.ts",
         "templates.ts",
