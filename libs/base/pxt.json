@@ -23,6 +23,7 @@
         "control.cpp",
         "control.ts",
         "interval.ts",
+        "gcstats.ts",
         "console.ts",
         "json.ts",
         "templates.ts",
