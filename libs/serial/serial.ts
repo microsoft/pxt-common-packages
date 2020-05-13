@@ -1,3 +1,28 @@
+const enum Delimiters {
+    //% block="new line (\n)"
+    NewLine = 10,
+    //% block=","
+    Comma = 44,
+    //% block="$"
+    Dollar = 36,
+    //% block=":"
+    Colon = 58,
+    //% block="."
+    Fullstop = 46,
+    //% block="#"
+    Hash = 35,
+    //% block="carriage return (\r)"
+    CarriageReturn = 13,
+    //% block="space"
+    Space = 32,
+    //% block="tab (\t)"
+    Tab = 9,
+    //% block="|"
+    Pipe = 124,
+    //% block=";"
+    SemiColon = 59,
+}
+
 /**
  * Reading and writing data over a serial connection.
  */
@@ -6,6 +31,7 @@
 //% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
     export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
+    export let NEW_LINE_DELIMITER: Delimiters = Delimiters.NewLine;
 
     export class Serial {
         serialDevice: SerialDevice;
@@ -22,7 +48,7 @@ namespace serial {
         }
 
         readLine(timeOut?: number): string {
-            return this.readUntil(Delimiters.NewLine, timeOut);
+            return this.readUntil(NEW_LINE_DELIMITER, timeOut);
         }
 
         readUntil(delimiter: Delimiters, timeOut?: number): string {
@@ -270,5 +296,14 @@ namespace serial {
         const ser = device();
         if (ser)
             ser.serialDevice.onDelimiterReceived(delimiter, handler);
+    }
+
+    /**
+     * Return the corresponding delimiter string
+     */
+    //% blockId="serial_delimiter_conv" block="%del"
+    //% weight=1 blockHidden=true hidden=true
+    export function delimiters(del: Delimiters): string {
+        return String.fromCharCode(del as number);
     }
 }
