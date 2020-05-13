@@ -234,7 +234,6 @@ namespace serial {
             ser.serialDevice.writeBuffer(buffer);
     }
 
-
     /**
     Set the baud rate of the serial port
     */
@@ -248,7 +247,6 @@ namespace serial {
         if (ser)
             ser.serialDevice.setBaudRate(rate);
     }
-
 
     /**
       Send console messages through the TX, RX pins
