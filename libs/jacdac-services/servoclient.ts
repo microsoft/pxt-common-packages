@@ -1,8 +1,42 @@
 namespace jacdac {
     //% fixedInstances
-    export class ServoClient extends ActuatorClient {
+    export class ServoClient extends Client {
         constructor(requiredDevice: string = null) {
-            super("servo", jd_class.SERVO, 5, requiredDevice);
+            super("servo", jd_class.SERVO, requiredDevice);
+        }
+
+        private pulse: number
+        private autoOff: number
+        private lastSet: number
+
+        private sync(n: number) {
+            this.lastSet = control.millis()
+            if (n === this.pulse)
+                return
+            if (n == null) {
+                this.setRegInt(REG_INTENSITY, 0)
+            } else {
+                this.setRegInt(REG_VALUE, n | 0)
+                this.setRegInt(REG_INTENSITY, 1)
+            }
+            this.pulse = n
+        }
+
+        setAutoOff(ms: number) {
+            if (!ms) ms = 0
+            this.lastSet = control.millis()
+            if (this.autoOff === undefined)
+                jacdac.onAnnounce(() => {
+                    if (this.pulse != null && this.autoOff && control.millis() - this.lastSet > this.autoOff) {
+                        this.turnOff()
+                    }
+                })
+
+            this.autoOff = ms
+        }
+
+        turnOff() {
+            this.sync(undefined)
         }
 
         /**
@@ -17,11 +51,12 @@ namespace jacdac {
         //% servo.fieldOptions.columns=2
         //% blockGap=8        
         setAngle(degrees: number) {
-            if (!this.state[0] || this.state.getNumber(NumberFormat.Int16LE, 1) != degrees) {
-                this.state[0] = 1;
-                this.state.setNumber(NumberFormat.Int16LE, 1, degrees);
-                this.notifyChange();
-            }
+            // this isn't exactly what the internets say, but it's what codal does
+            const center = 1500
+            const range = 2000
+            const lower = center - (range >> 1) << 10;
+            const scaled = lower + (range * Math.idiv(degrees << 10, 180));
+            this.setPulse(scaled >> 10)
         }
 
         /**
@@ -53,10 +88,7 @@ namespace jacdac {
         setPulse(micros: number) {
             micros = micros | 0;
             micros = Math.clamp(500, 2500, micros);
-            if (this.state.getNumber(NumberFormat.UInt16LE, 3) != micros) {
-                this.state.setNumber(NumberFormat.UInt16LE, 3, micros);
-                this.notifyChange();
-            }
+            this.sync(micros)
         }
     }
 

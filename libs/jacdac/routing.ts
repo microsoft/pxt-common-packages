@@ -19,6 +19,7 @@ namespace jacdac {
     //% whenUsed
     let announceCallbacks: (() => void)[] = [];
     let newDeviceCallbacks: (() => void)[];
+    let pktCallbacks: ((p: JDPacket) => void)[];
 
     function log(msg: string) {
         console.add(jacdac.consolePriority, msg);
@@ -264,8 +265,11 @@ namespace jacdac {
         handlePacketOuter(pkt: JDPacket) {
             if (pkt.service_command == CMD_ADVERTISEMENT_DATA)
                 this.advertisementData = pkt.data
-            else
-                this.handlePacket(pkt)
+
+            if (pkt.service_command == CMD_EVENT)
+                control.raiseEvent(this.eventId, pkt.intData)
+
+            this.handlePacket(pkt)
         }
 
         handlePacket(pkt: JDPacket) { }
@@ -350,6 +354,16 @@ namespace jacdac {
             _allClients.push(this)
             clearAttachCache()
         }
+
+        destroy() {
+            if (this.device)
+                this.device.clients.removeElement(this)
+            _unattachedClients.removeElement(this)
+            _allClients.removeElement(this)
+            this.serviceNumber = null
+            this.device = null
+            clearAttachCache()
+        }
     }
 
     // 4 letter ID; 0.04%/0.01%/0.002% collision probability among 20/10/5 devices
@@ -363,15 +377,26 @@ namespace jacdac {
             String.fromCharCode(0x41 + Math.idiv(h, 26 * 26 * 26) % 26)
     }
 
+    class RegQuery {
+        lastQuery = 0
+        value: Buffer
+        constructor(public reg: number) { }
+    }
+
     export class Device {
         services: Buffer
         lastSeen: number
         clients: Client[] = []
         private _name: string
         private _shortId: string
+        private queries: RegQuery[]
 
         constructor(public deviceId: string) {
             devices_.push(this)
+        }
+
+        get isConnected() {
+            return this.clients != null
         }
 
         get name() {
@@ -390,6 +415,59 @@ namespace jacdac {
 
         toString() {
             return this.shortId + (this.name ? ` (${this.name})` : ``)
+        }
+
+        private lookupQuery(reg: number) {
+            if (!this.queries) this.queries = []
+            return this.queries.find(q => q.reg == reg)
+        }
+
+        queryInt(reg: number, refreshRate = 1000) {
+            const v = this.query(reg, refreshRate)
+            if (!v) return undefined
+            return intOfBuffer(v)
+        }
+
+        query(reg: number, refreshRate = 1000) {
+            let q = this.lookupQuery(reg)
+            if (!q)
+                this.queries.push(q = new RegQuery(reg))
+
+            const now = control.millis()
+            if (!q.lastQuery || (refreshRate != null && now - q.lastQuery > refreshRate)) {
+                q.lastQuery = now
+                this.sendCtrlCommand(CMD_GET_REG | reg)
+            }
+            return q.value
+        }
+
+        get classDescription() {
+            const v = this.query(REG_CTRL_DEVICE_DESCRIPTION, null)
+            if (v) return v.toString()
+            else {
+                const num = this.query(REG_CTRL_DEVICE_CLASS, null)
+                if (num)
+                    return "0x" + num.toHex()
+                else
+                    return ""
+            }
+        }
+
+        get temperature() {
+            return this.queryInt(REG_CTRL_TEMPERATURE)
+        }
+
+        get lightLevel() {
+            return this.queryInt(REG_CTRL_LIGHT_LEVEL)
+        }
+
+        handleCtrlReport(pkt: JDPacket) {
+            if ((pkt.service_command & CMD_TYPE_MASK) == CMD_GET_REG) {
+                const reg = pkt.service_command & CMD_REG_MASK
+                const q = this.lookupQuery(reg)
+                pkt.intData
+                q.value = pkt.data
+            }
         }
 
         hasService(service_class: number) {
@@ -462,6 +540,11 @@ namespace jacdac {
     export function onNewDevice(cb: () => void) {
         if (!newDeviceCallbacks) newDeviceCallbacks = []
         newDeviceCallbacks.push(cb)
+    }
+
+    export function onRawPacket(cb: (pkt: JDPacket) => void) {
+        if (!pktCallbacks) pktCallbacks = []
+        pktCallbacks.push(cb)
     }
 
     function queueAnnounce() {
@@ -540,6 +623,10 @@ namespace jacdac {
             }
         }
 
+        if (pktCallbacks)
+            for (let f of pktCallbacks)
+                f(pkt)
+
         if (multiCommandClass != null) {
             if (!pkt.is_command)
                 return // only commands supported in multi-command
@@ -574,8 +661,10 @@ namespace jacdac {
                         reattach(dev)
                     }
                 }
-                if (dev)
+                if (dev) {
+                    dev.handleCtrlReport(pkt)
                     dev.lastSeen = control.millis()
+                }
                 return
             } else if (pkt.service_number == JD_SERVICE_NUMBER_CRC_ACK) {
                 _gotAck(pkt)

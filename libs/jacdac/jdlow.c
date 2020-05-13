@@ -34,12 +34,12 @@ jd_diagnostics_t *jd_get_diagnostics(void) {
     return &jd_diagnostics;
 }
 
-static void pulse1() {
+static void pulse1(void) {
     log_pin_set(1, 1);
     log_pin_set(1, 0);
 }
 
-static void signal_error() {
+static void signal_error(void) {
     log_pin_set(2, 1);
     log_pin_set(2, 0);
 }
@@ -51,9 +51,9 @@ static void signal_write(int v) {
 static void signal_read(int v) {
     // log_pin_set(0, v);
 }
-static void pulse_log_pin() {}
+static void pulse_log_pin(void) {}
 
-static void check_announce() {
+static void check_announce(void) {
     if (tim_get_micros() > nextAnnounce) {
         // pulse_log_pin();
         if (nextAnnounce)
@@ -62,7 +62,7 @@ static void check_announce() {
     }
 }
 
-void jd_init() {
+void jd_init(void) {
     DMESG("JD: init");
     tim_init();
     set_tick_timer(0);
@@ -70,15 +70,15 @@ void jd_init() {
     check_announce();
 }
 
-int jd_is_running() {
+int jd_is_running(void) {
     return nextAnnounce != 0;
 }
 
-int jd_is_busy() {
+int jd_is_busy(void) {
     return status != 0;
 }
 
-static void tx_done() {
+static void tx_done(void) {
     signal_write(0);
     set_tick_timer(JD_STATUS_TX_ACTIVE);
 }
@@ -90,12 +90,12 @@ void jd_tx_completed(int errCode) {
     tx_done();
 }
 
-static void tick() {
+static void tick(void) {
     check_announce();
     set_tick_timer(0);
 }
 
-static void flush_tx_queue() {
+static void flush_tx_queue(void) {
     // pulse1();
     if (annCounter++ == 0)
         check_announce();
@@ -110,8 +110,13 @@ static void flush_tx_queue() {
     target_enable_irq();
 
     txPending = 0;
-    if (!txFrame)
+    if (!txFrame) {
         txFrame = app_pull_frame();
+        if (!txFrame) {
+            tx_done();
+            return;
+        }
+    }
 
     signal_write(1);
     if (uart_start_tx(txFrame, JD_FRAME_SIZE(txFrame)) < 0) {
@@ -148,7 +153,7 @@ static void set_tick_timer(uint8_t statusClear) {
     target_enable_irq();
 }
 
-static void rx_timeout() {
+static void rx_timeout(void) {
     target_disable_irq();
     jd_diagnostics.bus_timeout_error++;
     ERROR("RX timeout");
@@ -159,7 +164,7 @@ static void rx_timeout() {
     signal_error();
 }
 
-static void setup_rx_timeout() {
+static void setup_rx_timeout(void) {
     uint32_t *p = (uint32_t *)rxFrame;
     if (p[0] == 0 && p[1] == 0)
         rx_timeout(); // didn't get any data after lo-pulse
@@ -247,7 +252,7 @@ void jd_rx_completed(int dataLeft) {
         jd_diagnostics.packets_dropped++;
 }
 
-void jd_packet_ready() {
+void jd_packet_ready(void) {
     target_disable_irq();
     txPending = 1;
     if (status == 0)

@@ -39,9 +39,6 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-#include "USBJACDAC.h"
-#endif
 #endif
 
 namespace pxt {
@@ -58,9 +55,6 @@ extern USBHIDKeyboard keyboard;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
 #endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-extern USBJACDAC *jacdacDebug;
-#endif
 #endif
 
 // Utility functions
@@ -70,6 +64,9 @@ extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 
 void set_usb_strings(const char *uf2_info);
+extern void (*logJDFrame)(const uint8_t *data);
+extern void (*sendJDFrame)(const uint8_t *data);
+
 
 } // namespace pxt
 

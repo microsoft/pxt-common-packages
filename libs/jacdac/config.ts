@@ -28,6 +28,9 @@ namespace jd_class {
     export const ROTARY_ENCODER = 0x10fa29c9;
     export const DEVICE_NAME_SERVICE = 0x117729bd;
     export const PWM_LIGHT = 0x1fb57453;
+    export const BOOTLOADER = 0x1ffa9948
+    export const ARCADE_CONTROLS = 0x1deaa06e
+
     // to generate a new class number, head to https://microsoft.github.io/uf2/patcher/
     // click link at the bottom and replace first digit with '1'
 }
@@ -112,9 +115,13 @@ const enum JDMusicCommand {
     PlayTone = 0x80,
 }
 
+const enum JDConsoleReg {
+    MinPriority = 0x80
+}
+
 const enum JDConsoleCommand {
     MessageDbg = 0x80,
-    SetMinPriority = 0x90,
+    SetMinPriority = 0x2000 | JDConsoleReg.MinPriority,
 }
 
 const enum JDConsolePriority {

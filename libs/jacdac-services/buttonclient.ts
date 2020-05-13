@@ -1,8 +1,19 @@
 namespace jacdac {
+    const INTERNAL_KEY_UP = 2050;
+    const INTERNAL_KEY_DOWN = 2051;
+
     //% fixedInstances
     export class ButtonClient extends SensorClient {
         constructor(requiredDevice: string = null) {
             super("btn", jd_class.BUTTON, requiredDevice);
+        }
+
+        connectControllerButton(controllerButton: number) {
+            this.start()
+            control.internalOnEvent(this.eventId, JDButtonEvent.Down,
+                () => control.raiseEvent(INTERNAL_KEY_DOWN, controllerButton))
+            control.internalOnEvent(this.eventId, JDButtonEvent.Up,
+                () => control.raiseEvent(INTERNAL_KEY_UP, controllerButton))
         }
 
         /**

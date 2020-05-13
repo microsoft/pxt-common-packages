@@ -123,21 +123,7 @@ namespace jacdac {
         }
 
         get intData() {
-            let fmt: NumberFormat
-            switch (this._data.length) {
-                case 0:
-                case 1:
-                    fmt = NumberFormat.Int8LE
-                    break
-                case 2:
-                case 3:
-                    fmt = NumberFormat.Int16LE
-                    break
-                default:
-                    fmt = NumberFormat.Int32LE
-                    break
-            }
-            return this._data.getNumber(fmt, 0)
+            return intOfBuffer(this._data)
         }
 
         compress(stripped: Buffer[]) {
@@ -174,8 +160,12 @@ namespace jacdac {
             return !!(this.packet_flags & JD_FRAME_FLAG_COMMAND)
         }
 
+        get is_report() {
+            return !(this.packet_flags & JD_FRAME_FLAG_COMMAND)
+        }
+
         toString(): string {
-            let msg = `${this.device_identifier}/${this.service_number}[${this.packet_flags}]: ${this.service_command} sz=${this.size}`
+            let msg = `${jacdac.shortDeviceId(this.device_identifier)}/${this.service_number}[${this.packet_flags}]: ${this.service_command} sz=${this.size}`
             if (this.size < 20) msg += ": " + this.data.toHex()
             else msg += ": " + this.data.slice(0, 20).toHex() + "..."
             return msg
@@ -282,5 +272,23 @@ namespace jacdac {
         }
         if (numNotify)
             ackAwaiters = ackAwaiters.filter(a => a.added !== 0)
+    }
+
+    export function intOfBuffer(data: Buffer) {
+        let fmt: NumberFormat
+        switch (data.length) {
+            case 0:
+            case 1:
+                fmt = NumberFormat.Int8LE
+                break
+            case 2:
+            case 3:
+                fmt = NumberFormat.Int16LE
+                break
+            default:
+                fmt = NumberFormat.Int32LE
+                break
+        }
+        return data.getNumber(fmt, 0)
     }
 }

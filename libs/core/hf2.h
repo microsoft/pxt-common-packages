@@ -6,7 +6,8 @@
 #include "HID.h"
 #include "uf2hid.h"
 
-#define HF2_BUF_SIZE 256
+// 260 bytes needed for biggest JD packets (with overheads)
+#define HF2_BUF_SIZE 260
 
 typedef struct {
     uint16_t size;
@@ -23,11 +24,14 @@ typedef struct {
 class HF2 : public CodalUSBInterface {
     void prepBuffer(uint8_t *buf);
     void pokeSend();
+    void sendCore(uint8_t flag, uint32_t prepend, const void *data, int size);
 
     const uint8_t *dataToSend;
     volatile uint32_t dataToSendLength;
-    bool dataToSendPrepend;
+    uint32_t dataToSendPrepend;
     uint8_t dataToSendFlag;
+
+    uint32_t lastExchange;
 
     bool gotSomePacket;
     bool ctrlWaiting;
@@ -41,6 +45,7 @@ class HF2 : public CodalUSBInterface {
     int sendResponse(int size);
     int recv();
     int sendResponseWithData(const void *data, int size);
+    int sendEvent(uint32_t evId, const void *data, int size);
 
     HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();

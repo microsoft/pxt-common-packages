@@ -1,13 +1,12 @@
 namespace jacdac {
     export class ConsoleClient extends Client {
-        minPriority = JDConsolePriority.Silent;
+        minPriority = JDConsolePriority.Silent; // drop all packets by default
 
         onMessageReceived: (priority: number, dev: Device, message: string) => void;
 
         constructor() {
             super("conc", jd_class.LOGGER, null);
             this.broadcast = true
-            this.minPriority = JDConsolePriority.Silent; // drop all packets by default
             onAnnounce(() => {
                 // on every announce, if we're listening to anything, tell
                 // everyone to log
