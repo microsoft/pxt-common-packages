@@ -37,25 +37,27 @@ enum class SerialEvent {
 };
 
 enum class Delimiters {
-    //% block="new line"
-    NewLine = 10, //'\n',
+    //% block="new line (\n)"
+    NewLine = 10,
     //% block=","
-    Comma = 44, //',',
+    Comma = 44,
     //% block="$"
-    Dollar = 36, // '$',
+    Dollar = 36,
     //% block=":"
-    Colon = 58, // ':',
+    Colon = 58,
     //% block="."
-    Fullstop = 46, //'.',
+    Fullstop = 46,
     //% block="#"
-    Hash = 35, //'#',
-    //% block=";"
-    SemiColumn = 59,
-    //% block="space",
+    Hash = 35,
+    //% block="carriage return (\r)"
+    CarriageReturn = 13,
+    //% block="space"
     Space = 32,
-    //% block="tab"
-    Tab = 9, //'\t'
-    //% block="pipe"
-    Pipe = 124 // `|`,
+    //% block="tab (\t)"
+    Tab = 9,
+    //% block="|"
+    Pipe = 124,
+    //% block=";"
+    SemiColon = 59,
 };
 
