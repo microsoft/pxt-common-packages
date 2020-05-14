@@ -36,7 +36,7 @@ enum class SerialEvent {
     RxBufferFull = CODAL_SERIAL_EVT_RX_FULL
 };
 
-enum Delimiters {
+enum class Delimiters {
     //% block="new line (\n)"
     NewLine = 10,
     //% block=","
