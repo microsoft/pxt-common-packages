@@ -34,7 +34,7 @@ namespace pxsim.radio {
         const state = pxsim.getRadioState();
         const packet = state.datagram.recv();
         const buf = packet.payload.bufferData;
-        const n = buf.lengt;
+        const n = buf.length;
         const rbuf = BufferMethods.createBuffer(n + 4);
         for(let i = 0; i < buf.length; ++i)
             rbuf.data[i] = buf[i];
