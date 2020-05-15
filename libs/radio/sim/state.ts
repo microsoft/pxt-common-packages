@@ -27,8 +27,10 @@ namespace pxsim {
     export class RadioDatagram {
         datagram: PacketBuffer[] = [];
         lastReceived: PacketBuffer = RadioDatagram.defaultPacket();
+        rssi: number;
 
         constructor(private runtime: Runtime, public dal: RadioDAL) {
+            this.rssi = -42;
         }
 
         queue(packet: PacketBuffer) {
@@ -42,7 +44,7 @@ namespace pxsim {
             Runtime.postMessage(<SimulatorRadioPacketMessage>{
                 type: "radiopacket",
                 broadcast: true,
-                rssi: -42, // -42 is the strongest signal
+                rssi: this.rssi, // -42 is the strongest signal
                 serial: state.transmitSerialNumber ? pxsim.control.deviceSerialNumber() : 0,
                 time: new Date().getTime(),
                 payload
