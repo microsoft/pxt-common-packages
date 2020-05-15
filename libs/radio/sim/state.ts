@@ -27,6 +27,7 @@ namespace pxsim {
     export class RadioDatagram {
         datagram: PacketBuffer[] = [];
         lastReceived: PacketBuffer = RadioDatagram.defaultPacket();
+        // this value is unset until the user decide to set the RSSI via the simulator UI
         private _rssi: number;
 
         constructor(private runtime: Runtime, public dal: RadioDAL) {
