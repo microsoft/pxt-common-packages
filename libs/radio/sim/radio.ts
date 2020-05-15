@@ -33,7 +33,17 @@ namespace pxsim.radio {
     export function readRawPacket() {
         const state = pxsim.getRadioState();
         const packet = state.datagram.recv();
-        return new RefBuffer(packet.payload.bufferData)
+        const buf = packet.payload.bufferData;
+        const n = buf.length;
+        if (!n)
+            return undefined;
+
+        const rbuf = BufferMethods.createBuffer(n + 4);
+        for(let i = 0; i < buf.length; ++i)
+            rbuf.data[i] = buf[i];
+        // append RSSI
+        BufferMethods.setNumber(rbuf, BufferMethods.NumberFormat.Int32LE, n, packet.rssi)
+        return rbuf;
     }
 
     export function onDataReceived(handler: RefAction): void {
