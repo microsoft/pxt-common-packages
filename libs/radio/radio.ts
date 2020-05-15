@@ -163,6 +163,7 @@ namespace radio {
 
     export class RadioPacket {
         public static getPacket(data: Buffer) {
+            if (!data) return undefined;
             // last 4 bytes is RSSi
             return new RadioPacket(data);
         }
