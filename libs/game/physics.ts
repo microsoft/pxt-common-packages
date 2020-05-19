@@ -228,10 +228,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         } else if (sprite._fx) {
             const fx = Fx.mul(sprite._fx, dtSec);
             const c = Fx.compare(sprite._vx, fx);
-            if (c < 0) // v < f, v = v += f
-                sprite._vx = Fx.add(sprite._vx, fx);
+            if (c < 0) // v < f, v += f
+                sprite._vx = Fx.min(Fx.zeroFx8, Fx.add(sprite._vx, fx));
             else if (c > 0) // v > f, v -= f
-                sprite._vx = Fx.sub(sprite._vx, fx);
+                sprite._vx = Fx.max(Fx.zeroFx8, Fx.sub(sprite._vx, fx));
             else
                 sprite._vx = Fx.zeroFx8
         }
@@ -249,10 +249,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         } else if( sprite._fy) {
             const fy = Fx.mul(sprite._fy, dtSec);
             const c = Fx.compare(sprite._vy, fy);
-            if (c < 0) // v < f, v = v += f
-                sprite._vy = Fx.add(sprite._vy, fy);
+            if (c < 0) // v < f, v += f
+                sprite._vy = Fx.min(Fx.zeroFx8, Fx.add(sprite._vy, fy));
             else if (c > 0) // v > f, v -= f
-                sprite._vy = Fx.sub(sprite._vy, fy);
+                sprite._vy = Fx.min(Fx.zeroFx8, Fx.sub(sprite._vy, fy));
             else
                 sprite._vy = Fx.zeroFx8
         }
