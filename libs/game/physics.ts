@@ -232,6 +232,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 sprite._vx = Fx.sub(sprite._vx, fx);
             else if (c > 0)
                 sprite._vx = Fx.add(sprite._vx, fx);
+            else
+                sprite._vx = Fx.zeroFx8
         }
 
         if (sprite._ay) {
@@ -250,6 +252,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 sprite._vy = Fx.sub(sprite._vy, fy);
             else if (Fx.compare(sprite._vy, Fx.neg(fy)) > 0) // v < -f
                 sprite._vy = Fx.add(sprite._vy, fy);
+            else
+                sprite._vy = Fx.zeroFx8
         }
 
         const dx = Fx.idiv(
