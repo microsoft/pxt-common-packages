@@ -140,7 +140,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fx (friction x)"
     set fx(v: number) {
-        this._fx = Fx8(v)
+        this._fx = Fx8(Math.max(0, v))
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fy (friction y)" callInDebugger
@@ -150,7 +150,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fy (friction y)"
     set fy(v: number) {
-        this._fy = Fx8(v)
+        this._fy = Fx8(Math.max(0, v))
     }
 
     private _data: any;
