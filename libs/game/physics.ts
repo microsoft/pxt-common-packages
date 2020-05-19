@@ -157,7 +157,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (s._vx == Fx.zeroFx8) {
                         ms.dx = Fx.zeroFx8;
                     } else if (s._vx < Fx.zeroFx8 && ms.cachedVx > Fx.zeroFx8
-                            || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
+                        || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
                         ms.dx = Fx.neg(ms.dx);
                         ms.xStep = Fx.neg(ms.xStep);
                     }
@@ -168,7 +168,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (s._vy == Fx.zeroFx8) {
                         ms.dy = Fx.zeroFx8;
                     } else if (s._vy < Fx.zeroFx8 && ms.cachedVy > Fx.zeroFx8
-                            || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
+                        || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
                         ms.dy = Fx.neg(ms.dy);
                         ms.yStep = Fx.neg(ms.yStep);
                     }
@@ -215,24 +215,42 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         sprite._lastX = sprite._x;
         sprite._lastY = sprite._y;
 
-        sprite._vx = this.constrain(
-            Fx.add(
-                sprite._vx,
-                Fx.mul(
-                    sprite._ax,
-                    dtSec
+        if (sprite._ax) {
+            sprite._vx = this.constrain(
+                Fx.add(
+                    sprite._vx,
+                    Fx.mul(
+                        sprite._ax,
+                        dtSec
+                    )
                 )
-            )
-        );
-        sprite._vy = this.constrain(
-            Fx.add(
-                sprite._vy,
-                Fx.mul(
-                    sprite._ay,
-                    dtSec
+            );
+        } else if (sprite._fx) {
+            const fx = Fx.mul(sprite._fx, dtSec);
+            const c = Fx.compare(sprite._vx, fx);
+            if (c < 0)
+                sprite._vx = Fx.sub(sprite._vx, fx);
+            else if (c > 0)
+                sprite._vx = Fx.add(sprite._vx, fx);
+        }
+
+        if (sprite._ay) {
+            sprite._vy = this.constrain(
+                Fx.add(
+                    sprite._vy,
+                    Fx.mul(
+                        sprite._ay,
+                        dtSec
+                    )
                 )
-            )
-        );
+            );
+        } else if( sprite._fy) {
+            const fy = Fx.mul(sprite._fy, dtSec);
+            if (Fx.compare(sprite._vy, fy) < 0) // v > f
+                sprite._vy = Fx.sub(sprite._vy, fy);
+            else if (Fx.compare(sprite._vy, Fx.neg(fy)) > 0) // v < -f
+                sprite._vy = Fx.add(sprite._vy, fy);
+        }
 
         const dx = Fx.idiv(
             Fx.mul(
@@ -307,7 +325,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     handlers
                         .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
-                                    || (h.kind === otherKind && h.otherKind === thisKind)
+                            || (h.kind === otherKind && h.otherKind === thisKind)
                         )
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
@@ -413,7 +431,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
                     s.destroy();
-                } else if (s._vx === movingSprite.cachedVx){
+                } else if (s._vx === movingSprite.cachedVx) {
                     // sprite collision event didn't change velocity in this direction;
                     // apply normal updates
                     if (s.flags & sprites.Flag.BounceOnWall) {
@@ -572,7 +590,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     dy
                 );
                 this.tilemapCollisions(ms, tm);
-            // otherwise, accept movement...
+                // otherwise, accept movement...
             } else if (tm.isOnWall(s) && !this.canResolveClipping(s, tm)) {
                 // if no luck, flag as clipping into a wall
                 s.flags |= sprites.Flag.IsClipping;
