@@ -160,6 +160,7 @@ namespace music {
     //% blockNamespace=music
     //% blockHidden = true
     //% weight=85 blockGap=8
+    //% help=music/melody-editor
     //% group="Melody" duplicateShadowOnDrag
     //% melody.fieldEditor="melody"
     //% melody.fieldOptions.decompileLiterals=true
