@@ -23,4 +23,13 @@ namespace pxsim {
             queue.push(msg);
         }
     }
+
+        
+    export interface I2CBoard extends CommonBoard {
+        i2cState: I2CState;
+    }
+
+    export function getI2cState() {
+        return (board() as I2CBoard).i2cState;
+    }
 }
