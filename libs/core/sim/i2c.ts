@@ -7,6 +7,7 @@ namespace pxsim {
         }
 
         write(address: number, data: RefBuffer, repeat?: boolean) {
+            address = address | 0;
             Runtime.postMessage(<SimulatorI2CMessage>{
                 type: "i2c",
                 broadcast: true,
@@ -21,6 +22,17 @@ namespace pxsim {
             if (!queue)
                 queue = this.received[msg.address] = []
             queue.push(msg);
+        }
+
+        read(address: number, size: number, repeat?: boolean): RefBuffer {
+            address = address | 0;
+            const queue = this.received[address];            
+            const msg = queue.unshift();
+            const r = pxsim.BufferMethods.createBuffer(size);
+            const n = Math.min(size, msg.packet.length);
+            for(let i = 0; i < n; ++i)
+                r.data[i] = msg.packet[i];
+            return r;
         }
     }
 
