@@ -53,7 +53,7 @@ namespace pxsim {
             Runtime.postMessage(<SimulatorRadioPacketMessage>{
                 type: "radiopacket",
                 broadcast: true,
-                rssi: this._rssi ?? -75,
+                rssi: this._rssi || -75,
                 serial: state.transmitSerialNumber ? pxsim.control.deviceSerialNumber() : 0,
                 time: new Date().getTime(),
                 payload
