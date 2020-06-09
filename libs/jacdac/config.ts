@@ -74,7 +74,8 @@ const enum JDLightReg {
 }
 
 const enum JDLightCommand {
-    StartAnimation = 0x80,
+    StartAnimation = 0x80, // deprecated
+    Run = 0x81,
 }
 
 enum JDLightAnimation {
