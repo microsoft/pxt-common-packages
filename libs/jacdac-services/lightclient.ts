@@ -46,7 +46,7 @@ namespace jacdac {
                 outarr.push(0xC0 | colors.length)
             else {
                 outarr.push(0xC0)
-                pushNumber(colors.length)
+                outarr.push(colors.length)
             }
             for (let c of colors) {
                 outarr.push((c >> 16) & 0xff)
@@ -147,7 +147,7 @@ namespace jacdac {
         //% weight=80 blockGap=8
         //% group="Light"
         setAll(rgb: number) {
-            this.runEncoded("set 0 10000 #", [rgb])
+            this.runEncoded("fade #", [rgb])
         }
 
         private currAnimation = 0
@@ -208,6 +208,7 @@ namespace jacdac {
     export class LightAnimation {
         length: number
         step: number
+        color = 0xffffff
         constructor() { }
         clear() {
             this.step = 0
@@ -239,13 +240,13 @@ namespace jacdac {
     }
 
     export class RunningLightsAnimation extends LightAnimation {
-        constructor(public color = 0xff0000) {
+        constructor() {
             super()
+            this.color = 0xff0000
         }
 
+        // you need lots of pixels to see this one
         nextFrame() {
-            crash()
-
             const stops = Math.clamp(2, 70, this.length >> 4)
             const stopVals: number[] = []
             for (let i = 0; i < stops; ++i)
@@ -259,26 +260,78 @@ namespace jacdac {
         }
     }
 
-    function crash() {
-        const outarr: number[] = []
-        let colors: number[] = []
+    export class CometAnimation extends LightAnimation {
+        constructor() {
+            super()
+            this.color = 0xff00ff
+        }
 
-        function pushNumber(n: number) {
-            if (n < 128)
-                outarr.push(n)
-            else {
-                outarr.push(0x80 | (n >> 8))
-                outarr.push(n & 0xff)
+        nextFrame() {
+            const off = (this.step * this.step) % this.length
+            if (this.step++ >= 20)
+                return null
+            return lightEncode("fade # # rotback %", [this.color, this.color & 0x00ffff, off])
+        }
+    }
+
+
+    export class SparkleAnimation extends LightAnimation {
+        constructor() {
+            super()
+            this.color = 0xffffff
+        }
+
+        private lastpix = -1
+
+        nextFrame() {
+            if (this.step++ == 0)
+                return lightEncode("fade #000000", [])
+
+            if (this.step >= 50)
+                return null
+            const p = this.lastpix
+            if (p < 0) {
+                this.lastpix = Math.randomRange(0, this.length - 1)
+                return lightEncode("set % #", [this.lastpix, this.color])
+            } else {
+                this.lastpix = -1
+                return lightEncode("set % #000000", [p])
             }
         }
+    }
 
-        function flush() {
-            outarr.push(0xC0)
-            pushNumber(colors.length)
-            colors = []
+    export class ColorWipeAnimation extends LightAnimation {
+        constructor() {
+            super()
+            this.color = 0x0000ff
         }
 
-        flush()
+        nextFrame() {
+            const col = this.step < this.length ? this.color : 0
+            let idx = this.step++
+            if (idx >= this.length) idx -= this.length
+            if (idx >= this.length)
+                return null
+            return lightEncode("set % #", [idx, col])
+        }
+    }
+
+    export class TheaterChaseAnimation extends LightAnimation {
+        constructor() {
+            super()
+            this.color = 0x0000ff
+        }
+
+        nextFrame() {
+            if (this.step++ >= this.length)
+                return null
+            let idx = this.step++ % 3
+            return lightEncode("set % 10000 # # #", [0,
+                idx == 0 ? this.color : 0,
+                idx == 1 ? this.color : 0,
+                idx == 2 ? this.color : 0
+            ])
+        }
     }
 
 
