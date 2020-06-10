@@ -1,11 +1,5 @@
 
-namespace pxsim.control.messages {
-    export interface SimulatorControlMessage extends SimulatorBroadcastMessage {
-        type: "messagepacket";
-        channel: string;
-        data: Uint8Array;
-    }
-
+namespace pxsim.pxtcore {
     // general purpose message sending mechanism
     export function send(channel: string, message: RefBuffer) {
         if (!channel) return;
@@ -29,7 +23,15 @@ namespace pxsim.control.messages {
         const msg = state && state.read();
         return msg && new RefBuffer(msg.data);
     }
+}
 
+namespace pxsim {
+    export interface SimulatorControlMessage extends SimulatorBroadcastMessage {
+        type: "messagepacket";
+        channel: string;
+        data: Uint8Array;
+    }
+    
     // keep in sync with ts
     export const CONTROL_MESSAGE_EVT_ID = 2999;
     export const CONTROL_MESSAGE_RECEIVED = 1;
