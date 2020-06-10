@@ -4,7 +4,6 @@
     "files": [
         "README.md",
         "lightsensor.cpp",
-        "jacdac.ts",
         "ns.ts",
         "shims.d.ts",
         "enums.d.ts"
@@ -14,7 +13,6 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     }
 }

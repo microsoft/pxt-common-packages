@@ -2,15 +2,13 @@
     "name": "pixel",
     "description": "A single on-board light pixel",
     "files": [
-        "pixel.ts",
-        "jacdac.ts"
+        "pixel.ts"
     ],
     "testFiles": [
     ],
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "light": "file:../light",
-        "jacdac": "file:../jacdac"
+        "light": "file:../light"
     }
 }
