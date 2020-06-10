@@ -22,8 +22,7 @@
         "jddisplay.cpp"
     ],
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     },
     "additionalFilePath": "../screen"
 }

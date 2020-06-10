@@ -5,7 +5,6 @@
         "README.md",
         "microphone.cpp",
         "microphonehw.cpp",
-        "jacdac.ts",
         "enums.d.ts",
         "shims.d.ts"
     ],
@@ -14,7 +13,6 @@
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     }
 }

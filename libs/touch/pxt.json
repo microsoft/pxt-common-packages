@@ -6,7 +6,6 @@
         "touch.h",
         "touch.cpp",
         "touch.ts",
-        "jacdac.ts",
         "shims.d.ts",
         "enums.d.ts"
     ],

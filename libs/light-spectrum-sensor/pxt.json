@@ -4,15 +4,13 @@
     "files": [
         "README.md",
         "sensor.ts",
-        "tsl2591.ts",
-        "jacdac.ts"
+        "tsl2591.ts"
     ],
     "testFiles": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     }
 }

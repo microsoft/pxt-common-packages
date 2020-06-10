@@ -8,15 +8,13 @@
         "characterlcdrbg.ts",
         "lcd.ts",
         "lcd.cpp",
-        "pxtparts.json",
-        "jacdac.ts"
+        "pxtparts.json"
     ],
     "testFiles": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     }
 }

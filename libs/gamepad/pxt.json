@@ -4,16 +4,14 @@
     "files": [
         "gamepad.cpp",
         "shims.d.ts",
-        "gamepad.ts",
-        "jacdac.ts"
+        "gamepad.ts"
     ],
     "tests": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     },
     "yotta": {
         "config": {

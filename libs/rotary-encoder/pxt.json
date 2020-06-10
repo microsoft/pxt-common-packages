@@ -7,12 +7,10 @@
         "shims.d.ts",
         "ns.ts",
         "targetoverrides.ts",
-        "jacdac.ts",
         "README.md"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     }
 }
