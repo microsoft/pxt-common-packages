@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-    declare const enum BaudRate {
+declare const enum BaudRate {
     //% block=115200
     BaudRate115200 = 115200,
     //% block=57600
@@ -26,19 +26,19 @@
     BaudRate1200 = 1200,
     //% block=300
     BaudRate300 = 300,
-    }
+}
 
 
-    declare const enum SerialEvent {
+declare const enum SerialEvent {
     //% block="data received"
     DataReceived = 4,  // CODAL_SERIAL_EVT_DATA_RECEIVED
     //% block="rx buffer full"
     RxBufferFull = 3,  // CODAL_SERIAL_EVT_RX_FULL
-    }
+}
 
 
-    declare const enum Delimiters {
-    //% block="new line"
+declare const enum Delimiters {
+    //% block="new line (\n)"
     NewLine = 10,
     //% block=","
     Comma = 44,
@@ -50,14 +50,16 @@
     Fullstop = 46,
     //% block="#"
     Hash = 35,
-    //% block=";"
-    SemiColumn = 59,
-    //% block="space",
+    //% block="carriage return (\r)"
+    CarriageReturn = 13,
+    //% block="space"
     Space = 32,
-    //% block="tab"
+    //% block="tab (\t)"
     Tab = 9,
-    //% block="pipe"
+    //% block="|"
     Pipe = 124,
-    }
+    //% block=";"
+    SemiColon = 59,
+}
 
 // Auto-generated. Do not edit. Really.

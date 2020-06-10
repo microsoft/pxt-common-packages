@@ -6,6 +6,7 @@
 //% groups='["Write", "Read", "Events", "Configuration"]'
 namespace serial {
     export let NEW_LINE = "\r\n"; // \r require or Putty really unhappy on windows
+    export let NEW_LINE_DELIMITER: Delimiters = Delimiters.NewLine;
 
     export class Serial {
         serialDevice: SerialDevice;
@@ -22,7 +23,7 @@ namespace serial {
         }
 
         readLine(timeOut?: number): string {
-            return this.readUntil(Delimiters.NewLine, timeOut);
+            return this.readUntil(NEW_LINE_DELIMITER, timeOut);
         }
 
         readUntil(delimiter: Delimiters, timeOut?: number): string {
@@ -208,7 +209,6 @@ namespace serial {
             ser.serialDevice.writeBuffer(buffer);
     }
 
-
     /**
     Set the baud rate of the serial port
     */
@@ -222,7 +222,6 @@ namespace serial {
         if (ser)
             ser.serialDevice.setBaudRate(rate);
     }
-
 
     /**
       Send console messages through the TX, RX pins
@@ -270,5 +269,14 @@ namespace serial {
         const ser = device();
         if (ser)
             ser.serialDevice.onDelimiterReceived(delimiter, handler);
+    }
+
+    /**
+     * Return the corresponding delimiter string
+     */
+    //% blockId="serial_delimiter_conv" block="%del"
+    //% weight=1 blockHidden=true hidden=true
+    export function delimiters(del: Delimiters): string {
+        return String.fromCharCode(del as number);
     }
 }

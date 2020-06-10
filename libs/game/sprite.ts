@@ -63,6 +63,8 @@ class Sprite extends sprites.BaseSprite {
     _vy: Fx8
     _ax: Fx8
     _ay: Fx8
+    _fx: Fx8 // friction
+    _fy: Fx8 // friction
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
@@ -130,6 +132,27 @@ class Sprite extends sprites.BaseSprite {
         this._ay = Fx8(v)
     }
 
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fx (friction x)" callInDebugger
+    get fx(): number {
+        return Fx.toFloat(this._fx)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fx (friction x)"
+    set fx(v: number) {
+        this._fx = Fx8(Math.max(0, v))
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fy (friction y)" callInDebugger
+    get fy(): number {
+        return Fx.toFloat(this._fy)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fy (friction y)"
+    set fy(v: number) {
+        this._fy = Fx8(Math.max(0, v))
+    }
+
     private _data: any;
     /**
      * Custom data
@@ -188,6 +211,8 @@ class Sprite extends sprites.BaseSprite {
         this.vy = 0
         this.ax = 0
         this.ay = 0
+        this.fx = 0
+        this.fy = 0
         this.flags = 0
         this.setImage(img);
         this.setKind(-1); // not a member of any type by default
