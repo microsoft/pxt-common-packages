@@ -3,17 +3,18 @@ namespace control.messages {
     export const CONTROL_MESSAGE_EVT_ID = 2999;
     export const CONTROL_MESSAGE_RECEIVED = 1;
 
-    //% shim=control::messages::send
+    //% shim=pxt::sendMessage
     export function send(channel: string, message: Buffer) {
         // leave empty: this function is implemented in the simulator
     }
 
+    //% shim=pxt::peekMessageChannel
     function peekChannel(): string {
         // leave empty: this function is implemented in the simulator
         return null;
     }
     
-    //% shim=control::messages::readMessage
+    //% shim=pxt::readMessageData
     function readMessage(): Buffer {
         // leave empty: this function is implemented in the simulator
         return null;
