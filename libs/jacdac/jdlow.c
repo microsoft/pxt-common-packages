@@ -7,7 +7,7 @@
 
 #define ERROR(msg, ...)                                                                            \
     do {                                                                                           \
-        signal_error();                                                                            \
+        jd_debug_signal_error();                                                                            \
         DMESG("JD-ERROR: " msg, ##__VA_ARGS__);                                                    \
     } while (0)
 
@@ -34,24 +34,19 @@ jd_diagnostics_t *jd_get_diagnostics(void) {
     return &jd_diagnostics;
 }
 
-static void pulse1(void) {
-    log_pin_set(1, 1);
-    log_pin_set(1, 0);
+#ifdef JD_DEBUG_MODE
+void jd_debug_signal_error(int v) {
+    log_pin_set(2, v);
 }
 
-static void signal_error(void) {
-    log_pin_set(2, 1);
-    log_pin_set(2, 0);
-}
-
-static void signal_write(int v) {
+void jd_debug_signal_write(int v) {
     log_pin_set(4, v);
 }
 
-static void signal_read(int v) {
-    // log_pin_set(0, v);
+void jd_debug_signal_read(int v) {
+    log_pin_set(0, v);
 }
-static void pulse_log_pin(void) {}
+#endif
 
 static void check_announce(void) {
     if (tim_get_micros() > nextAnnounce) {
@@ -79,7 +74,7 @@ int jd_is_busy(void) {
 }
 
 static void tx_done(void) {
-    signal_write(0);
+    jd_debug_signal_write(0);
     set_tick_timer(JD_STATUS_TX_ACTIVE);
 }
 
@@ -118,7 +113,7 @@ static void flush_tx_queue(void) {
         }
     }
 
-    signal_write(1);
+    jd_debug_signal_write(1);
     if (uart_start_tx(txFrame, JD_FRAME_SIZE(txFrame)) < 0) {
         // ERROR("race on TX");
         jd_diagnostics.bus_lo_error++;
@@ -158,10 +153,10 @@ static void rx_timeout(void) {
     jd_diagnostics.bus_timeout_error++;
     ERROR("RX timeout");
     uart_disable();
-    signal_read(0);
+    jd_debug_signal_read(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
     target_enable_irq();
-    signal_error();
+    jd_debug_signal_error();
 }
 
 static void setup_rx_timeout(void) {
@@ -176,7 +171,7 @@ void jd_line_falling() {
     LOG("line fall");
     //log_pin_set(1, 1);
     pulse_log_pin();
-    signal_read(1);
+    jd_debug_signal_read(1);
 
     // target_disable_irq();
     // no need to disable IRQ - we're at the highest IRQ level
@@ -220,7 +215,7 @@ void jd_rx_completed(int dataLeft) {
     else
         rxFrame = &_rxBuffer[0];
 
-    signal_read(0);
+    jd_debug_signal_read(0);
     set_tick_timer(JD_STATUS_RX_ACTIVE);
 
     if (dataLeft < 0) {
