@@ -32,7 +32,8 @@
         "pause.ts",
         "forever.ts",
         "utfdecoder.ts",
-        "scheduling.ts"
+        "scheduling.ts",
+        "controlmessage.ts"
     ],
     "testFiles": [
         "test.ts"
