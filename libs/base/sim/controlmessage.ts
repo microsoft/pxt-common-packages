@@ -12,13 +12,13 @@ namespace pxsim.pxtcore {
         } as SimulatorControlMessage)
     }
 
-    export function peekChannel(): string {
+    export function peekMessageChannel(): string {
         const state = getControlMessageState();
         const msg = state && state.peek();
         return msg && msg.channel;
     }
     
-    export function readMessage(): RefBuffer {
+    export function readMessageData(): RefBuffer {
         const state = getControlMessageState();
         const msg = state && state.read();
         return msg && new RefBuffer(msg.data);

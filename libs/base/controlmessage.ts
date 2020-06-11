@@ -7,19 +7,19 @@ namespace control.simmessages {
     export declare function send(channel: string, message: Buffer) : void;
 
     //% shim=pxt::peekMessageChannel
-    declare function peekChannel(): string;
+    declare function peekMessageChannel(): string;
     
     //% shim=pxt::readMessageData
-    declare function readMessage(): Buffer;
+    declare function readMessageData(): Buffer;
 
     let handlers: { [channel: string] : (msg: Buffer) => void}
     function consumeMessages() {
         while(true) {
             // peek channel of next message
-            const channel = peekChannel();
+            const channel = peekMessageChannel();
             if (!channel) break;
             // read next message
-            const msg = readMessage();
+            const msg = readMessageData();
             // send to handler
             const handler = handlers && handlers[channel];
             if (handler)
