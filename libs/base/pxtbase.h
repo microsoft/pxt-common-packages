@@ -141,10 +141,6 @@ void registerWithDal(int id, int event, Action a, int flags = 16); // EVENT_LIST
 void runInParallel(Action a);
 void runForever(Action a);
 void waitForEvent(int id, int event);
-
-void registerMessageHandler(const char* channel, void (*handler)(const void *data, unsigned len));
-void sendMessage(const char* channel, const void *data, unsigned len);
-
 //%
 unsigned afterProgramPage();
 //%

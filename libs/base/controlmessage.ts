@@ -1,24 +1,16 @@
-namespace control.messages {
+namespace control.simmessages {
     // these events are raised by C++/JS when messages come in
     export const CONTROL_MESSAGE_EVT_ID = 2999;
     export const CONTROL_MESSAGE_RECEIVED = 1;
 
     //% shim=pxt::sendMessage
-    export function send(channel: string, message: Buffer) {
-        // leave empty: this function is implemented in the simulator
-    }
+    export declare function send(channel: string, message: Buffer) : void;
 
     //% shim=pxt::peekMessageChannel
-    function peekChannel(): string {
-        // leave empty: this function is implemented in the simulator
-        return null;
-    }
+    declare function peekChannel(): string;
     
     //% shim=pxt::readMessageData
-    function readMessage(): Buffer {
-        // leave empty: this function is implemented in the simulator
-        return null;
-    }
+    declare function readMessage(): Buffer;
 
     let handlers: { [channel: string] : (msg: Buffer) => void}
     function consumeMessages() {
