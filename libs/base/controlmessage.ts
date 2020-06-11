@@ -1,5 +1,5 @@
 namespace control.simmessages {
-    // these events are raised by C++/JS when messages come in
+    // these events are raised by JS simulator when messages come in
     export const CONTROL_MESSAGE_EVT_ID = 2999;
     export const CONTROL_MESSAGE_RECEIVED = 1;
 
