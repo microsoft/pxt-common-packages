@@ -10,4 +10,4 @@ scene.cameraTop()
 
 [camera follow sprite](/reference/scene/camera-follow-sprite)
 [center camera at](/reference/scene/center-camera-at)
-[get camera property](/reference/scene/get-camera-property)
+[camera property](/reference/scene/camera-property)

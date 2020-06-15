@@ -44,6 +44,12 @@ namespace scene {
             }
         }
 
+        get x() {
+            return this.drawOffsetX + (screen.width >> 1);
+        }
+        get y() {
+            return this.drawOffsetY + (screen.height >> 1);
+        }
         get left() {
             return this.drawOffsetX;
         }

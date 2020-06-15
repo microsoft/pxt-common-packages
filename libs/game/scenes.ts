@@ -3,10 +3,18 @@
  */
 
 enum CameraProperty {
-    left,
-    right,
-    top,
-    bottom
+    //% block="x"
+    X,
+    //% block="y"
+    Y,
+    //% block="left"
+    Left,
+    //% block="right"
+    Right,
+    //% block="top"
+    Top,
+    //% block="bottom"
+    Bottom
 }
 
 //% weight=88 color="#4b6584" icon="\uf1bb"
@@ -179,17 +187,18 @@ namespace scene {
      * Returns the specified camera property
      * @param property The property to get
      */
-    //% blockId=getcameraproperty block="camera %property"
+    //% blockId=cameraproperty block="camera $property"
     //% group="Camera"
-    //% field.defl=0
-    //% help=scene/get-camera-property
-    export function getCameraProperty(property: CameraProperty) {
+    //% help=scene/camera-property
+    export function cameraProperty(property: CameraProperty): number {
         const scene = game.currentScene();
         switch (property) {
-            case CameraProperty.left: return scene.camera.left
-            case CameraProperty.right: return scene.camera.right;
-            case CameraProperty.top: return scene.camera.top;
-            case CameraProperty.bottom: return scene.camera.bottom;
+            case CameraProperty.X: return scene.camera.x;
+            case CameraProperty.Y: return scene.camera.y;
+            case CameraProperty.Left: return scene.camera.left;
+            case CameraProperty.Right: return scene.camera.right;
+            case CameraProperty.Top: return scene.camera.top;
+            case CameraProperty.Bottom: return scene.camera.bottom;
         }
     }
 }

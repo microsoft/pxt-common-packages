@@ -1,18 +1,26 @@
-# Get Camera Property
+# Camera Property
 
-Returns a property of the camera: `left`, `right`, `top` or `bottom`.
+Returns a property of the camera.
 
 ```sig
-scene.getCameraProperty(CameraProperty.left)
+scene.cameraProperty(CameraProperty.Left)
 ```
 
 ## Example
 
 ```blocks
-let top = scene.getCameraProperty(CameraProperty.top)
+let top = scene.cameraProperty(CameraProperty.Top)
 ```
 
 ## Properties
+
+### x
+
+Returns the x-axis screen coordinate of the camera's center.
+
+### y
+
+Returns the y-axis screen coordinate of the camera's center.
 
 ### left
 
