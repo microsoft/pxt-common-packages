@@ -1,6 +1,14 @@
 /**
  * Control the background, tiles and camera
  */
+
+enum CameraProperty {
+    left,
+    right,
+    top,
+    bottom
+}
+
 //% weight=88 color="#4b6584" icon="\uf1bb"
 //% groups='["Screen", "Effects", "Tiles", "Collisions", "Camera"]'
 //% blockGap=8
@@ -149,6 +157,7 @@ namespace scene {
     //% blockId=cameraleft block="camera left"
     //% group="Camera"
     //% help=scene/camera-left
+    //% deprecated=true
     export function cameraLeft() {
         const scene = game.currentScene();
         return scene.camera.drawOffsetX;
@@ -160,8 +169,27 @@ namespace scene {
     //% blockId=cameratop block="camera top"
     //% group="Camera"
     //% help=scene/camera-top
+    //% deprecated=true
     export function cameraTop() {
         const scene = game.currentScene();
         return scene.camera.drawOffsetY;
+    }
+
+    /**
+     * Returns the specified camera property
+     * @param property The property to get
+     */
+    //% blockId=getcameraproperty block="camera %property"
+    //% group="Camera"
+    //% field.defl=0
+    //% help=scene/get-camera-property
+    export function getCameraProperty(property: CameraProperty) {
+        const scene = game.currentScene();
+        switch (property) {
+            case CameraProperty.left: return scene.camera.left
+            case CameraProperty.right: return scene.camera.right;
+            case CameraProperty.top: return scene.camera.top;
+            case CameraProperty.bottom: return scene.camera.bottom;
+        }
     }
 }

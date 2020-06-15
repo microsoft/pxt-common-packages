@@ -44,6 +44,19 @@ namespace scene {
             }
         }
 
+        get left() {
+            return this.drawOffsetX;
+        }
+        get right() {
+            return this.drawOffsetX + screen.width;
+        }
+        get top() {
+            return this.drawOffsetY;
+        }
+        get bottom() {
+            return this.drawOffsetY + screen.height;
+        }
+
         shake(amplitude: number = 4, duration: number = 1000) {
             if (amplitude <= 0 || duration <= 0) {
                 this.shakeStartTime = undefined;

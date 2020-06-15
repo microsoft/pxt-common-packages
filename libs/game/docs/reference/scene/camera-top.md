@@ -1,4 +1,4 @@
-# camera top
+# camera top **deprecated**
 
 Returns the y coordinate of the camera (the top of the screen).
 
@@ -10,4 +10,4 @@ scene.cameraTop()
 
 [camera follow sprite](/reference/scene/camera-follow-sprite)
 [center camera at](/reference/scene/center-camera-at)
-[camera top](/reference/scene/camera-top)
+[get camera property](/reference/scene/get-camera-property)
