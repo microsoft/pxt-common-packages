@@ -1,7 +1,7 @@
 // Auto-generated. Do not edit.
 
 
-declare const enum BaudRate {
+    declare const enum BaudRate {
     //% block=115200
     BaudRate115200 = 115200,
     //% block=57600
@@ -26,18 +26,18 @@ declare const enum BaudRate {
     BaudRate1200 = 1200,
     //% block=300
     BaudRate300 = 300,
-}
+    }
 
 
-declare const enum SerialEvent {
+    declare const enum SerialEvent {
     //% block="data received"
     DataReceived = 4,  // CODAL_SERIAL_EVT_DATA_RECEIVED
     //% block="rx buffer full"
     RxBufferFull = 3,  // CODAL_SERIAL_EVT_RX_FULL
-}
+    }
 
 
-declare const enum Delimiters {
+    declare const enum Delimiters {
     //% block="new line (\n)"
     NewLine = 10,
     //% block=","
@@ -60,6 +60,6 @@ declare const enum Delimiters {
     Pipe = 124,
     //% block=";"
     SemiColon = 59,
-}
+    }
 
 // Auto-generated. Do not edit. Really.
