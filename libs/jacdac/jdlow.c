@@ -241,7 +241,7 @@ void jd_rx_completed(int dataLeft) {
     jd_diagnostics.packets_received++;
 
     // pulse1();
-    int err = app_handle_frame(frame);
+    int err = jd_rx_frame_received(frame);
 
     if (err)
         jd_diagnostics.packets_dropped++;

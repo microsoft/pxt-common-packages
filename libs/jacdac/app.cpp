@@ -123,7 +123,7 @@ static inline int copyAndAppend(LinkedFrame *volatile *q, jd_frame_t *frame, int
     }
 }
 
-extern "C" int app_handle_frame(jd_frame_t *frame) {
+extern "C" int jd_rx_frame_received(jd_frame_t *frame) {
     // DMESG("PKT from %x/%d sz=%d cmd %x", (int)frame->device_identifier,
     // frame->service_number,
     //      frame->size, frame->service_command);
