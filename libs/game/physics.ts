@@ -335,10 +335,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
-                                h.handler(
-                                    thisKind === h.kind ? sprite : overlapper,
-                                    thisKind === h.kind ? overlapper : sprite
-                                );
+                                if (!((sprite.flags | overlapper.flags) & SPRITE_CANNOT_COLLIDE)) {
+                                    h.handler(
+                                        thisKind === h.kind ? sprite : overlapper,
+                                        thisKind === h.kind ? overlapper : sprite
+                                    );
+                                }
                                 higher._overlappers.removeElement(lower.id);
                             });
                         });
