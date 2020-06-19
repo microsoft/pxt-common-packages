@@ -48,4 +48,5 @@ tiles.setTileAt(tiles.getTileLocation(5, 3), image)
 ## See also #seealso
 
 [get tiles by type](/reference/tiles/get-tiles-by-type),
-[set tile at](/reference/tiles/set-tile-at)
+[set tile at](/reference/tiles/set-tile-at),
+[get tile location from screen](/reference/get-tile-location-from-screen)

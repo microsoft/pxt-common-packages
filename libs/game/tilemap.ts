@@ -482,6 +482,23 @@ namespace tiles {
     }
 
     /**
+     * Get the tile position given a pair of screen coordinates
+     * @param x
+     * @param y
+     */
+    //% blockId=mapgettilefromscreen block="tilemap x $x y $y"
+    //% blockNamespace="scene" group="Tiles"
+    //% weight=25 blockGap=8
+    //% help=tiles/get-tile-location-from-screen
+    export function getTileLocationFromScreen(x: number, y: number): Location {
+        const scene = game.currentScene();
+        if (!scene.tileMap) return null;
+        const col = x >> scene.tileMap.scale;
+        const row = y >> scene.tileMap.scale;
+        return scene.tileMap.getTile(col, row);
+    }
+
+    /**
      * Get the image of a tile, given a location in the tilemap
      * @param loc
      */
