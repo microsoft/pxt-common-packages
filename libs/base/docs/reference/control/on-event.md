@@ -66,26 +66,25 @@ to your board. You could make it known to your program that any event that comes
 
 ## Example #example
 
-Register two events coming from source `22`. Make pixels light up on the pixel strip when
+Register two events coming from source `22`. Write to the console when
 the events of `0` and `1` are _raised_.
 
 ```blocks
-const pixelLighter = 22
-let pixels = light.createStrip()
+const myNotify = 22
 
-control.runInParallel(() => {
+control.runInParallel(function() {
     for (let i = 0; i < 2; i++) {
         pause(1000)
-    control.raiseEvent(pixelLighter, i)
+    control.raiseEvent(myNotify, i)
     }
 })
 
-control.onEvent(pixelLighter, 0, () => {
-    pixels.setPixelColor(0, 0xff0000)
+control.onEvent(myNotify, 0, () => {
+    console.logValue("myNotify", 0)
 })
 
-control.onEvent(pixelLighter, 1, () => {
-    pixels.setPixelColor(1, 0x0000ff)
+control.onEvent(myNotify, 1, () => {
+    console.logValue("myNotify", 1)
 })
 ```
 

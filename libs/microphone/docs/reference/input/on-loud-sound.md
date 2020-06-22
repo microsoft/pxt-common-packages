@@ -3,7 +3,7 @@
 Run some code when the microphone hears a loud sound.
 
 ```sig
-input.onLoudSound(() => {});
+input.onLoudSound(function(){});
 ```
 
 ## Parameters
@@ -17,11 +17,11 @@ Flash the pixels when a loud sound is detected.
 ```blocks
 let pixels = light.createStrip()
 
-input.onLoudSound(() => {
-	pixels.setAll(0xff0000);
-	pause(100);
-	pixels.setAll(0x000000);
-});
+input.onLoudSound(function() {
+	pixels.setAll(0xff0000)
+	pause(100)
+	pixels.setAll(0x000000)
+})
 ```
 
 # See also #seealso

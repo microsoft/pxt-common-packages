@@ -71,7 +71,6 @@ namespace sprites {
     //% weight=99 help=sprites/create-projectile-from-side
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
-    //% vy.defl=100
     export function createProjectileFromSide(img: Image, vx: number, vy: number) {
         return createProjectile(img, vx, vy, SpriteKind.Projectile);
     }
@@ -87,7 +86,6 @@ namespace sprites {
     //% weight=99 help=sprites/create-projectile-from-sprite
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
-    //% vy.defl=100
     export function createProjectileFromSprite(img: Image, sprite: Sprite, vx: number, vy: number): Sprite {
         return createProjectile(img, vx, vy, SpriteKind.Projectile, sprite);
     }
@@ -102,16 +100,10 @@ namespace sprites {
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
     //% expandableArgumentMode=toggle
-    //% vy.defl=100
     //% deprecated=true blockHidden=true
     export function createProjectile(img: Image, vx: number, vy: number, kind?: number, sprite?: Sprite) {
         const s = sprites.create(img, kind || SpriteKind.Projectile);
         const sc = game.currentScene();
-
-        while (vx == 0 && vy == 0) {
-            vx = Math.randomRange(-100, 100);
-            vy = Math.randomRange(-100, 100);
-        }
 
         s.vx = vx;
         s.vy = vy;

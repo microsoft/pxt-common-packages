@@ -88,6 +88,22 @@ namespace game {
         }
 
         protected drawBorder() {
+            if (this.unit == 1) {
+                this.fastFill(0, 0, 0, 1, 1)
+                this.fastFill(1, 1, 0, this.columns - 2, 1)
+                this.fastFill(2, this.columns - 1, 0, 1, 1)
+
+                this.fastFill(3, 0, 1, 1, this.rows - 2)
+                this.fastFill(5, this.columns - 1, 1, 1, this.rows - 2)
+
+                const y = this.rows - 1
+                this.fastFill(6, 0, y, 1, 1)
+                this.fastFill(7, 1, y, this.columns - 2, 1)
+                this.fastFill(8, this.columns - 1, y, 1, 1)
+
+                return
+            }
+
             for (let c = 0; c < this.columns; c++) {
                 if (c == 0) {
                     this.drawPartial(0, 0, 0);
@@ -109,7 +125,15 @@ namespace game {
             }
         }
 
+        private fastFill(index: number, x: number, y: number, w: number, h: number) {
+            const color = this.frame.getPixel(index % 3, Math.idiv(index, 3))
+            this.image.fillRect(this.innerLeft + x, this.innerTop + y, w, h, color)
+        }
+
         protected clearInterior() {
+            if (this.unit == 1)
+                return this.fastFill(4, 1, 1, this.columns - 2, this.rows - 2)
+
             for (let d = 1; d < this.columns - 1; d++) {
                 for (let s = 1; s < this.rows - 1; s++) {
                     this.drawPartial(4, d, s)
@@ -122,7 +146,7 @@ namespace game {
             const y0 = this.innerTop + rowTo * this.unit;
 
             const xf = (index % 3) * this.unit;
-            const yf = Math.floor(index / 3) * this.unit;
+            const yf = Math.idiv(index, 3) * this.unit;
 
             for (let e = 0; e < this.unit; e++) {
                 for (let t = 0; t < this.unit; t++) {

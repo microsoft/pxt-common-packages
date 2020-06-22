@@ -1,0 +1,16 @@
+{
+    "name": "radio",
+    "description": "The radio services",
+    "files": [
+        "README.md",
+        "shims.d.ts",
+        "enums.d.ts",
+        "radio.cpp",
+        "radio.ts",
+        "targetoverrides.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

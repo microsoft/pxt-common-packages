@@ -266,11 +266,12 @@ static void drawPanic(int code) {
 }
 
 extern "C" void target_panic(int statusCode) {
+    __disable_irq();
+
     DMESG("*** CODAL PANIC : [%d]", statusCode);
 
     if (panicMode) {
         // avoid recursive panic invocation
-        target_disable_irq();
         while (1) {
         }
     }
@@ -280,7 +281,6 @@ extern "C" void target_panic(int statusCode) {
     // remember first panic code
     panicMode = true;
 
-    target_disable_irq();
     drawPanic(statusCode);
 
     auto led = LOOKUP_PIN(LED);

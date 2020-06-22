@@ -1,7 +1,7 @@
 # Settings store in internal MCU flash
 
 This packages implements a simple key-value storage, in vein of browser's `localStorage`.
-Keys are strings and values are buffers, but APIs are provided to also use strings,
+Keys are strings and values are buffers, but APIs are provided for using strings,
 numbers and number arrays as values.
 
 Keys with names starting with `#` are _system keys_.
@@ -22,7 +22,7 @@ Smaller MCUs may limit it further (eg., it's 1k on SAMD21 devices).
 
 ## Panics 920, 921 and 922
 
-When the there is no more space to write a key to storage, all non-system keys
+When there is no more space to write a key to storage, all non-system keys
 are deleted.
 Then, if more than 25% of space is still occupied (by system keys),
 all keys are deleted.
@@ -32,8 +32,8 @@ The user has to reset the device, and hopefully next run will fix things.
 All flash devices have a limited number of erases (at least 10,000),
 before they start failing.
 The settings storage implemented here doesn't erase on every write (typically
-it will erase every hundred writes or so),
-but still if your program would keep writing in a loop, you would likely
+it will erase every hundred writes or so);
+if your program keeps writing in a loop, you will likely
 hit 10,000 erases in about half hour.
 
 For this reason, if erases happen too often (i.e., you're writing too much),
@@ -46,7 +46,7 @@ a device reset will hopefully fix things.
 ## Storage structure
 
 Settings are written using a very simple log file system.
-The flash to be used is divided in two equal regions.
+The flash is divided in two equal regions.
 One region is used for writing, and when it fills up, data is compressed
 (garbage collected) into the other region, which is to be used from now
 on until next compression
@@ -58,7 +58,6 @@ From the end of the region, the meta-data section grows in the negative
 direction.
 Meta-data entries are 8 bytes each and contain hash of key name,
 value size, and points to key name and value in the data sections.
-When a file is overwritten, simply a new meta-data section for it
-is written.
-When a file is to be found, it is searched from the most recent meta-data
-entry.
+When a key value is overwritten, a new meta-data section for it
+is created. When a key is to be found, it is searched for from the most 
+recent meta-data entry.

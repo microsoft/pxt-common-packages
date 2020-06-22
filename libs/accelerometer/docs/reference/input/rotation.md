@@ -26,22 +26,20 @@ check the ways that the @boardname@ is moving.
 ## Example: @boardname@ leveler #example
 
 This program helps you move the @boardname@ until it is level. When
-it is levelled, the @boardname@ shows turns blue.
+it is leveled, the message "LEVELED" appears at the console.
 
 ```blocks
 let roll = 0
 let pitch = 0
-let pixels = light.createStrip();
 forever(() => {
     pitch = input.rotation(Rotation.Pitch)
     roll = input.rotation(Rotation.Roll)
     if (Math.abs(pitch) < 10 && Math.abs(roll) < 10) {
-        pixels.setAll(0x0000ff)
-    } else {
-        pixels.setAll(0xff0000)
+        console.log("LEVELED")
     }
-});
+})
 ```
+
 ### ~hint
 **Simulator**
 

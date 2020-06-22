@@ -1,9 +1,9 @@
 namespace pxsim {
-    export interface MicrophoneBoard extends CommonBoard {
+    export interface MicrophoneBoard {
         microphoneState: AnalogSensorState;
     }
 
     export function microphoneState() {
-        return (board() as MicrophoneBoard).microphoneState;
+        return (board() as any as MicrophoneBoard).microphoneState;
     }
 }

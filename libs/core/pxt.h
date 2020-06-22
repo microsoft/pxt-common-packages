@@ -39,9 +39,6 @@ using namespace codal;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 #include "HIDJoystick.h"
 #endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-#include "USBJACDAC.h"
-#endif
 #endif
 
 namespace pxt {
@@ -58,9 +55,6 @@ extern USBHIDKeyboard keyboard;
 #if CONFIG_ENABLED(DEVICE_JOYSTICK)
 extern USBHIDJoystick joystick;
 #endif
-#if CONFIG_ENABLED(DEVICE_JACDAC_DEBUG)
-extern USBJACDAC *jacdacDebug;
-#endif
 #endif
 
 // Utility functions
@@ -70,6 +64,9 @@ extern MessageBus devMessageBus;
 extern codal::CodalDevice device;
 
 void set_usb_strings(const char *uf2_info);
+extern void (*logJDFrame)(const uint8_t *data);
+extern void (*sendJDFrame)(const uint8_t *data);
+
 
 } // namespace pxt
 
@@ -82,6 +79,8 @@ typedef pins::CodalI2CProxy* I2C_;
 typedef pins::CodalSPIProxy* SPI_;
 
 namespace pxt {
+codal::LowLevelTimer *allocateTimer();
+
 #ifdef CODAL_I2C
 CODAL_I2C* getI2C(DigitalInOutPin sda, DigitalInOutPin scl);
 #endif
@@ -90,6 +89,8 @@ CODAL_SPI* getSPI(DigitalInOutPin mosi, DigitalInOutPin miso, DigitalInOutPin sc
 LowLevelTimer* getJACDACTimer();
 #endif
 class PressureButton;
+uint32_t readButtonMultiplexer(int bits);
+void disableButtonMultiplexer();
 }
 
 namespace serial {
@@ -108,5 +109,8 @@ typedef jacdac::JDProxyDriver* JacDacDriverStatus;
 #define DEVICE_ID_MICROPHONE 3001
 #define DEVICE_ID_FIRST_BUTTON 4000
 #define DEVICE_ID_FIRST_TOUCHBUTTON 4100
+
+#define PXT_INTERNAL_KEY_UP 2050
+#define PXT_INTERNAL_KEY_DOWN 2051
 
 #endif

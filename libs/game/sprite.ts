@@ -63,6 +63,8 @@ class Sprite extends sprites.BaseSprite {
     _vy: Fx8
     _ax: Fx8
     _ay: Fx8
+    _fx: Fx8 // friction
+    _fy: Fx8 // friction
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
@@ -130,6 +132,27 @@ class Sprite extends sprites.BaseSprite {
         this._ay = Fx8(v)
     }
 
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fx (friction x)" callInDebugger
+    get fx(): number {
+        return Fx.toFloat(this._fx)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fx (friction x)"
+    set fx(v: number) {
+        this._fx = Fx8(Math.max(0, v))
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fy (friction y)" callInDebugger
+    get fy(): number {
+        return Fx.toFloat(this._fy)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fy (friction y)"
+    set fy(v: number) {
+        this._fy = Fx8(Math.max(0, v))
+    }
+
     private _data: any;
     /**
      * Custom data
@@ -188,6 +211,8 @@ class Sprite extends sprites.BaseSprite {
         this.vy = 0
         this.ax = 0
         this.ay = 0
+        this.fx = 0
+        this.fy = 0
         this.flags = 0
         this.setImage(img);
         this.setKind(-1); // not a member of any type by default
@@ -314,12 +339,12 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine
+    //% blockCombine block="top"
     get top() {
         return Fx.toInt(this._y);
     }
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine
+    //% blockCombine block="top"
     set top(value: number) {
         const physics = game.currentScene().physicsEngine;
         physics.moveSprite(
@@ -429,9 +454,10 @@ class Sprite extends sprites.BaseSprite {
     //% weight=60
     //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
     //% millis.shadow=timePicker
+    //% text.shadow=text
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
-    say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+    say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         // clear say
         if (!text) {
             this.updateSay = undefined;
@@ -441,11 +467,12 @@ class Sprite extends sprites.BaseSprite {
             }
             return;
         }
+        const textToDisplay = console.inspect(text).split("\n").join(" ");
 
         // same text, color, time, etc...
         const SAYKEY = "__saykey";
         const key = JSON.stringify({
-            text: text,
+            text: textToDisplay,
             textColor: textColor,
             textBoxColor: textBoxColor
         })
@@ -460,11 +487,11 @@ class Sprite extends sprites.BaseSprite {
         let holdTextSeconds = 1.5;
         let bubblePadding = 4;
         let maxTextWidth = 100;
-        let font = image.getFontForText(text);
+        let font = image.getFontForText(textToDisplay);
         let startX = 2;
         let startY = 2;
-        let bubbleWidth = text.length * font.charWidth + bubblePadding;
-        let maxOffset = text.length * font.charWidth - maxTextWidth;
+        let bubbleWidth = textToDisplay.length * font.charWidth + bubblePadding;
+        let maxOffset = textToDisplay.length * font.charWidth - maxTextWidth;
         let bubbleOffset: number = Fx.toInt(this._hitbox.oy);
         let needsRedraw = true;
 
@@ -501,6 +528,7 @@ class Sprite extends sprites.BaseSprite {
             else { // needs a new sprite
                 this.sayBubbleSprite = sprites.create(sayImg, -1);
                 this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
+                this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, !!(this.flags & sprites.Flag.RelativeToCamera))
             }
         }
         this.sayBubbleSprite.data[SAYKEY] = key;
@@ -555,10 +583,10 @@ class Sprite extends sprites.BaseSprite {
                     this.sayBubbleSprite.image.fill(textBoxColor);
                     // If maxOffset is negative it won't scroll
                     if (maxOffset < 0) {
-                        this.sayBubbleSprite.image.print(text, startX, startY, textColor, font);
+                        this.sayBubbleSprite.image.print(textToDisplay, startX, startY, textColor, font);
 
                     } else {
-                        this.sayBubbleSprite.image.print(text, startX - pixelsOffset, startY, textColor, font);
+                        this.sayBubbleSprite.image.print(textToDisplay, startX - pixelsOffset, startY, textColor, font);
                     }
 
                     // Left side padding
@@ -590,7 +618,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=startEffectOnSprite block="%sprite(mySprite) start %effect effect || for %duration=timePicker|ms"
     //% help=sprites/sprite/start-effect
     startEffect(effect: effects.ParticleEffect, duration?: number) {
-        effect.start(this, duration);
+        effect.start(this, duration, null, !!(this.flags & sprites.Flag.RelativeToCamera));
     }
 
     /**
@@ -695,6 +723,10 @@ class Sprite extends sprites.BaseSprite {
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
+
+        if (flag === SpriteFlag.RelativeToCamera && this.sayBubbleSprite) {
+            this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, on);
+        }
     }
 
     /**

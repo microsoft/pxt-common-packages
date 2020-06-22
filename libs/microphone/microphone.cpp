@@ -1,6 +1,4 @@
 #include "pxt.h"
-#include "dmac.h"
-#include "SAMDPDM.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
 
@@ -8,20 +6,7 @@
 #define MICROPHONE_MAX 120.0f
 
 namespace pxt {
-
-class WMicrophone {
-  public:
-    SAMD21PDM microphone;
-    LevelDetectorSPL level;
-    WMicrophone()
-        : microphone(*LOOKUP_PIN(MIC_DATA), *LOOKUP_PIN(MIC_CLOCK))
-        , level(microphone.output, 95.0, 75.0, 9, 52, DEVICE_ID_MICROPHONE)
-    {
-        microphone.enable();
-    }
-};
-SINGLETON(WMicrophone);
-
+    codal::LevelDetectorSPL* getMicrophoneLevel();
 }
 
 namespace input {
@@ -33,7 +18,7 @@ namespace input {
 //% parts="microphone"
 //% weight=88 blockGap=12
 void onLoudSound(Action handler) {
-    getWMicrophone(); // wake up service
+    pxt::getMicrophoneLevel(); // wake up service
     registerWithDal(DEVICE_ID_MICROPHONE, LEVEL_THRESHOLD_HIGH, handler);
 }
 
@@ -45,7 +30,10 @@ void onLoudSound(Action handler) {
 //% parts="microphone"
 //% weight=34 blockGap=8
 int soundLevel() {
-    const int micValue = getWMicrophone()->level.getValue();
+    auto level = pxt::getMicrophoneLevel();
+    if (NULL == level)
+        return MICROPHONE_MIN;        
+    const int micValue = level->getValue();
     const int scaled = max(MICROPHONE_MIN, min(micValue, MICROPHONE_MAX)) - MICROPHONE_MIN;
     return min(0xff, scaled * 0xff / (MICROPHONE_MAX - MICROPHONE_MIN));
 }
@@ -56,11 +44,15 @@ int soundLevel() {
 //% help=input/set-loud-sound-threshold
 //% blockId=input_set_loud_sound_threshold block="set loud sound threshold %value"
 //% parts="microphone"
-//% value.min=1 value.max=100
+//% value.min=1 value.max=255
 //% group="More" weight=14 blockGap=8
 void setLoudSoundThreshold(int value) {
+    auto level = pxt::getMicrophoneLevel();
+    if (NULL == level)
+        return;
+
     value = max(0, min(0xff, value));
     const int scaled = MICROPHONE_MIN + value * (MICROPHONE_MAX - MICROPHONE_MIN) / 0xff;
-    getWMicrophone()->level.setHighThreshold(scaled);
+    level->setHighThreshold(scaled);
 }
 }

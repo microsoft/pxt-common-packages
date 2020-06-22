@@ -16,12 +16,11 @@ block is waiting at a ``||control:pause||``.
 
 ## Example #example
 
-Light up to `5` pixels but wait one-half second before lighting each pixel.
+Write the first five natural numbers to the console but wait one-half second between each write.
 
 ```blocks
-let pixels = light.createStrip();
 for (let i = 0; i < 5; i++) {
-    pixels.setPixelColor(i, 0x00ff00)
+    console.logValue("naturals", i + 1)
     pause(500)
 }
 ```
