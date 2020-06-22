@@ -53,7 +53,6 @@ namespace scene {
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
     export const PRE_RENDER_UPDATE_PRIORITY = 55;
-    export const RENDER_BACKGROUND_PRIORITY = 85;
     export const RENDER_SPRITES_PRIORITY = 90;
     export const RENDER_DIAGNOSTICS_PRIORITY = 150;
     export const UPDATE_SCREEN_PRIORITY = 200;
@@ -137,7 +136,7 @@ namespace scene {
 
             // user update 20
 
-            // prerender update 85
+            // prerender update 55
             this.eventContext.registerFrameHandler(PRE_RENDER_UPDATE_PRIORITY, () => {
                 const dt = this.eventContext.deltaTime;
                 this.camera.update();
