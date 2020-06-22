@@ -53,6 +53,7 @@ namespace scene {
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
     export const PRE_RENDER_UPDATE_PRIORITY = 55;
+    export const RENDER_BACKGROUND_PRIORITY = 60;
     export const RENDER_SPRITES_PRIORITY = 90;
     export const RENDER_DIAGNOSTICS_PRIORITY = 150;
     export const UPDATE_SCREEN_PRIORITY = 200;
@@ -144,6 +145,9 @@ namespace scene {
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
             })
+
+            // render background 60
+
             // render 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {
                 control.enablePerfCounter("scene_draw");
