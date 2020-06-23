@@ -901,6 +901,8 @@ class Sprite extends sprites.BaseSprite {
                     // one of the involved sprites has been destroyed,
                     // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {
+                        self.vx = 0;
+                        self.vy = 0;
                         destroyedSprites = true;
                         return;
                     }
@@ -945,6 +947,8 @@ class Sprite extends sprites.BaseSprite {
         if (!target || !speed) {
             if (fs) {
                 sc.followingSprites.removeElement(fs);
+                this.vx = 0;
+                this.vy = 0;
             }
         } else if (!fs) {
             sc.followingSprites.push(new sprites.FollowingSprite(
