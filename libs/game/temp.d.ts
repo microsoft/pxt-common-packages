@@ -14,6 +14,7 @@ declare interface Array<T> {
     sort(cb: (a: T, b: T) => number): Array<T>;
     shift(): T;
     some(cb: (a: T) => boolean): boolean;
+    slice(start?: number, end?: number): T[];
 }
 
 declare interface String {

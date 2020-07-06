@@ -27,20 +27,20 @@ const MAX_TIME_STEP = Fx8(100); // milliseconds
 const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed | sprites.Flag.RelativeToCamera;
 const MIN_MOVE_GAP = Fx8(0.1);
 
-class MovingSprite {
-    constructor(
-        public sprite: Sprite,
-        // vx and vy when last updated
-        public cachedVx: Fx8,
-        public cachedVy: Fx8,
-        // remaining x
-        public dx: Fx8,
-        public dy: Fx8,
-        // how much to move per step
-        public xStep: Fx8,
-        public yStep: Fx8
-    ) { }
-}
+// class MovingSprite {
+//     constructor(
+//         public sprite: Sprite,
+//         // vx and vy when last updated
+//         public cachedVx: Fx8,
+//         public cachedVy: Fx8,
+//         // remaining x
+//         public dx: Fx8,
+//         public dy: Fx8,
+//         // how much to move per step
+//         public xStep: Fx8,
+//         public yStep: Fx8
+//     ) { }
+// }
 
 /**
  * A physics engine that does simple AABB bounding box check
@@ -119,11 +119,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const scene = game.currentScene();
 
         const tileMap = scene.tileMap;
-        const movingSprites = this.sprites
-            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
+        const movingSprites = this.sprites.slice();
 
         // clear obstacles if moving on that axis
-        this.sprites.forEach(s => {
+        movingSprites.forEach(s => {
+            this.setMovingSprite(s, dtSec, dt2)
             if (s.vx || s.vy) s.clearObstacles();
         });
 
@@ -150,54 +150,53 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const remainingMovers = buffers[selected];
 
             for (let ms of currMovers) {
-                const s = ms.sprite;
                 // if still moving and speed has changed from a collision or overlap;
                 // reverse direction if speed has reversed
-                if (ms.cachedVx !== s._vx) {
-                    if (s._vx == Fx.zeroFx8) {
-                        ms.dx = Fx.zeroFx8;
-                    } else if (s._vx < Fx.zeroFx8 && ms.cachedVx > Fx.zeroFx8
-                        || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
-                        ms.dx = Fx.neg(ms.dx);
-                        ms.xStep = Fx.neg(ms.xStep);
+                if (ms._cachedVx !== ms._vx) {
+                    if (ms._vx == Fx.zeroFx8) {
+                        ms._dx = Fx.zeroFx8;
+                    } else if (ms._vx < Fx.zeroFx8 && ms._cachedVx > Fx.zeroFx8
+                        || ms._vx > Fx.zeroFx8 && ms._cachedVx < Fx.zeroFx8) {
+                        ms._dx = Fx.neg(ms._dx);
+                        ms._xStep = Fx.neg(ms._xStep);
                     }
 
-                    ms.cachedVx = s._vx;
+                    ms._cachedVx = ms._vx;
                 }
-                if (ms.cachedVy !== s._vy) {
-                    if (s._vy == Fx.zeroFx8) {
-                        ms.dy = Fx.zeroFx8;
-                    } else if (s._vy < Fx.zeroFx8 && ms.cachedVy > Fx.zeroFx8
-                        || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
-                        ms.dy = Fx.neg(ms.dy);
-                        ms.yStep = Fx.neg(ms.yStep);
+                if (ms._cachedVy !== ms._vy) {
+                    if (ms._vy == Fx.zeroFx8) {
+                        ms._dy = Fx.zeroFx8;
+                    } else if (ms._vy < Fx.zeroFx8 && ms._cachedVy > Fx.zeroFx8
+                        || ms._vy > Fx.zeroFx8 && ms._cachedVy < Fx.zeroFx8) {
+                        ms._dy = Fx.neg(ms._dy);
+                        ms._yStep = Fx.neg(ms._yStep);
                     }
 
-                    ms.cachedVy = s._vy;
+                    ms._cachedVy = ms._vy;
                 }
 
                 // identify how much to move in this step
-                const stepX = Fx.abs(ms.xStep) > Fx.abs(ms.dx) ? ms.dx : ms.xStep;
-                const stepY = Fx.abs(ms.yStep) > Fx.abs(ms.dy) ? ms.dy : ms.yStep;
-                ms.dx = Fx.sub(ms.dx, stepX);
-                ms.dy = Fx.sub(ms.dy, stepY);
+                const stepX = Fx.abs(ms._xStep) > Fx.abs(ms._dx) ? ms._dx : ms._xStep;
+                const stepY = Fx.abs(ms._yStep) > Fx.abs(ms._dy) ? ms._dy : ms._yStep;
+                ms._dx = Fx.sub(ms._dx, stepX);
+                ms._dy = Fx.sub(ms._dy, stepY);
 
-                s._lastX = s._x;
-                s._lastY = s._y;
-                s._x = Fx.add(s._x, stepX);
-                s._y = Fx.add(s._y, stepY);
+                ms._lastX = ms._x;
+                ms._lastY = ms._y;
+                ms._x = Fx.add(ms._x, stepX);
+                ms._y = Fx.add(ms._y, stepY);
 
                 // if the sprite can collide with things, check tile map
                 // and add to collision detection
-                if (!(s.flags & SPRITE_CANNOT_COLLIDE)) {
-                    this.map.insertAABB(s);
+                if (!(ms.flags & SPRITE_CANNOT_COLLIDE)) {
+                    this.map.insertAABB(ms);
                     if (tileMap && tileMap.enabled) {
                         this.tilemapCollisions(ms, tileMap);
                     }
                 }
 
                 // if sprite still needs to move, add it to the next step of movements
-                if (Fx.abs(ms.dx) > MIN_MOVE_GAP || Fx.abs(ms.dy) > MIN_MOVE_GAP) {
+                if (Fx.abs(ms._dx) > MIN_MOVE_GAP || Fx.abs(ms._dy) > MIN_MOVE_GAP) {
                     remainingMovers.push(ms);
                 }
             }
@@ -209,7 +208,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
+    private setMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8) {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
         sprite._lastX = sprite._x;
@@ -292,38 +291,34 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
         }
 
-        return new MovingSprite(
-            sprite,
-            sprite._vx,
-            sprite._vy,
-            dx,
-            dy,
-            xStep,
-            yStep
-        );
+        sprite._cachedVx = sprite._vx;
+        sprite._cachedVy = sprite._vy;
+        sprite._dx = dx;
+        sprite._dy = dy;
+        sprite._xStep = xStep;
+        sprite._yStep = yStep;
     }
 
-    private spriteCollisions(movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) {
+    private spriteCollisions(movedSprites: Sprite[], handlers: scene.OverlapHandler[]) {
         control.enablePerfCounter("phys_collisions");
         if (!handlers.length) return;
 
         // sprites that have moved this step
         for (const ms of movedSprites) {
-            const sprite = ms.sprite;
-            if (sprite.flags & SPRITE_CANNOT_COLLIDE) continue;
-            const overSprites = this.map.overlaps(ms.sprite);
+            if (ms.flags & SPRITE_CANNOT_COLLIDE) continue;
+            const overSprites = this.map.overlaps(ms);
 
             for (const overlapper of overSprites) {
                 if (overlapper.flags & SPRITE_CANNOT_COLLIDE) continue;
-                const thisKind = sprite.kind();
+                const thisKind = ms.kind();
                 const otherKind = overlapper.kind();
 
                 // skip if no overlap event between these two kinds of sprites
-                if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
+                if (ms._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
 
                 // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
-                const higher = sprite.id > overlapper.id ? sprite : overlapper;
-                const lower = higher === sprite ? overlapper : sprite;
+                const higher = ms.id > overlapper.id ? ms : overlapper;
+                const lower = higher === ms ? overlapper : ms;
 
                 // if the two sprites are not currently engaged in an overlap event,
                 // apply all matching overlap events
@@ -335,10 +330,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
-                                if (!((sprite.flags | overlapper.flags) & SPRITE_CANNOT_COLLIDE)) {
+                                if (!((ms.flags | overlapper.flags) & SPRITE_CANNOT_COLLIDE)) {
                                     h.handler(
-                                        thisKind === h.kind ? sprite : overlapper,
-                                        thisKind === h.kind ? overlapper : sprite
+                                        thisKind === h.kind ? ms : overlapper,
+                                        thisKind === h.kind ? overlapper : ms
                                     );
                                 }
                                 higher._overlappers.removeElement(lower.id);
@@ -349,8 +344,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    private tilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
-        const s = movingSprite.sprite;
+    private tilemapCollisions(movingSprite: Sprite, tm: tiles.TileMap) {
+        const s = movingSprite;
         // if the sprite is already clipping into a wall,
         // allow free movement rather than randomly 'fixing' it
         if (s.flags & sprites.Flag.IsClipping) {
@@ -438,23 +433,23 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
                     s.destroy();
-                } else if (s._vx === movingSprite.cachedVx) {
+                } else if (s._vx === movingSprite._cachedVx) {
                     // sprite collision event didn't change velocity in this direction;
                     // apply normal updates
                     if (s.flags & sprites.Flag.BounceOnWall) {
                         if ((!right && s.vx < 0) || (right && s.vx > 0)) {
                             s._vx = Fx.neg(s._vx);
-                            movingSprite.xStep = Fx.neg(movingSprite.xStep);
-                            movingSprite.dx = Fx.neg(movingSprite.dx);
+                            movingSprite._xStep = Fx.neg(movingSprite._xStep);
+                            movingSprite._dx = Fx.neg(movingSprite._dx);
                         }
                     } else {
-                        movingSprite.dx = Fx.zeroFx8;
+                        movingSprite._dx = Fx.zeroFx8;
                         s._vx = Fx.zeroFx8;
                     }
-                } else if (Math.sign(Fx.toInt(s._vx)) === Math.sign(Fx.toInt(movingSprite.cachedVx))) {
+                } else if (Math.sign(Fx.toInt(s._vx)) === Math.sign(Fx.toInt(movingSprite._cachedVx))) {
                     // sprite collision event changed velocity,
                     // but still facing same direction; prevent further movement this update.
-                    movingSprite.dx = Fx.zeroFx8;
+                    movingSprite._dx = Fx.zeroFx8;
                 }
             } else if (overlappedTiles.length) {
                 this.tilemapOverlaps(s, overlappedTiles);
@@ -522,23 +517,23 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
                     s.destroy();
-                } else if (s._vy === movingSprite.cachedVy) {
+                } else if (s._vy === movingSprite._cachedVy) {
                     // sprite collision event didn't change velocity in this direction;
                     // apply normal updates
                     if (s.flags & sprites.Flag.BounceOnWall) {
                         if ((!down && s.vy < 0) || (down && s.vy > 0)) {
                             s._vy = Fx.neg(s._vy);
-                            movingSprite.yStep = Fx.neg(movingSprite.yStep);
-                            movingSprite.dy = Fx.neg(movingSprite.dy);
+                            movingSprite._yStep = Fx.neg(movingSprite._yStep);
+                            movingSprite._dy = Fx.neg(movingSprite._dy);
                         }
                     } else {
-                        movingSprite.dy = Fx.zeroFx8;
+                        movingSprite._dy = Fx.zeroFx8;
                         s._vy = Fx.zeroFx8;
                     }
-                } else if (Math.sign(Fx.toInt(s._vy)) === Math.sign(Fx.toInt(movingSprite.cachedVy))) {
+                } else if (Math.sign(Fx.toInt(s._vy)) === Math.sign(Fx.toInt(movingSprite._cachedVy))) {
                     // sprite collision event changed velocity,
                     // but still facing same direction; prevent further movement this update.
-                    movingSprite.dy = Fx.zeroFx8;
+                    movingSprite._dy = Fx.zeroFx8;
                 }
             } else if (overlappedTiles.length) {
                 this.tilemapOverlaps(s, overlappedTiles);
@@ -587,16 +582,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const maxDist = Fx.toInt(this.maxSingleStep);
             // only check tile map if moving within a single step
             if (Math.abs(Fx.toInt(dx)) <= maxDist && Math.abs(Fx.toInt(dy)) <= maxDist) {
-                const ms = new MovingSprite(
-                    s,
-                    s._vx,
-                    s._vy,
-                    dx,
-                    dy,
-                    dx,
-                    dy
-                );
-                this.tilemapCollisions(ms, tm);
+                s._cachedVx = s._vx;
+                s._cachedVy = s._vy;
+                s._dx = dx;
+                s._dy = dy;
+                s._xStep = dx;
+                s._yStep = dy;
+                this.tilemapCollisions(s, tm);
                 // otherwise, accept movement...
             } else if (tm.isOnWall(s) && !this.canResolveClipping(s, tm)) {
                 // if no luck, flag as clipping into a wall

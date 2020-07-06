@@ -66,6 +66,17 @@ class Sprite extends sprites.BaseSprite {
     _fx: Fx8 // friction
     _fy: Fx8 // friction
 
+    /** Internal physics properties */
+    // vx and vy when last updated
+    public _cachedVx: Fx8;
+    public _cachedVy: Fx8;
+    // remaining x
+    public _dx: Fx8;
+    public _dy: Fx8;
+    // how much to move per step
+    public _xStep: Fx8;
+    public _yStep: Fx8;
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
