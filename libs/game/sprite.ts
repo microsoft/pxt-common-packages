@@ -544,6 +544,11 @@ class Sprite extends sprites.BaseSprite {
         }
         this.sayBubbleSprite.data[SAYKEY] = key;
         this.updateSay = (dt, camera) => {
+            // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+            this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+            this.sayBubbleSprite.x = this.x;
+            this.sayBubbleSprite.z = this.z + 1;
+
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
                 // move bubble
@@ -584,10 +589,6 @@ class Sprite extends sprites.BaseSprite {
                         holdTextSeconds = maxTextWidth / speed;
                     }
                 }
-
-                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                this.sayBubbleSprite.x = this.x;
 
                 if (needsRedraw) {
                     needsRedraw = false;
