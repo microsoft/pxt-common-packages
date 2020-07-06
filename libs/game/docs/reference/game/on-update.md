@@ -8,7 +8,7 @@ game.onUpdate(function () {
 })
 ```
 
-There are events available to run code when sprites overlap, collide, are created, or destroyed. Also, you can use events to take action when buttons are pressed or whe game counts reach zero. When you want to have code to control what happens in a game on a regular basis though, you need to run that code in an update function.
+There are events available to run code when sprites overlap, collide, are created, or destroyed. Also, you can use events to take action when buttons are pressed or when game counts reach zero. When you want to have code to control what happens in a game on a regular basis though, you need to run that code in an update function.
 
 Your program works with the game engine using an update function. The update function is called by the game engine at a regular interval. Inside the update function, you might put in code that checks positions of sprites, conditions that change the score, adjust the life count, or maybe if something happened to end the game.
 
