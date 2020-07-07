@@ -17,6 +17,14 @@ namespace tiles {
         protected _col: number;
         protected tileMap: TileMap;
 
+        get col() {
+            return this._col;
+        }
+
+        get row() {
+            return this._row;
+        }
+
         constructor(col: number, row: number, map: TileMap) {
             this._col = col;
             this._row = row;
