@@ -140,6 +140,11 @@ bool isMono(Image_ img) {
     return img->bpp() == 1;
 }
 
+//% property
+bool isStatic(Image_ img) {
+    return img->buffer->isReadOnly();
+}
+
 /**
  * Sets all pixels in the current image from the other image, which has to be of the same size and
  * bpp.

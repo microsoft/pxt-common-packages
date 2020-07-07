@@ -293,6 +293,14 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
+    setHitbox() {
+        this._hitbox = game.calculateHitBox(this);
+    }
+
+    isStatic() {
+        return this._image.isStatic();
+    }
+
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }

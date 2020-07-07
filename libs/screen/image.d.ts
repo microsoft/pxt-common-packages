@@ -99,6 +99,9 @@ interface Image {
      */
     //% shim=ImageMethods::equals
     equals(other: Image): boolean;
+
+    //% shim=ImageMethods::isStatic
+    isStatic(): boolean;
 }
 
 declare namespace image {

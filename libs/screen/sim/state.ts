@@ -92,16 +92,8 @@ namespace pxsim {
             }
 
             this.lastImageFlushTime = Date.now()
-
-            if (img == this.lastImage) {
-                if (!img.dirty)
-                    return
-            } else {
-                this.lastImage = img
-            }
-
+            this.lastImage = img
             this.changed = true
-            img.dirty = false
 
             const src = img.data
             const dst = this.screen
