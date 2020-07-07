@@ -15,7 +15,7 @@ namespace control {
             ctx.registerHandler(src, value, handler, flags);
     }
 
-    class FrameCallback {
+    export class FrameCallback {
         order: number
         handler: () => void
     }
@@ -86,7 +86,7 @@ namespace control {
                 EventContext.lastStats = `fps:${Math.round(fps)}`;
                 if (fps < 99)
                     EventContext.lastStats += "." + (Math.round(fps * 10) % 10)
-                if (control.profilingEnabled()) {
+                if (control.ramSize() > 2000000 && control.profilingEnabled()) {
                     control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
                     control.gc()
                     control.dmesgPerfCounters()
@@ -138,7 +138,7 @@ namespace control {
             this.frameWorker++;
         }
 
-        registerFrameHandler(order: number, handler: () => void) {
+        registerFrameHandler(order: number, handler: () => void): FrameCallback {
             if (!this.frameCallbacks) {
                 this.frameCallbacks = [];
                 this.registerFrameCallbacks();
@@ -150,10 +150,18 @@ namespace control {
             for (let i = 0; i < this.frameCallbacks.length; ++i) {
                 if (this.frameCallbacks[i].order > order) {
                     this.frameCallbacks.insertAt(i, fn)
-                    return
+                    return fn;
                 }
             }
-            this.frameCallbacks.push(fn)
+            this.frameCallbacks.push(fn);
+            return fn;
+        }
+
+        unregisterFrameHandler(fn: FrameCallback) {
+            if (!fn || !this.frameCallbacks) return;
+            const i = this.frameCallbacks.indexOf(fn);
+            if (i > -1)
+                this.frameCallbacks.splice(i, 1);
         }
 
         registerHandler(src: number, value: number, handler: () => void, flags: number) {

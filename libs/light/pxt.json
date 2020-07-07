@@ -11,7 +11,6 @@
         "defaultlights.ts",
         "defaultlightsoverrides.ts",
         "ns.ts",
-        "jacdac.ts",        
         "neopixeloverrides.ts",
         "animations.jres",
         "targetoverrides.ts"
@@ -22,7 +21,6 @@
     "public": true,
     "dependencies": {
         "core": "file:../core",
-        "color": "file:../color",
-        "jacdac": "file:../jacdac"
+        "color": "file:../color"
     }
 }

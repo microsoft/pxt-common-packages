@@ -14,11 +14,11 @@
 struct SoundInstruction {
     uint8_t soundWave;
     uint8_t flags;
-    uint16_t frequency;  // Hz
-    uint16_t duration;   // ms
-    int16_t startVolume; // 0-1023
-    int16_t endVolume;   // 0-1023
-    uint16_t endFrequency;  // Hz
+    uint16_t frequency;    // Hz
+    uint16_t duration;     // ms
+    int16_t startVolume;   // 0-1023
+    int16_t endVolume;     // 0-1023
+    uint16_t endFrequency; // Hz
 };
 
 #ifdef DATASTREAM_MAXIMUM_BUFFERS
@@ -101,8 +101,16 @@ class WSynthesizer
         auto dp = (int16_t *)data.getBytes();
         auto sz = 512 / 2;
         int r = fillSamples(dp, sz);
+#if defined(NRF52_SERIES)
+        int mul = out.dac.getSampleRange();
+#endif
         while (sz--) {
-            *dp++ += 1 << (OUTPUT_BITS - 1);
+#if defined(NRF52_SERIES)
+            *dp = ((-*dp + (1 << (OUTPUT_BITS - 1))) * mul) >> OUTPUT_BITS;
+#else
+            *dp += 1 << (OUTPUT_BITS - 1);
+#endif
+            dp++;
         }
         if (!r) {
             active = false;

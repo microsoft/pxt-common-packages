@@ -3,12 +3,12 @@
 #include "pxt.h"
 
 enum class MouseButton {
+    //% block="left" enumval=1
+    Left = 0x01,
     //% block="right" enumval=2
     Right = 0x02,
     //% block="middle" enumval=4
-    Middle = 0x04,
-    //% block="left" enumval=1
-    Left = 0x01
+    Middle = 0x04
 };
 
 namespace mouse {
@@ -39,7 +39,7 @@ namespace mouse {
     * Turn the mouse wheel
     **/
     //% help=mouse/turn-wheel
-    //% blockId=mouseWheel block="turn wheel %w"
+    //% blockId=mouseWheel block="mouse turn wheel %w"
     //% w.min=-128 w.max=127
     void turnWheel(int w) {
         pxt::mouse.moveWheel(w);

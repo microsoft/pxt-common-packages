@@ -35,8 +35,7 @@ static const TimerConfig timers[] = {
 #ifdef NRF_TIMER6
     DEF_TIM(6),
 #endif
-{0,(IRQn_Type)0,0}
-};
+    {0, (IRQn_Type)0, 0}};
 
 #define DEF_TIMERS 0x11121013 // TIMER1 TIMER2 TIMER0 TIMER3
 
@@ -57,7 +56,7 @@ LowLevelTimer *allocateTimer() {
             continue;
         auto dev = timers[idx].addr;
         if (dev->INTENSET) // any irqs enabled?
-            continue; // then we won't allocate it
+            continue;      // then we won't allocate it
         usedTimers |= 1 << idx;
         DMESG("allocate TIMER%d", tcId - 0x10);
         return new NRFLowLevelTimer(dev, timers[idx].irqn);
@@ -66,7 +65,6 @@ LowLevelTimer *allocateTimer() {
     target_panic(PANIC_OUT_OF_TIMERS);
     return NULL;
 }
-
 
 static void initRandomSeed() {
     int seed = 0xC0DA1;
@@ -128,6 +126,16 @@ void platform_init() {
             globals[0] = (TValue)1;
         }
     */
+}
+
+int *getBootloaderConfigData() {
+#ifdef NRF52840
+    auto p = (volatile uint32_t *)0x000fd800;
+    if (p[0] == CFG_MAGIC0 && p[1] == CFG_MAGIC1)
+        return (int *)p + 4;
+#endif
+
+    return NULL;
 }
 
 } // namespace pxt

@@ -9,19 +9,20 @@ input.buttonA.onEvent(ButtonEvent.Click, () => {
 ```
 
 ## ~hint
+
 **Touch**
 
 If your board has pins or pads that work as touch inputs, then your code can use them just like buttons.
 Instead of saying `button A` or `button B` as the input source, use a pin name like `pin A1`.
 
 ```block
-let pixels = light.createStrip();
 input.pinA1.onEvent(ButtonEvent.Down, function() {
-    pixels.setPixelColor(1, 0x0000ff)
+    console.log("Press down")
 })
 ```
 
 Read about [**touch sensors**](/reference/input/button/touch-sensors) and using the pins as touch buttons.
+
 ## ~
 
 ## Parameters
@@ -37,54 +38,26 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 
 ## Examples #example
 
-### Next light please #ex1
+### Button release #ex1
 
-In this example, the lighted pixel moves to the next pixel spot each time you press the `A` button. The position of
-the light goes back to first pixel when the current position reaches the last pixel.
-
-```blocks
-let position = 0;
-let pixels = light.createStrip();
-
-input.buttonA.onEvent(ButtonEvent.Click, function() {
-    if (position > -1) {
-        pixels.setPixelColor(position - 1, 0x000000);
-    }
-    if (position == pixels.length()) {
-        position = 0;
-    }
-    pixels.setPixelColor(position, 0xff0000);
-    position += 1;
-})
-```
-
-### Any color, any pixel #ex2
-
-Wnen the ``B`` button is released, light up a random pixel with a random color.
+Wnen the ``B`` button is released, log a message.
 
 ```blocks
-let anyPixel = 0;
-let pixels = light.createStrip();
 input.buttonB.onEvent(ButtonEvent.Up, function() {
-    pixels.clear();
-    anyPixel = Math.randomRange(0, pixels.length());
-    pixels.setPixelColor(anyPixel, Math.randomRange(0, 0xffffff));
+    console.log("Release button")
 })
 ```
 
-### Touch down #ex3
+### Touch down #ex2
 
-Make a pixel turn `pink` when you touch the capacitive pin `pin A1` on the board. The pixel then turns
-`green` when you lift your finger off of the pin.
+Log a message when you touch or release the capacitive pin `pin A1` on the board.
 
 ```blocks
-let pixels = light.createStrip();
-
-input.pinA1.onEvent(ButtonEvent.Down, () => {
-    pixels.setPixelColor(5, 0xff007f);
+input.pinA1.onEvent(ButtonEvent.Down, function() {
+    console.log("Touch pin")
 })
-input.pinA1.onEvent(ButtonEvent.Up, () => {
-    pixels.setPixelColor(5, 0x00ff00);
+input.pinA1.onEvent(ButtonEvent.Up, function() {
+    console.log("Release pin")
 })
 ```
 

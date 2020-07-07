@@ -160,6 +160,7 @@ namespace music {
     //% blockNamespace=music
     //% blockHidden = true
     //% weight=85 blockGap=8
+    //% help=music/melody-editor
     //% group="Melody" duplicateShadowOnDrag
     //% melody.fieldEditor="melody"
     //% melody.fieldOptions.decompileLiterals=true
@@ -321,7 +322,7 @@ namespace music {
     }
 
 
-    class MelodyPlayer {
+    export class MelodyPlayer {
         melody: Melody;
 
         onPlayFinished: () => void;
@@ -332,6 +333,10 @@ namespace music {
 
         stop() {
             this.melody = null
+        }
+
+        protected queuePlayInstructions(timeDelta: number, buf: Buffer) {
+            queuePlayInstructions(timeDelta, buf)
         }
 
         play(volume: number) {
@@ -554,7 +559,7 @@ namespace music {
                     addForm(currMs - (envA + envD), envS, envS, envD + envA)
                     addForm(envR, envS, 0, currMs)
 
-                    queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
+                    this.queuePlayInstructions(timePos - now, sndInstr.slice(0, sndInstrPtr))
                     endHz = -1;
                     timePos += currMs // don't add envR - it's supposed overlap next sound
                 }

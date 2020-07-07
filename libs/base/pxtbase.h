@@ -145,7 +145,7 @@ void waitForEvent(int id, int event);
 unsigned afterProgramPage();
 //%
 void dumpDmesg();
-uint32_t hash_fnv1a(const void *data, unsigned len);
+uint32_t hash_fnv1(const void *data, unsigned len);
 
 // also defined DMESG macro
 // end
@@ -273,6 +273,9 @@ typedef enum {
     PANIC_SETTINGS_SECRET_MISSING = 922,
     PANIC_DELETE_ON_CLASS = 923,
     PANIC_OUT_OF_TIMERS = 924,
+    PANIC_JACDAC = 925,
+    PANIC_MICROPHONE_MISSING = 926,
+    PANIC_VARIANT_NOT_SUPPORTED = 927,
 
     PANIC_CAST_FIRST = 980,
     PANIC_CAST_FROM_UNDEFINED = 980,
@@ -905,7 +908,7 @@ enum class NumberFormat {
 // this will, unlike mkStringCore, UTF8-canonicalize the data
 String mkString(const char *data, int len = -1);
 // data can be NULL in both cases
-Buffer mkBuffer(const uint8_t *data, int len);
+Buffer mkBuffer(const void *data, int len);
 String mkStringCore(const char *data, int len = -1);
 
 TNumber getNumberCore(uint8_t *buf, int size, NumberFormat format);

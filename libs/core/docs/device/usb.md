@@ -13,7 +13,7 @@ The basic steps are:
 
 ### ~ hint
 
-In Edge, Firefox and Internet Explorer, you can save the ``.uf2`` file directly into the @drivename@ drive!
+In Microsoft Edge, Firefox and Internet Explorer, you can save the ``.uf2`` file directly into the @drivename@ drive!
 
 ### ~
 

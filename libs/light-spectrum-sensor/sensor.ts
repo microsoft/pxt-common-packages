@@ -1,4 +1,20 @@
 namespace sensors {
+    export const enum LightSpectrumRange {
+        Full = 10,
+        Infrared = 20,
+        Visible = 40
+    }
+    
+    export const enum LightSpectrumEvent {
+        FullBright = LightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_HIGH,
+        FullDark = LightSpectrumRange.Full | DAL.LEVEL_THRESHOLD_LOW,
+        InfraredBright = LightSpectrumRange.Infrared | DAL.LEVEL_THRESHOLD_HIGH,
+        InfraredDark = LightSpectrumRange.Infrared | DAL.LEVEL_THRESHOLD_LOW,
+        VisibleBright = LightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_HIGH,
+        VisibleDark = LightSpectrumRange.Visible | DAL.LEVEL_THRESHOLD_LOW
+    }
+
+    
     export class LightSpectrum {
         full: number;
         infrared: number;
@@ -32,8 +48,8 @@ namespace sensors {
             this.reading = true;
             control.runInBackground(() => {
                 this.normalizedLevelDetector = new pins.LevelDetector(this.id, 0, 1023, 50, 900);
-                this.normalizedLevelDetector.onHigh = () => control.raiseEvent(this.id, JDLightSpectrumEvent.VisibleBright);
-                this.normalizedLevelDetector.onLow = () => control.raiseEvent(this.id, JDLightSpectrumEvent.VisibleDark);
+                this.normalizedLevelDetector.onHigh = () => control.raiseEvent(this.id, LightSpectrumEvent.VisibleBright);
+                this.normalizedLevelDetector.onLow = () => control.raiseEvent(this.id, LightSpectrumEvent.VisibleDark);
                 while (this.reading) {
                     let spec = this.readSpectrum();
                     if (spec.full != -1 && spec.infrared != -1 && spec.visible != -1) {
@@ -53,7 +69,7 @@ namespace sensors {
             return this._spectrum;
         }
 
-        onEvent(event: JDLightSpectrumEvent, handler: () => void): void {
+        onEvent(event: LightSpectrumEvent, handler: () => void): void {
             this.startReading();
             control.onEvent(this.id, event, handler);
         }
@@ -73,15 +89,15 @@ namespace input {
      */
     //% blockId=sensor_light_spectrum block="light $range spectrum"
     //% group="Light Spectrum Sensor"
-    export function lightSpectrum(range: JDLightSpectrumRange): number {
+    export function lightSpectrum(range: sensors.LightSpectrumRange): number {
         const sensor = lightSpectrumSensor();
         if (sensor) {
             const spectrum = sensor.spectrum();
             if (spectrum) {
                 switch (range) {
-                    case JDLightSpectrumRange.Full: return spectrum.full;
-                    case JDLightSpectrumRange.Infrared: return spectrum.infrared;
-                    case JDLightSpectrumRange.Visible: return spectrum.visible;
+                    case sensors.LightSpectrumRange.Full: return spectrum.full;
+                    case sensors.LightSpectrumRange.Infrared: return spectrum.infrared;
+                    case sensors.LightSpectrumRange.Visible: return spectrum.visible;
                 }
             }
         }
@@ -93,7 +109,7 @@ namespace input {
      * @param event
      * @param handler
      */
-    export function onLightSpectrumConditionChanged(event: JDLightSpectrumEvent, handler: () => void): void {
+    export function onLightSpectrumConditionChanged(event: sensors.LightSpectrumEvent, handler: () => void): void {
         const sensor = lightSpectrumSensor();
         if (sensor)
             sensor.onEvent(event, handler);

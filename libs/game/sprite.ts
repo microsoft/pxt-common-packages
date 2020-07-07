@@ -63,6 +63,8 @@ class Sprite extends sprites.BaseSprite {
     _vy: Fx8
     _ax: Fx8
     _ay: Fx8
+    _fx: Fx8 // friction
+    _fy: Fx8 // friction
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
@@ -130,6 +132,27 @@ class Sprite extends sprites.BaseSprite {
         this._ay = Fx8(v)
     }
 
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fx (friction x)" callInDebugger
+    get fx(): number {
+        return Fx.toFloat(this._fx)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fx (friction x)"
+    set fx(v: number) {
+        this._fx = Fx8(Math.max(0, v))
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fy (friction y)" callInDebugger
+    get fy(): number {
+        return Fx.toFloat(this._fy)
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="fy (friction y)"
+    set fy(v: number) {
+        this._fy = Fx8(Math.max(0, v))
+    }
+
     private _data: any;
     /**
      * Custom data
@@ -188,6 +211,8 @@ class Sprite extends sprites.BaseSprite {
         this.vy = 0
         this.ax = 0
         this.ay = 0
+        this.fx = 0
+        this.fy = 0
         this.flags = 0
         this.setImage(img);
         this.setKind(-1); // not a member of any type by default
@@ -508,6 +533,11 @@ class Sprite extends sprites.BaseSprite {
         }
         this.sayBubbleSprite.data[SAYKEY] = key;
         this.updateSay = (dt, camera) => {
+            // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+            this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+            this.sayBubbleSprite.x = this.x;
+            this.sayBubbleSprite.z = this.z + 1;
+
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
                 // move bubble
@@ -548,10 +578,6 @@ class Sprite extends sprites.BaseSprite {
                         holdTextSeconds = maxTextWidth / speed;
                     }
                 }
-
-                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                this.sayBubbleSprite.x = this.x;
 
                 if (needsRedraw) {
                     needsRedraw = false;
@@ -881,6 +907,8 @@ class Sprite extends sprites.BaseSprite {
                     // one of the involved sprites has been destroyed,
                     // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {
+                        self.vx = 0;
+                        self.vy = 0;
                         destroyedSprites = true;
                         return;
                     }
@@ -925,6 +953,8 @@ class Sprite extends sprites.BaseSprite {
         if (!target || !speed) {
             if (fs) {
                 sc.followingSprites.removeElement(fs);
+                this.vx = 0;
+                this.vy = 0;
             }
         } else if (!fs) {
             sc.followingSprites.push(new sprites.FollowingSprite(

@@ -13,8 +13,6 @@
 
 static void *stackCopy;
 static uint32_t stackSize;
-//#define LOG DMESG
-#define LOG(...) ((void)0)
 
 //#define LOG DMESG
 #define LOG(...) ((void)0)
@@ -54,7 +52,7 @@ static const HIDReportDescriptor reportDesc = {
 };
 
 static const InterfaceInfo ifaceInfoHID = {
-   &reportDesc,
+    &reportDesc,
     sizeof(reportDesc),
     1,
     {
@@ -102,21 +100,16 @@ static const InterfaceInfo ifaceInfoEP = {
     {USB_EP_TYPE_BULK, 0},
 };
 
-int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup)
-{
+int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
 #ifdef HF2_HID
     if (!useHID)
         return DEVICE_NOT_SUPPORTED;
-    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR)
-    {
-        if (setup.wValueH == 0x21)
-        {
+    if (setup.bRequest == USB_REQ_GET_DESCRIPTOR) {
+        if (setup.wValueH == 0x21) {
             InterfaceDescriptor tmp;
             fillInterfaceInfo(&tmp);
             return ctrl.write(&tmp, sizeof(tmp));
-        }
-        else if (setup.wValueH == 0x22)
-        {
+        } else if (setup.wValueH == 0x22) {
             return ctrl.write(hidDescriptor, sizeof(hidDescriptor));
         }
     }
@@ -135,9 +128,9 @@ void HF2::prepBuffer(uint8_t *buf) {
     target_disable_irq();
     if (dataToSendLength) {
         if (dataToSendPrepend) {
-            dataToSendPrepend = false;
             buf[0] = HF2_FLAG_CMDPKT_BODY | 4;
-            memcpy(buf + 1, pkt.buf, 4);
+            memcpy(buf + 1, &dataToSendPrepend, 4);
+            dataToSendPrepend = 0;
         } else {
             int flag = dataToSendFlag;
             int s = 63;
@@ -158,7 +151,15 @@ void HF2::prepBuffer(uint8_t *buf) {
 }
 
 void HF2::pokeSend() {
-    if (!allocateEP || !CodalUSB::usbInstance->isInitialised())
+    if (!allocateEP) {
+        if (!lastExchange || current_time_ms() - lastExchange > 1000) {
+            lastExchange = 0;
+            dataToSendLength = 0;
+        }
+        return;
+    }
+
+    if (!CodalUSB::usbInstance->isInitialised())
         return;
 
     uint8_t buf[64];
@@ -190,6 +191,7 @@ int HF2::classRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
         if (setup.wLength != 64)
             return DEVICE_NOT_SUPPORTED;
 
+        lastExchange = current_time_ms();
         uint8_t buf[64];
         prepBuffer(buf);
         ctrl.write(buf, sizeof(buf));
@@ -206,10 +208,7 @@ const InterfaceInfo *HF2::getInterfaceInfo() {
     return allocateEP ? &ifaceInfoEP : &ifaceInfo;
 }
 
-int HF2::sendSerial(const void *data, int size, int isError) {
-    if (!gotSomePacket)
-        return DEVICE_OK;
-
+void HF2::sendCore(uint8_t flag, uint32_t prepend, const void *data, int size) {
     for (;;) {
         pokeSend();
 
@@ -225,13 +224,25 @@ int HF2::sendSerial(const void *data, int size, int isError) {
         // there could be a race
         if (!dataToSendLength) {
             dataToSend = (const uint8_t *)data;
-            dataToSendPrepend = false;
-            dataToSendFlag = isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT;
+            dataToSendPrepend = prepend;
+            dataToSendFlag = flag;
             dataToSendLength = size;
             size = -1;
         }
         target_enable_irq();
     }
+}
+
+int HF2::sendEvent(uint32_t evId, const void *data, int size) {
+    sendCore(HF2_FLAG_CMDPKT_LAST, evId, data, size);
+    return 0;
+}
+
+int HF2::sendSerial(const void *data, int size, int isError) {
+    if (!gotSomePacket)
+        return DEVICE_OK;
+
+    sendCore(isError ? HF2_FLAG_SERIAL_ERR : HF2_FLAG_SERIAL_OUT, 0, data, size);
 
     return 0;
 }
@@ -279,7 +290,7 @@ int HF2::recv() {
 
 int HF2::sendResponse(int size) {
     dataToSend = pkt.buf;
-    dataToSendPrepend = false;
+    dataToSendPrepend = 0;
     dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
     dataToSendLength = 4 + size;
     pokeSend();
@@ -287,14 +298,13 @@ int HF2::sendResponse(int size) {
 }
 
 int HF2::sendResponseWithData(const void *data, int size) {
-    if (dataToSendLength)
-        oops(90);
+    // if there already is dataToSend, too bad, we'll just overwrite it
     if (size <= (int)sizeof(pkt.buf) - 4) {
         memcpy(pkt.resp.data8, data, size);
         return sendResponse(size);
     } else {
         dataToSend = (const uint8_t *)data;
-        dataToSendPrepend = true;
+        dataToSendPrepend = pkt.resp.eventId;
         dataToSendFlag = HF2_FLAG_CMDPKT_LAST;
         dataToSendLength = size;
         pokeSend();
@@ -319,6 +329,11 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 #define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
 #endif
+
+static HF2 *jdLogger;
+static void jdLog(const uint8_t *frame) {
+    jdLogger->sendEvent(HF2_EV_JDS_PACKET, frame, frame[2] + 12);
+}
 
 int HF2::endpointRequest() {
     if (!allocateEP && !ctrlWaiting)
@@ -348,6 +363,7 @@ int HF2::endpointRequest() {
 
 #define checkDataSize(str, add) usb_assert(sz == 8 + (int)sizeof(cmd->str) + (int)(add))
 
+    lastExchange = current_time_ms();
     gotSomePacket = true;
 
     switch (cmdId) {
@@ -420,6 +436,24 @@ int HF2::endpointRequest() {
     case HF2_DBG_GET_STACK:
         return sendResponseWithData(stackCopy, stackSize);
 
+    case HF2_CMD_JDS_CONFIG:
+        if (cmd->data8[0]) {
+            jdLogger = this;
+            pxt::logJDFrame = jdLog;
+        } else {
+            pxt::logJDFrame = NULL;
+        }
+        return sendResponse(0);
+
+    case HF2_CMD_JDS_SEND:
+        if (pxt::sendJDFrame) {
+            pxt::sendJDFrame(cmd->data8);
+            return sendResponse(0);
+        } else {
+            resp->status16 = HF2_STATUS_INVALID_STATE;
+            return sendResponse(0);
+        }
+
     default:
         // command not understood
         resp->status16 = HF2_STATUS_INVALID_CMD;
@@ -429,8 +463,10 @@ int HF2::endpointRequest() {
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p) : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true), useHID(false) {}
-
+HF2::HF2(HF2_Buffer &p)
+    : gotSomePacket(false), ctrlWaiting(false), pkt(p), allocateEP(true), useHID(false) {
+    lastExchange = 0;
+}
 
 static const InterfaceInfo dummyIfaceInfo = {
     NULL,
@@ -439,15 +475,14 @@ static const InterfaceInfo dummyIfaceInfo = {
     {
         0,    // numEndpoints
         0xff, /// class code - vendor-specific
-        0xff,   // subclass
-        0xff,    // protocol
+        0xff, // subclass
+        0xff, // protocol
         0x00, // string
         0x00, // alt
     },
     {0, 0},
     {0, 0},
 };
-
 
 const InterfaceInfo *DummyIface::getInterfaceInfo() {
     return &dummyIfaceInfo;

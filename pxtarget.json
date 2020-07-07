@@ -30,9 +30,6 @@
         "libs/servo",
         "libs/serial",
         "libs/pixel",
-        "libs/jacdac",
-        "libs/jacdac-services",
-        "libs/jacdac-game",
         "libs/datalogger",
         "libs/lora",
         "libs/power",
@@ -54,6 +51,7 @@
         "libs/rotary-encoder",
         "libs/palette",
         "libs/radio",
-        "libs/radio-broadcast"
+        "libs/radio-broadcast",
+        "libs/matrix-keypad"
     ]
 }

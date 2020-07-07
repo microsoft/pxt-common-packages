@@ -112,17 +112,18 @@ CODAL_RADIO* getRadio() {
     }
 
     /**
-     * Internal use only. Takes the next packet from the radio queue and returns its contents + RSSI in a Buffer
+     * Internal use only. Takes the next packet from the radio queue and returns its contents + RSSI in a Buffer.
+     * @returns NULL if no packet available
      */
     //%
     Buffer readRawPacket() {
 #ifdef CODAL_RADIO        
-        if (radioEnable() != DEVICE_OK) return mkBuffer(NULL, 0);
+        if (radioEnable() != DEVICE_OK) return NULL;
 
         auto p = getRadio()->datagram.recv();
 #if CODAL_RADIO_MICROBIT_DAL
         if (p == PacketBuffer::EmptyPacket)
-            return mkBuffer(NULL, 0);
+            return NULL;
         int rssi = p.getRSSI();
         auto length = p.length();
         auto bytes = p.getBytes();
@@ -132,7 +133,7 @@ CODAL_RADIO* getRadio() {
         auto length = p.length();
         auto bytes = p.getBytes();
         if (length == 0)
-            return mkBuffer(NULL, 0);
+            return NULL;
 #endif
 
         uint8_t buf[DEVICE_RADIO_MAX_PACKET_SIZE + sizeof(int)]; // packet length + rssi
@@ -141,7 +142,7 @@ CODAL_RADIO* getRadio() {
         memcpy(buf + DEVICE_RADIO_MAX_PACKET_SIZE, &rssi, sizeof(int)); // RSSi - assumes Int32LE layout
         return mkBuffer(buf, sizeof(buf));
 #else
-        return mkBuffer(NULL, 0);
+        return NULL;
 #endif        
     }
 

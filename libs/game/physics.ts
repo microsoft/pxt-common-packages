@@ -157,7 +157,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (s._vx == Fx.zeroFx8) {
                         ms.dx = Fx.zeroFx8;
                     } else if (s._vx < Fx.zeroFx8 && ms.cachedVx > Fx.zeroFx8
-                            || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
+                        || s._vx > Fx.zeroFx8 && ms.cachedVx < Fx.zeroFx8) {
                         ms.dx = Fx.neg(ms.dx);
                         ms.xStep = Fx.neg(ms.xStep);
                     }
@@ -168,7 +168,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     if (s._vy == Fx.zeroFx8) {
                         ms.dy = Fx.zeroFx8;
                     } else if (s._vy < Fx.zeroFx8 && ms.cachedVy > Fx.zeroFx8
-                            || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
+                        || s._vy > Fx.zeroFx8 && ms.cachedVy < Fx.zeroFx8) {
                         ms.dy = Fx.neg(ms.dy);
                         ms.yStep = Fx.neg(ms.yStep);
                     }
@@ -215,24 +215,47 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         sprite._lastX = sprite._x;
         sprite._lastY = sprite._y;
 
-        sprite._vx = this.constrain(
-            Fx.add(
-                sprite._vx,
-                Fx.mul(
-                    sprite._ax,
-                    dtSec
+        if (sprite._ax) {
+            sprite._vx = this.constrain(
+                Fx.add(
+                    sprite._vx,
+                    Fx.mul(
+                        sprite._ax,
+                        dtSec
+                    )
                 )
-            )
-        );
-        sprite._vy = this.constrain(
-            Fx.add(
-                sprite._vy,
-                Fx.mul(
-                    sprite._ay,
-                    dtSec
+            );
+        } else if (sprite._fx) {
+            const fx = Fx.mul(sprite._fx, dtSec);
+            const c = Fx.compare(sprite._vx, fx);
+            if (c < 0) // v < f, v += f
+                sprite._vx = Fx.min(Fx.zeroFx8, Fx.add(sprite._vx, fx));
+            else if (c > 0) // v > f, v -= f
+                sprite._vx = Fx.max(Fx.zeroFx8, Fx.sub(sprite._vx, fx));
+            else
+                sprite._vx = Fx.zeroFx8
+        }
+
+        if (sprite._ay) {
+            sprite._vy = this.constrain(
+                Fx.add(
+                    sprite._vy,
+                    Fx.mul(
+                        sprite._ay,
+                        dtSec
+                    )
                 )
-            )
-        );
+            );
+        } else if( sprite._fy) {
+            const fy = Fx.mul(sprite._fy, dtSec);
+            const c = Fx.compare(sprite._vy, fy);
+            if (c < 0) // v < f, v += f
+                sprite._vy = Fx.min(Fx.zeroFx8, Fx.add(sprite._vy, fy));
+            else if (c > 0) // v > f, v -= f
+                sprite._vy = Fx.min(Fx.zeroFx8, Fx.sub(sprite._vy, fy));
+            else
+                sprite._vy = Fx.zeroFx8
+        }
 
         const dx = Fx.idiv(
             Fx.mul(
@@ -307,15 +330,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 if (higher._overlappers.indexOf(lower.id) === -1) {
                     handlers
                         .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
-                                    || (h.kind === otherKind && h.otherKind === thisKind)
+                            || (h.kind === otherKind && h.otherKind === thisKind)
                         )
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
-                                h.handler(
-                                    thisKind === h.kind ? sprite : overlapper,
-                                    thisKind === h.kind ? overlapper : sprite
-                                );
+                                if (!((sprite.flags | overlapper.flags) & SPRITE_CANNOT_COLLIDE)) {
+                                    h.handler(
+                                        thisKind === h.kind ? sprite : overlapper,
+                                        thisKind === h.kind ? overlapper : sprite
+                                    );
+                                }
                                 higher._overlappers.removeElement(lower.id);
                             });
                         });
@@ -349,6 +374,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             s._lastY
         );
 
+        const overlappedTiles: tiles.Location[] = [];
+
         if (xDiff !== Fx.zeroFx8) {
             const right = xDiff > Fx.zeroFx8;
             const x0 = Fx.toIntShifted(
@@ -362,7 +389,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 tileScale
             );
             const collidedTiles: sprites.StaticObstacle[] = [];
-            const overlappedTiles: tiles.Location[] = [];
 
             // check collisions with tiles sprite is moving towards horizontally
             for (
@@ -413,7 +439,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
                     s.destroy();
-                } else if (s._vx === movingSprite.cachedVx){
+                } else if (s._vx === movingSprite.cachedVx) {
                     // sprite collision event didn't change velocity in this direction;
                     // apply normal updates
                     if (s.flags & sprites.Flag.BounceOnWall) {
@@ -431,8 +457,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     // but still facing same direction; prevent further movement this update.
                     movingSprite.dx = Fx.zeroFx8;
                 }
-            } else if (overlappedTiles.length) {
-                this.tilemapOverlaps(s, overlappedTiles);
             }
         }
 
@@ -515,9 +539,50 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     // but still facing same direction; prevent further movement this update.
                     movingSprite.dy = Fx.zeroFx8;
                 }
-            } else if (overlappedTiles.length) {
-                this.tilemapOverlaps(s, overlappedTiles);
             }
+        }
+
+        // Now that we've moved, check all of the tiles underneath the current position
+        // for overlaps
+        for (
+            let x = hbox.left;
+            x < Fx.iadd(tileSize, hbox.right);
+            x = Fx.iadd(tileSize, x)
+        ) {
+            const x0 = Fx.toIntShifted(
+                Fx.add(
+                    Fx.min(
+                        x,
+                        hbox.right
+                    ),
+                    Fx.oneHalfFx8
+                ),
+                tileScale
+            );
+            for (
+                let y = hbox.top;
+                y < Fx.iadd(tileSize, hbox.bottom);
+                y = Fx.iadd(tileSize, y)
+            ) {
+                const y0 = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            y,
+                            hbox.bottom
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+
+                if (!tm.isObstacle(x0, y0)) {
+                    overlappedTiles.push(tm.getTile(x0, y0));
+                }
+            }
+        }
+
+        if (overlappedTiles.length) {
+            this.tilemapOverlaps(s, overlappedTiles);
         }
     }
 
@@ -527,8 +592,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite the sprite
      * @param overlappedTiles the list of tiles the sprite is overlapping
      */
-    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
+    private tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
+        const alreadyHandled: tiles.Location[] = [];
+
         for (const tile of overlappedTiles) {
+            if (alreadyHandled.some(l => l.col === tile.col && l.row === tile.row)) {
+                continue;
+            }
+            alreadyHandled.push(tile);
+
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
                 tileOverlapHandlers
@@ -572,7 +644,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     dy
                 );
                 this.tilemapCollisions(ms, tm);
-            // otherwise, accept movement...
+                // otherwise, accept movement...
             } else if (tm.isOnWall(s) && !this.canResolveClipping(s, tm)) {
                 // if no luck, flag as clipping into a wall
                 s.flags |= sprites.Flag.IsClipping;

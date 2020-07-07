@@ -5,16 +5,14 @@
         "keyboard.cpp",
         "shims.d.ts",
         "enums.d.ts",
-        "keyboard.ts",
-        "jacdac.ts"
+        "keyboard.ts"
     ],
     "tests": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     },
     "yotta": {
         "config": {

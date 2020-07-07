@@ -1,4 +1,29 @@
 {
     "name": "screen---st7735",
+    "files": [
+        "screen.cpp",
+        "panic.cpp",
+        "image.cpp",
+        "image.ts",
+        "screenimage.ts",
+        "text.ts",
+        "frame.ts",
+        "shims.d.ts",
+        "fieldeditors.ts",
+        "targetoverrides.ts",
+        "ns.ts",
+        "image.d.ts",
+        "pxtparts.json",
+        "imagesoverrides.jres",
+        "imagesoverrides.ts",
+        "font12.jres",
+        "jdprotocol.h",
+        "jdarcade.h",
+        "jddisplay.h",
+        "jddisplay.cpp"
+    ],
+    "dependencies": {
+        "core": "file:../core"
+    },
     "additionalFilePath": "../screen"
 }

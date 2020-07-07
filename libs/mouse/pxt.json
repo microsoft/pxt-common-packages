@@ -5,16 +5,14 @@
         "mouse.cpp",
         "shims.d.ts",
         "enums.d.ts",
-        "mouse.ts",
-        "jacdac.ts"
+        "mouse.ts"
     ],
     "tests": [
         "test.ts"
     ],
     "public": true,
     "dependencies": {
-        "core": "file:../core",
-        "jacdac": "file:../jacdac"
+        "core": "file:../core"
     },
     "yotta": {
         "config": {

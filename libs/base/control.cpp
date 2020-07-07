@@ -71,7 +71,7 @@ namespace control {
     //% help=control/device-serial-number
     int deviceSerialNumber() {
         uint64_t serial_num = pxt::getLongSerialNumber();
-        return hash_fnv1a(&serial_num, sizeof(serial_num)) & 0x3fffffff;
+        return hash_fnv1(&serial_num, sizeof(serial_num)) & 0x3fffffff;
     }
 
     /**

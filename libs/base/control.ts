@@ -155,71 +155,6 @@ namespace control {
         }
     }
 
-    class PollEvent {
-        public eid: number;
-        public vid: number;
-        public start: number;
-        public timeOut: number;
-        public condition: () => boolean;
-        public once: boolean;
-        constructor(eid: number, vid: number, start: number, timeOut: number, condition: () => boolean, once: boolean) {
-            this.eid = eid;
-            this.vid = vid;
-            this.start = start;
-            this.timeOut = timeOut;
-            this.condition = condition;
-            this.once = once;
-        }
-    }
-
-    let _pollEventQueue: PollEvent[] = undefined;
-
-    function pollEvents() {
-        while (_pollEventQueue.length > 0) {
-            const now = control.millis();
-            for (let i = 0; i < _pollEventQueue.length; ++i) {
-                const ev = _pollEventQueue[i];
-                if (ev.condition() || (ev.timeOut > 0 && now - ev.start > ev.timeOut)) {
-                    control.raiseEvent(ev.eid, ev.vid);
-                    if (ev.once) {
-                        _pollEventQueue.splice(i, 1);
-                        --i;
-                    }
-                }
-            }
-            pause(50);
-        }
-        // release fiber
-        _pollEventQueue = undefined;
-    }
-
-    export function __queuePollEvent(timeOut: number, condition: () => boolean, handler: () => void) {
-        const ev = new PollEvent(
-            control.allocateNotifyEvent(),
-            1,
-            control.millis(),
-            timeOut,
-            condition,
-            !handler
-        );
-
-        // start polling fiber if needed
-        if (!_pollEventQueue) {
-            _pollEventQueue = [ev];
-            control.runInParallel(pollEvents);
-        }
-        else {
-            // add to the queue
-            _pollEventQueue.push(ev)
-        }
-
-        // register event
-        if (handler)
-            control.onEvent(ev.eid, ev.vid, handler);
-        else // or wait
-            control.waitForEvent(ev.eid, ev.vid);
-    }
-
     //% shim=pxt::getConfig
     export declare function getConfigValue(key: int32, defl: int32): number;
 
@@ -228,77 +163,6 @@ namespace control {
 
     //% shim=pxt::programName
     export declare function programName(): string;
-
-    export enum IntervalMode {
-        Interval,
-        Timeout,
-        Immediate
-    }
-
-    let _intervals: Interval[] = undefined;
-    class Interval {
-
-        id: number;
-        func: () => void;
-        delay: number;
-        mode: IntervalMode;
-
-        constructor(func: () => void, delay: number, mode: IntervalMode) {
-            this.id = _intervals.length == 0
-                ? 1 : _intervals[_intervals.length - 1].id + 1;
-            this.func = func;
-            this.delay = delay;
-            this.mode = mode;
-            _intervals.push(this);
-
-            control.runInParallel(() => this.work());
-        }
-
-        work() {
-            // execute
-            switch (this.mode) {
-                case IntervalMode.Immediate:
-                case IntervalMode.Timeout:
-                    if (this.delay > 0)
-                        pause(this.delay); // timeout
-                    if (this.delay >= 0) // immediate, timeout
-                        this.func();
-                    break;
-                case IntervalMode.Interval:
-                    while (this.delay > 0) {
-                        pause(this.delay);
-                        // might have been cancelled during this duration
-                        if (this.delay > 0)
-                            this.func();
-                    }
-                    break;
-            }
-            // remove from interval array
-            _intervals.removeElement(this);
-        }
-
-        cancel() {
-            this.delay = -1;
-        }
-    }
-
-    export function setInterval(func: () => void, delay: number, mode: IntervalMode): number {
-        if (!func || delay < 0) return 0;
-        if (!_intervals) _intervals = [];
-        const interval = new Interval(func, delay, mode);
-        return interval.id;
-    }
-
-    export function clearInterval(intervalId: number, mode: IntervalMode): void {
-        if (!_intervals) return;
-        for (let i = 0; i < _intervals.length; ++i) {
-            const it = _intervals[i];
-            if (it.id == intervalId && it.mode == mode) {
-                it.cancel();
-                break;
-            }
-        }
-    }
 
     //% shim=control::_ramSize
     function _ramSize() {
@@ -319,57 +183,6 @@ namespace control {
             t += 0x3fffffff
         return t
     }
-
-    //% shim=pxt::getGCStats
-    function getGCStats(): Buffer {
-        return null
-    }
-
-    export interface GCStats {
-        numGC: number;
-        numBlocks: number;
-        totalBytes: number;
-        lastFreeBytes: number;
-        lastMaxBlockBytes: number;
-        minFreeBytes: number;
-    }
-
-    /**
-     * Get various statistics about the garbage collector (GC)
-     */
-    export function gcStats(): GCStats {
-        const buf = getGCStats()
-        if (!buf)
-            return null
-        let off = 0
-        const res: any = {}
-
-        addField("numGC")
-        addField("numBlocks")
-        addField("totalBytes")
-        addField("lastFreeBytes")
-        addField("lastMaxBlockBytes")
-        addField("minFreeBytes")
-
-        return res
-
-        function addField(name: string) {
-            res[name] = buf.getNumber(NumberFormat.UInt32LE, off)
-            off += 4
-        }
-    }
-}
-
-/**
- * Busy wait for a condition to be true
- * @param condition condition to test for
- * @param timeOut if positive, maximum duration to wait for in milliseconds
- */
-//% blockId="pxt_pause_until"
-function pauseUntil(condition: () => boolean, timeOut?: number): void {
-    if (!condition || condition()) return; // optimistic path
-    if (!timeOut) timeOut = 0;
-    control.__queuePollEvent(timeOut, condition, undefined);
 }
 
 /**

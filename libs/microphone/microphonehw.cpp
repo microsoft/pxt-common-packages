@@ -2,13 +2,38 @@
 #include "dmac.h"
 #include "LevelDetector.h"
 #include "LevelDetectorSPL.h"
+#include "DataStream.h"
 
-#ifdef NRF52_SERIES
+#if defined(NRF52_SERIES)
 #include "NRF52PDM.h"
 #define PDMDevice NRF52PDM
-#else
+#elif defined(SAMD21) || defined(SAMD51)
 #include "SAMDPDM.h"
 #define PDMDevice SAMD21PDM
+#else // STM?
+class DummyDataSource : public codal::DataSource {
+    public:
+        DummyDataSource() {}
+};
+class PanicPDM {
+    public:
+        uint8_t level;
+        DummyDataSource source;
+        codal::DataStream output;
+
+        PanicPDM(Pin &sd, Pin &sck):
+            output(source) 
+        {
+            target_panic(PANIC_MICROPHONE_MISSING);
+        }
+        void enable() {
+
+        }
+        void disabled() {
+
+        }
+};
+#define PDMDevice PanicPDM
 #endif
 
 namespace pxt {
