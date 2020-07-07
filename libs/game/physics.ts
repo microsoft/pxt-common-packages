@@ -27,21 +27,6 @@ const MAX_TIME_STEP = Fx8(100); // milliseconds
 const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed | sprites.Flag.RelativeToCamera;
 const MIN_MOVE_GAP = Fx8(0.1);
 
-// class MovingSprite {
-//     constructor(
-//         public sprite: Sprite,
-//         // vx and vy when last updated
-//         public cachedVx: Fx8,
-//         public cachedVy: Fx8,
-//         // remaining x
-//         public dx: Fx8,
-//         public dy: Fx8,
-//         // how much to move per step
-//         public xStep: Fx8,
-//         public yStep: Fx8
-//     ) { }
-// }
-
 /**
  * A physics engine that does simple AABB bounding box check
  */
