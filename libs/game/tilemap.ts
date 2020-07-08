@@ -548,3 +548,31 @@ namespace tiles {
         return scene.tileMap.getTilesByType(index);
     }
 }
+
+//% helper=getTilemapByName
+function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
+namespace helpers {
+    export type TilemapFactory = (name: string) => tiles.TileMapData;
+
+    let factories: TilemapFactory[];
+
+    export function registerTilemapFactory(factory: TilemapFactory) {
+        if (!factories) factories = [];
+
+        factories.push(factory);
+    }
+
+    export function getTilemapByName(name: string) {
+        if (factories) {
+            for (const factory of factories) {
+                let data = factory(name);
+
+                if (data) return data;
+            }
+        }
+
+        return null;
+    }
+}
+
