@@ -29,10 +29,14 @@ namespace animation {
     export class Path {
         protected nodes: PathNode[];
         protected lastNode: number; // The index of the last node to fire
+        protected noopLength: number; // Amount of time we don't want to be animating this node
+        protected noopSetTime: number;
 
         constructor() {
             this.nodes = [];
             this.lastNode = -1;
+            this.noopLength = 0;
+            this.noopSetTime = 0;
         }
 
         private static generateNode(p0: Point, command: string, args: number[], metadata: [ Point, PathNode ]): PathNode {
@@ -292,12 +296,21 @@ namespace animation {
 
             if (this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
                 this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
-
+                this.noopLength = 0;
                 if (nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
             }
             this.lastNode = nodeIndex;
-
-            this.nodes[nodeIndex].apply(target, nodeTime, interval);
+            if (this.noopLength > 0 ) {
+                this.noopLength -= (nodeTime - this.noopSetTime);
+                this.noopSetTime = nodeTime;
+            } else {
+                let canMove = this.nodes[nodeIndex].apply(target, nodeTime, interval);
+                if (!canMove) {
+                    // There was a wall. We want to NO-OP the rest of this node to skip it
+                    this.noopLength = (interval - (runningTime % interval));
+                    this.noopSetTime = nodeTime;
+                }
+            }
             return false;
         }
     }
@@ -308,7 +321,9 @@ namespace animation {
             this.setStart = false;
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number) {};
+        apply(target: Sprite, nodeTime: number, interval: number): boolean {
+            return true;
+        };
 
         getLastControlPoint(): Point {
             return null;
@@ -326,8 +341,9 @@ namespace animation {
             this.setStart = true;
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number) {
+        apply(target: Sprite, nodeTime: number, interval: number): boolean {
             nodeTime >= interval && target.setPosition(this.p1.x, this.p1.y);
+            return true;
         }
 
         getEndPoint(): Point {
@@ -340,15 +356,15 @@ namespace animation {
             super();
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number) {
+        apply(target: Sprite, nodeTime: number, interval: number): boolean {
             const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
             const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
-            if(target.x && target.y) {
-                if (!isClearPath(target, target.x, target.y, x, y)) {
-                    return
-                }
+            if (!isClearPath(target, target.x, target.y, x, y))
+            {
+                return false;
             }
             target.setPosition(x, y);
+            return true;
         }
 
         getEndPoint(): Point {
@@ -361,7 +377,7 @@ namespace animation {
             super();
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number) {
+        apply(target: Sprite, nodeTime: number, interval: number): boolean {
             const progress = nodeTime / interval;
             const diff = 1 - progress;
             const a = Math.pow(diff, 2);
@@ -371,13 +387,12 @@ namespace animation {
             const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
             const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
 
-            if(target.x && target.y) {
-                if (!isClearPath(target, target.x, target.y, x, y)) {
-                    return
-                }
+            if (!isClearPath(target, target.x, target.y, x, y))
+            {
+                return false;
             }
-
             target.setPosition(x, y);
+            return true;
         }
 
         getLastControlPoint(): Point {
@@ -394,7 +409,7 @@ namespace animation {
             super();
         }
 
-        apply(target: Sprite, nodeTime: number, interval: number) {
+        apply(target: Sprite, nodeTime: number, interval: number): boolean {
             const progress = nodeTime / interval;
             const diff = 1 - progress;
             const a = Math.pow(diff, 3);
@@ -404,13 +419,11 @@ namespace animation {
 
             const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
             const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
-
-            if(target.x && target.y) {
-                if (!isClearPath(target, target.x, target.y, x, y)) {
-                    return
-                }
+            if (!isClearPath(target, target.x, target.y, x, y)) {
+                return false;
             }
             target.setPosition(x, y);
+            return true;
         }
 
         getLastControlPoint(): Point {
@@ -425,55 +438,15 @@ namespace animation {
     function isClearPath(target: Sprite, x0: number, y0: number, x1: number, y1: number): boolean {
         const tm = game.currentScene().tileMap;
         if (tm && tm.enabled ) {
-            // Check that this would not put us through a wall, or take us through a wall
-            let path = bresenham(x0, y0, x1, y1);
-            for (let i = 0; i < path.length; i++) {
-                let tilex = Fx.toIntShifted(Fx8(path[i].x), tm.scale);
-                let tiley = Fx.toIntShifted(Fx8(path[i].y), tm.scale);
-                target.x = path[i].x;
-                target.y = path[i].y;
-
-                if (tm.isOnWall(target)) {
-                    target.x = x0;
-                    target.y = y0;
-                    return false;
-                }
+            target.x = x1;
+            target.y = y1;
+            if (tm.isOnWall(target)) {
+                target.x = x0;
+                target.y = y0;
+                return false;
             }
         }
         return true;
-    }
-
-    function bresenham(x0: number, y0: number, x1: number, y1: number): Point[] {
-        const dx = x1 - x0;
-        const dy = y1 - y0;
-        let line: Point[] = [];
-        if (dx === 0) {
-            const startY = dy >= 0 ? y0 : y1;
-            const endY = dy >= 0 ? y1 : y0;
-            for (let y = startY; y <= endY; y++) {
-                line.push(new Point(x0, y));
-            }
-            return line;
-        }
-
-        const xStep = dx > 0 ? 1 : -1;
-        const yStep = dy > 0 ? 1 : -1;
-        const dErr = Math.abs(dy / dx);
-
-        let err = 0;
-        let y = y0;
-        for (let x = x0; xStep > 0 ? x <= x1 : x >= x1; x += xStep) {
-            line.push(new Point(x, y));
-            err += dErr;
-            while (err >= 0.5) {
-                if (yStep > 0 ? y <= y1 : y >= y1) {
-                    line.push(new Point(x, y));
-                }
-                y += yStep;
-                err -= 1;
-            }
-        }
-        return line;
     }
 
     export abstract class SpriteAnimation {
