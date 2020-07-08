@@ -69,7 +69,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toFloat(this._x) + (this._image.width >> 1)
+        return Fx.toFloat(this._x) + (this._image.width / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
@@ -80,7 +80,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toFloat(this._y) + (this._image.height >> 1)
+        return Fx.toFloat(this._y) + (this._image.height / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
