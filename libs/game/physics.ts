@@ -360,6 +360,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 s.flags &= ~sprites.Flag.IsClipping;
             }
         }
+        if (!s.isStatic()) s.setHitbox();
         const hbox = s._hitbox;
         const tileScale = tm.scale;
         const tileSize = 1 << tileScale;
@@ -657,6 +658,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
     protected canResolveClipping(s: Sprite, tm: tiles.TileMap) {
+        if (!s.isStatic()) s.setHitbox();
         const hbox = s._hitbox;
         const sz = 1 << tm.scale;
         const maxMove = this.maxStep;

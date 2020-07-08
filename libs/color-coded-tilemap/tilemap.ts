@@ -379,6 +379,7 @@ namespace tiles.legacy {
         }
 
         public isOnWall(s: Sprite) {
+            if (!s.isStatic()) s.setHitbox();
             const hbox = s._hitbox
 
             const left = Fx.toIntShifted(hbox.left, this.scale);
