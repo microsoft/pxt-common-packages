@@ -157,7 +157,7 @@ class Sprite extends sprites.BaseSprite {
     /**
      * Custom data
      */
-    //%
+    //% callInDebugger
     get data(): any {
         if (!this._data) this._data = {};
         return this._data;
