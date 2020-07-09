@@ -519,9 +519,10 @@ namespace tiles {
     //% location.shadow=mapgettile
     //% tile.shadow=tileset_tile_picker tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Collisions" blockGap=8
-    export function tileAtLocationEquals(location: Location, tile: Image) {
+    export function tileAtLocationEquals(location: Location, tile: Image): boolean {
         const scene = game.currentScene();
-        return location && tile && location.tileSet === scene.tileMap.getImageType(tile);
+        if (!location || !tile || !scene.tileMap) return false;
+        return location.tileSet === scene.tileMap.getImageType(tile);
     }
 
     /**
