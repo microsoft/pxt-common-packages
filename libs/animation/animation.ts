@@ -28,12 +28,14 @@ namespace animation {
 
     export class Path {
         protected nodes: PathNode[];
-        protected nodesEnabled: boolean[];
+        protected nodeEnabled: boolean;
+        protected lastNodeEnabled: boolean;
         protected lastNode: number; // The index of the last node to fire
 
         constructor() {
             this.nodes = [];
-            this.nodesEnabled = [];
+            this.nodeEnabled = true;
+            this.lastNodeEnabled = true;
             this.lastNode = -1;
         }
 
@@ -281,7 +283,6 @@ namespace animation {
 
         public add(node: PathNode) {
             this.nodes.push(node);
-            this.nodesEnabled.push(true);
         }
 
         get length(): number {
@@ -289,10 +290,8 @@ namespace animation {
         }
 
         public resetNodes() {
-            this.nodesEnabled = [];
-            for (let i of this.nodes) {
-                this.nodesEnabled.push(true);
-            }
+            this.nodeEnabled = true;
+            this.lastNodeEnabled = true;
         }
 
         public run(interval: number, target: Sprite, startedAt: number): boolean {
@@ -301,15 +300,18 @@ namespace animation {
             const nodeTime = runningTime % interval; // The time the current node has been animating
 
             if (this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
-                if (this.nodesEnabled[this.lastNode]) this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
+                if (this.lastNodeEnabled) this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
                 if (nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
             }
-
-            this.lastNode = nodeIndex;
-            if (this.nodesEnabled[nodeIndex]) {
+            if (this.lastNode != nodeIndex) {
+                this.lastNodeEnabled = this.nodeEnabled;
+                this.nodeEnabled = true;
+                this.lastNode = nodeIndex;
+            }
+            if (this.nodeEnabled) {
                 let canMove = this.nodes[nodeIndex].apply(target, nodeTime, interval);
                 if (!canMove) {
-                    this.nodesEnabled[nodeIndex] = false;
+                    this.nodeEnabled = false;
                 }
             }
             return false;
@@ -324,15 +326,15 @@ namespace animation {
 
         apply(target: Sprite, nodeTime: number, interval: number): boolean {
             return true;
-        };
+        }
 
         getLastControlPoint(): Point {
             return null;
-        };
+        }
 
         getEndPoint(): Point {
             return null;
-        };
+        }
     }
 
     export class MoveTo extends PathNode {
@@ -360,8 +362,7 @@ namespace animation {
         apply(target: Sprite, nodeTime: number, interval: number): boolean {
             const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
             const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
-            if (!isClearPath(interval, target, target.x, target.y, x, y))
-            {
+            if (!isClearPath(interval, target, target.x, target.y, x, y)) {
                 return false;
             }
             target.setPosition(x, y);
@@ -388,8 +389,7 @@ namespace animation {
             const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
             const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
 
-            if (!isClearPath(interval, target, target.x, target.y, x, y))
-            {
+            if (!isClearPath(interval, target, target.x, target.y, x, y)) {
                 return false;
             }
             target.setPosition(x, y);
@@ -631,8 +631,8 @@ namespace animation {
             let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
             if (result) {
                 if (!this.loop) return true;
-                this.startedAt = control.millis();
                 this.path.resetNodes();
+                this.startedAt = control.millis();
             }
             return false;
         }
