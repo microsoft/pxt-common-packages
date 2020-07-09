@@ -69,7 +69,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toInt(this._x) + (this._image.width >> 1)
+        return Fx.toFloat(this._x) + (this._image.width / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
@@ -80,7 +80,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toInt(this._y) + (this._image.height >> 1)
+        return Fx.toFloat(this._y) + (this._image.height / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
@@ -293,6 +293,14 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
+    setHitbox() {
+        this._hitbox = game.calculateHitBox(this);
+    }
+
+    isStatic() {
+        return this._image.isStatic();
+    }
+
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }
@@ -311,7 +319,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
-        return Fx.toInt(this._x)
+        return Fx.toFloat(this._x)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
@@ -341,7 +349,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
     get top() {
-        return Fx.toInt(this._y);
+        return Fx.toFloat(this._y);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
