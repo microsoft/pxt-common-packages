@@ -35,11 +35,11 @@ namespace sprites {
         }
 
         get x(): number {
-            return this.left + this.width >> 1;
+            return this.left + (this.width >> 1);
         }
 
         get y(): number {
-            return this.top + this.height >> 1;
+            return this.top + (this.height >> 1);
         }
 
         get height(): number {

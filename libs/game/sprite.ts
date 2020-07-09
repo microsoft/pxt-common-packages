@@ -815,7 +815,7 @@ class Sprite extends sprites.BaseSprite {
         this._obstacles = [];
     }
 
-    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
+    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle, tm?: tiles.TileMap) {
         this._obstacles[direction] = other;
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
         const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
@@ -826,9 +826,14 @@ class Sprite extends sprites.BaseSprite {
                 .forEach(h => h.handler(this));
         }
         if (wallCollisionHandlers) {
-            wallCollisionHandlers
-                .filter(h => h.kind == this.kind())
-                .forEach(h => h.handler(this));
+            tm = tm || game.currentScene().tileMap;
+            const wallHandlersToRun = wallCollisionHandlers
+                .filter(h => h.spriteKind == this.kind());
+            if (wallHandlersToRun.length) {
+                const asTileLocation = tm.getTile(other.left >> tm.scale, other.top >> tm.scale);
+                wallHandlersToRun
+                    .forEach(h => h.handler(this, asTileLocation));
+            }
         }
     }
 

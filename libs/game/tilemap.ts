@@ -510,6 +510,22 @@ namespace tiles {
     }
 
     /**
+     * Returns true if the tile at the given location is the same as the given tile;
+     * otherwise returns false
+     * @param location
+     * @param tile
+     */
+    //% blockId=maplocationistile block="tile at $location is $tile"
+    //% location.shadow=mapgettile
+    //% tile.shadow=tileset_tile_picker tile.decompileIndirectFixedInstances=true
+    //% blockNamespace="scene" group="Collisions" blockGap=8
+    export function tileAtLocationEquals(location: Location, tile: Image): boolean {
+        const scene = game.currentScene();
+        if (!location || !tile || !scene.tileMap) return false;
+        return location.tileSet === scene.tileMap.getImageType(tile);
+    }
+
+    /**
      * Center the given sprite on a given location
      * @param sprite
      * @param loc
