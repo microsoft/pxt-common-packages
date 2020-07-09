@@ -518,7 +518,7 @@ namespace tiles {
     //% blockId=maplocationistile block="tile at $location is $tile"
     //% location.shadow=mapgettile
     //% tile.shadow=tileset_tile_picker tile.decompileIndirectFixedInstances=true
-    //% blockNamespace="scene" group="Tiles" blockGap=8
+    //% blockNamespace="scene" group="Collisions" blockGap=8
     export function tileAtLocationEquals(location: Location, tile: Image) {
         const scene = game.currentScene();
         return location && tile && location.tileSet === scene.tileMap.getImageType(tile);
