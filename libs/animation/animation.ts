@@ -28,15 +28,13 @@ namespace animation {
 
     export class Path {
         protected nodes: PathNode[];
+        protected nodesEnabled: boolean[];
         protected lastNode: number; // The index of the last node to fire
-        protected noopLength: number; // Amount of time we don't want to be animating this node
-        protected noopSetTime: number;
 
         constructor() {
             this.nodes = [];
+            this.nodesEnabled = [];
             this.lastNode = -1;
-            this.noopLength = 0;
-            this.noopSetTime = 0;
         }
 
         private static generateNode(p0: Point, command: string, args: number[], metadata: [ Point, PathNode ]): PathNode {
@@ -283,10 +281,18 @@ namespace animation {
 
         public add(node: PathNode) {
             this.nodes.push(node);
+            this.nodesEnabled.push(true);
         }
 
         get length(): number {
             return this.nodes.length;
+        }
+
+        public resetNodes() {
+            this.nodesEnabled = [];
+            for (let i of this.nodes) {
+                this.nodesEnabled.push(true);
+            }
         }
 
         public run(interval: number, target: Sprite, startedAt: number): boolean {
@@ -295,20 +301,15 @@ namespace animation {
             const nodeTime = runningTime % interval; // The time the current node has been animating
 
             if (this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
-                this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
-                this.noopLength = 0;
+                if (this.nodesEnabled[this.lastNode]) this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
                 if (nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
             }
+
             this.lastNode = nodeIndex;
-            if (this.noopLength > 0 ) {
-                this.noopLength -= (nodeTime - this.noopSetTime);
-                this.noopSetTime = nodeTime;
-            } else {
+            if (this.nodesEnabled[nodeIndex]) {
                 let canMove = this.nodes[nodeIndex].apply(target, nodeTime, interval);
                 if (!canMove) {
-                    // There was a wall. We want to NO-OP the rest of this node to skip it
-                    this.noopLength = (interval - (runningTime % interval));
-                    this.noopSetTime = nodeTime;
+                    this.nodesEnabled[nodeIndex] = false;
                 }
             }
             return false;
@@ -359,7 +360,7 @@ namespace animation {
         apply(target: Sprite, nodeTime: number, interval: number): boolean {
             const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
             const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
-            if (!isClearPath(target, target.x, target.y, x, y))
+            if (!isClearPath(interval, target, target.x, target.y, x, y))
             {
                 return false;
             }
@@ -387,7 +388,7 @@ namespace animation {
             const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
             const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
 
-            if (!isClearPath(target, target.x, target.y, x, y))
+            if (!isClearPath(interval, target, target.x, target.y, x, y))
             {
                 return false;
             }
@@ -419,7 +420,7 @@ namespace animation {
 
             const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
             const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
-            if (!isClearPath(target, target.x, target.y, x, y)) {
+            if (!isClearPath(interval, target, target.x, target.y, x, y)) {
                 return false;
             }
             target.setPosition(x, y);
@@ -435,19 +436,119 @@ namespace animation {
         }
     }
 
-    function isClearPath(target: Sprite, x0: number, y0: number, x1: number, y1: number): boolean {
+    function isClearPath(interval: number, target: Sprite, x0: number, y0: number, x1: number, y1: number): boolean {
         const tm = game.currentScene().tileMap;
         if (tm && tm.enabled ) {
-            target.x = x1;
-            target.y = y1;
-            if (tm.isOnWall(target)) {
-                target.x = x0;
-                target.y = y0;
-                return false;
-            }
+            const dx = x1 - x0;
+            const dy = y1 - y0;
+            const ms = new MovingSprite(
+                target,
+                Fx8(dx / interval),
+                Fx8(dy / interval),
+                Fx8(dx),
+                Fx8(dy),
+                Fx8(dx),
+                Fx8(dy)
+            );
+            return !hasCollision(ms, tm, dx, dy);
+
         }
         return true;
     }
+
+    // This is using a modified version of tilemapCollisions()
+    function hasCollision(movingSprite: MovingSprite, tm: tiles.TileMap, dx: number, dy: number): boolean {
+        const s = movingSprite.sprite;
+        const hbox = s._hitbox;
+        const tileScale = tm.scale;
+        const tileSize = 1 << tileScale;
+
+        const xDiff = Fx.sub(
+            s._x,
+            s._lastX
+        );
+
+        const yDiff = Fx.sub(
+            s._y,
+            s._lastY
+        );
+
+        if (dx != 0) {
+            const right = dx > 0;
+            const x0 = Fx.toIntShifted(
+                Fx.add(
+                    right ?
+                        Fx.add(hbox.right, Fx.oneFx8)
+                        :
+                        Fx.sub(hbox.left, Fx.oneFx8),
+                    Fx.oneHalfFx8
+                ),
+                tileScale
+            );
+
+            // check collisions with tiles sprite is moving towards horizontally
+            for (
+                let y = Fx.sub(hbox.top, yDiff);
+                y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
+                y = Fx.iadd(tileSize, y)
+            ) {
+                const y0 = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            y,
+                            Fx.sub(
+                                hbox.bottom,
+                                yDiff
+                            )
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+
+                if (tm.isObstacle(x0, y0)) {
+                    return true;
+                }
+            }
+        }
+
+        if (dy != 0) {
+            const down = dy > 0;
+            const y0 = Fx.toIntShifted(
+                Fx.add(
+                    down ?
+                        Fx.add(hbox.bottom, Fx.oneFx8)
+                        :
+                        Fx.sub(hbox.top, Fx.oneFx8),
+                    Fx.oneHalfFx8
+                ),
+                tileScale
+            );
+
+            // check collisions with tiles sprite is moving towards vertically
+            for (
+                let x = hbox.left;
+                x < Fx.iadd(tileSize, hbox.right);
+                x = Fx.iadd(tileSize, x)
+            ) {
+                const x0 = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            x,
+                            hbox.right
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+                if (tm.isObstacle(x0, y0)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     export abstract class SpriteAnimation {
         protected startedAt: number;
@@ -531,6 +632,7 @@ namespace animation {
             if (result) {
                 if (!this.loop) return true;
                 this.startedAt = control.millis();
+                this.path.resetNodes();
             }
             return false;
         }
