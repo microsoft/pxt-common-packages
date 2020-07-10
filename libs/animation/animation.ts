@@ -439,6 +439,8 @@ namespace animation {
     function isClearPath(interval: number, target: Sprite, x0: number, y0: number, x1: number, y1: number): boolean {
         const tm = game.currentScene().tileMap;
         if (tm && tm.enabled ) {
+            const physics = game.currentScene().physicsEngine;
+
             const dx = x1 - x0;
             const dy = y1 - y0;
             const ms = new MovingSprite(
@@ -450,105 +452,29 @@ namespace animation {
                 Fx8(dx),
                 Fx8(dy)
             );
-            return !hasCollision(ms, tm, dx, dy);
 
+            const xDiff = Fx.sub(
+                target._x,
+                target._lastX
+            );
+
+            const yDiff = Fx.sub(
+                target._y,
+                target._lastY
+            );
+            if (dx != 0) {
+                const right = dx > 0;
+                const collidedTileHandlers = physics.checkHorizontalCollisions(right, xDiff, yDiff, ms, tm);
+                if (collidedTileHandlers.collidedTiles.length) return false;
+            }
+            if (dy != 0) {
+                const down = dy > 0;
+                const collidedTileHandlers = physics.checkVerticalCollisions(down, xDiff, yDiff, ms, tm);
+                if (collidedTileHandlers.collidedTiles.length) return false;
+            }
         }
         return true;
     }
-
-    // This is using a modified version of tilemapCollisions()
-    function hasCollision(movingSprite: MovingSprite, tm: tiles.TileMap, dx: number, dy: number): boolean {
-        const s = movingSprite.sprite;
-        const hbox = s._hitbox;
-        const tileScale = tm.scale;
-        const tileSize = 1 << tileScale;
-
-        const xDiff = Fx.sub(
-            s._x,
-            s._lastX
-        );
-
-        const yDiff = Fx.sub(
-            s._y,
-            s._lastY
-        );
-
-        if (dx != 0) {
-            const right = dx > 0;
-            const x0 = Fx.toIntShifted(
-                Fx.add(
-                    right ?
-                        Fx.add(hbox.right, Fx.oneFx8)
-                        :
-                        Fx.sub(hbox.left, Fx.oneFx8),
-                    Fx.oneHalfFx8
-                ),
-                tileScale
-            );
-
-            // check collisions with tiles sprite is moving towards horizontally
-            for (
-                let y = Fx.sub(hbox.top, yDiff);
-                y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
-                y = Fx.iadd(tileSize, y)
-            ) {
-                const y0 = Fx.toIntShifted(
-                    Fx.add(
-                        Fx.min(
-                            y,
-                            Fx.sub(
-                                hbox.bottom,
-                                yDiff
-                            )
-                        ),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
-
-                if (tm.isObstacle(x0, y0)) {
-                    return true;
-                }
-            }
-        }
-
-        if (dy != 0) {
-            const down = dy > 0;
-            const y0 = Fx.toIntShifted(
-                Fx.add(
-                    down ?
-                        Fx.add(hbox.bottom, Fx.oneFx8)
-                        :
-                        Fx.sub(hbox.top, Fx.oneFx8),
-                    Fx.oneHalfFx8
-                ),
-                tileScale
-            );
-
-            // check collisions with tiles sprite is moving towards vertically
-            for (
-                let x = hbox.left;
-                x < Fx.iadd(tileSize, hbox.right);
-                x = Fx.iadd(tileSize, x)
-            ) {
-                const x0 = Fx.toIntShifted(
-                    Fx.add(
-                        Fx.min(
-                            x,
-                            hbox.right
-                        ),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
-                if (tm.isObstacle(x0, y0)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
 
     export abstract class SpriteAnimation {
         protected startedAt: number;
