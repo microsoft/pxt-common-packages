@@ -1,10 +1,6 @@
 #include "pxt.h"
 using namespace codal;
 
-#ifndef DEVICE_GET_SERIAL_NUMBER
-#define DEVICE_GET_SERIAL_NUMBER()  device.getSerialNumber()
-#endif
-
 namespace pxt {
 
 // ---------------------------------------------------------------------------
@@ -93,7 +89,7 @@ unsigned afterProgramPage() {
 }
 
 uint64_t getLongSerialNumber() {
-    return device.getSerialNumber();
+    return target_get_serial();
 }
 
 int current_time_ms() {

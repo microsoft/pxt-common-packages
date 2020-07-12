@@ -25,7 +25,7 @@ void raiseEvent(int src, int value) {
 //% blockId="control_device_dal_version" block="device dal version"
 //% help=control/device-dal-version
 String deviceDalVersion() {
-    return mkString(device.getVersion());
+    return mkString(DEVICE_DAL_VERSION);
 }
 
 /**
