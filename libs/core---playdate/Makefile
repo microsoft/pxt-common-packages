@@ -47,7 +47,7 @@ all: pdx
 
 $(EXE): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) -Wl,-Map,$(EXE:.elf=.map) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	$(PREF)objcopy -O binary $(EXE) $(BIN)
+	$(PREF)objcopy  --set-section-flags .bss=alloc,load,contents -O binary $(EXE) $(BIN)
 	node -p 'require("fs").readFileSync("$(BIN)").toString("hex")' > $(HEX)
 	@ls -l $(BIN)
 
