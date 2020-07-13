@@ -63,7 +63,7 @@ namespace console {
     /**
      * Write a name:value pair as a line of text to the console output.
      * @param name name of the value stream, eg: "x"
-     * @param value to write, eg: 0
+     * @param value to write
      */
     //% weight=88 blockGap=8
     //% help=console/log-value
