@@ -98,7 +98,7 @@ interface Image {
      * otherwise returns false.
      */
     //% shim=ImageMethods::equals
-    //% blockNamespace="images"
+    //% blockNamespace="images" group="Compare"
     //% block="$this is equal to image $other"
     //% this.shadow=variables_get
     //% this.defl="picture"
