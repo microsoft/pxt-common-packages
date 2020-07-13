@@ -6,6 +6,7 @@ namespace Math {
     //% weight=2
     //% blockId=percentchance block="%percentage|\\% chance"
     //% percentage.min=0 percentage.max=100;
+    //% help=math/percent-chance
     export function percentChance(percentage: number): boolean {
         if (percentage >= 100) {
             return true;

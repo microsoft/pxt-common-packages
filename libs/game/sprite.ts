@@ -69,7 +69,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toInt(this._x) + (this._image.width >> 1)
+        return Fx.toFloat(this._x) + (this._image.width / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
@@ -80,7 +80,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toInt(this._y) + (this._image.height >> 1)
+        return Fx.toFloat(this._y) + (this._image.height / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
@@ -293,6 +293,14 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
+    setHitbox() {
+        this._hitbox = game.calculateHitBox(this);
+    }
+
+    isStatic() {
+        return this._image.isStatic();
+    }
+
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }
@@ -311,7 +319,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
-        return Fx.toInt(this._x)
+        return Fx.toFloat(this._x)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
@@ -341,7 +349,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
     get top() {
-        return Fx.toInt(this._y);
+        return Fx.toFloat(this._y);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
@@ -533,6 +541,11 @@ class Sprite extends sprites.BaseSprite {
         }
         this.sayBubbleSprite.data[SAYKEY] = key;
         this.updateSay = (dt, camera) => {
+            // The minus 2 is how much transparent padding there is under the sayBubbleSprite
+            this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
+            this.sayBubbleSprite.x = this.x;
+            this.sayBubbleSprite.z = this.z + 1;
+
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
                 // move bubble
@@ -573,10 +586,6 @@ class Sprite extends sprites.BaseSprite {
                         holdTextSeconds = maxTextWidth / speed;
                     }
                 }
-
-                // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-                this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-                this.sayBubbleSprite.x = this.x;
 
                 if (needsRedraw) {
                     needsRedraw = false;
@@ -806,7 +815,7 @@ class Sprite extends sprites.BaseSprite {
         this._obstacles = [];
     }
 
-    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
+    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle, tm?: tiles.TileMap) {
         this._obstacles[direction] = other;
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
         const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
@@ -817,9 +826,14 @@ class Sprite extends sprites.BaseSprite {
                 .forEach(h => h.handler(this));
         }
         if (wallCollisionHandlers) {
-            wallCollisionHandlers
-                .filter(h => h.kind == this.kind())
-                .forEach(h => h.handler(this));
+            tm = tm || game.currentScene().tileMap;
+            const wallHandlersToRun = wallCollisionHandlers
+                .filter(h => h.spriteKind == this.kind());
+            if (wallHandlersToRun.length) {
+                const asTileLocation = tm.getTile(other.left >> tm.scale, other.top >> tm.scale);
+                wallHandlersToRun
+                    .forEach(h => h.handler(this, asTileLocation));
+            }
         }
     }
 
@@ -901,6 +915,8 @@ class Sprite extends sprites.BaseSprite {
                     // one of the involved sprites has been destroyed,
                     // so exit and remove that in the cleanup step
                     if ((self.flags | target.flags) & sprites.Flag.Destroyed) {
+                        self.vx = 0;
+                        self.vy = 0;
                         destroyedSprites = true;
                         return;
                     }
@@ -945,6 +961,8 @@ class Sprite extends sprites.BaseSprite {
         if (!target || !speed) {
             if (fs) {
                 sc.followingSprites.removeElement(fs);
+                this.vx = 0;
+                this.vy = 0;
             }
         } else if (!fs) {
             sc.followingSprites.push(new sprites.FollowingSprite(

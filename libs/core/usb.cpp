@@ -88,12 +88,6 @@ void usb_init() {
 
     platform_usb_init();
 
-#ifdef STM32F4
-    // let's not waste EPs on the HF2 - it will run on CONTROL pipe instead
-    // this doesn't seem to currently work on SAMD, so only do it on STM, which
-    // has very few EPs
-    hf2.allocateEP = false;
-#endif
     usb.add(hf2);
 
 #ifdef HF2_HID

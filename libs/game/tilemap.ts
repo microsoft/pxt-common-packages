@@ -17,6 +17,14 @@ namespace tiles {
         protected _col: number;
         protected tileMap: TileMap;
 
+        get col() {
+            return this._col;
+        }
+
+        get row() {
+            return this._row;
+        }
+
         constructor(col: number, row: number, map: TileMap) {
             this._col = col;
             this._row = row;
@@ -99,6 +107,8 @@ namespace tiles {
     const TM_DATA_PREFIX_LENGTH = 4;
     const TM_WALL = 2;
 
+    //% snippet='tilemap` `'
+    //% pySnippet='tilemap(""" """)'
     export class TileMapData {
         // The tile data for the map (indices into tileset)
         protected data: Buffer;
@@ -502,6 +512,22 @@ namespace tiles {
     }
 
     /**
+     * Returns true if the tile at the given location is the same as the given tile;
+     * otherwise returns false
+     * @param location
+     * @param tile
+     */
+    //% blockId=maplocationistile block="tile at $location is $tile"
+    //% location.shadow=mapgettile
+    //% tile.shadow=tileset_tile_picker tile.decompileIndirectFixedInstances=true
+    //% blockNamespace="scene" group="Collisions" blockGap=8
+    export function tileAtLocationEquals(location: Location, tile: Image): boolean {
+        const scene = game.currentScene();
+        if (!location || !tile || !scene.tileMap) return false;
+        return location.tileSet === scene.tileMap.getImageType(tile);
+    }
+
+    /**
      * Center the given sprite on a given location
      * @param sprite
      * @param loc
@@ -548,3 +574,31 @@ namespace tiles {
         return scene.tileMap.getTilesByType(index);
     }
 }
+
+//% helper=getTilemapByName
+function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
+namespace helpers {
+    export type TilemapFactory = (name: string) => tiles.TileMapData;
+
+    let factories: TilemapFactory[];
+
+    export function registerTilemapFactory(factory: TilemapFactory) {
+        if (!factories) factories = [];
+
+        factories.push(factory);
+    }
+
+    export function getTilemapByName(name: string) {
+        if (factories) {
+            for (const factory of factories) {
+                let data = factory(name);
+
+                if (data) return data;
+            }
+        }
+
+        return null;
+    }
+}
+
