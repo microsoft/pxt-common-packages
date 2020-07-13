@@ -493,7 +493,7 @@ namespace animation {
 
                 game.eventContext().registerFrameHandler(scene.ANIMATION_UPDATE_PRIORITY, () => {
                     state.animations = state.animations.filter((anim: SpriteAnimation) => {
-                        if (this.sprite.flags & sprites.Flag.Destroyed)
+                        if (anim.sprite.flags & sprites.Flag.Destroyed)
                             return false;
                         return !anim.update(); // If update returns true, the animation is done and will be removed
                     });
