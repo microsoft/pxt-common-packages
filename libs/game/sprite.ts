@@ -74,7 +74,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
-        this.left = v - (this._image.width >> 1)
+        this.left = v - (this._image.width / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -85,7 +85,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
-        this.top = v - (this._image.height >> 1)
+        this.top = v - (this._image.height / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
