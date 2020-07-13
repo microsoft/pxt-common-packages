@@ -1,0 +1,19 @@
+{
+    "name": "core---playdate",
+    "additionalFilePath": "../core",
+    "files": [
+        "Makefile",
+        "README.md",
+        "dal.d.ts",
+        "codallike.cpp",
+        "pxt.h",
+        "platform.h",
+        "platform.cpp",
+        "pxtcore.h",
+        "control.cpp",
+        "shims.d.ts",
+        "enums.d.ts",
+        "ns.ts",
+        "timer.ts"
+    ]
+}

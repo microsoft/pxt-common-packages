@@ -526,6 +526,7 @@ static void sweep(int flags) {
                 if (sz > (int)maxFreeBlock)
                     maxFreeBlock = sz;
 #ifdef PXT_GC_CHECKS
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
                 memset(start, 0xff, WORDS_TO_BYTES(sz));
 #endif
                 start->vtable = (sz << 2) | FREE_MASK;

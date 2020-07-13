@@ -24,13 +24,13 @@ void dispatchEvent(Event e) {
 void registerWithDal(int id, int event, Action a, int flags) {
     // first time?
     if (!findBinding(id, event)) {
-        devMessageBus.listen(id, event, dispatchEvent, flags);
+        EventModel::defaultEventBus->listen(id, event, dispatchEvent, flags);
         if (event == 0) {
             // we're registering for all events on given ID
             // need to remove old listeners for specific events
             auto curr = findBinding(id, -1);
             while (curr) {
-                devMessageBus.ignore(id, curr->value, dispatchEvent);
+                EventModel::defaultEventBus->ignore(id, curr->value, dispatchEvent);
                 curr = nextBinding(curr->next, id, -1);
             }
         }
