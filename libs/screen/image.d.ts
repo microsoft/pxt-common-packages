@@ -98,6 +98,10 @@ interface Image {
      * otherwise returns false.
      */
     //% shim=ImageMethods::equals
+    //% blockNamespace="images"
+    //% block="$this is equal to image $other"
+    //% this.shadow=variables_get
+    //% this.defl="picture"
     equals(other: Image): boolean;
 
     //% shim=ImageMethods::isStatic
