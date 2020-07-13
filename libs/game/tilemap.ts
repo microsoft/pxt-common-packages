@@ -107,6 +107,8 @@ namespace tiles {
     const TM_DATA_PREFIX_LENGTH = 4;
     const TM_WALL = 2;
 
+    //% snippet='tilemap` `'
+    //% pySnippet='tilemap(""" """)'
     export class TileMapData {
         // The tile data for the map (indices into tileset)
         protected data: Buffer;
