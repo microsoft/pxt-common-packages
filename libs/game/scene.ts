@@ -27,6 +27,13 @@ namespace scene {
         ) { }
     }
 
+    export class TileWallHandler {
+        constructor(
+            public spriteKind: number,
+            public handler: (sprite: Sprite, location: tiles.Location) => void
+        ) { }
+    }
+
     export class TileOverlapHandler {
         constructor(
             public spriteKind: number,
@@ -80,7 +87,7 @@ namespace scene {
         overlapMap: SparseArray<number[]>;
         tileOverlapHandlers: TileOverlapHandler[];
         collisionHandlers: SpriteHandler[][];
-        wallCollisionHandlers: SpriteHandler[];
+        wallCollisionHandlers: TileWallHandler[];
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];

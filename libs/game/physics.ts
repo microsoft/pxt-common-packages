@@ -524,7 +524,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
 
                 for (const tile of collisionHandlers.collidedTiles) {
-                    s.registerObstacle(collisionDirection, tile);
+                    s.registerObstacle(collisionDirection, tile, tm);
                 }
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
@@ -559,7 +559,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
 
                 for (const tile of collisionHandlers.collidedTiles) {
-                    s.registerObstacle(collisionDirection, tile);
+                    s.registerObstacle(collisionDirection, tile, tm);
                 }
 
                 if (s.flags & sprites.Flag.DestroyOnWall) {
