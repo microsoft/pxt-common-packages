@@ -465,7 +465,7 @@ class Sprite extends sprites.BaseSprite {
     //% text.shadow=text
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
-    say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
+    say(text: string, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         // clear say
         if (!text) {
             this.updateSay = undefined;
