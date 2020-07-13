@@ -10,4 +10,6 @@
 
 #define PXT_RAM_SIZE (1024 * 1024)
 
+#define PLAYDATE 1
+
 #endif

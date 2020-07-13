@@ -500,6 +500,10 @@ extern const VTable RefAction_vtable;
 extern uint8_t *gcBase;
 #endif
 
+#ifdef PLAYDATE
+extern uintptr_t programEnd;
+#endif
+
 inline bool isReadOnly(TValue v) {
 #ifdef PXT64
 #ifdef PXT_IOS
@@ -508,7 +512,11 @@ inline bool isReadOnly(TValue v) {
     return !isPointer(v) || !((uintptr_t)v >> 37);
 #endif
 #else
+#ifdef PLAYDATE
+    return isTagged(v) || (uintptr_t)v < programEnd;
+#else
     return isTagged(v) || !((uintptr_t)v >> 28);
+#endif
 #endif
 }
 

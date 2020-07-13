@@ -8,7 +8,7 @@ Event lastEvent;
 void deepSleep() {}
 
 void sendSerial(const char *data, int len) {
-    playdate->system->logToConsole((char*)"%s", data);
+    playdate->system->logToConsole((char *)"%s", data);
 }
 
 void platform_init() {}
@@ -25,6 +25,9 @@ void dumpDmesg() {
     sendSerial("\n\n", 2);
 }
 
+uint32_t updateKeyEvents();
+uintptr_t programEnd;
+
 } // namespace pxt
 
 void cpu_clock_init() {}
@@ -40,15 +43,16 @@ PlaydateAPI *playdate = NULL;
 void codal_update();
 
 static int update(void *ud) {
-    PDButtons current, pushed, released;
-    playdate->system->getButtonState(&current, &pushed, &released);
+    uint32_t state = pxt::updateKeyEvents();
 
-    // TODO rise events
-
-    current = kButtonA;
+    state = 1;
 
     static int started;
-    if (started || current & kButtonA) {
+    if (started || state) {
+        if (!started) {
+            DMESG("progend: %p", programEnd);
+            programEnd = (uintptr_t)malloc(1);
+        }
         codal_update();
         if (!started) {
             started = 1;
@@ -76,3 +80,13 @@ extern "C" int eventHandler(PlaydateAPI *playdate_, PDSystemEvent event, uint32_
 
     return 0;
 }
+
+namespace control {
+/**
+ * Determines if the USB has been enumerated.
+ */
+//%
+bool isUSBInitialized() {
+    return false;
+}
+} // namespace control

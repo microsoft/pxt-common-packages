@@ -9,6 +9,7 @@ CPU_OPTIONS = -mthumb -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv4-sp-d16 -D__FPU
 DEFINES = \
   -DLIGHTWEIGHT_EVENTS=1 \
   -DDEVICE_DMESG_BUFFER_SIZE=4096 \
+  -DDEVICE_DAL_VERSION='"playdate"' \
   -DTARGET_PLAYDATE=1 \
   -DTARGET_EXTENSION=1 \
   -DPD=1 
