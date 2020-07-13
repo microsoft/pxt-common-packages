@@ -499,6 +499,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 s.flags &= ~sprites.Flag.IsClipping;
             }
         }
+        if (!s.isStatic()) s.setHitbox();
+        const hbox = s._hitbox;
+        const tileScale = tm.scale;
+        const tileSize = 1 << tileScale;
 
         const xDiff = Fx.sub(
             s._x,
@@ -583,9 +587,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         // Now that we've moved, check all of the tiles underneath the current position
         // for overlaps
-        const hbox = s._hitbox;
-        const tileScale = tm.scale;
-        const tileSize = 1 << tileScale;
         for (
             let x = hbox.left;
             x < Fx.iadd(tileSize, hbox.right);
@@ -699,6 +700,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
     protected canResolveClipping(s: Sprite, tm: tiles.TileMap) {
+        if (!s.isStatic()) s.setHitbox();
         const hbox = s._hitbox;
         const sz = 1 << tm.scale;
         const maxMove = this.maxStep;
