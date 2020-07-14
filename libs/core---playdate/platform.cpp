@@ -50,8 +50,8 @@ static int update(void *ud) {
     static int started;
     if (started || state) {
         if (!started) {
-            DMESG("progend: %p", programEnd);
             programEnd = (uintptr_t)malloc(1);
+            DMESG("progend: %p", programEnd);
         }
         codal_update();
         if (!started) {
