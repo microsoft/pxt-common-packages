@@ -438,7 +438,7 @@ namespace animation {
 
     function isClearPath(interval: number, target: Sprite, x0: number, y0: number, x1: number, y1: number): boolean {
         const tm = game.currentScene().tileMap;
-        if (tm && tm.enabled ) {
+        if (tm && tm.enabled) {
             const physics = game.currentScene().physicsEngine;
 
             const dx = x1 - x0;
