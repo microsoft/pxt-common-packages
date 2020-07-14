@@ -216,13 +216,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         sprite._lastY = sprite._y;
 
         if (sprite._ax) {
-            sprite._vx = this.constrain(
-                Fx.add(
-                    sprite._vx,
-                    Fx.mul(
-                        sprite._ax,
-                        dtSec
-                    )
+            sprite._vx = Fx.add(
+                sprite._vx,
+                Fx.mul(
+                    sprite._ax,
+                    dtSec
                 )
             );
         } else if (sprite._fx) {
@@ -237,13 +235,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
 
         if (sprite._ay) {
-            sprite._vy = this.constrain(
-                Fx.add(
-                    sprite._vy,
-                    Fx.mul(
-                        sprite._ay,
-                        dtSec
-                    )
+            sprite._vy = Fx.add(
+                sprite._vy,
+                Fx.mul(
+                    sprite._ay,
+                    dtSec
                 )
             );
         } else if( sprite._fy) {
@@ -256,6 +252,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             else
                 sprite._vy = Fx.zeroFx8
         }
+
+        sprite._vx = this.constrain(sprite._vx);
+        sprite._vy = this.constrain(sprite._vy);
 
         const dx = Fx.idiv(
             Fx.mul(
