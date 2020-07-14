@@ -122,7 +122,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.map.draw();
     }
 
-    checkHorizontalCollisions(right:boolean, xDiff: Fx8, yDiff:Fx8, movingSprite: MovingSprite, tm: tiles.TileMap): TilemapCollisionHandlers {
+    checkHorizontalCollisions(right: boolean, xDiff: Fx8, yDiff: Fx8, movingSprite: MovingSprite, tm: tiles.TileMap): TilemapCollisionHandlers {
         const s = movingSprite.sprite;
         const hbox = s._hitbox;
         const tileScale = tm.scale;
