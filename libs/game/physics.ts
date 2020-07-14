@@ -235,7 +235,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
 
         if (sprite._ay) {
-            sprite._vy =Fx.add(
+            sprite._vy = Fx.add(
                 sprite._vy,
                 Fx.mul(
                     sprite._ay,
