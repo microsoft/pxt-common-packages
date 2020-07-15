@@ -389,7 +389,7 @@ namespace game {
             protected score?: number,
             protected highScore?: number
         ) {
-            super(screen.width(), 46, defaultSplashFrame());
+            super(screen.width, 46, defaultSplashFrame());
             this.cursorOn = false;
             this.isNewHighScore = this.score > this.highScore;
         }
