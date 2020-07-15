@@ -394,19 +394,15 @@ namespace scene.systemMenu {
         return !!instance;
     }
 
-    function initVolume() {
+    function init() {
         const vol = settings.readNumber("#volume")
         if (vol !== undefined)
             music.setVolume(vol)
-    }
-
-    function initScreen() {
         const brightness = settings.readNumber("#brightness");
         if (brightness !== undefined)
             screen.setBrightness(brightness)
     }
 
-    initVolume()
-    initScreen()
+    init()
     scene.Scene.initializers.push(register);
 }
