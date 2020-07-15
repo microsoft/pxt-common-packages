@@ -22,7 +22,7 @@ COMMON_FLAGS = -W -Wall -Wno-unused-parameter -Wno-cast-function-type -Ipxtapp \
 LIBS = 
 CFLAGS = $(COMMON_FLAGS) -Wstrict-prototypes
 CXXFLAGS = $(COMMON_FLAGS) -std=c++11 -fno-rtti -fno-exceptions -fno-unwind-tables -fno-threadsafe-statics 
-LDFLAGS = -Wl,--gc-sections,--cref,--no-warn-mismatch -g -T$(SDK)/buildsupport/link_map.ld $(CPU_OPTIONS)
+LDFLAGS = -Wl,--gc-sections,--cref,--no-warn-mismatch -g -T$(SCHED)/link_map.ld $(CPU_OPTIONS)
 PREF = arm-none-eabi-
 CC = $(PREF)gcc
 LD = $(PREF)gcc
@@ -35,7 +35,6 @@ SCHED_CPP_SRC = $(wildcard $(SCHED)/*.cpp)
 PXT_OBJS += bld/$(SCHED)/CortexContextSwitch.o
 PXT_OBJS += $(addprefix bld/,$(SCHED_C_SRC:.c=.o))
 PXT_OBJS += $(addprefix bld/,$(SCHED_CPP_SRC:.cpp=.o))
-PXT_OBJS += bld/setup.o
 
 EXE = bld/pxt-app.elf
 HEX = $(EXE:.elf=.hex)
@@ -47,7 +46,7 @@ all: pdx
 
 $(EXE): $(PXT_OBJS)
 	$(LD) -o $(EXE) $(LDFLAGS) -Wl,-Map,$(EXE:.elf=.map) $(PXT_OBJS) $(LIBSTDCPP) $(LIBS) $(NPM_LIBS)
-	$(PREF)objcopy  --set-section-flags .bss=alloc,load,contents -O binary $(EXE) $(BIN)
+	$(PREF)objcopy -O binary $(EXE) $(BIN)
 	node -p 'require("fs").readFileSync("$(BIN)").toString("hex")' > $(HEX)
 	@ls -l $(BIN)
 
@@ -70,10 +69,6 @@ r: deploy
 
 clean:
 	rm -rf bld
-
-bld/setup.o: $(SDK)/buildsupport/setup.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
 
 bld/%.o: %.cpp $(DEPS)
 	@mkdir -p $(dir $@)

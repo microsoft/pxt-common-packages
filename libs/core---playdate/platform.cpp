@@ -17,7 +17,9 @@ int *getBootloaderConfigData() {
     return NULL;
 }
 
-void initRuntime() {}
+void initRuntime() {
+    DMESG("about to start TS code...");
+}
 
 void dumpDmesg() {
     sendSerial("\nDMESG:\n", 8);
@@ -43,12 +45,12 @@ PlaydateAPI *playdate = NULL;
 void codal_update();
 
 static int update(void *ud) {
-    uint32_t state = pxt::updateKeyEvents();
+    uint32_t btnstate = pxt::updateKeyEvents();
 
-    state = 1;
+    // btnstate = 1; // comment out to wait for key on start
 
     static int started;
-    if (started || state) {
+    if (started || btnstate) {
         if (!started) {
             programEnd = (uintptr_t)malloc(1);
             DMESG("progend: %p", programEnd);
