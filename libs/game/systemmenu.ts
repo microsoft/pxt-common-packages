@@ -284,11 +284,18 @@ namespace scene.systemMenu {
     }
 
     function brightnessUp() {
-        screen.setBrightness(screen.brightness() + 10);
+        setScreenBrightness(screen.brightness() + 5);
     }
 
     function brightnessDown() {
-        screen.setBrightness(screen.brightness() - 10);
+        setScreenBrightness(screen.brightness() - 5);
+    }
+
+    function setScreenBrightness(b: number) {
+        screen.setBrightness(b);
+        // we intentionally only save brightness when the user explicitly adjusts it
+        // we don't want to save it when adjusted programatically, because it could for example changing in a loop
+        settings.writeNumber("#brightness", screen.brightness())
     }
 
     function toggleStats() {
@@ -389,10 +396,17 @@ namespace scene.systemMenu {
 
     function initVolume() {
         const vol = settings.readNumber("#volume")
-        if (vol != null)
+        if (vol !== null)
             music.setVolume(vol)
     }
 
+    function initScreen() {
+        const brightness = settings.readNumber("#brightness");
+        if (brightness !== null)
+            screen.setBrightness(brightness)
+    }
+
     initVolume()
+    initScreen()
     scene.Scene.initializers.push(register);
 }
