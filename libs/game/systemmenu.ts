@@ -396,13 +396,13 @@ namespace scene.systemMenu {
 
     function initVolume() {
         const vol = settings.readNumber("#volume")
-        if (vol !== null)
+        if (vol !== undefined)
             music.setVolume(vol)
     }
 
     function initScreen() {
         const brightness = settings.readNumber("#brightness");
-        if (brightness !== null)
+        if (brightness !== undefined)
             screen.setBrightness(brightness)
     }
 
