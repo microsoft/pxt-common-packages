@@ -180,7 +180,7 @@ namespace game {
     }
 
     export class Dialog extends BaseDialog {
-        chunks: string[];
+        chunks: string[][];
         chunkIndex: number;
 
         constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
@@ -211,62 +211,18 @@ namespace game {
             }
         }
 
-        chunkText(str: string): string[] {
+        chunkText(str: string): string[][] {
             const charactersPerRow = Math.floor(this.textAreaWidth() / this.font.charWidth);
             const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
             const rowsOfCharacters = Math.floor(this.textAreaHeight() / this.rowHeight());
             const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
 
-            const screens: string[] = [];
+            let lineLengths: number[] = [];
 
-            let strIndex = 0;
-            let rowIndex = 0;
-            let current = "";
+            for (let i = 0; i < rowsOfCharacters - rowsWithCursor; i++) lineLengths.push(charactersPerRow);
+            for (let i = 0; i < rowsWithCursor; i++) lineLengths.push(charactersPerCursorRow);
 
-            while (strIndex < str.length) {
-                const currRowCharacters = rowIndex < rowsOfCharacters - rowsWithCursor ?
-                    charactersPerRow : charactersPerCursorRow;
-                const lastIndex = strIndex + currRowCharacters - 1;
-
-                if (str.charAt(lastIndex) === " " || lastIndex >= str.length - 1) {
-                    current += str.substr(strIndex, currRowCharacters);
-                    strIndex += currRowCharacters;
-                }
-                else if (str.charAt(lastIndex + 1) === " ") {
-                    // No need to break, but consume the space
-                    current += str.substr(strIndex, currRowCharacters);
-                    strIndex += currRowCharacters + 1;
-                }
-                else if (str.charAt(lastIndex - 1) === " ") {
-                    // Move the whole word down to the next row
-                    current += str.substr(strIndex, currRowCharacters - 1) + " ";
-                    strIndex += currRowCharacters - 1;
-                }
-                else if (str.charAt(lastIndex - 2) === " ") {
-                    // Move the whole word down to the next row
-                    current += str.substr(strIndex, currRowCharacters - 2) + "  ";
-                    strIndex += currRowCharacters - 2;
-                }
-                else {
-                    // Insert a break
-                    current += str.substr(strIndex, currRowCharacters - 1) + "-";
-                    strIndex += currRowCharacters - 1;
-                }
-
-                rowIndex++;
-                if (rowIndex >= rowsOfCharacters) {
-                    rowIndex = 0;
-                    screens.push(current);
-                    current = "";
-                }
-            }
-
-            // Only pushes the last part of the message to the screen when current isn't empty
-            if (current) {
-                screens.push(current);
-            }
-
-            return screens;
+            return breakIntoPages(str, lineLengths);
         }
 
         setText(rawString: string) {
@@ -277,30 +233,23 @@ namespace game {
 
         drawTextCore() {
             if (!this.chunks || this.chunks.length === 0) return;
-            const str = this.chunks[this.chunkIndex];
+            const lines = this.chunks[this.chunkIndex];
             const availableWidth = this.textAreaWidth();
             const availableHeight = this.textAreaHeight();
 
             const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
-            const charactersPerCursorRow = Math.floor(charactersPerRow - (this.cursor.width / this.font.charWidth));
             const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
-            const rowsWithCursor = Math.ceil(this.cursor.height / this.rowHeight());
 
             const textLeft = 1 + this.innerLeft + this.unit + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
             const textTop = 1 + this.innerTop + this.unit + ((availableHeight - rowsOfCharacters * this.rowHeight()) >> 1);
 
-            let current = 0;
-            for (let row = 0; row < rowsOfCharacters; row++) {
-                const currRowCharacters = row % rowsOfCharacters < rowsOfCharacters - rowsWithCursor ?
-                    charactersPerRow : charactersPerCursorRow;
-
+            for (let row = 0; row < lines.length; row++) {
                 this.image.print(
-                    str.substr(current, currRowCharacters),
+                    lines[row],
                     textLeft,
                     textTop + row * this.rowHeight(),
                     this.textColor, this.font
                 )
-                current += currRowCharacters;
             }
         }
     }
@@ -701,6 +650,82 @@ namespace game {
 
         pauseUntil(() => done);
         controller._setUserEventsEnabled(true);
+    }
+
+    function isBreakCharacter(charCode: number) {
+        return charCode <= 32 ||
+            (charCode >= 58 && charCode <= 64) ||
+            (charCode >= 91 && charCode <= 96) ||
+            (charCode >= 123 && charCode <= 126);
+    }
+
+    function breakIntoPages(text: string, lineLengths: number[]): string[][] {
+        const result: string[][] = [];
+
+        let currentPage: string[] = [];
+
+        let lastBreakLocation = 0;
+        let lastBreak = 0;
+        let line = 0;
+        let lineLength = lineLengths[line];
+
+        function nextLine() {
+            line++;
+            lineLength = lineLengths[line];
+        }
+
+        for (let index = 0; index < text.length; index++) {
+            if (text.charAt(index) === "\n") {
+                currentPage.push(formatLine(text.substr(lastBreak, index - lastBreak)));
+                index++;
+                lastBreak = index;
+                nextLine();
+            }
+            // Handle \\n in addition to \n because that's how it gets converted from blocks
+            else if (text.charAt(index) === "\\" && text.charAt(index + 1) === "n") {
+                currentPage.push(formatLine(text.substr(lastBreak, index - lastBreak)));
+                index += 2;
+                lastBreak = index
+                nextLine();
+            }
+            else if (isBreakCharacter(text.charCodeAt(index))) {
+                lastBreakLocation = index;
+            }
+
+            if (index - lastBreak === lineLength) {
+                if (lastBreakLocation === index || lastBreakLocation < lastBreak) {
+                    currentPage.push(formatLine(text.substr(lastBreak, lineLength)));
+                    lastBreak = index;
+                    nextLine();
+                }
+                else {
+                    currentPage.push(formatLine(text.substr(lastBreak, lastBreakLocation - lastBreak)));
+                    lastBreak = lastBreakLocation;
+                    nextLine();
+                }
+            }
+
+            if (line >= lineLengths.length) {
+                line = 0;
+                lineLength = lineLengths[line];
+                result.push(currentPage);
+                currentPage = [];
+            }
+        }
+
+        currentPage.push(formatLine(text.substr(lastBreak, text.length - lastBreak)));
+
+        if (currentPage.length > 1 || currentPage[0] !== "") {
+            result.push(currentPage);
+        }
+
+        return result;
+    }
+
+    function formatLine(text: string) {
+        let i = 0;
+        while (text.charAt(i) === " ") i++;
+        return text.substr(i, text.length);
     }
 }
 
