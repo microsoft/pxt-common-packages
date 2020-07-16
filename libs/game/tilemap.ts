@@ -427,7 +427,7 @@ namespace tiles {
         return i;
     }
 
-    export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): TileMapData {
+    export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale = TileScale.Sixteen): TileMapData {
         return new TileMapData(data, layer, tiles, scale)
     }
 
