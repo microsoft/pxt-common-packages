@@ -14,7 +14,7 @@ You can set the background color of the screen at anytime. The background color 
 
 There are 16 colors available to choose from. These colors are set in the current color _pallete_.
 The pallete contains a collection of colors, each of which have an index number from `0` to `15`. The index
-is also known as the color number. Unless the pallete is changed the pallete has these colors as the
+is also known as the **color number**. Unless the pallete is changed, the pallete has these colors as the
 default:
 
 * `0`: transparent
