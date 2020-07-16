@@ -577,6 +577,7 @@ namespace tiles {
 }
 
 //% helper=getTilemapByName
+//% pyConvertToTaggedTemplate
 function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
 
 namespace helpers {
