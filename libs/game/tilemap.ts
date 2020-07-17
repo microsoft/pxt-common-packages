@@ -602,8 +602,8 @@ namespace tiles {
     }
 
     /**
-     *
-     * @param tile a random tile of the get
+     * Get a random tile of the given type
+     * @param tile the type of tile to get a random selection of
      */
     export function getRandomTileByType(tile: Image): Location {
         const scene = game.currentScene();
