@@ -315,6 +315,32 @@ namespace tiles {
             return output;
         }
 
+        public sampleTilesByType(index: number, maxCount: number): Location[] {
+            if (this.isInvalidIndex(index) || !this.enabled || maxCount <= 0) return [];
+
+            let count = 0;
+            const reservoir: Location[] = [];
+            for (let col = 0; col < this._map.width; ++col) {
+                for (let row = 0; row < this._map.height; ++row) {
+                    let currTile = this._map.getTile(col, row);
+                    if (currTile === index) {
+                        // first **maxCount** elements just enqueue
+                        if (count < maxCount) {
+                            reservoir.push(new Location(col, row, this));
+                        } else {
+                            const potentialIndex = randint(0, count);
+                            if (potentialIndex < maxCount) {
+                                reservoir[potentialIndex] = new Location(col, row, this);
+                            }
+                        }
+                        ++count;
+                    }
+                }
+            }
+
+            return reservoir;
+        }
+
         protected isInvalidIndex(index: number): boolean {
             return index < 0 || index > 0xff;
         }
@@ -554,9 +580,9 @@ namespace tiles {
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
         if (!sprite || !game.currentScene().tileMap) return;
-        const tiles = getTilesByType(tile);
-        if (tiles.length > 0)
-            Math.pickRandom(tiles).place(sprite);
+        const loc = getRandomTileByType(tile);
+        if (loc)
+            loc.place(sprite);
     }
 
     /**
@@ -573,6 +599,19 @@ namespace tiles {
         if (!tile || !scene.tileMap) return [];
         const index = scene.tileMap.getImageType(tile);
         return scene.tileMap.getTilesByType(index);
+    }
+
+    /**
+     * Get a random tile of the given type
+     * @param tile the type of tile to get a random selection of
+     */
+    export function getRandomTileByType(tile: Image): Location {
+        const scene = game.currentScene();
+        if (!tile || !scene.tileMap)
+            return undefined;
+        const index = scene.tileMap.getImageType(tile);
+        const sample = scene.tileMap.sampleTilesByType(index, 1);
+        return sample[0];
     }
 }
 
