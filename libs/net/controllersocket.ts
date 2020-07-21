@@ -95,8 +95,9 @@ namespace net {
                     // Make sure to close socket so that we don't exhaust sockets.
                     this.close()
                     control.fail("Didn't receive full response, failing out")
+                } else {
+                    pause(20)
                 }
-
             }
             const pos = this._buffer.indexOf(hex`0d0a`)
             const pref = this._buffer.slice(0, pos)
@@ -130,6 +131,8 @@ namespace net {
                     let recv = this.controller.socketRead(this._socknum, Math.min(to_read, avail))
                     received.push(recv)
                     to_read -= recv.length
+                } else {
+                    pause(20)
                 }
 
                 if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
