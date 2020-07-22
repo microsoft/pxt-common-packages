@@ -253,7 +253,11 @@ class Sprite extends sprites.BaseSprite {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
-        const newHitBox = game.calculateHitBox(this);
+        this.setHitbox();
+    }
+
+    setHitbox() {
+        let newHitBox = game.calculateHitBox(this);
 
         if (!this._hitbox) {
             this._hitbox = newHitBox;
@@ -291,10 +295,6 @@ class Sprite extends sprites.BaseSprite {
             this._hitbox.oy = oMinY;
             this._hitbox.height = Fx.sub(oMaxY, oMinY);
         }
-    }
-
-    setHitbox() {
-        this._hitbox = game.calculateHitBox(this);
     }
 
     isStatic() {
