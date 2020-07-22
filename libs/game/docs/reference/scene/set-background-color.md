@@ -19,19 +19,19 @@ default:
 
 * `0`: transparent
 * `1`: white
-* `2`: light blue
-* `3`: medium blue
-* `4`: dark blue
-* `5`: violet
-* `6`: lime
-* `7`: olive
-* `8`: brown
-* `9`: cyan
-* `10`: red
-* `11`: purple
-* `12`: pink
-* `13`: orange
-* `14`: yellow
+* `2`: red
+* `3`: pink
+* `4`: orange
+* `5`: yellow
+* `6`: teal
+* `7`: green
+* `8`: blue
+* `9`: light blue
+* `10`: purple
+* `11`: light purple
+* `12`: dark purple
+* `13`: tan
+* `14`: brown
 * `15`: black
 
 ### ~
