@@ -11,11 +11,11 @@ namespace pxsim.multiplayer {
         getMultiplayerState().origin = on ? "client" : "server";
     }
 
-    export function getCurrentImage() : pxsim.RefImage {
+    export function getCurrentImage(): pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
     }
 
-    export function getOrigin() : string {
+    export function getOrigin(): string {
         return getMultiplayerState().origin;
     }
 }
