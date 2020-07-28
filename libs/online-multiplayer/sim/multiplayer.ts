@@ -1,8 +1,9 @@
 namespace pxsim.multiplayer {
-    export function postImage(im: pxsim.RefImage) {
+    export function postImage(im: pxsim.RefImage, goal: string) {
         getMultiplayerState().send(<MultiplayerImageMessage>{
             content: "Image",
             data: im,
+            goal
         });
     }
 }
@@ -18,13 +19,14 @@ namespace pxsim {
 
     export interface SimulatorMultiplayerMessage extends SimulatorMessage {
         type: "multiplayer";
-        origin?: "server" | "client";
         content: string;
+        origin?: "server" | "client";
         id?: number;
     }
 
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
         content: "Image";
+        goal: string; // goal of message; e.g. "broadcast-screen"
         data: RefImage;
     }
 

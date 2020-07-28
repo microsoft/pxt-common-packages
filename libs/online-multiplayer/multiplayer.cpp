@@ -2,7 +2,7 @@
 
 namespace multiplayer {
     //%
-    void postImage(Image_ im) {
+    void postImage(Image_ im, String goal) {
         // no support >:(
     }
 }
