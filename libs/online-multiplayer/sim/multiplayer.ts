@@ -3,6 +3,7 @@ namespace pxsim.multiplayer {
         type: "online-multiplayer";
         origin: "server" | "client";
         content: string;
+        id: number;
         data: any;
     }
 
@@ -17,11 +18,19 @@ namespace pxsim.multiplayer {
     }
 
     export function postImage(im: pxsim.RefImage) {
-        Runtime.postMessage(<MultiplayerImageMessage>{
-            type: "online-multiplayer",
+        postMultiplayerMessage(<MultiplayerImageMessage>{
             origin: isServer ? "server" : "client",
             content: "Image",
             data: im,
-        })
+        });
+    }
+
+    let msgId = 0;
+    function postMultiplayerMessage(msg: SimulatorMultiplayerMessage) {
+        Runtime.postMessage(<SimulatorMultiplayerMessage>{
+            ...msg,
+            type: "online-multiplayer",
+            id: msgId++
+        });
     }
 }
