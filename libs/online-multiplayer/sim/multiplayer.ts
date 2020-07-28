@@ -101,14 +101,14 @@ namespace pxsim {
     }
 
     function isMultiplayerMessage(msg: SimulatorMessage): msg is SimulatorMultiplayerMessage {
-        return msg?.type === "multiplayer";
+        return msg && msg.type === "multiplayer";
     }
 
     function isImageMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerImageMessage {
-        return msg?.content === "Image";
+        return msg && msg.content === "Image";
     }
 
     function isButtonMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerButtonEvent {
-        return msg?.content === "Button";
+        return msg && msg.content === "Button";
     }
 }
