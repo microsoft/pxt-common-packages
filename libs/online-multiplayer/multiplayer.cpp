@@ -19,7 +19,7 @@ namespace multiplayer {
 
     //%
     String getOrigin() {
-        return "";
+        return NULL;
     }
 
 }
