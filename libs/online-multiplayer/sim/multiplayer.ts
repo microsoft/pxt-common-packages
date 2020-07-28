@@ -31,22 +31,24 @@ namespace pxsim {
 
     export interface MultiplayerButtonEvent extends SimulatorMultiplayerMessage {
         content: "Button";
-        button: "A" | "B" | "UP" | "DOWN" | "LEFT" | "RIGHT" | "MENU";
+        button: number; // pxsim.Key.A, ...
         state: "Pressed" | "Released" | "Held";
     }
 
     export class MultiplayerState {
         lastMessageId: number;
+        origin: "client" | "server"
 
-        constructor(public isServer: boolean) {
+        constructor() {
             this.lastMessageId = 0;
+            this.origin = "server";
         }
 
         send(msg: SimulatorMultiplayerMessage) {
             Runtime.postMessage(<SimulatorMultiplayerMessage>{
                 ...msg,
                 type: "multiplayer",
-                origin: this.isServer ? "server" : "client",
+                origin: this.origin,
                 id: this.lastMessageId++
             });
         }
@@ -63,7 +65,10 @@ namespace pxsim {
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
             } else if (isButtonMessage(msg)) {
-                // propagate button event to sim
+                (board() as any).setButton(
+                    msg.button,
+                    msg.state === "Pressed" || msg.state === "Held"
+                );
             }
         }
     }
