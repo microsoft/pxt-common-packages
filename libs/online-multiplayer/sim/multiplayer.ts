@@ -17,7 +17,7 @@ namespace pxsim {
     }
 
     export interface SimulatorMultiplayerMessage extends SimulatorMessage {
-        type: "online-multiplayer";
+        type: "multiplayer";
         origin: "server" | "client";
         content: string;
         id: number;
@@ -39,7 +39,7 @@ namespace pxsim {
         send(msg: SimulatorMultiplayerMessage) {
             Runtime.postMessage(<SimulatorMultiplayerMessage>{
                 ...msg,
-                type: "online-multiplayer",
+                type: "multiplayer",
                 origin: this.isServer ? "server" : "client",
                 id: this.lastMessageId++
             });
@@ -61,7 +61,7 @@ namespace pxsim {
     }
 
     function isMultiplayerMessage(msg: SimulatorMessage): msg is SimulatorMultiplayerMessage {
-        return msg?.type === "online-multiplayer";
+        return msg?.type === "multiplayer";
     }
 
     function isImageMessage(msg: SimulatorMultiplayerMessage) {
