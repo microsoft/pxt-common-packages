@@ -2,7 +2,7 @@ declare namespace multiplayer {
     //% shim=multiplayer::postImage
     function postImage(im: Image, goal: string): void;
 
-    //% shim=multiplayer::getCurrentIMage
+    //% shim=multiplayer::getCurrentImage
     function getCurrentImage(): Image;
 
     //% shim=multiplayer::setIsClient
