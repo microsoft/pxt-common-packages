@@ -10,6 +10,10 @@ namespace pxsim.multiplayer {
     export function setIsClient(on: boolean) {
         getMultiplayerState().origin = on ? "client" : "server";
     }
+
+    export function getCurrentImage() : pxsim.RefImage {
+        return getMultiplayerState().backgroundImage;
+    }
 }
 
 namespace pxsim {
@@ -43,7 +47,8 @@ namespace pxsim {
 
     export class MultiplayerState {
         lastMessageId: number;
-        origin: "client" | "server"
+        origin: "client" | "server";
+        backgroundImage: RefImage;
 
         constructor() {
             this.lastMessageId = 0;
@@ -81,6 +86,7 @@ namespace pxsim {
 
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
+                this.backgroundImage = msg.data;
             } else if (isButtonMessage(msg)) {
                 (board() as any).setButton(
                     msg.button + 7, // + 7 to make it player 2 controls,
