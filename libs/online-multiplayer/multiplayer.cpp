@@ -11,12 +11,14 @@ namespace multiplayer {
         // no
     }
 
+    //%
     Image_ getCurrentImage() {
         // nah
         return NULL;
     }
 
-    string getOrigin() {
+    //%
+    String getOrigin() {
         return "";
     }
 
