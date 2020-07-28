@@ -1,9 +1,8 @@
 #include "pxt.h"
 
 namespace multiplayer {
-
     //%
-    void postImage(Image_: im) {
+    void postImage(Image_ im) {
         // no
     }
 }
