@@ -17,7 +17,8 @@ namespace pxsim {
         return (board() as EventBusBoard as MultiplayerBoard).multiplayerState;
     }
 
-    export interface SimulatorMultiplayerMessage extends SimulatorMessage {
+    export interface SimulatorMultiplayerMessage extends SimulatorBroadcastMessage {
+        broadcast: true
         type: "multiplayer";
         content: string;
         origin?: "server" | "client";
@@ -48,6 +49,7 @@ namespace pxsim {
         send(msg: SimulatorMultiplayerMessage) {
             Runtime.postMessage(<SimulatorMultiplayerMessage>{
                 ...msg,
+                broadcast: true,
                 type: "multiplayer",
                 origin: this.origin,
                 id: this.lastMessageId++
@@ -67,7 +69,7 @@ namespace pxsim {
                 // do what we need to propagate image to sim
             } else if (isButtonMessage(msg)) {
                 // TODO: need to set as player 2's buttons if from client
-                (board() as any).setButton(
+                (board() as any).handleKeyEvent(
                     msg.button,
                     msg.state === "Pressed" || msg.state === "Held"
                 );
