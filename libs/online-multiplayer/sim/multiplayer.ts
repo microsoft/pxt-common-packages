@@ -68,9 +68,8 @@ namespace pxsim {
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
             } else if (isButtonMessage(msg)) {
-                // TODO: need to set as player 2's buttons if from client
                 (board() as any).handleKeyEvent(
-                    msg.button,
+                    msg.button + 7, // + 7 to make it player 2 controls,
                     msg.state === "Pressed" || msg.state === "Held"
                 );
             }
