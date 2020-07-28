@@ -29,6 +29,12 @@ namespace pxsim {
         data: RefImage;
     }
 
+    export interface MultiplayerButtonEvent extends SimulatorMultiplayerMessage {
+        content: "Button";
+        button: "A" | "B" | "UP" | "DOWN" | "LEFT" | "RIGHT" | "MENU";
+        state: "Pressed" | "Released" | "Held";
+    }
+
     export class MultiplayerState {
         lastMessageId: number;
 
@@ -56,6 +62,8 @@ namespace pxsim {
 
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
+            } else if (isButtonMessage(msg)) {
+                // propagate button event to sim
             }
         }
     }
@@ -64,7 +72,11 @@ namespace pxsim {
         return msg?.type === "multiplayer";
     }
 
-    function isImageMessage(msg: SimulatorMultiplayerMessage) {
+    function isImageMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerImageMessage {
         return msg?.content === "Image";
+    }
+
+    function isButtonMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerButtonEvent {
+        return msg?.content === "Button";
     }
 }
