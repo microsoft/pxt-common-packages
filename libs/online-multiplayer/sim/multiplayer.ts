@@ -13,7 +13,7 @@ namespace pxsim {
     }
 
     export function getMultiplayerState() {
-        return (board() as any as MultiplayerBoard).multiplayerState;
+        return (board() as EventBusBoard as MultiplayerBoard).multiplayerState;
     }
 
     export interface SimulatorMultiplayerMessage extends SimulatorMessage {
@@ -46,8 +46,7 @@ namespace pxsim {
         }
 
         addListeners() {
-            const board = runtime.board as pxsim.BaseBoard;
-            board.addMessageListener(msg => this.messageHandler(msg));
+            runtime.board.addMessageListener(msg => this.messageHandler(msg));
         }
 
         protected messageHandler(msg: SimulatorMessage) {
