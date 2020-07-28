@@ -1,8 +1,9 @@
 namespace pxsim.multiplayer {
-    export function postImage(im: pxsim.RefImage) {
+    export function postImage(im: pxsim.RefImage, goal: string) {
         getMultiplayerState().send(<MultiplayerImageMessage>{
             content: "Image",
             data: im,
+            goal
         });
     }
 }
@@ -16,15 +17,17 @@ namespace pxsim {
         return (board() as EventBusBoard as MultiplayerBoard).multiplayerState;
     }
 
-    export interface SimulatorMultiplayerMessage extends SimulatorMessage {
+    export interface SimulatorMultiplayerMessage extends SimulatorBroadcastMessage {
+        broadcast: true
         type: "multiplayer";
-        origin?: "server" | "client";
         content: string;
+        origin?: "server" | "client";
         id?: number;
     }
 
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
         content: "Image";
+        goal: string; // goal of message; e.g. "broadcast-screen"
         data: RefImage;
     }
 
@@ -46,6 +49,7 @@ namespace pxsim {
         send(msg: SimulatorMultiplayerMessage) {
             Runtime.postMessage(<SimulatorMultiplayerMessage>{
                 ...msg,
+                broadcast: true,
                 type: "multiplayer",
                 origin: this.origin,
                 id: this.lastMessageId++
@@ -64,8 +68,8 @@ namespace pxsim {
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
             } else if (isButtonMessage(msg)) {
-                (board() as any).setButton(
-                    msg.button + 7, // + 7 to make it player 2 controls
+                (board() as any).handleKeyEvent(
+                    msg.button + 7, // + 7 to make it player 2 controls,
                     msg.state === "Pressed" || msg.state === "Held"
                 );
             }
