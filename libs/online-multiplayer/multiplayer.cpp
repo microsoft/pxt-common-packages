@@ -16,4 +16,8 @@ namespace multiplayer {
         return NULL;
     }
 
+    string getOrigin() {
+        return "";
+    }
+
 }

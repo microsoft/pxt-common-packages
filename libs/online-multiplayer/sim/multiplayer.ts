@@ -14,6 +14,10 @@ namespace pxsim.multiplayer {
     export function getCurrentImage() : pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
     }
+
+    export function getOrigin() : string {
+        return getMultiplayerState().origin;
+    }
 }
 
 namespace pxsim {
