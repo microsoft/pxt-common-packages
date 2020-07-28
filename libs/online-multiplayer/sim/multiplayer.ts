@@ -64,6 +64,7 @@ namespace pxsim {
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
             } else if (isButtonMessage(msg)) {
+                // TODO: need to set as player 2's buttons if from client
                 (board() as any).setButton(
                     msg.button,
                     msg.state === "Pressed" || msg.state === "Held"
