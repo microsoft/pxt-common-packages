@@ -6,6 +6,10 @@ namespace pxsim.multiplayer {
             goal
         });
     }
+
+    export function setIsClient(on: boolean) {
+        getMultiplayerState().origin = on ? "client" : "server";
+    }
 }
 
 namespace pxsim {
