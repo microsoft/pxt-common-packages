@@ -1,12 +1,6 @@
 namespace pxsim.multiplayer {
-    let isServer = false;
-    export function setIsServer(server: boolean) {
-        isServer = server;
-    }
-
     export function postImage(im: pxsim.RefImage) {
         getMultiplayerState().send(<MultiplayerImageMessage>{
-            origin: isServer ? "server" : "client",
             content: "Image",
             data: im,
         });
@@ -37,7 +31,8 @@ namespace pxsim {
 
     export class MultiplayerState {
         lastMessageId: number;
-        constructor() {
+
+        constructor(public isServer: boolean) {
             this.lastMessageId = 0;
         }
 
@@ -45,6 +40,7 @@ namespace pxsim {
             Runtime.postMessage(<SimulatorMultiplayerMessage>{
                 ...msg,
                 type: "online-multiplayer",
+                origin: this.isServer ? "server" : "client",
                 id: this.lastMessageId++
             });
         }
@@ -54,14 +50,22 @@ namespace pxsim {
             board.addMessageListener(msg => this.messageHandler(msg));
         }
 
-        private messageHandler(msg: SimulatorMessage) {
-            if (msg.type == "online-multiplayer") {
-                this.receiveMessage(<SimulatorMultiplayerMessage>msg);
+        protected messageHandler(msg: SimulatorMessage) {
+            if (!isMultiplayerMessage(msg)) {
+                return;
+            }
+
+            if (isImageMessage(msg)) {
+                // do what we need to propagate image to sim
             }
         }
+    }
 
-        protected receiveMessage(msg: SimulatorMultiplayerMessage) {
+    function isMultiplayerMessage(msg: SimulatorMessage): msg is SimulatorMultiplayerMessage {
+        return msg?.type === "online-multiplayer";
+    }
 
-        }
+    function isImageMessage(msg: SimulatorMultiplayerMessage) {
+        return msg?.content === "Image";
     }
 }
