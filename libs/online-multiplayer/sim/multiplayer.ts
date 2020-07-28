@@ -60,6 +60,16 @@ namespace pxsim {
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
         }
 
+        setButton(key: number, isPressed: boolean) {
+            if (this.origin !== "server") {
+                this.send(<pxsim.MultiplayerButtonEvent>{
+                    content: "Button",
+                    button: key,
+                    state: isPressed ? "Pressed" : "Released"
+                })
+            }
+        }
+
         protected messageHandler(msg: SimulatorMessage) {
             if (!isMultiplayerMessage(msg)) {
                 return;
