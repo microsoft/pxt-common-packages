@@ -18,10 +18,9 @@ namespace pxsim {
 
     export interface SimulatorMultiplayerMessage extends SimulatorMessage {
         type: "multiplayer";
-        origin: "server" | "client";
+        origin?: "server" | "client";
         content: string;
-        id: number;
-        data: any;
+        id?: number;
     }
 
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
