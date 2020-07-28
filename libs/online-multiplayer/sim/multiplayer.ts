@@ -36,7 +36,8 @@ namespace pxsim {
 
     export class MultiplayerState {
         lastMessageId: number;
-        origin: "client" | "server"
+        origin: "client" | "server";
+        imageHandler: (im: number[]) => void;
 
         constructor() {
             this.lastMessageId = 0;
@@ -56,6 +57,10 @@ namespace pxsim {
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
         }
 
+        addImageHandler(handler: (im: number[]) => void) {
+            this.imageHandler = handler;
+        }
+
         protected messageHandler(msg: SimulatorMessage) {
             if (!isMultiplayerMessage(msg)) {
                 return;
@@ -63,6 +68,7 @@ namespace pxsim {
 
             if (isImageMessage(msg)) {
                 // do what we need to propagate image to sim
+                this.imageHandler((msg as MultiplayerImageMessage).data.data); //Just the array of half bytes
             } else if (isButtonMessage(msg)) {
                 (board() as any).setButton(
                     msg.button + 7, // + 7 to make it player 2 controls
