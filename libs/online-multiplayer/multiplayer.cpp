@@ -10,4 +10,14 @@ namespace multiplayer {
     void setIsClient(bool on) {
         // no
     }
+
+    Image_ getCurrentImage() {
+        // nah
+        return NULL;
+    }
+
+    string getOrigin() {
+        return "";
+    }
+
 }
