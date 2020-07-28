@@ -3,6 +3,6 @@
 namespace multiplayer {
     //%
     void postImage(Image_ im) {
-        // no
+        // no support >:(
     }
 }
