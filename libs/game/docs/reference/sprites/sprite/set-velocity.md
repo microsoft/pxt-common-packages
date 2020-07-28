@@ -9,7 +9,7 @@ sprites.create(null).setVelocity(0, 0)
 Sprites that aren't projectiles are created without any motion. Every sprite has `vx` and `vy` properties which are its horizontal and vertical speeds.
 You can set both of the speeds at once to make a sprite move in any direction.
 
-### Parameters
+## Parameters
 
 * **vx**: the new horizontal velocity (speed) for the sprite.
 * **vy**: the new vertical velocity (speed) for the sprite.
