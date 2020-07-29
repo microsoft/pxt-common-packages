@@ -34,6 +34,7 @@ namespace pxsim {
         type: "multiplayer";
         content: string;
         origin?: "server" | "client";
+        clientNumber?: number;
         id?: number;
     }
 
@@ -104,7 +105,7 @@ namespace pxsim {
                 this.backgroundImage = msg.image;
             } else if (isButtonMessage(msg)) {
                 (board() as any).setButton(
-                    msg.button + 7, // + 7 to make it player 2 controls,
+                    msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
                     msg.state === "Pressed" || msg.state === "Held"
                 );
             }
