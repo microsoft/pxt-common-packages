@@ -18,15 +18,6 @@ namespace pxsim.multiplayer {
     export function getOrigin(): string {
         return getMultiplayerState().origin;
     }
-
-    setInterval(() => {
-        if (getOrigin() === "server") {
-            const b = board() as ScreenBoard;
-            const screenState = b && b.screenState;
-            const lastImage = screenState && screenState.lastImage;
-            lastImage && postImage(lastImage, "broadcast-screen");
-        }
-    }, 50);
 }
 
 namespace pxsim {
@@ -78,8 +69,16 @@ namespace pxsim {
             });
         }
 
-        addListeners() {
+        init() {
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
+            setInterval(() => {
+                if (this.origin === "server") {
+                    const b = board() as ScreenBoard;
+                    const screenState = b && b.screenState;
+                    const lastImage = screenState && screenState.lastImage;
+                    lastImage && pxsim.multiplayer.postImage(lastImage, "broadcast-screen");
+                }
+            }, 50);
         }
 
         setButton(key: number, isPressed: boolean) {
