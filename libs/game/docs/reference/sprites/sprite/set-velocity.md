@@ -20,9 +20,6 @@ Create a sprite to bounce off the sides of the screen. Set the **vx** and ***vy*
 velocities to `50`.
 
 ```blocks
-enum SpriteKind {
-    Example
-}
 let mySprite: Sprite = null
 mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
@@ -41,7 +38,7 @@ mySprite = sprites.create(img`
 7 5 7 8 8 8 8 8 8 8 8 8 8 7 4 7 
 7 7 8 8 8 8 8 8 8 8 8 8 8 8 7 7 
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-`, SpriteKind.Example)
+`, SpriteKind.Player)
 mySprite.setFlag(SpriteFlag.BounceOnWall, true)
 mySprite.setVelocity(50, 50)
 ```
