@@ -9,6 +9,6 @@ namespace pxsim {
     }
 
     export function board(): CommonBoard {
-        return runtime.board as CommonBoard;
+        return runtime && runtime.board as CommonBoard;
     }
 }
