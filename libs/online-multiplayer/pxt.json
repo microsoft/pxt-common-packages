@@ -1,10 +1,10 @@
 {
-    "name": "Online multiplayer support",
+    "name": "online-multiplayer-support",
     "description": "Multiplayer support",
     "files": [
+        "multiplayer.d.ts",
         "multiplayer.cpp",
-        "multiplayer.ts",
-        "multiplayer.d.ts"
+        "multiplayer.ts"
     ],
     "public": true,
     "dependencies": {

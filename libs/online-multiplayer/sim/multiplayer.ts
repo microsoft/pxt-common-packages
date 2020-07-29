@@ -18,6 +18,15 @@ namespace pxsim.multiplayer {
     export function getOrigin(): string {
         return getMultiplayerState().origin;
     }
+
+    setInterval(() => {
+        if (getOrigin() === "server") {
+            const b = board() as ScreenBoard;
+            const screenState = b && b.screenState;
+            const lastImage = screenState && screenState.lastImage;
+            lastImage && postImage(lastImage, "broadcast-screen");
+        }
+    }, 50);
 }
 
 namespace pxsim {
