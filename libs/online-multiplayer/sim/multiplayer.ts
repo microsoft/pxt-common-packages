@@ -2,7 +2,7 @@ namespace pxsim.multiplayer {
     export function postImage(im: pxsim.RefImage, goal: string) {
         getMultiplayerState().send(<MultiplayerImageMessage>{
             content: "Image",
-            data: im,
+            image: im,
             goal
         });
     }
@@ -40,7 +40,7 @@ namespace pxsim {
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
         content: "Image";
         goal: string; // goal of message; e.g. "broadcast-screen"
-        data: RefImage;
+        image: RefImage;
     }
 
     export interface MultiplayerButtonEvent extends SimulatorMultiplayerMessage {
@@ -89,8 +89,11 @@ namespace pxsim {
             }
 
             if (isImageMessage(msg)) {
-                // do what we need to propagate image to sim
-                this.backgroundImage = msg.data;
+                // HACK: peer js can convert Uint8Array into ArrayBuffer when transmitting; fix this.
+                if (!ArrayBuffer.isView(msg.image.data)) {
+                    msg.image.data = new Uint8Array(msg.image.data);
+                }
+                this.backgroundImage = msg.image;
             } else if (isButtonMessage(msg)) {
                 (board() as any).setButton(
                     msg.button + 7, // + 7 to make it player 2 controls,
