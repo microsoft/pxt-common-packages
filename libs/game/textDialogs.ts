@@ -226,9 +226,9 @@ namespace game {
         }
 
         setText(rawString: string) {
+            this.setFont(image.getFontForText(rawString));
             this.chunks = this.chunkText(rawString);
             this.chunkIndex = 0;
-            this.setFont(image.getFontForText(rawString));
         }
 
         drawTextCore() {
