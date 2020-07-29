@@ -766,7 +766,7 @@ namespace pxsim.image {
             if (img._bpp == 4) {
                 let p = i
                 for (let j = 0; j < h; j += 2) {
-                    r[dstP++] = ((data[p + 1] & 0xf) << 4) | ((data[p] || 0) & 0xf)
+                    r[dstP++] = ((data[p + w] & 0xf) << 4) | ((data[p] || 0) & 0xf)
                     p += 2 * w
                 }
                 dstP = (dstP + 3) & ~3

@@ -1,8 +1,9 @@
 namespace pxsim.multiplayer {
     export function postImage(im: pxsim.RefImage, goal: string) {
+        const asBuf = pxsim.image.toBuffer(im);
         getMultiplayerState().send(<MultiplayerImageMessage>{
             content: "Image",
-            image: im,
+            image: asBuf,
             goal
         });
     }
@@ -102,7 +103,7 @@ namespace pxsim {
                 if (!ArrayBuffer.isView(msg.image.data)) {
                     msg.image.data = new Uint8Array(msg.image.data);
                 }
-                this.backgroundImage = msg.image;
+                this.backgroundImage = pxsim.image.ofBuffer(msg.image);
             } else if (isButtonMessage(msg)) {
                 (board() as any).setButton(
                     msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
