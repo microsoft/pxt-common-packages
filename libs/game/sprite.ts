@@ -445,7 +445,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics"
     //% weight=100
     //% blockId=spritesetvel block="set %sprite(mySprite) velocity to vx %vx vy %vy"
-    //% help=sprites/sprite/set-velociy
+    //% help=sprites/sprite/set-velocity
     //% vx.shadow=spriteSpeedPicker
     //% vy.shadow=spriteSpeedPicker
     setVelocity(vx: number, vy: number): void {
