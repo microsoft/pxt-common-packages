@@ -16,7 +16,7 @@ You can set both of the speeds at once to make a sprite move in any direction.
 
 ## Example #example
 
-Create a sprite to bounce off the sides of the screen. Set the **vx** and ***vy**
+Create a sprite to bounce off the sides of the screen. Set the **vx** and **vy**
 velocities to `50`.
 
 ```blocks
