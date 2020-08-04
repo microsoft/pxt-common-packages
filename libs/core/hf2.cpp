@@ -107,13 +107,17 @@ int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
 #define CTRL_OUT_REPORT_H 0x2
 #define CTRL_IN_REPORT_H 0x1
 
-void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size) {
+void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t prepend) {
     if (!CodalUSB::usbInstance->isInitialised())
         return;
 
     uint32_t buf[64 / 4]; // aligned
 
-    for (;;) {
+    if (prepend + 1)
+        size += 4;
+
+    target_disable_irq();
+    while (size > 0) {
         memset(buf + 1, 0, 60);
         int s = 63;
         if (size <= 63) {
@@ -123,12 +127,22 @@ void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size) {
             buf[0] = flag == HF2_FLAG_CMDPKT_LAST ? HF2_FLAG_CMDPKT_BODY : flag;
         }
         buf[0] |= s;
-        memcpy(buf + 1, data, s);
+        uint8_t *dst = (uint8_t *)buf;
+        dst++;
+        if (prepend + 1) {
+            memcpy(dst, &prepend, 4);
+            prepend = -1;
+            dst += 4;
+            s -= 4;
+            size -= 4;
+        }
+        memcpy(dst, data, s);
         data = (const uint8_t *)data + s;
         size -= s;
 
         in->write(buf, sizeof(buf));
     }
+    target_enable_irq();
 }
 
 const InterfaceInfo *HF2::getInterfaceInfo() {
@@ -140,8 +154,7 @@ const InterfaceInfo *HF2::getInterfaceInfo() {
 }
 
 int HF2::sendEvent(uint32_t evId, const void *data, int size) {
-    sendBuffer(HF2_FLAG_CMDPKT_BODY, &evId, 4);
-    sendBuffer(HF2_FLAG_CMDPKT_LAST, data, size);
+    sendBuffer(HF2_FLAG_CMDPKT_LAST, data, size, evId);
     return 0;
 }
 
@@ -198,8 +211,7 @@ int HF2::sendResponseWithData(const void *data, int size) {
         memcpy(pkt.resp.data8, data, size);
         return sendResponse(size);
     } else {
-        sendBuffer(HF2_FLAG_CMDPKT_BODY, pkt.buf, 4);
-        sendBuffer(HF2_FLAG_CMDPKT_LAST, data, size);
+        sendBuffer(HF2_FLAG_CMDPKT_LAST, data, size, pkt.resp.eventId);
         return 0;
     }
 }
@@ -352,8 +364,7 @@ int HF2::endpointRequest() {
     return sendResponse(0);
 }
 
-HF2::HF2(HF2_Buffer &p)
-    : gotSomePacket(false), ctrlWaiting(false), pkt(p), useHID(false) {
+HF2::HF2(HF2_Buffer &p) : gotSomePacket(false), ctrlWaiting(false), pkt(p), useHID(false) {
     lastExchange = 0;
 }
 
