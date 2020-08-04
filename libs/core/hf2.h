@@ -22,34 +22,22 @@ typedef struct {
 } HF2_Buffer;
 
 class HF2 : public CodalUSBInterface {
-    void prepBuffer(uint8_t *buf);
-    void pokeSend();
-    void sendCore(uint8_t flag, uint32_t prepend, const void *data, int size);
-
-    const uint8_t *dataToSend;
-    volatile uint32_t dataToSendLength;
-    uint32_t dataToSendPrepend;
-    uint8_t dataToSendFlag;
-
-    uint32_t lastExchange;
-
     bool gotSomePacket;
     bool ctrlWaiting;
 
   public:
     HF2_Buffer &pkt;
 
-    bool allocateEP;
     bool useHID;
 
     int sendResponse(int size);
     int recv();
     int sendResponseWithData(const void *data, int size);
     int sendEvent(uint32_t evId, const void *data, int size);
+    void sendBuffer(uint8_t flag, const void *data, unsigned size);
 
     HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();
-    virtual int classRequest(UsbEndpointIn &ctrl, USBSetup &setup);
     virtual int stdRequest(UsbEndpointIn &ctrl, USBSetup &setup);
     virtual const InterfaceInfo *getInterfaceInfo();
     int sendSerial(const void *data, int size, int isError = 0);
