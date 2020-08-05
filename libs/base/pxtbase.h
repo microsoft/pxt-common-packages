@@ -1080,7 +1080,7 @@ TValue mapGetByString(RefMap *map, String key);
 int lookupMapKey(String key);
 //%
 TValue mapGet(RefMap *map, unsigned key);
-//%
+//% expose
 void mapSetByString(RefMap *map, String key, TValue val);
 //%
 void mapSet(RefMap *map, unsigned key, TValue val);
