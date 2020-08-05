@@ -8,10 +8,12 @@
 #include "NRF52Pin.h"
 #include "NRF52PWM.h"
 #include "NRF52Serial.h"
+#include "NRF52PDM.h"
 #include "Timer.h"
 #include "MultiButton.h"
 
 #define PAGE_SIZE 4096
+#define MIC_DEVICE NRF52PDM
 
 #if defined(NRF52840) || defined(NRF52833)
 #define DEV_NUM_PINS 48
