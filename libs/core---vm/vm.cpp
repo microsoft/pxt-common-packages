@@ -82,7 +82,7 @@ void op_newobj(FiberContext *ctx, unsigned arg) {
 static inline void shiftArg(FiberContext *ctx, unsigned numArgs) {
     for (unsigned i = numArgs - 1; i > 0; i--)
         ctx->sp[i] = ctx->sp[i - 1];
-    ctx->sp++;
+    POP(1);
 }
 
 static inline void checkClass(FiberContext *ctx, TValue obj, unsigned classId, unsigned fldId) {
@@ -119,7 +119,7 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
 static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
     if (ra->initialLen != 0)
         error(PANIC_INVALID_VTABLE);
-    auto act = (RefAction*)mkAction(1, ra);
+    auto act = (RefAction *)mkAction(1, ra);
     act->flags = BOUND_ACTION;
     act->fields[0] = obj;
     return act;
@@ -142,7 +142,7 @@ void op_callproc(FiberContext *ctx, unsigned arg) {
 
 static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
     if (ra->flags & BOUND_ACTION) {
-        ctx->sp--;
+        PUSH(0);
         for (unsigned i = 0; i < numArgs; i++) {
             ctx->sp[i] = ctx->sp[i + 1];
         }
@@ -163,7 +163,7 @@ static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
         }
     }
 
-    if (ra->initialLen != ra->len)
+    if (ra->initialLen > ra->len)
         // trying to call function template
         error(PANIC_INVALID_VTABLE);
 
@@ -271,10 +271,10 @@ static TValue lookupIfaceMember(TValue obj, VTable *vt, unsigned ifaceIdx) {
         auto ent = (struct IfaceEntry *)multBase + off2;
 
         if (ent->memberId == ifaceIdx) {
-            if (ent->aux == 0) {
+            if (ent->aux != 0) {
                 return vmImg->pointerLiterals[ent->method];
             } else {
-                return ((RefRecord *)obj)->fields[ent->aux - 1];
+                return ((RefRecord *)obj)->fields[ent->method - 1];
             }
         }
         off++;
@@ -320,22 +320,27 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
         auto ent = (struct IfaceEntry *)multBase + off2;
 
         if (ent->memberId == ifaceIdx) {
-            if (ent->aux == 0) {
+            if (ent->aux != 0) {
                 if (getset == CallType::Set) {
                     ent++;
                     if (ent->memberId != ifaceIdx)
                         missingProperty(obj);
                 }
-                auto fn = ctx->img->pointerLiterals[ent->method];
-                callind(ctx, (RefAction *)fn, numArgs);
+                auto fn = (RefAction *)ctx->img->pointerLiterals[ent->method];
+                if (getset == CallType::Get && ent->aux == 2) {
+                    ctx->r0 = (TValue)bindAction(ctx, fn, obj);
+                    POP(1);
+                    return;
+                }
+                callind(ctx, fn, numArgs);
             } else {
                 if (getset == CallType::Set) {
                     // store field
-                    ((RefRecord *)obj)->fields[ent->aux - 1] = ctx->sp[0];
+                    ((RefRecord *)obj)->fields[ent->method - 1] = ctx->sp[0];
                     POP(2); // and pop arguments
                 } else {
                     // load field
-                    ctx->r0 = ((RefRecord *)obj)->fields[ent->aux - 1];
+                    ctx->r0 = ((RefRecord *)obj)->fields[ent->method - 1];
                     if (getset == CallType::Call) {
                         // and call
                         shiftArg(ctx, numArgs);
