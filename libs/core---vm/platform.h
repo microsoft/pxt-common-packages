@@ -17,7 +17,8 @@
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 
-#define SETTINGSDIR "/tmp"
+const char *vm_settings_dir(void);
+#define SETTINGSDIR vm_settings_dir()
 
 namespace pxt
 {
