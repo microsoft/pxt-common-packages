@@ -670,7 +670,7 @@ class RefAction : public RefObject {
     uint16_t numArgs;
 #ifdef PXT_VM
     uint16_t initialLen;
-    uint16_t reserved;
+    uint16_t flags;
 #endif
     ActionCB func; // The function pointer
     // fields[] contain captured locals

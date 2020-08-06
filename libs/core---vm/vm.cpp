@@ -4,6 +4,8 @@
 // TODO check for backjumps (how many)
 // TODO getConfig() should have a callback into host
 
+#define BOUND_ACTION 1
+
 #define SPLIT_ARG(arg0, arg1) unsigned arg0 = arg & 31, arg1 = arg >> 6
 #define SPLIT_ARG2(arg0, arg1) unsigned arg0 = arg & 255, arg1 = arg >> 8
 
@@ -114,6 +116,15 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
     ((RefRecord *)obj)->fields[fldId] = ctx->r0;
 }
 
+static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
+    if (ra->initialLen != 0)
+        error(PANIC_INVALID_VTABLE);
+    auto act = (RefAction*)mkAction(1, ra);
+    act->flags = BOUND_ACTION;
+    act->fields[0] = obj;
+    return act;
+}
+
 static inline void runAction(FiberContext *ctx, RefAction *ra) {
     if (ctx->sp < ctx->stackLimit)
         error(PANIC_STACK_OVERFLOW);
@@ -130,6 +141,15 @@ void op_callproc(FiberContext *ctx, unsigned arg) {
 }
 
 static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
+    if (ra->flags & BOUND_ACTION) {
+        ctx->sp--;
+        for (unsigned i = 0; i < numArgs; i++) {
+            ctx->sp[i] = ctx->sp[i + 1];
+        }
+        ctx->sp[numArgs] = ra->fields[0];
+        numArgs++;
+    }
+
     if (numArgs != ra->numArgs) {
         int missing = ra->numArgs - numArgs;
         TRACE("callind missing=%d", missing);
@@ -263,8 +283,10 @@ static TValue lookupIfaceMember(TValue obj, VTable *vt, unsigned ifaceIdx) {
     return NULL;
 }
 
+enum class CallType { Call = 0, Get = 1, Set = 2 };
+
 static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned ifaceIdx,
-                                 int getset) {
+                                 CallType getset) {
     auto obj = ctx->sp[numArgs - 1];
     if (!isPointer(obj))
         failedCast(obj);
@@ -273,12 +295,12 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
 
     if (!mult) {
         if (vt->classNo == BuiltInType::RefMap) {
-            if (getset == 2) {
+            if (getset == CallType::Set) {
                 pxtrt::mapSet((RefMap *)obj, ifaceIdx, ctx->sp[0]);
                 POP(2); // and pop arguments
             } else {
                 ctx->r0 = pxtrt::mapGet((RefMap *)obj, ifaceIdx);
-                if (getset == 0) {
+                if (getset == CallType::Call) {
                     shiftArg(ctx, numArgs);
                     op_callind(ctx, numArgs - 1);
                 } else {
@@ -299,7 +321,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
 
         if (ent->memberId == ifaceIdx) {
             if (ent->aux == 0) {
-                if (getset == 2) {
+                if (getset == CallType::Set) {
                     ent++;
                     if (ent->memberId != ifaceIdx)
                         missingProperty(obj);
@@ -307,16 +329,17 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
                 auto fn = ctx->img->pointerLiterals[ent->method];
                 callind(ctx, (RefAction *)fn, numArgs);
             } else {
-                if (getset == 2) {
+                if (getset == CallType::Set) {
                     // store field
                     ((RefRecord *)obj)->fields[ent->aux - 1] = ctx->sp[0];
                     POP(2); // and pop arguments
                 } else {
                     // load field
                     ctx->r0 = ((RefRecord *)obj)->fields[ent->aux - 1];
-                    if (getset == 0) {
+                    if (getset == CallType::Call) {
                         // and call
-                        op_callind(ctx, numArgs);
+                        shiftArg(ctx, numArgs);
+                        op_callind(ctx, numArgs - 1);
                     } else {
                         // if just loading, pop the object arg
                         POP(1);
@@ -329,7 +352,7 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
         off++;
     }
 
-    if (getset == 1) {
+    if (getset == CallType::Get) {
         ctx->sp += 1; // pop object arg
         ctx->r0 = TAG_UNDEFINED;
     } else {
@@ -340,17 +363,17 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
 //%
 void op_calliface(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(numArgs, ifaceIdx);
-    callifaceCore(ctx, numArgs, ifaceIdx, 0);
+    callifaceCore(ctx, numArgs, ifaceIdx, CallType::Call);
 }
 
 //%
 void op_callget(FiberContext *ctx, unsigned arg) {
-    callifaceCore(ctx, 1, arg, 1);
+    callifaceCore(ctx, 1, arg, CallType::Get);
 }
 
 //%
 void op_callset(FiberContext *ctx, unsigned arg) {
-    callifaceCore(ctx, 2, arg, 2);
+    callifaceCore(ctx, 2, arg, CallType::Set);
 }
 
 //%
@@ -369,7 +392,7 @@ void op_mapget(FiberContext *ctx, unsigned arg) {
             POP(1);
             ctx->r0 = TAG_UNDEFINED;
         } else {
-            callifaceCore(ctx, 1, k, 1);
+            callifaceCore(ctx, 1, k, CallType::Get);
         }
     }
 }
@@ -391,7 +414,7 @@ void op_mapset(FiberContext *ctx, unsigned arg) {
             missingProperty(obj);
         } else {
             ctx->sp[0] = ctx->r0;
-            callifaceCore(ctx, 2, k, 2);
+            callifaceCore(ctx, 2, k, CallType::Set);
         }
     }
 }
