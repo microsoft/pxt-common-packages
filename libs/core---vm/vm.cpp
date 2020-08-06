@@ -407,15 +407,20 @@ void op_checkinst(FiberContext *ctx, unsigned arg) {
 static TValue inlineInvoke(FiberContext *ctx, RefAction *fn, int numArgs) {
     auto prevPC = ctx->pc;
     auto prevR0 = ctx->r0;
+    jmp_buf loopjmp;
+    memcpy(&loopjmp, &ctx->loopjmp, sizeof(loopjmp));
     // make sure call will push TAG_STACK_BOTTOM
     ctx->pc = (uint16_t *)ctx->imgbase + 1;
     callind(ctx, fn, numArgs);
+    ctx->img->execLock ^= 1;
     exec_loop(ctx);
     if (ctx->resumePC)
         target_panic(PANIC_BLOCKING_TO_STRING);
+    ctx->img->execLock ^= 1;
     auto r = ctx->r0;
     ctx->pc = prevPC;
     ctx->r0 = prevR0;
+    memcpy(&ctx->loopjmp, &loopjmp, sizeof(loopjmp));
     return r;
 }
 
