@@ -345,7 +345,7 @@ void seedRandom(unsigned seed) {
     random_value = seed;
 }
 
-//%
+//% expose
 void seedAddRandom(unsigned seed) {
     random_value ^= 0xCA2557CB * seed;
 }

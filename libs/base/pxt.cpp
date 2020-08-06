@@ -7,7 +7,7 @@ namespace pxt {
 Action mkAction(int totallen, RefAction *act) {
     check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
 #ifdef PXT_VM
-    check(act->initialLen == totallen, PANIC_INVALID_BINARY_HEADER, 13);
+    check(act->initialLen <= totallen, PANIC_INVALID_BINARY_HEADER, 13);
 #endif
 
     if (totallen == 0) {
@@ -20,7 +20,7 @@ Action mkAction(int totallen, RefAction *act) {
 #ifdef PXT_VM
     r->numArgs = act->numArgs;
     r->initialLen = act->initialLen;
-    r->reserved = act->reserved;
+    r->flags = 0;
 #endif
     r->func = act->func;
     memset(r->fields, 0, r->len * sizeof(void *));

@@ -255,12 +255,11 @@ static VMImage *validateFunctions(VMImage *img) {
                 if (ent->memberId == 0)
                     continue;
                 if (ent->aux == 0) {
+                    CHECK(ent->method < (unsigned)(vt->numbytes >> 3), 1035);
+                } else {
                     CHECK(ent->method < img->numSections, 1037);
                     auto fn = img->sections[ent->method];
                     CHECK(fn->type == SectionType::Function, 1039);
-                } else {
-                    CHECK(ent->aux < (vt->numbytes >> 3), 1035);
-                    CHECK(ent->aux == ent->method, 1036);
                 }
             }
 
