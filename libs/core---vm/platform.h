@@ -17,6 +17,7 @@
 #define CODAL_SPI ZSPI
 #define CODAL_I2C ZI2C
 
+#define SETTINGSDIR "/tmp"
 
 namespace pxt
 {
