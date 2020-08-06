@@ -255,7 +255,7 @@ static VMImage *validateFunctions(VMImage *img) {
                 if (ent->memberId == 0)
                     continue;
                 if (ent->aux == 0) {
-                    CHECK(ent->method < (vt->numbytes >> 3), 1035);
+                    CHECK(ent->method < (unsigned)(vt->numbytes >> 3), 1035);
                 } else {
                     CHECK(ent->method < img->numSections, 1037);
                     auto fn = img->sections[ent->method];
