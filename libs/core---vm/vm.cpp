@@ -77,6 +77,12 @@ void op_newobj(FiberContext *ctx, unsigned arg) {
     ctx->r0 = (TValue)pxt::mkClassInstance(getStaticVTable(ctx->img, arg));
 }
 
+static inline void shiftArg(FiberContext *ctx, unsigned numArgs) {
+    for (unsigned i = numArgs - 1; i > 0; i--)
+        ctx->sp[i] = ctx->sp[i - 1];
+    ctx->sp++;
+}
+
 static inline void checkClass(FiberContext *ctx, TValue obj, unsigned classId, unsigned fldId) {
     TRACE("check class: %p cl=%d f=%d", obj, classId, fldId);
     if (!isPointer(obj))
@@ -273,7 +279,8 @@ static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned i
             } else {
                 ctx->r0 = pxtrt::mapGet((RefMap *)obj, ifaceIdx);
                 if (getset == 0) {
-                    op_callind(ctx, numArgs);
+                    shiftArg(ctx, numArgs);
+                    op_callind(ctx, numArgs - 1);
                 } else {
                     POP(1);
                 }
