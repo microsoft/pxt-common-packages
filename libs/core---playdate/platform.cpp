@@ -47,7 +47,7 @@ void codal_update();
 static int update(void *ud) {
     uint32_t btnstate = pxt::updateKeyEvents();
 
-    // btnstate = 1; // comment out to wait for key on start
+     btnstate = 1; // comment out to wait for key on start
 
     static int started;
     if (started || btnstate) {
