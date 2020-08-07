@@ -47,10 +47,6 @@ The lifespan of a sprite is infinite when it's created and stays that way until 
 Make a ``Player`` sprite and set its ``lifespan`` to `1000` milliseconds (or `1` second).
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let orangeBlock = image.create(16, 16)
 orangeBlock.fill(4)
 orangeBlock.drawRect(0, 0, 16, 16, 1)

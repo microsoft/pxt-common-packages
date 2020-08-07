@@ -20,8 +20,7 @@ Create a sprite to bounce off the sides of the screen. Set the **vx** and **vy**
 velocities to `50`.
 
 ```blocks
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 

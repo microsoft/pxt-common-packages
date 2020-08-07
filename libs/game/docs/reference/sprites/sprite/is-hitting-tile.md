@@ -23,10 +23,6 @@ The sprite must be in motion (a velocity of ``vx`` or ``vy`` that isn't `0`) bef
 Build a brick wall of tiles in the scene. Send a arrow sprite towards the wall. If the sprite hits the wall, send it back in the oppsite direction.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let flipImage: Image = null
 let mySprite: Sprite = null
 scene.setTile(2, img`

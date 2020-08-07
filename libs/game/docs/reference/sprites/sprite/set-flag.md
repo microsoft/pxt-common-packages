@@ -33,13 +33,10 @@ A sprite will always stay inside the limits of your scene if your game has a til
 Create a scene with orange wall tiles. Make the scene be slightly wider than the screen. Move a sprite from the left side of the screen toward the right side. Set the sprite to be a ``ghost`` so it passes through the wall and make it ``auto destroy`` when it moves past the screen.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
-let ghost: Sprite = null
-ghost = sprites.create(img`
+let ghost = sprites.create(img`
 . . . . . . d d d d d . . . . .
 . . . d d d d 1 1 1 d d d . . .
 . . d d 1 1 1 1 1 1 1 1 d d . .

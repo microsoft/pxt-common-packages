@@ -8,10 +8,10 @@ sprites.create(null).kind()
 
 To keep track of different types of sprites, you can assign a _kind_ to them. This is a value that will help identify them and decide what actions to take when events happen in the game. There are no particular rules or names for how you decide on what the kinds should be. The sprite kinds in your game might be defined like this:
 
-```typescript
-enum SpriteKind {
-    Player,
-    Enemy
+```typescript-ignore
+namespace SpriteKind {
+    export const Player = SpriteKind.create()
+    export const Enemy = SpriteKind.create()
 }
 ```
 
@@ -24,10 +24,8 @@ enum SpriteKind {
 Make a ``Player`` sprite and two ``Friend`` sprites. Every 2 seconds, turn one of the friend sprites into an ``Enemy``. Every 10 seconds have the enemy sprites become friends again.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Friend,
-    Enemy
+namespace SpriteKind {
+    export const Friend = SpriteKind.create()
 }
 let player: Sprite = null
 let friend2: Sprite = null

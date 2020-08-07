@@ -57,13 +57,10 @@ If the speed of a sprite is currently at `0` and it's acceleration is set to `2`
 Accelerate a a sprite as it moves from the top side of the screen to the bottom side and back.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 
@@ -91,7 +88,6 @@ game.onUpdateInterval(500, function () {
 
     }
 })
-
 ```
 
 ### How fast was it? #ex2
@@ -99,14 +95,11 @@ game.onUpdateInterval(500, function () {
 Accelerate a sprite at `100` starting with a speed of `0`. Check after about `1` second and see how fast the sprite was travelling.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
 let interval = 0
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 

@@ -19,10 +19,6 @@ You a can place a sprite on top of a random tile in the tile map. Use the tile i
 Make a tilemap with several different tiles. Create a circle sprite. Randomly place the sprite on a tile with color number `8`.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite: Sprite = null
 // TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9)); 
 mySprite = sprites.create(img`

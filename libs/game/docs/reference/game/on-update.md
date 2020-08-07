@@ -35,10 +35,6 @@ As part of **gameUpdate**, the code inside your **onUpdate** is run to handle th
 Create a sprite and start it moving. In the **onUpdate** function, check if the sprite reaches the edge of the screen. If it does, send it in the opposite direction.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite: Sprite = null
 mySprite = sprites.create(img`
 . . . . . 5 5 5 5 5 5 . . . . . 

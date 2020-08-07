@@ -60,13 +60,10 @@ Distance in your game is measured in pixels so the speed of a sprite is in _pixe
 Send a sprite moving to the right at `40` pixels per second. When it reaches the right side of the screen, send it back to the left side.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 
@@ -98,14 +95,11 @@ game.onUpdateInterval(500, function () {
 Set a sprite in motion. Check after about `1` second and see how far the sprite has travelled.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
 let interval = 0
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 
