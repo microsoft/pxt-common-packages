@@ -64,7 +64,7 @@ void WDisplay::update(Image_ img) {
             target_panic(PANIC_SCREEN_ERROR);
 
         uint8_t *frame = playdate->graphics->getFrame();
-        memset(frame, 0, ROW_BYTES * NUM_ROWS);
+        memset(frame, 0x00, ROW_BYTES * NUM_ROWS);
         uint8_t *src = img->pix();
         uint32_t w = img->width(), h = img->height();
         for (unsigned x = 0; x < w; ++x) {
@@ -84,6 +84,7 @@ void WDisplay::update(Image_ img) {
                 dst += ROW_BYTES;
             }
         }
+        playdate->graphics->markUpdatedRows(0, NUM_ROWS - 1);
     }
 }
 
