@@ -107,14 +107,14 @@ namespace scene {
      */
     //% group="Tiles"
     //% weight=120 draggableParameters="reporter" blockGap=8
-    //% blockId=spriteshitwall block="on $sprite of kind $kind=spritekind hits wall"
+    //% blockId=spriteshitwall block="on $sprite of kind $kind=spritekind hits wall at $location"
     //% help=tiles/on-hit-wall
-    export function onHitWall(kind: number, handler: (sprite: Sprite) => void) {
+    export function onHitWall(kind: number, handler: (sprite: Sprite, location: tiles.Location) => void) {
         if (kind == undefined || !handler) return;
 
         const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
         wallCollisionHandlers.push(
-            new scene.SpriteHandler(
+            new scene.TileWallHandler(
                 kind,
                 handler
             )

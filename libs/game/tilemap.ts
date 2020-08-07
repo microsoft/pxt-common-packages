@@ -17,6 +17,14 @@ namespace tiles {
         protected _col: number;
         protected tileMap: TileMap;
 
+        get col() {
+            return this._col;
+        }
+
+        get row() {
+            return this._row;
+        }
+
         constructor(col: number, row: number, map: TileMap) {
             this._col = col;
             this._row = row;
@@ -99,6 +107,8 @@ namespace tiles {
     const TM_DATA_PREFIX_LENGTH = 4;
     const TM_WALL = 2;
 
+    //% snippet='tilemap` `'
+    //% pySnippet='tilemap(""" """)'
     export class TileMapData {
         // The tile data for the map (indices into tileset)
         protected data: Buffer;
@@ -305,6 +315,32 @@ namespace tiles {
             return output;
         }
 
+        public sampleTilesByType(index: number, maxCount: number): Location[] {
+            if (this.isInvalidIndex(index) || !this.enabled || maxCount <= 0) return [];
+
+            let count = 0;
+            const reservoir: Location[] = [];
+            for (let col = 0; col < this._map.width; ++col) {
+                for (let row = 0; row < this._map.height; ++row) {
+                    let currTile = this._map.getTile(col, row);
+                    if (currTile === index) {
+                        // first **maxCount** elements just enqueue
+                        if (count < maxCount) {
+                            reservoir.push(new Location(col, row, this));
+                        } else {
+                            const potentialIndex = randint(0, count);
+                            if (potentialIndex < maxCount) {
+                                reservoir[potentialIndex] = new Location(col, row, this);
+                            }
+                        }
+                        ++count;
+                    }
+                }
+            }
+
+            return reservoir;
+        }
+
         protected isInvalidIndex(index: number): boolean {
             return index < 0 || index > 0xff;
         }
@@ -417,6 +453,7 @@ namespace tiles {
         return i;
     }
 
+    //% scale.defl="TileScale.Sixteen"
     export function createTilemap(data: Buffer, layer: Image, tiles: Image[], scale: TileScale): TileMapData {
         return new TileMapData(data, layer, tiles, scale)
     }
@@ -502,6 +539,22 @@ namespace tiles {
     }
 
     /**
+     * Returns true if the tile at the given location is the same as the given tile;
+     * otherwise returns false
+     * @param location
+     * @param tile
+     */
+    //% blockId=maplocationistile block="tile at $location is $tile"
+    //% location.shadow=mapgettile
+    //% tile.shadow=tileset_tile_picker tile.decompileIndirectFixedInstances=true
+    //% blockNamespace="scene" group="Collisions" blockGap=8
+    export function tileAtLocationEquals(location: Location, tile: Image): boolean {
+        const scene = game.currentScene();
+        if (!location || !tile || !scene.tileMap) return false;
+        return location.tileSet === scene.tileMap.getImageType(tile);
+    }
+
+    /**
      * Center the given sprite on a given location
      * @param sprite
      * @param loc
@@ -527,9 +580,9 @@ namespace tiles {
     //% help=tiles/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
         if (!sprite || !game.currentScene().tileMap) return;
-        const tiles = getTilesByType(tile);
-        if (tiles.length > 0)
-            Math.pickRandom(tiles).place(sprite);
+        const loc = getRandomTileByType(tile);
+        if (loc)
+            loc.place(sprite);
     }
 
     /**
@@ -547,4 +600,46 @@ namespace tiles {
         const index = scene.tileMap.getImageType(tile);
         return scene.tileMap.getTilesByType(index);
     }
+
+    /**
+     * Get a random tile of the given type
+     * @param tile the type of tile to get a random selection of
+     */
+    export function getRandomTileByType(tile: Image): Location {
+        const scene = game.currentScene();
+        if (!tile || !scene.tileMap)
+            return undefined;
+        const index = scene.tileMap.getImageType(tile);
+        const sample = scene.tileMap.sampleTilesByType(index, 1);
+        return sample[0];
+    }
 }
+
+//% helper=getTilemapByName
+//% pyConvertToTaggedTemplate
+function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
+namespace helpers {
+    export type TilemapFactory = (name: string) => tiles.TileMapData;
+
+    let factories: TilemapFactory[];
+
+    export function registerTilemapFactory(factory: TilemapFactory) {
+        if (!factories) factories = [];
+
+        factories.push(factory);
+    }
+
+    export function getTilemapByName(name: string) {
+        if (factories) {
+            for (const factory of factories) {
+                let data = factory(name);
+
+                if (data) return data;
+            }
+        }
+
+        return null;
+    }
+}
+

@@ -27,6 +27,13 @@ namespace scene {
         ) { }
     }
 
+    export class TileWallHandler {
+        constructor(
+            public spriteKind: number,
+            public handler: (sprite: Sprite, location: tiles.Location) => void
+        ) { }
+    }
+
     export class TileOverlapHandler {
         constructor(
             public spriteKind: number,
@@ -52,6 +59,7 @@ namespace scene {
     export const CONTROLLER_SPRITES_PRIORITY = 13;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
+    export const PRE_RENDER_UPDATE_PRIORITY = 55;
     export const RENDER_BACKGROUND_PRIORITY = 60;
     export const RENDER_SPRITES_PRIORITY = 90;
     export const RENDER_DIAGNOSTICS_PRIORITY = 150;
@@ -80,7 +88,7 @@ namespace scene {
         overlapMap: SparseArray<number[]>;
         tileOverlapHandlers: TileOverlapHandler[];
         collisionHandlers: SpriteHandler[][];
-        wallCollisionHandlers: SpriteHandler[];
+        wallCollisionHandlers: TileWallHandler[];
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
@@ -130,17 +138,22 @@ namespace scene {
             // apply physics and collisions 15
             this.eventContext.registerFrameHandler(PHYSICS_PRIORITY, () => {
                 control.enablePerfCounter("physics and collisions")
-                const dt = this.eventContext.deltaTime;
+                this.physicsEngine.move(this.eventContext.deltaTime);
+            });
+            // user update interval 19s
 
-                this.physicsEngine.move(dt);
+            // user update 20
+
+            // prerender update 55
+            this.eventContext.registerFrameHandler(PRE_RENDER_UPDATE_PRIORITY, () => {
+                const dt = this.eventContext.deltaTime;
                 this.camera.update();
 
                 for (const s of this.allSprites)
                     s.__update(this.camera, dt);
             })
-            // user update interval 19s
 
-            // user update 20
+            // render background 60
 
             // render 90
             this.eventContext.registerFrameHandler(RENDER_SPRITES_PRIORITY, () => {

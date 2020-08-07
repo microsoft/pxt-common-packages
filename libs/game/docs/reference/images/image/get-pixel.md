@@ -35,4 +35,5 @@ if (randoColors.getPixel(8, 8) == 14) {
 
 ## See also #seeaslo
 
+[image](/types/image),
 [set pixel](/reference/images/image/set-pixel)

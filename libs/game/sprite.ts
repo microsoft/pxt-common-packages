@@ -69,23 +69,23 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toInt(this._x) + (this._image.width >> 1)
+        return Fx.toFloat(this._x) + (this._image.width / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
-        this.left = v - (this._image.width >> 1)
+        this.left = v - (this._image.width / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toInt(this._y) + (this._image.height >> 1)
+        return Fx.toFloat(this._y) + (this._image.height / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
-        this.top = v - (this._image.height >> 1)
+        this.top = v - (this._image.height / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -253,7 +253,11 @@ class Sprite extends sprites.BaseSprite {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
-        const newHitBox = game.calculateHitBox(this);
+        this.setHitbox();
+    }
+
+    setHitbox() {
+        let newHitBox = game.calculateHitBox(this);
 
         if (!this._hitbox) {
             this._hitbox = newHitBox;
@@ -293,6 +297,10 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
+    isStatic() {
+        return this._image.isStatic();
+    }
+
     __visible() {
         return !(this.flags & SpriteFlag.Invisible);
     }
@@ -311,7 +319,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
     get left() {
-        return Fx.toInt(this._x)
+        return Fx.toFloat(this._x)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
@@ -341,7 +349,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
     get top() {
-        return Fx.toInt(this._y);
+        return Fx.toFloat(this._y);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
@@ -437,7 +445,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics"
     //% weight=100
     //% blockId=spritesetvel block="set %sprite(mySprite) velocity to vx %vx vy %vy"
-    //% help=sprites/sprite/set-velociy
+    //% help=sprites/sprite/set-velocity
     //% vx.shadow=spriteSpeedPicker
     //% vy.shadow=spriteSpeedPicker
     setVelocity(vx: number, vy: number): void {
@@ -536,6 +544,7 @@ class Sprite extends sprites.BaseSprite {
             // The minus 2 is how much transparent padding there is under the sayBubbleSprite
             this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
             this.sayBubbleSprite.x = this.x;
+            this.sayBubbleSprite.z = this.z + 1;
 
             // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
             if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
@@ -806,7 +815,7 @@ class Sprite extends sprites.BaseSprite {
         this._obstacles = [];
     }
 
-    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle) {
+    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle, tm?: tiles.TileMap) {
         this._obstacles[direction] = other;
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
         const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
@@ -817,9 +826,14 @@ class Sprite extends sprites.BaseSprite {
                 .forEach(h => h.handler(this));
         }
         if (wallCollisionHandlers) {
-            wallCollisionHandlers
-                .filter(h => h.kind == this.kind())
-                .forEach(h => h.handler(this));
+            tm = tm || game.currentScene().tileMap;
+            const wallHandlersToRun = wallCollisionHandlers
+                .filter(h => h.spriteKind == this.kind());
+            if (wallHandlersToRun.length) {
+                const asTileLocation = tm.getTile(other.left >> tm.scale, other.top >> tm.scale);
+                wallHandlersToRun
+                    .forEach(h => h.handler(this, asTileLocation));
+            }
         }
     }
 

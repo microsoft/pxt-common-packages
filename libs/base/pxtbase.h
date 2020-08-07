@@ -670,7 +670,7 @@ class RefAction : public RefObject {
     uint16_t numArgs;
 #ifdef PXT_VM
     uint16_t initialLen;
-    uint16_t reserved;
+    uint16_t flags;
 #endif
     ActionCB func; // The function pointer
     // fields[] contain captured locals
@@ -1080,7 +1080,7 @@ TValue mapGetByString(RefMap *map, String key);
 int lookupMapKey(String key);
 //%
 TValue mapGet(RefMap *map, unsigned key);
-//%
+//% expose
 void mapSetByString(RefMap *map, String key, TValue val);
 //%
 void mapSet(RefMap *map, unsigned key, TValue val);

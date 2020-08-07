@@ -221,7 +221,7 @@ namespace game {
                 target.drawTransparentImage(
                     overDialog.image,
                     0,
-                    (screen.height - overDialog.image.height()) >> 1
+                    (screen.height - overDialog.image.height) >> 1
                 );
             });
 

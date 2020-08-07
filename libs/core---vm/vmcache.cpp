@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <time.h>
 
+static char *settings_path;
+
 namespace vmcache {
 
 static char *dataPath;
@@ -16,7 +18,6 @@ struct FullHeader {
     VMImageSection sect;
     VMImageHeader header;
 };
-
 
 static char *scriptPath(const char *scriptId) {
     for (auto p = scriptId; *p; ++p)
@@ -39,6 +40,18 @@ static char *scriptPath(const char *scriptId) {
 DLLEXPORT void pxt_vm_set_data_directory(const char *path) {
     free(dataPath);
     dataPath = strdup(path);
+
+    char tmp[strlen(dataPath) + 100];
+    strcpy(tmp, dataPath);
+    strcat(tmp, "/settings-v0");
+    free(settings_path);
+    settings_path = strdup(tmp);
+#ifdef __WIN32__
+    mkdir(settings_path);
+#else
+    mkdir(settings_path, 0777);
+#endif
+
     dmesg("set vm cached dir %s", dataPath);
 }
 
@@ -127,7 +140,7 @@ static bool nameExists(const char *name) {
     for (;;) {
         if (!readEntry(dp, &fh))
             break;
-        if (strcmp(name, (char*)fh.header.name) == 0)
+        if (strcmp(name, (char *)fh.header.name) == 0)
             return true;
     }
     return false;
@@ -171,7 +184,7 @@ static int renameImage(uint8_t *data, int len) {
     if (!isValidHeader(fh))
         return -2;
     fh->header.installationTime = (int64_t)time(NULL);
-    auto name = (char*)fh->header.name;
+    auto name = (char *)fh->header.name;
     name[101] = 0; // make sure we have space at the end
     dmesg("rename image from '%s'", name);
     if (nameExists(name)) {
@@ -247,3 +260,9 @@ void del(String name) {
 }
 
 } // namespace vmcache
+
+const char *vm_settings_dir(void) {
+    if (settings_path)
+        return settings_path;
+    return "/tmp";
+}

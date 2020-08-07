@@ -98,7 +98,15 @@ interface Image {
      * otherwise returns false.
      */
     //% shim=ImageMethods::equals
+    //% blockNamespace="images" group="Compare"
+    //% block="$this is equal to image $other"
+    //% this.shadow=variables_get
+    //% this.defl="picture"
+    //% other.shadow=screen_image_picker
     equals(other: Image): boolean;
+
+    //% shim=ImageMethods::isStatic
+    isStatic(): boolean;
 }
 
 declare namespace image {

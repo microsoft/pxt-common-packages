@@ -69,8 +69,9 @@ namespace console {
     //% help=console/log-value
     //% blockId=console_log_value block="console|log value %name|= %value"
     //% name.shadow=text
-    export function logValue(name: any, value: number): void {
-        log(name ? `${inspect(name)}: ${value}` : `${value}`)
+    //% value.shadow=math_number
+    export function logValue(name: any, value: any): void {
+        log(name ? `${inspect(name)}: ${inspect(value)}` : `${inspect(value)}`)
     }
 
     /**
