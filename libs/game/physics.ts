@@ -113,14 +113,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             MAX_TIME_STEP,
             Fx8(dt * 1000)
         );
-        const dtSec = Fx.idiv(dtf, 1000);
         const dt2 = Fx.idiv(dtf, 2);
 
         const scene = game.currentScene();
 
         const tileMap = scene.tileMap;
         const movingSprites = this.sprites
-            .map(sprite => this.createMovingSprite(sprite, dtSec, dt2));
+            .map(sprite => this.createMovingSprite(sprite, dtf, dt2));
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
@@ -131,12 +130,15 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.map.resizeBuckets(this.sprites);
 
         const MAX_STEP_COUNT = Fx.toInt(
-            Fx.mul(
-                Fx.div(
-                    this.maxVelocity,
-                    this.minSingleStep
+            Fx.idiv(
+                Fx.mul(
+                    Fx.div(
+                        this.maxVelocity,
+                        this.minSingleStep
+                    ),
+                    dtf
                 ),
-                dtSec
+                1000
             )
         );
         const overlapHandlers = scene.overlapHandlers.slice();
@@ -209,7 +211,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    private createMovingSprite(sprite: Sprite, dtSec: Fx8, dt2: Fx8): MovingSprite {
+    private createMovingSprite(sprite: Sprite, dtMs: Fx8, dt2: Fx8): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
         sprite._lastX = sprite._x;
@@ -219,14 +221,23 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             sprite._vx = this.constrain(
                 Fx.add(
                     sprite._vx,
-                    Fx.mul(
-                        sprite._ax,
-                        dtSec
+                    Fx.idiv(
+                        Fx.mul(
+                            sprite._ax,
+                            dtMs
+                        ),
+                        1000
                     )
                 )
             );
         } else if (sprite._fx) {
-            const fx = Fx.mul(sprite._fx, dtSec);
+            const fx = Fx.idiv(
+                Fx.mul(
+                    sprite._fx,
+                    dtMs
+                ),
+                1000
+            );
             const c = Fx.compare(sprite._vx, fx);
             if (c < 0) // v < f, v += f
                 sprite._vx = Fx.min(Fx.zeroFx8, Fx.add(sprite._vx, fx));
@@ -240,14 +251,23 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             sprite._vy = this.constrain(
                 Fx.add(
                     sprite._vy,
-                    Fx.mul(
-                        sprite._ay,
-                        dtSec
+                    Fx.idiv(
+                        Fx.mul(
+                            sprite._ay,
+                            dtMs
+                        ),
+                        1000
                     )
                 )
             );
-        } else if( sprite._fy) {
-            const fy = Fx.mul(sprite._fy, dtSec);
+        } else if (sprite._fy) {
+            const fy = Fx.idiv(
+                Fx.mul(
+                    sprite._fy,
+                    dtMs
+                ),
+                1000
+            );
             const c = Fx.compare(sprite._vy, fy);
             if (c < 0) // v < f, v += f
                 sprite._vy = Fx.min(Fx.zeroFx8, Fx.add(sprite._vy, fy));
