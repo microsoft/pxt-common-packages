@@ -35,8 +35,8 @@ let height = mySprite.bottom - mySprite.top
 Create an image that is `16` pixels wide. Make a sprite that has this image. Let the sprite say how wide it is.
 
 ```blocks
-enum SpriteKind {
-    Example
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
 let blockImage = image.create(16, 16)
 blockImage.fill(4)

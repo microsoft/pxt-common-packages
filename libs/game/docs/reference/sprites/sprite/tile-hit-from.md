@@ -21,10 +21,6 @@ If your sprite is contacting a wall tile, you can find out what kind of tile it 
 Build a brick wall of tiles in the scene. Send a arrow sprite towards the wall. When the sprite hits the wall, say what type of tile it contacted.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite: Sprite = null
 let flipImage: Image = null
 scene.onHitTile(SpriteKind.Player, 2, function (sprite) {

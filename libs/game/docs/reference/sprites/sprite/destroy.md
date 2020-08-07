@@ -24,10 +24,6 @@ You can also select an optional particle effect to display at the sprite when it
 Make a ``Player`` and an ``Enemy`` sprite. The player moves into the open area of the enemy sprite. When an overlap of the two is detected, destroy the ``Player``.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let enemy: Sprite = null
 let catchBox: Image = null
 let player: Sprite = null

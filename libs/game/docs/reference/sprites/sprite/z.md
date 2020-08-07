@@ -41,8 +41,8 @@ Sprites have a depth of `0` when they are created. Sprites at the same depth lev
 Make two block sprites of green and orange. Have the orange sprite move across the green one. Each time the orange sprite passes by the green one, have it change its Z-order so it will go either under or over.
 
 ```blocks
-enum SpriteKind {
-    Example
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
 let greenBlock = image.create(32, 48)
 greenBlock.fill(7)
@@ -74,8 +74,8 @@ game.onUpdateInterval(500, function () {
 Use an array to hold a set of overlapping block sprites with different colors. Set a **Z** value for each sprite that is one greater then the previous sprite. When any button is clicked, reverse the Z-order for the set of sprites so that they overlap in the opposite direction.
 
 ```blocks
-enum SpriteKind {
-    Example
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
 let colorBlocks: Sprite[] = []
 let blockImg: Image = null

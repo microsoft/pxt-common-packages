@@ -12,22 +12,25 @@ sprites.create(null).setKind(0)
 
 ### Sprite kinds
 
-To keep track of different types of sprites, you can assign a _kind_ to them. This is a value that will help identify them and decide what actions to take when events happen in the game. There are no particular rules or names for how you decide on what the kinds should be. A good way to do it though is to make an enumerated list of kinds like this:
+To keep track of different types of sprites, you can assign a _kind_ to them. This is a value that will help identify them and decide what actions to take when events happen in the game. There are no particular rules or names for how you decide on what the kinds should be. The way to do it though is to assign a kind in the **SpriteKind** namespace.
 
 ```typescript
-enum SpriteKind {
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Star = SpriteKind.create()
+    export const Comet = SpriteKind.create()
 }
 ```
 
-Then, when you create a sprite, you can optionally assign it a kind:
+There are some default kinds that are already part of **SpriteKind**. These are:
+
+* SpriteKind.Player
+* SpriteKind.Enemy
+* SpriteKind.Food
+* SpriteKind.Projectile
+
+When you create a sprite, you can optionally assign it a kind:
 
 ```block
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite = sprites.create(img`
 2 4
 4 2
@@ -44,11 +47,11 @@ let mySprite = sprites.create(img`
 If you were making a space game, you might have kinds like this:
 
 ```typescript
-enum SpriteKind {
-    Ship,
-    Planet,
-    Asteroid,
-    Moon
+namespace SpriteKind {
+    export const Ship = SpriteKind.create()
+    export const Planet = SpriteKind.create()
+    export const Asteroid = SpriteKind.create()
+    export const moon = SpriteKind.create()
 }
 ```
 
@@ -59,10 +62,8 @@ During the game, if you need a sprite to change to a different kind, say a ``Pla
 Make a ``Player`` sprite and two ``Friend`` sprites. Every 2 seconds, turn one of the friend sprites into an ``Enemy``. Every 10 seconds have the enemy sprites become friends again.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Friend,
-    Enemy
+namespace SpriteKind {
+    export const Friend = SpriteKind.create()
 }
 let player: Sprite = null
 let friend2: Sprite = null

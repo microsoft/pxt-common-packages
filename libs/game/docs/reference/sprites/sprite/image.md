@@ -23,8 +23,8 @@ A sprite's image is set when the sprite is created or a different image is set u
 Create a sprite with a checkbox that has a green border. Copy the checkbox image and change the border to a different color. Show a new sprite with the checkbox copy.
 
 ```blocks
-enum SpriteKind {
-    Example
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
 let sprite1 = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 

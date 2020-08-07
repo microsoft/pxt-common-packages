@@ -49,11 +49,10 @@ The sprite image forms a rectangle with some number of pixel columns. The **left
 Move a sprite to the right side of the screen. Wait 2 seconds and then move it to the left side.
 
 ```blocks
-enum SpriteKind {
-    Example
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 
@@ -84,13 +83,10 @@ forever(function () {
 Send a sprite moving from the right side of the screen to the left. In an ``||game:on game update||`` loop, check to see if the the sprite touched the left side of the screen. If so, reset the sprite back to the right side of the screen.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 

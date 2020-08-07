@@ -15,12 +15,6 @@ image.screenImage()
 Place a cake sprite on the screen with a background color. When the **A** button is pressed, get the screen image and then destroy the cake sprite. Flip the image upside down and set it to the background.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Projectile,
-    Food,
-    Enemy
-}
 let mySprite: Sprite = null
 let screenCap: Image = null
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {

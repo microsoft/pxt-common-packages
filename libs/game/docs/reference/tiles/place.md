@@ -17,10 +17,6 @@ You a can place a sprite directly on a tile. If you have a [tile](/types/tile) l
 Make a tilemap with several different tiles. Create a circle sprite. Choose the tile at position (1, 1) in the tilemap and place the sprite over it.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite: Sprite = null
 // TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9)); 
 mySprite = sprites.create(img`
