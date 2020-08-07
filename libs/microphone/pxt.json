@@ -6,7 +6,8 @@
         "microphone.cpp",
         "microphonehw.cpp",
         "enums.d.ts",
-        "shims.d.ts"
+        "shims.d.ts",
+        "targetoverrides.ts"
     ],
     "testFiles": [
         "test.ts"
