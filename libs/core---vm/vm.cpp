@@ -283,7 +283,7 @@ static TValue lookupIfaceMember(TValue obj, VTable *vt, unsigned ifaceIdx) {
     return NULL;
 }
 
-enum class CallType { Call = 0, Get = 1, Set = 2 };
+/* skip .d.ts */ enum class CallType { Call = 0, Get = 1, Set = 2 };
 
 static inline void callifaceCore(FiberContext *ctx, unsigned numArgs, unsigned ifaceIdx,
                                  CallType getset) {
