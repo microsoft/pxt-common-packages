@@ -463,6 +463,7 @@ namespace tiles {
     //% tilemap.fieldEditor="tilemap"
     //% tilemap.fieldOptions.decompileArgumentAsString="true"
     //% tilemap.fieldOptions.filter="tile"
+    //% tilemap.fieldOptions.taggedTemplate="tilemap"
     //% blockNamespace="scene" group="Tiles" duplicateShadowOnDrag
     //% help=tiles/set-tile-map
     export function setTilemap(tilemap: TileMapData) {
@@ -618,6 +619,18 @@ namespace tiles {
 //% helper=getTilemapByName
 //% pyConvertToTaggedTemplate
 function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
+//% helper=getTilemapByName
+//% pyConvertToTaggedTemplate
+function tilemap8(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
+//% helper=getTilemapByName
+//% pyConvertToTaggedTemplate
+function tilemap16(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
+//% helper=getTilemapByName
+//% pyConvertToTaggedTemplate
+function tilemap32(lits: any, ...args: any[]): tiles.TileMapData { return null }
 
 namespace helpers {
     export type TilemapFactory = (name: string) => tiles.TileMapData;
