@@ -466,7 +466,7 @@ class Sprite extends sprites.BaseSprite {
     //% inlineInputMode=inline
     //% help=sprites/sprite/say
     say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
-        // clear say
+        // clear say if nullish or empty string (not on e.g. 0)
         if (text === null || text === undefined || text === "") {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
