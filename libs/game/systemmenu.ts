@@ -300,6 +300,9 @@ namespace scene.systemMenu {
 
     function toggleStats() {
         game.stats = !game.stats;
+        if (!game.stats && control.EventContext.onStats) {
+            control.EventContext.onStats("");
+        }
     }
 
     function toggleConsole() {
