@@ -467,7 +467,7 @@ class Sprite extends sprites.BaseSprite {
     //% help=sprites/sprite/say
     say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
         // clear say
-        if (text == null || text === "") {
+        if (text === null || text === undefined || text === "") {
             this.updateSay = undefined;
             if (this.sayBubbleSprite) {
                 this.sayBubbleSprite.destroy();
