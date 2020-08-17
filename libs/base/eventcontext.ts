@@ -63,6 +63,9 @@ namespace control {
             this.deltaTimeMillis = 0;
             this.frameWorker = 0;
             this.idleCallbacks = undefined;
+            if (!EventContext.lastStats) {
+                EventContext.lastStats = "";
+            }
         }
 
         get deltaTime() {
