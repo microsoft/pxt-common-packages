@@ -12,7 +12,7 @@ If the ``up`` key is pressed, then the movement value is negative. If the ``down
 
 ## Parameters
 
-* **step**: the amount of verticle movement assigned to a key direction each time a key is detected as pressed.
+* **step**: the amount of vertical movement assigned to a key direction each time a key is detected as pressed.
 
 ## Returns
 
