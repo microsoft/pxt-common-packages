@@ -6,7 +6,7 @@ Create a new sprite with motion from a pixel image.
 sprites.createProjectile(img``, 0, 0, 0)
 ```
 
-A projectile is a sprite the moves from the location where it's created at. It moves with a speed (velocity), that you set in both the horizontal and veritcal directions. The sprite starts at the screen coordinate of (0, 0) unless you tell it to come from another sprite. If you do that, the projectile will start from the center of sprite you set as the source.
+A projectile is a sprite the moves from the location where it's created at. It moves with a speed (velocity), that you set in both the horizontal and vertical directions. The sprite starts at the screen coordinate of (0, 0) unless you tell it to come from another sprite. If you do that, the projectile will start from the center of sprite you set as the source.
 
 The projectile has all the same properties that a non-moving sprite has. It will overlap with other sprites and hit collide with tiles.
 
