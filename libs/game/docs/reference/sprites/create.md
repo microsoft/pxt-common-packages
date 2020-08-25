@@ -11,7 +11,7 @@ Sprites provide all the operations to move and animate images. Your sprites can 
 ## Parameters
 
 * **img**: an [image](/types/image) to create a sprite for.
-* **kind**: the type of sprite to create.There are default sprite kinds already defined like - ``Player``, ``Enemy``, ``Food``, etc. You can add your own kind to the `SpriteKind` group (namespace) also.
+* **kind**: the type of sprite to create. There are default sprite kinds already defined like ``Player``, ``Enemy``, ``Food``, etc. You can add your own kind to the currently defined `SpriteKind` (namespace) types also.
 
 ## Returns
 
