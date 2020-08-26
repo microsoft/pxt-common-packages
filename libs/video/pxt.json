@@ -1,0 +1,13 @@
+{
+    "name": "video",
+    "description": "Support for incoming video streams",
+    "files": [
+        "video.d.ts",
+        "video.cpp",
+        "video.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "screen": "file:../screen"
+    }
+}
