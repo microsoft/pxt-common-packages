@@ -931,7 +931,7 @@ class Sprite extends sprites.BaseSprite {
                         return;
                     }
 
-                    const maxMomentumDiff = timeDiff * turnRate * (speed / 50);
+                    const maxMomentumDiff = timeDiff * turnRate * (rate / 50);
                     const angleToTarget = Math.atan2(dy, dx);
 
                     // to move directly towards target, use this...
