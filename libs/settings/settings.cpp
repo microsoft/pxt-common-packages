@@ -52,6 +52,35 @@ static WStorage *mountedStorage() {
     return s;
 }
 
+// large store is area for storing large binary objects, eg ML models
+// it may be already occupied by the user program, in which case largeStoreStart() will return 0
+size_t largeStoreSize() {
+#if defined(SAMD21)
+    return 64 * 1024;
+#else
+    return 128 * 1024;
+#endif
+}
+
+uintptr_t largeStoreStart() {
+    auto s = getWStorage();
+    uintptr_t r;
+#if defined(STM32F4)
+    r = 0x08000000 + s->flash.totalSize() - largeStoreSize();
+#else
+    r = s->fs.baseAddr - s->fs.bytes - largeStoreSize();
+#endif
+
+    if (r < afterProgramPage())
+        return 0;
+
+    return r;
+}
+
+CODAL_FLASH *largeStoreFlash() {
+    return &getWStorage()->flash;
+}
+
 //%
 int _set(String key, Buffer data) {
     auto s = mountedStorage();
