@@ -7,9 +7,13 @@
 #define SW_TRIANGLE 1
 #define SW_SAWTOOTH 2
 #define SW_SINE 3
+#define SW_TUNEDNOISE 4
 #define SW_NOISE 5
 #define SW_SQUARE_10 11
 #define SW_SQUARE_50 15
+#define SW_CYCLENOISE_4 16
+#define SW_CYCLENOISE_5 17
+#define SW_CYCLENOISE_6 18
 
 struct SoundInstruction {
     uint8_t soundWave;
