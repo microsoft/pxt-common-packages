@@ -7,7 +7,21 @@ namespace video {
     }
 
     //%
+    void setPaletteFromStream(int stream) {
+    }
+
+    //%
     int getStreamCount() {
         return 0;
+    }
+
+    //%
+    String getStreamName(int stream) {
+        return NULL;
+    }
+
+    //%
+    String getDeviceId(int stream) {
+        return NULL;
     }
 }

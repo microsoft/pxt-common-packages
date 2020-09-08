@@ -2,7 +2,7 @@
     "name": "video",
     "description": "Support for incoming video streams",
     "files": [
-        "video.d.ts",
+        "shims.d.ts",
         "video.cpp",
         "video.ts"
     ],
