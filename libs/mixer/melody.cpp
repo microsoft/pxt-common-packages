@@ -9,28 +9,6 @@ namespace music {
 
 SINGLETON(WSynthesizer);
 
-static const int16_t sinQ[256] = {
-    0,     201,   403,   605,   807,   1009,  1210,  1412,  1614,  1815,  2017,  2218,  2419,
-    2621,  2822,  3023,  3224,  3425,  3625,  3826,  4026,  4226,  4426,  4626,  4826,  5026,
-    5225,  5424,  5623,  5822,  6020,  6219,  6417,  6615,  6812,  7009,  7206,  7403,  7600,
-    7796,  7992,  8187,  8383,  8578,  8772,  8967,  9161,  9354,  9547,  9740,  9933,  10125,
-    10317, 10508, 10699, 10890, 11080, 11270, 11459, 11648, 11836, 12024, 12212, 12399, 12585,
-    12772, 12957, 13142, 13327, 13511, 13695, 13878, 14060, 14243, 14424, 14605, 14785, 14965,
-    15145, 15323, 15501, 15679, 15856, 16032, 16208, 16383, 16557, 16731, 16905, 17077, 17249,
-    17420, 17591, 17761, 17930, 18099, 18267, 18434, 18600, 18766, 18931, 19096, 19259, 19422,
-    19585, 19746, 19907, 20067, 20226, 20384, 20542, 20699, 20855, 21010, 21165, 21318, 21471,
-    21623, 21774, 21925, 22074, 22223, 22371, 22518, 22664, 22810, 22954, 23098, 23241, 23382,
-    23523, 23663, 23803, 23941, 24078, 24215, 24350, 24485, 24618, 24751, 24883, 25014, 25144,
-    25273, 25401, 25528, 25654, 25779, 25903, 26026, 26148, 26269, 26389, 26509, 26627, 26744,
-    26860, 26975, 27089, 27202, 27314, 27425, 27535, 27644, 27752, 27859, 27964, 28069, 28173,
-    28275, 28377, 28477, 28576, 28674, 28772, 28868, 28963, 29056, 29149, 29241, 29331, 29421,
-    29509, 29596, 29682, 29767, 29851, 29934, 30015, 30096, 30175, 30253, 30330, 30406, 30480,
-    30554, 30626, 30697, 30767, 30836, 30904, 30970, 31036, 31100, 31163, 31225, 31285, 31345,
-    31403, 31460, 31516, 31570, 31624, 31676, 31727, 31777, 31825, 31873, 31919, 31964, 32008,
-    32050, 32092, 32132, 32171, 32209, 32245, 32280, 32314, 32347, 32379, 32409, 32438, 32466,
-    32493, 32518, 32542, 32565, 32587, 32607, 32627, 32645, 32661, 32677, 32691, 32704, 32716,
-    32727, 32736, 32744, 32751, 32757, 32761, 32764, 32766, 32767};
-
 typedef int (*gentone_t)(uintptr_t userData, uint32_t position);
 
 static int noiseTone(uintptr_t userData, uint32_t position) {
@@ -46,14 +24,40 @@ static int noiseTone(uintptr_t userData, uint32_t position) {
 
 static int sineTone(uintptr_t userData, uint32_t position) {
     (void)userData;
-    int p = position >= 512 ? position - 512 : position;
-    int r;
-    if (p < 256) {
-        r = sinQ[p];
-    } else {
-        r = sinQ[511 - p];
+    int32_t p = position;
+    if (p >= 512) {
+	p -= 512;
     }
-    return position >= 512 ? -r : r;
+    if (p > 256) {
+	p = 512 - p;
+    }
+
+    // Approximate sin(x * pi / 2) with the odd polynomial y = cx^5 + bx^3 + ax
+    // using the constraint y(1) = 1 => a = 1 - b - c
+    //   => y = c x^5 + b x^3 + (1 - b - c) * x
+    //
+    // Do a least-squares fit of this to sin(x * pi / 2) in the range 0..1
+    // inclusive, using 21 evenly spaced points. Resulting approximation:
+    //
+    // sin(x*pi/2) ~= 0.0721435357258*x**5 - 0.642443736562*x**3 + 1.57030020084*x
+
+    // Scale the constants by 32767 to match the desired output range.
+    constexpr int32_t c = 0.0721435357258 * 32767;
+    constexpr int32_t b = -0.642443736562 * 32767;
+    constexpr int32_t a = 1.57030020084 * 32767;
+
+    // Calculate using y = ((c * x^2 + b) * x^2 + a) * x
+    //
+    // The position p is x * 256, so after each multiply with p we need to
+    // shift right by 8 bits to keep the decimal point in the same place.  (The
+    // approximation has a negative error near x=1 which helps avoid overflow.)
+    int32_t p2 = p * p;
+    int32_t u = (c * p2 >> 16) + b;
+    int32_t v = (u * p2 >> 16) + a;
+    int32_t w = v * p >> 8;
+
+    // The result is within 7/32767 or 0.02%, signal-to-error ratio about 38 dB.
+    return position >= 512 ? -w : w;
 }
 
 static int sawtoothTone(uintptr_t userData, uint32_t position) {
