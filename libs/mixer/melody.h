@@ -55,6 +55,7 @@ struct PlayingSound {
     int32_t prevVolume;
     uint32_t prevToneStep;
     int32_t prevToneDelta;
+    uint32_t generatorState;
     WaitingSound *sound;
     SoundInstruction *currInstr, *instrEnd;
 };

@@ -9,12 +9,20 @@ namespace music {
 
 SINGLETON(WSynthesizer);
 
-typedef int (*gentone_t)(uintptr_t userData, uint32_t position);
+// Tone generator arguments:
+//
+// sound: a pointer to the currently-playing sound, usable for looking up the
+// waveform or generator-specific state.
+//
+// position: offset within the currently-playing wave, range 0..1023.
+//
+// cycle: a 6-bit cyclical sequence number of the wave, incremented each time
+// the position loops from 1023 back to 0.
+typedef int (*gentone_t)(PlayingSound* sound, uint32_t position, uint8_t cycle);
 
-static int noiseTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)wave;
+static int noiseTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
     (void)position;
-    (void)channel;
     (void)cycle;
     // see https://en.wikipedia.org/wiki/Xorshift
     static uint32_t x = 0xf01ba80;
@@ -24,9 +32,8 @@ static int noiseTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle
     return (x & 0xffff) - 0x7fff;
 }
 
-static int sineTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)wave;
-    (void)channel;
+static int sineTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
     (void)cycle;
     int32_t p = position;
     if (p >= 512) {
@@ -64,47 +71,46 @@ static int sineTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle)
     return position >= 512 ? -w : w;
 }
 
-static int sawtoothTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)wave;
-    (void)channel;
+static int sawtoothTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
     (void)cycle;
     return (position << 6) - 0x7fff;
 }
 
-static int triangleTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)wave;
-    (void)channel;
+static int triangleTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
     (void)cycle;
     return position < 512 ? (position << 7) - 0x7fff : ((1023 - position) << 7) - 0x7fff;
 }
 
-static int squareWaveTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)channel;
+static int squareWaveTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
     (void)cycle;
+    uint8_t wave = sound->currInstr->soundWave;
     return position < (102 * (wave - SW_SQUARE_10 + 1)) ? -0x7fff : 0x7fff;
 }
 
-static int tunedNoiseTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
+static int tunedNoiseTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
     // Generate a square wave filtered by a random bit sequence. Since the generator
-    // is called multiple times per wave, use static data to ensure we only generate
-    // a random bit once per wave, and then reuse it for future calls for that wave.
-    // Do this per channel to ensure results remain consistent when mixing multiple
-    // instances.
-    (void)wave;
-    static uint8_t channel_cycle[MAX_SOUNDS];
-    static bool channel_is_on[MAX_SOUNDS];
-    static uint32_t x = 0xf01ba80;
-    bool is_on;
-    if (cycle == channel_cycle[channel]) {
-	is_on = channel_is_on[channel];
+    // is called multiple times per wave, use PlayingSound state data to ensure we
+    // only generate a random bit once per wave, and then reuse it for future
+    // calls for that wave.
+    //
+    // Use the low 6 bits of generatorState to store the last-used cycle, and
+    // random_bit to store the last on/off state. (random_bit is arbitrary as
+    // long as it isn't one of the low 6 bits.)
+    constexpr uint32_t random_bit = 0x8000;
+    static uint32_t x = 0xf01ba80;  // seed for the static RNG state
+    uint8_t prev_cycle = sound->generatorState & 0x3f;
+    uint32_t is_on;
+    if (cycle == prev_cycle) {
+	is_on = sound->generatorState & random_bit;
     } else {
 	// see https://en.wikipedia.org/wiki/Xorshift
 	x ^= x << 13;
 	x ^= x >> 17;
 	x ^= x << 5;
-	is_on = (x & 0x8000);
-	channel_cycle[channel] = cycle;
-	channel_is_on[channel] = is_on;
+	is_on = (x & random_bit);
+	sound->generatorState = (cycle & 0x3f) | is_on;
     }
     if (!is_on) return 0;
     return position < 512 ? -0x7fff : 0x7fff;
@@ -121,28 +127,26 @@ static int tunedNoiseTone(uint8_t wave, uint32_t position, int channel, uint8_t 
 static const uint32_t cycle_bits[] = { 0x2df0eb47, 0xc8165a93 };
 static const uint8_t cycle_mask[] = { 0xf, 0x1f, 0x3f };
 
-static int cycleNoiseTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)channel;
+static int cycleNoiseTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
     // Generate a square wave filtered by a short-cycle pseudorandom bit sequence.
-    // The bit sequence repeats every 16/32/64 waves for the 4/5/6-bit waveforms.
+    // The bit sequence repeats every 16/32/64 waves.
     //
     // The "cycle" argument corresponds to the sequential number of the generated
     // wave. This is currently a 6-bit value. Since the pseudorandom bit sequences
-    // evenly fit into this, there's no need to track per-channel state.
-
-    bool is_on;
+    // evenly fit into this, there's no need to track generator state.
+    uint8_t wave = sound->currInstr->soundWave;
     int cycle_index = wave - SW_SQUARE_CYCLE_16;
     // CLAMP(0, cycle_index, sizeof cycle_bits / sizeof cycle_bits[0])
     cycle &= cycle_mask[cycle_index];
-    is_on = (cycle_bits[cycle >> 5] & (1U << (cycle & 0x1f)));
+    bool is_on = (cycle_bits[cycle >> 5] & (1U << (cycle & 0x1f)));
     if (!is_on) return 0;
     return position < 512 ? -0x7fff : 0x7fff;
 }
 
-static int silenceTone(uint8_t wave, uint32_t position, int channel, uint8_t cycle) {
-    (void)wave;
+static int silenceTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
+    // Generate a square wave filtered by a short-cycle pseudorandom bit sequence.
+    (void)sound;
     (void)position;
-    (void)channel;
     (void)cycle;
     return 0;
 }
@@ -298,7 +302,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                 }
             }
 
-            int v = fn(wave, (tonePosition >> 16) & 1023, i, tonePosition >> 26);
+            int v = fn(snd, (tonePosition >> 16) & 1023, tonePosition >> 26);
             v = (v * (volume >> 16)) >> (10 + (16 - OUTPUT_BITS));
 
             // if (v > MAXVAL)
