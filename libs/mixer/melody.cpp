@@ -131,9 +131,8 @@ static int cycleNoiseTone(uint8_t wave, uint32_t position, int channel, uint8_t 
     bool is_on;
     int cycle_index = wave - SW_CYCLENOISE_4;
     // CLAMP(0, cycle_index, sizeof cycle_bits / sizeof cycle_bits[0])
-    uint8_t cycle_mask = cycle_bits[cycle_index];
-    cycle &= cycle_mask;
-    is_on = (cycle_bits[cycle >> 5] & (1 << (cycle & 0x1f)));
+    cycle &= cycle_mask[cycle_index];
+    is_on = (cycle_bits[cycle >> 5] & (1U << (cycle & 0x1f)));
     if (!is_on) return 0;
     return position < 512 ? -0x7fff : 0x7fff;
 }
