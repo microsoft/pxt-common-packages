@@ -2,8 +2,8 @@
 #include "SoundOutput.h"
 #include "melody.h"
 
-#define LOG DMESG
-//#define LOG NOLOG
+//#define LOG DMESG
+#define LOG NOLOG
 
 namespace music {
 
@@ -200,7 +200,8 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                 fn = getWaveFn(wave);
 
                 samplesLeft = (uint32_t)(instr->duration * samplesPerMS >> 8);
-                volumeStep = ((int)(instr->endVolume - instr->startVolume) << 16) / samplesLeft;
+                // make sure the division is signed
+                volumeStep = (int)((instr->endVolume - instr->startVolume) << 16) / (int)samplesLeft;
 
                 if (j == 0 && snd->prevVolume != -1) {
                     // restore previous state
@@ -212,9 +213,9 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                     prevEndFreq = instr->endFrequency;
                 } else {
                     LOG("#sampl %d %p", samplesLeft, snd->currInstr);
-                    LOG("%d-%dHz %d-%d vol", instr->frequency, instr->endFrequency,
-                        instr->startVolume, instr->endVolume);
                     volume = instr->startVolume << 16;
+                    LOG("%d-%dHz %d-%d vol %d+%d", instr->frequency, instr->endFrequency,
+                        instr->startVolume, instr->endVolume, volume, volumeStep);
                     if (prevFreq != instr->frequency || prevEndFreq != instr->endFrequency) {
                         toneStep = (uint32_t)(toneStepMult * instr->frequency);
                         if (instr->frequency != instr->endFrequency) {
