@@ -132,13 +132,6 @@ int WSynthesizer::updateQueues() {
             snd->startSampleNo = currSample;
             snd->currInstr = (SoundInstruction *)p->instructions->data;
             snd->instrEnd = snd->currInstr + p->instructions->length / sizeof(SoundInstruction);
-            for (auto p = snd->currInstr; p < snd->instrEnd; p++) {
-                CLAMP(20, p->frequency, 20000);
-                CLAMP(20, p->endFrequency, 20000);
-                CLAMP(0, p->startVolume, 1023);
-                CLAMP(0, p->endVolume, 1023);
-                CLAMP(1, p->duration, 60000);
-            }
             snd->prevVolume = -1;
         } else {
             // no more sounds to move
@@ -191,15 +184,24 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
 
         for (int j = 0; j < numsamples; ++j) {
             if (samplesLeft == 0) {
-                instr = ++snd->currInstr;
-                if (instr >= snd->instrEnd) {
+                snd->currInstr++;
+                if (snd->currInstr >= snd->instrEnd) {
                     break;
                 }
+                SoundInstruction copy = *snd->currInstr;
+                instr = &copy;
+                CLAMP(20, instr->frequency, 20000);
+                CLAMP(20, instr->endFrequency, 20000);
+                CLAMP(0, instr->startVolume, 1023);
+                CLAMP(0, instr->endVolume, 1023);
+                CLAMP(1, instr->duration, 60000);
+
                 wave = instr->soundWave;
                 fn = getWaveFn(wave);
 
                 samplesLeft = (uint32_t)(instr->duration * samplesPerMS >> 8);
-                volumeStep = ((int)(instr->endVolume - instr->startVolume) << 16) / samplesLeft;
+                // make sure the division is signed
+                volumeStep = (int)((instr->endVolume - instr->startVolume) << 16) / (int)samplesLeft;
 
                 if (j == 0 && snd->prevVolume != -1) {
                     // restore previous state
@@ -210,8 +212,10 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                     prevFreq = instr->frequency;
                     prevEndFreq = instr->endFrequency;
                 } else {
-                    LOG("#sampl %d %p", samplesLeft, instr);
+                    LOG("#sampl %d %p", samplesLeft, snd->currInstr);
                     volume = instr->startVolume << 16;
+                    LOG("%d-%dHz %d-%d vol %d+%d", instr->frequency, instr->endFrequency,
+                        instr->startVolume, instr->endVolume, volume, volumeStep);
                     if (prevFreq != instr->frequency || prevEndFreq != instr->endFrequency) {
                         toneStep = (uint32_t)(toneStepMult * instr->frequency);
                         if (instr->frequency != instr->endFrequency) {
@@ -240,7 +244,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
             samplesLeft--;
         }
 
-        if (instr >= snd->instrEnd) {
+        if (snd->currInstr >= snd->instrEnd) {
             snd->sound->state = SoundState::Done;
             snd->sound = NULL;
         } else {
@@ -296,8 +300,8 @@ void queuePlayInstructions(int when, Buffer buf) {
     p->instructions = buf;
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
 
-    LOG("Queue %dms now=%d off=%d %p", when, snd->currSample, p->startSampleNo - snd->currSample,
-        buf->data);
+    LOG("Queue %dms now=%d off=%d %p sampl:%dHz", when, snd->currSample, p->startSampleNo - snd->currSample,
+        buf->data, snd->sampleRate);
 
     target_disable_irq();
     // add new sound to queue
