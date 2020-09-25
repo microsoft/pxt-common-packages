@@ -429,15 +429,15 @@ namespace music {
             //   1 - triangle
             //   2 - sawtooth
             //   3 - sine
-            //   4 - pseudorandom noise (tunable)
+            //   4 - pseudorandom square wave noise (tunable)
             //   5 - white noise (ignores frequency)
             //   11 - square 10%
             //   12 - square 20%
             //   ...
             //   15 - square 50%
-            //   16 - pseudorandom cycle length 16
-            //   17 - pseudorandom cycle length 32
-            //   18 - pseudorandom cycle length 64
+            //   16 - filtered square wave, cycle length 16
+            //   17 - filtered square wave, cycle length 32
+            //   18 - filtered square wave, cycle length 64
 
             const consumeToken = () => {
                 if (token && tokenKind != Token.Note) {

@@ -110,6 +110,8 @@ static int tunedNoiseTone(uint8_t wave, uint32_t position, int channel, uint8_t 
     return position < 512 ? -0x7fff : 0x7fff;
 }
 
+// Bit patterns for use by the cyclic noise tone.
+//
 // The bit pattern is arbitrary, but should have equal numbers of 0 and 1 bits,
 // and should avoid long identical-bit runs for the lower parts. The values below
 // were chosen based on a random permutation of the hex nibbles 0..f and then
@@ -129,7 +131,7 @@ static int cycleNoiseTone(uint8_t wave, uint32_t position, int channel, uint8_t 
     // evenly fit into this, there's no need to track per-channel state.
 
     bool is_on;
-    int cycle_index = wave - SW_CYCLENOISE_4;
+    int cycle_index = wave - SW_SQUARE_CYCLE_16;
     // CLAMP(0, cycle_index, sizeof cycle_bits / sizeof cycle_bits[0])
     cycle &= cycle_mask[cycle_index];
     is_on = (cycle_bits[cycle >> 5] & (1U << (cycle & 0x1f)));
@@ -160,7 +162,7 @@ static gentone_t getWaveFn(uint8_t wave) {
     default:
         if (SW_SQUARE_10 <= wave && wave <= SW_SQUARE_50)
             return squareWaveTone;
-        if (SW_CYCLENOISE_4 <= wave && wave <= SW_CYCLENOISE_6)
+        if (SW_SQUARE_CYCLE_16 <= wave && wave <= SW_SQUARE_CYCLE_64)
             return cycleNoiseTone;
         else
             return silenceTone;
