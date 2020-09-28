@@ -1143,6 +1143,7 @@ Buffer doubledIcon(Buffer icon) {
 
 #ifndef __linux__
 extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
+    void *dst0 = dst;
     if (sz >= 4 && !((uintptr_t)dst & 3) && !((uintptr_t)src & 3)) {
         size_t cnt = sz >> 2;
         uint32_t *d = (uint32_t *)dst;
@@ -1162,10 +1163,11 @@ extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
         *dd++ = *ss++;
     }
 
-    return dst;
+    return dst0;
 }
 
 extern "C" void *memset(void *dst, int v, size_t sz) {
+    void *dst0 = dst;
     if (sz >= 4 && !((uintptr_t)dst & 3)) {
         size_t cnt = sz >> 2;
         uint32_t vv = 0x01010101 * v;
@@ -1183,6 +1185,6 @@ extern "C" void *memset(void *dst, int v, size_t sz) {
         *dd++ = v;
     }
 
-    return dst;
+    return dst0;
 }
 #endif
