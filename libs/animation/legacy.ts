@@ -108,7 +108,7 @@ namespace animation {
         //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
         //% group="Legacy"
         //% weight=40
-        //% help=animation/add-animation
+        //% help=animation/add-animation-frame
         addAnimationFrame(frame: Image) {
             this.frames[++this.index] = frame;
         }
