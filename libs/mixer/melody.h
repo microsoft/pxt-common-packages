@@ -7,9 +7,13 @@
 #define SW_TRIANGLE 1
 #define SW_SAWTOOTH 2
 #define SW_SINE 3
+#define SW_TUNEDNOISE 4
 #define SW_NOISE 5
 #define SW_SQUARE_10 11
 #define SW_SQUARE_50 15
+#define SW_SQUARE_CYCLE_16 16
+#define SW_SQUARE_CYCLE_32 17
+#define SW_SQUARE_CYCLE_64 18
 
 struct SoundInstruction {
     uint8_t soundWave;
@@ -51,6 +55,7 @@ struct PlayingSound {
     int32_t prevVolume;
     uint32_t prevToneStep;
     int32_t prevToneDelta;
+    uint32_t generatorState;
     WaitingSound *sound;
     SoundInstruction *currInstr, *instrEnd;
 };
