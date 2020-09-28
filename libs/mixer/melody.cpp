@@ -183,8 +183,6 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
         uint32_t samplesLeft = 0;
         uint8_t wave = 0;
         int32_t volume = 0;
-        uint32_t prevFreq = 0;
-        uint32_t prevEndFreq = 0;
 
         for (int j = 0; j < numsamples; ++j) {
             if (samplesLeft == 0) {
@@ -205,7 +203,8 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
 
                 samplesLeft = (uint32_t)(instr->duration * samplesPerMS >> 8);
                 // make sure the division is signed
-                volumeStep = (int)((instr->endVolume - instr->startVolume) << 16) / (int)samplesLeft;
+                volumeStep =
+                    (int)((instr->endVolume - instr->startVolume) << 16) / (int)samplesLeft;
 
                 if (j == 0 && snd->prevVolume != -1) {
                     // restore previous state
@@ -213,23 +212,17 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                     volume = snd->prevVolume;
                     toneStep = snd->prevToneStep;
                     toneDelta = snd->prevToneDelta;
-                    prevFreq = instr->frequency;
-                    prevEndFreq = instr->endFrequency;
                 } else {
                     LOG("#sampl %d %p", samplesLeft, snd->currInstr);
                     volume = instr->startVolume << 16;
-                    LOG("%d-%dHz %d-%d vol %d+%d", instr->frequency, instr->endFrequency,
-                        instr->startVolume, instr->endVolume, volume, volumeStep);
-                    if (prevFreq != instr->frequency || prevEndFreq != instr->endFrequency) {
-                        toneStep = (uint32_t)(toneStepMult * instr->frequency);
-                        if (instr->frequency != instr->endFrequency) {
-                            uint32_t endToneStep = (uint32_t)(toneStepMult * instr->endFrequency);
-                            toneDelta = (int32_t)(endToneStep - toneStep) / (int32_t)samplesLeft;
-                        } else {
-                            toneDelta = 0;
-                        }
-                        prevFreq = instr->frequency;
-                        prevEndFreq = instr->endFrequency;
+                    LOG("%d-%dHz %d-%d vol", instr->frequency, instr->endFrequency,
+                        instr->startVolume, instr->endVolume);
+                    toneStep = (uint32_t)(toneStepMult * instr->frequency);
+                    if (instr->frequency != instr->endFrequency) {
+                        uint32_t endToneStep = (uint32_t)(toneStepMult * instr->endFrequency);
+                        toneDelta = (int32_t)(endToneStep - toneStep) / (int32_t)samplesLeft;
+                    } else {
+                        toneDelta = 0;
                     }
                 }
             }
@@ -304,8 +297,8 @@ void queuePlayInstructions(int when, Buffer buf) {
     p->instructions = buf;
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
 
-    LOG("Queue %dms now=%d off=%d %p sampl:%dHz", when, snd->currSample, p->startSampleNo - snd->currSample,
-        buf->data, snd->sampleRate);
+    LOG("Queue %dms now=%d off=%d %p sampl:%dHz", when, snd->currSample,
+        p->startSampleNo - snd->currSample, buf->data, snd->sampleRate);
 
     target_disable_irq();
     // add new sound to queue
