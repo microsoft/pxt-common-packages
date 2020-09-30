@@ -5,6 +5,7 @@
         "README.md",
         "dal.d.ts",
         "codal.cpp",
+        "codallike.cpp",
         "usb.cpp",
         "pxt.h",
         "platform.h",

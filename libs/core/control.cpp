@@ -3,7 +3,11 @@
 #if defined(NRF52_SERIES)
 #define _estack __StackTop 
 #endif
+
+#ifndef PXT_RAM_SIZE
 extern uint32_t _estack;
+#define PXT_RAM_SIZE ((uint32_t)&_estack & 0x1fffffff)
+#endif
 
 namespace control {
 
@@ -25,7 +29,7 @@ void raiseEvent(int src, int value) {
 //% blockId="control_device_dal_version" block="device dal version"
 //% help=control/device-dal-version
 String deviceDalVersion() {
-    return mkString(device.getVersion());
+    return mkString(DEVICE_DAL_VERSION);
 }
 
 /**
@@ -51,7 +55,7 @@ void dmesgPtr(String str, Object_ ptr) {
 //%
 uint32_t _ramSize()
 {
-    return (uint32_t)&_estack & 0x1fffffff;
+    return PXT_RAM_SIZE;
 }
 
 }

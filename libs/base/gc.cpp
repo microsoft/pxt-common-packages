@@ -19,11 +19,15 @@
 #define ALIGN_TO_WORD(x) (((x) + 7) & (~7ULL))
 #define VAR_BLOCK_WORDS(vt) ((uint32_t)(vt) >> 2)
 #else
+#ifdef PLAYDATE
+#define HIGH_SHIFT 24
+#else
 #define HIGH_SHIFT 28
+#endif
 #define BYTES_TO_WORDS(x) ((x) >> 2)
 #define WORDS_TO_BYTES(x) ((x) << 2)
 #define ALIGN_TO_WORD(x) (((x) + 3) & (~3U))
-#define VAR_BLOCK_WORDS(vt) (((uint32_t)(vt) << 4) >> (4 + 2))
+#define VAR_BLOCK_WORDS(vt) (((uint32_t)(vt) << (32 - HIGH_SHIFT)) >> ((32 - HIGH_SHIFT) + 2))
 #endif
 
 #define FREE_MASK (1ULL << (HIGH_SHIFT + 3))
@@ -33,12 +37,12 @@
 #define ANY_MARKED_MASK 0x3
 
 // the bit operations should be faster than loading large constants
-#define IS_FREE(vt) ((uintptr_t)(vt) >> (HIGH_SHIFT + 3))
+#define IS_FREE(vt) (((uintptr_t)(vt) >> (HIGH_SHIFT + 3)) & 1)
 #define IS_ARRAY(vt) (((uintptr_t)(vt) >> (HIGH_SHIFT + 2)) & 1)
 #define IS_PERMA(vt) (((uintptr_t)(vt) >> (HIGH_SHIFT + 1)) & 1)
-#define IS_VAR_BLOCK(vt) ((uintptr_t)(vt) >> (HIGH_SHIFT + 2))
+#define IS_VAR_BLOCK(vt) (((uintptr_t)(vt) >> (HIGH_SHIFT + 2)) & 3)
 #define IS_MARKED(vt) ((uintptr_t)(vt)&MARKED_MASK)
-#define IS_LIVE(vt) (IS_MARKED(vt) || (((uintptr_t)(vt) >> (HIGH_SHIFT)) == 0x6))
+#define IS_LIVE(vt) (IS_MARKED(vt) || ((((uintptr_t)(vt) >> (HIGH_SHIFT)) & 0xf) == 0x6))
 
 //#define PXT_GC_DEBUG 1
 #ifndef PXT_GC_CHECKS
@@ -46,7 +50,7 @@
 #endif
 //#define PXT_GC_STRESS 1
 
-//#define PXT_GC_CHECKS 1
+#define PXT_GC_CHECKS 1
 
 #define MARK(v)                                                                                    \
     do {                                                                                           \
@@ -526,6 +530,7 @@ static void sweep(int flags) {
                 if (sz > (int)maxFreeBlock)
                     maxFreeBlock = sz;
 #ifdef PXT_GC_CHECKS
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
                 memset(start, 0xff, WORDS_TO_BYTES(sz));
 #endif
                 start->vtable = (sz << 2) | FREE_MASK;
@@ -614,7 +619,7 @@ extern "C" void *realloc(void *ptr, size_t size) {
 
         if (ptr != NULL && mem != NULL) {
             auto r = (uintptr_t *)ptr;
-            GC_CHECK((r[-1] >> (HIGH_SHIFT + 1)) == 3, 41);
+            GC_CHECK(((r[-1] >> (HIGH_SHIFT + 1)) & 7) == 3, 41);
             size_t blockSize = VAR_BLOCK_WORDS(r[-1]);
             memcpy(mem, ptr, min(blockSize * sizeof(void *), size));
             free(ptr);
@@ -647,7 +652,7 @@ void *app_alloc(int numbytes) {
 
 void *app_free(void *ptr) {
     auto r = (uintptr_t *)ptr;
-    GC_CHECK((r[-1] >> (HIGH_SHIFT + 1)) == 3, 41);
+    GC_CHECK(((r[-1] >> (HIGH_SHIFT + 1)) & 7) == 3, 41);
     r[-1] |= FREE_MASK;
     return r;
 }
