@@ -926,6 +926,10 @@ class Sprite extends sprites.BaseSprite {
 
                     // already right on top of target; stop moving
                     if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+                        // snap to target location so it sits 'right on top' of sprite.
+                        self.x = target.x;
+                        self.y = target.y;
+
                         self.vx = 0;
                         self.vy = 0;
                         return;
