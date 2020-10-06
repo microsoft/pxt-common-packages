@@ -88,7 +88,7 @@ static GCStats gcStats;
 
 //% expose
 Buffer getGCStats() {
-    return mkBuffer((uint8_t*)&gcStats, sizeof(gcStats));
+    return mkBuffer((uint8_t *)&gcStats, sizeof(gcStats));
 }
 
 //%
@@ -478,7 +478,7 @@ static GCBlock *allocateBlockCore() {
 
 __attribute__((noinline)) static void allocateBlock() {
     auto curr = allocateBlockCore();
-    LOG("GC alloc: %p", curr);
+    DMESG("GC block %db @ %p", curr->blockSize, curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
     setupFreeBlock(curr);
     linkFreeBlock(curr);
@@ -632,6 +632,47 @@ void *gcAllocateArray(int numbytes) {
     numbytes += sizeof(void *);
     auto r = (uintptr_t *)gcAllocate(numbytes);
     *r = ARRAY_MASK | (TOWORDS(numbytes) << 2);
+    return r + 1;
+}
+
+static void *gcAllocAt(void *hint, int numbytes) {
+    gc(0);
+    size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
+
+    for (auto p = firstFree; p; p = p->nextFree) {
+        GC_CHECK(!isReadOnly((TValue)p), 49);
+        auto vt = p->vtable;
+        GC_CHECK(IS_FREE(vt), 43);
+        int offset = BYTES_TO_WORDS((uint8_t *)hint - (uint8_t *)p);
+        int left = (int)(VAR_BLOCK_WORDS(vt) - numwords - offset);
+        // we give ourselves some space here, so we don't get some strange overlaps
+        if (offset >= 8 && left >= 8) {
+            auto nf = (RefBlock *)((void **)p + numwords + offset);
+            nf->vtable = (left << 2) | FREE_MASK;
+            nf->nextFree = p->nextFree;
+            p->nextFree = nf;
+            p->vtable = (offset << 2) | FREE_MASK;
+            p = (RefBlock *)((void **)p + offset);
+            p->vtable = 0;
+            return p;
+        }
+    }
+
+    return NULL;
+}
+
+void *app_alloc_at(void *at, int numbytes) {
+    if (numbytes < 8)
+        return NULL;
+    if (!at)
+        return NULL;
+
+    numbytes = ALIGN_TO_WORD(numbytes) + sizeof(void *);
+    auto r = (uintptr_t *)gcAllocAt((uintptr_t *)at - 1, numbytes);
+    if (!r)
+        return NULL;
+    *r = ARRAY_MASK | PERMA_MASK | (TOWORDS(numbytes) << 2);
+    gc(0);
     return r + 1;
 }
 
