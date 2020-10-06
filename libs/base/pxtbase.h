@@ -995,6 +995,7 @@ void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 extern "C" void *app_alloc(int numbytes);
 extern "C" void *app_free(void *ptr);
+extern "C" void *app_alloc_at(void *at, int numbytes);
 void gcPreAllocateBlock(uint32_t sz);
 
 #ifdef PXT64
