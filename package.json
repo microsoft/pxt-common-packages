@@ -24,8 +24,7 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "^6.1.25",
-    "@jacdac/jacdac-ts": "^0.0.9"
+    "pxt-core": "^6.1.25"
   },
   "devDependencies": {
     "typescript": "^3.7.5",
