@@ -365,7 +365,7 @@ bool eq_bool(TValue a, TValue b);
 bool eqq_bool(TValue a, TValue b);
 
 //%
-void failedCast(TValue v);
+void failedCast(TValue v, void *addr = NULL);
 //%
 void missingProperty(TValue v);
 

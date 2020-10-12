@@ -1888,8 +1888,8 @@ PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)
 PRIM_VTABLE(buffer, ValType::Object, BoxedBuffer, p->length)
 // PRIM_VTABLE(action, ValType::Function, RefAction, )
 
-void failedCast(TValue v) {
-    DMESG("failed type check for %p", v);
+void failedCast(TValue v, void *addr) {
+    DMESG("failed type check for %p @%p", v, addr);
     auto vt = getAnyVTable(v);
     if (vt) {
         DMESG("VT %p - objtype %d classNo %d", vt, vt->objectType, vt->classNo);
