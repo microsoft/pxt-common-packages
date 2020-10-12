@@ -1,7 +1,7 @@
 
 namespace pxsim.pxtcore {
     // general purpose message sending mechanism
-    export function sendMessage(channel: string, message: RefBuffer) {
+    export function send(channel: string, message: RefBuffer) {
         if (!channel) return;
 
         Runtime.postMessage({
