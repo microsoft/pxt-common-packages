@@ -42,7 +42,8 @@
         "particlefactories.ts",
         "particleeffects.ts",
         "effects.ts",
-        "texteffects.ts"
+        "texteffects.ts",
+        "assetTemplates.ts"
     ],
     "public": true,
     "dependencies": {

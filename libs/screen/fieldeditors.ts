@@ -9,6 +9,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.decompileArgumentAsString="true"
     //% img.fieldOptions.filter="!tile !dialog !background"
     //% weight=100 group="Create" duplicateShadowOnDrag
     export function _spriteImage(img: Image) {
