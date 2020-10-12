@@ -14,7 +14,7 @@ PXT_ABI(__aeabi_dmul)
 #ifdef DEVICE_GET_FIBER_LIST_AVAILABLE
 // newer codal-core has get_fiber_list() but not list_fibers()
 namespace codal {
-/**
+/*
  * Return all current fibers.
  *
  * @param dest If non-null, it points to an array of pointers to fibers to store results in.
