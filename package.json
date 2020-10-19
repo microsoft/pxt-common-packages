@@ -27,8 +27,7 @@
     "pxt-core": "^6.1.25"
   },
   "devDependencies": {
-    "typescript": "^3.7.5",
-    "@types/bluebird": "2.0.33"
+    "typescript": "^3.7.5"
   },
   "targetDependencies": {},
   "extraIncludes": [
