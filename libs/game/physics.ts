@@ -24,7 +24,8 @@ class PhysicsEngine {
 }
 
 const MAX_TIME_STEP = Fx8(100); // milliseconds
-const SPRITE_CANNOT_COLLIDE = sprites.Flag.Ghost | sprites.Flag.Destroyed | sprites.Flag.RelativeToCamera;
+const SPRITE_CANNOT_COLLIDE = SpriteFlag.NoTileCollisions | sprites.Flag.Destroyed | SpriteFlag.RelativeToCamera;
+const SPRITE_CANNOT_OVERLAP = SpriteFlag.NoSpriteOverlaps | sprites.Flag.Destroyed | SpriteFlag.RelativeToCamera;
 const MIN_MOVE_GAP = Fx8(0.1);
 
 class MovingSprite {
@@ -329,11 +330,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // sprites that have moved this step
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
-            if (sprite.flags & SPRITE_CANNOT_COLLIDE) continue;
+            if (sprite.flags & SPRITE_CANNOT_OVERLAP) continue;
             const overSprites = this.map.overlaps(ms.sprite);
 
             for (const overlapper of overSprites) {
-                if (overlapper.flags & SPRITE_CANNOT_COLLIDE) continue;
+                if (overlapper.flags & SPRITE_CANNOT_OVERLAP) continue;
                 const thisKind = sprite.kind();
                 const otherKind = overlapper.kind();
 
@@ -354,7 +355,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         .forEach(h => {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
-                                if (!((sprite.flags | overlapper.flags) & SPRITE_CANNOT_COLLIDE)) {
+                                if (!((sprite.flags | overlapper.flags) & SPRITE_CANNOT_OVERLAP)) {
                                     h.handler(
                                         thisKind === h.kind ? sprite : overlapper,
                                         thisKind === h.kind ? overlapper : sprite

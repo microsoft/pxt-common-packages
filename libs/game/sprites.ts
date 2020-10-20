@@ -142,7 +142,7 @@ namespace sprites {
 
     export enum Flag {
         None = 0, // no flags are set
-        Ghost = 1 << 0, // doesn't collide with other sprites
+        // 1 << 0 was previously used for Ghost / is now available.
         Destroyed = 1 << 1, // whether the sprite has been destroyed or not
         AutoDestroy = 1 << 2, // remove the sprite when no longer visible
         StayInScreen = 1 << 3, // sprite cannot move outside the camera region
@@ -151,6 +151,9 @@ namespace sprites {
         ShowPhysics = 1 << 6, // display position, velocity, acc
         Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
         IsClipping = 1 << 8, // whether the sprite is currently clipping into a wall. This can happen when a sprite is created or moved explicitly.
-        RelativeToCamera = 1 << 9 // draw relative to the camera, not the world (e.g. HUD elements)
+        RelativeToCamera = 1 << 9, // draw relative to the camera, not the world (e.g. HUD elements)
+        NoTileCollisions = 1 << 10, // No collisions or overlaps with tiles
+        NoSpriteOverlaps = 1 << 11, // No overlaps with other sprites
+        Ghost = sprites.Flag.NoSpriteOverlaps | sprites.Flag.NoTileCollisions, // doesn't collide with other sprites or walls
     }
 }
