@@ -38,6 +38,7 @@
         "keyvaluestorage.cpp",
         "keyvaluestorage.ts",
         "leveldetector.ts",
+        "touch.cpp",
         "pxtparts.json"
     ],
     "testFiles": [
