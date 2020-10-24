@@ -3,7 +3,9 @@ namespace pxsim.helpers {
     //
     interface SimulatorMessageToParent extends SimulatorBroadcastMessage {
         status: string;
-        type: "sim-message";
+        toParent: true;
+        broadcast: true;
+        type: "sim-post-message";
         data: pxt.Map<string | number>;
     }
 
@@ -17,11 +19,14 @@ namespace pxsim.helpers {
             }
         }
 
-        Runtime.postMessage(<SimulatorMessageToParent>{
+        const msg: SimulatorMessageToParent = {
             status: status,
             data: unpacked,
             broadcast: true,
-            type: "sim-message",
-        });
+            toParent: true,
+            type: "sim-post-message",
+        }
+
+        Runtime.postMessage(msg);
     }
 }
