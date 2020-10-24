@@ -42,6 +42,8 @@
         "particlefactories.ts",
         "particleeffects.ts",
         "effects.ts",
+        "helpers.cpp",
+        "helpers.d.ts",
         "texteffects.ts",
         "assetTemplates.ts"
     ],
