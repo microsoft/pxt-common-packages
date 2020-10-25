@@ -3,5 +3,13 @@
 namespace helpers {
 
     //%
-    void __postToParent(String status, RefObject data) { }
+    void __postToParent(RefObject data) { }
+
+    //%
+    void __onMessageFromParent(Action body) { }
+
+    //%
+    RefObject __receiveDataFromParent() {
+        return NULL;
+    }
 }

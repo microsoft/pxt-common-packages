@@ -43,6 +43,7 @@
         "particleeffects.ts",
         "effects.ts",
         "helpers.cpp",
+        "helpers.ts",
         "helpers.d.ts",
         "texteffects.ts",
         "assetTemplates.ts"
