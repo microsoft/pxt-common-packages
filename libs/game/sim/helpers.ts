@@ -10,7 +10,6 @@ namespace pxsim.helpers {
         data: pxt.Map<string | number>;
     }
 
-    //%
     export function __postToParent(data: RefMap) {
         let unpacked: pxt.Map<string | number>;
         if (data) {
@@ -32,8 +31,6 @@ namespace pxsim.helpers {
         messagePassingState: MessagePassingState;
     }
 
-    type MessageHandler = (data: RefMap) => void;
-
     function getMessagePassingState() {
         const b = board() as EventBusBoard as MessagePassingBoard;
         if (!b.messagePassingState) {
@@ -43,25 +40,27 @@ namespace pxsim.helpers {
     }
 
     class MessagePassingState {
-        public lastMsg: RefMap;
+        protected msgQueue: RefMap[];
         static ID = 49738422;
         static EV_ID = 1;
 
         constructor() {
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
+            this.msgQueue = [];
         }
 
         messageHandler(msg: SimulatorMessage) {
-            if (!isParentMessage(msg))
-            return;
+            if (!isParentMessage(msg) || !msg.data) return;
             const rb = pxsim.pxtrt.mkMap();
-            if (msg.data) {
-                for (const key of Object.keys(msg.data)) {
-                    pxsim.pxtrt.mapSetByString(rb, key, msg.data[key]);
-                }
+            for (const key of Object.keys(msg.data)) {
+                pxsim.pxtrt.mapSetByString(rb, key, msg.data[key]);
             }
-            this.lastMsg = rb;
+            this.msgQueue.push(rb);
             (<EventBusBoard>runtime.board).bus.queue(MessagePassingState.ID, MessagePassingState.EV_ID);
+        }
+
+        getNextMessage(): RefMap {
+            return this.msgQueue.shift();
         }
 
         onReceived(h: RefAction) {
@@ -74,7 +73,7 @@ namespace pxsim.helpers {
     }
 
     export function __receiveDataFromParent() {
-        return getMessagePassingState().lastMsg;
+        return getMessagePassingState().getNextMessage();
     }
 
     function isParentMessage(msg: SimulatorMessage): msg is SimulatorMessageFromParent {
