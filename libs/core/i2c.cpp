@@ -35,7 +35,9 @@ public:
   Buffer readBuffer(int address, int size, bool repeat = false)
   {
     Buffer buf = mkBuffer(NULL, size);
+    registerGCObj(buf);
     int status = this->i2c.read(address << 1, buf->data, size, repeat);
+    unregisterGCObj(buf);
     if (status != ErrorCode::DEVICE_OK) {
       buf = 0;
     }
