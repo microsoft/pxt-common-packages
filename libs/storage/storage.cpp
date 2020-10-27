@@ -164,8 +164,10 @@ Buffer readAsBuffer(String filename) {
     if (sz > 0xffff)
         return NULL;
     auto res = mkBuffer(NULL, sz);
+    registerGCObj(res);
     f->seek(0);
     f->read(res->data, res->length);
+    unregisterGCObj(res);
     return res;
 }
 
