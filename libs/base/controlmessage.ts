@@ -4,7 +4,7 @@ namespace control.simmessages {
     export const CONTROL_MESSAGE_RECEIVED = 1;
 
     //% shim=pxt::sendMessage
-    export declare function send(channel: string, message: Buffer, noBroadcast?: boolean) : void;
+    export declare function send(channel: string, message: Buffer, parentOnly?: boolean) : void;
 
     //% shim=pxt::peekMessageChannel
     declare function peekMessageChannel(): string;

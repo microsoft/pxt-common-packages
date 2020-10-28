@@ -1,12 +1,12 @@
 
 namespace pxsim.pxtcore {
     // general purpose message sending mechanism
-    export function sendMessage(channel: string, message: RefBuffer, noBroadcast?: boolean) {
+    export function sendMessage(channel: string, message: RefBuffer, parentOnly?: boolean) {
         if (!channel) return;
 
         Runtime.postMessage({
             type: "messagepacket",
-            broadcast: !noBroadcast,
+            broadcast: !parentOnly,
             channel: channel,
             data: message && message.data
         } as SimulatorControlMessage)
