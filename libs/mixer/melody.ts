@@ -250,7 +250,11 @@ namespace music {
                     if (!loop)
                         break
                 }
-                this.unregisterMelody();
+                // Unregister the melody if it was stopped and not restarted.
+                // (It was restarted if this._player is a new MelodyPlayer.)
+                if (!this._player) {
+                    this.unregisterMelody();
+                }
             })
         }
 
