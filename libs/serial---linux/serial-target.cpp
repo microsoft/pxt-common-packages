@@ -192,7 +192,7 @@ Buffer LinuxSerialDevice::readBuffer() {
     auto r = mkBuffer(NULL, sz);
     registerGCObj(r);
     int sz2 = readBuf(r->data, sz);
-    unegisterGCObj(r);
+    unregisterGCObj(r);
     if (sz != sz2)
         target_panic(999);
     pthread_mutex_unlock(&lock);
