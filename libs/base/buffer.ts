@@ -392,9 +392,6 @@ namespace Buffer {
                 case '!':
                     isBig = true
                     break
-                case 'x':
-                    off++
-                    break
                 default:
                     const i0 = i
                     while (isDigit(format[i])) i++
