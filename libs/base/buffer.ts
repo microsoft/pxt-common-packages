@@ -401,21 +401,24 @@ namespace Buffer {
                     let reps = 1
                     if (i0 != i)
                         reps = parseInt(format.slice(i0, i))
-                    while (reps--) {
-                        let fmt = getFormat(format[i], isBig)
-                        if (fmt === null) {
-                            control.fail("Unsupported format character: " + format[i])
-                        } else {
-                            if (buf) {
-                                if (isPack)
-                                    buf.setNumber(fmt, off, nums[idx++])
-                                else
-                                    nums.push(buf.getNumber(fmt, off))
-                            }
+                    if (format[i] == 'x')
+                        off += reps
+                    else
+                        while (reps--) {
+                            let fmt = getFormat(format[i], isBig)
+                            if (fmt === null) {
+                                control.fail("Unsupported format character: " + format[i])
+                            } else {
+                                if (buf) {
+                                    if (isPack)
+                                        buf.setNumber(fmt, off, nums[idx++])
+                                    else
+                                        nums.push(buf.getNumber(fmt, off))
+                                }
 
-                            off += sizeOfNumberFormat(fmt)
+                                off += sizeOfNumberFormat(fmt)
+                            }
                         }
-                    }
                     break
             }
         }
