@@ -8,7 +8,6 @@
 #define DEV_PWM_PINS 0xffffffffULL
 #define DEV_AIN_PINS 0ULL
 
-
 // Codal doesn't yet distinguish between PWM and AIN
 #define DEV_ANALOG_PINS (DEV_PWM_PINS | DEV_AIN_PINS)
 
@@ -20,18 +19,17 @@
 const char *vm_settings_dir(void);
 #define SETTINGSDIR vm_settings_dir()
 
-namespace pxt
-{
+namespace pxt {
 
-    class ZPin;
-    class AbstractButton;
-    class MultiButton;
-    class CodalComponent;
-    
-    typedef void (*reset_fn_t)();
-    void registerResetFunction(reset_fn_t fn);
-    void soft_panic(int errorCode);
-} // pxt
+class ZPin;
+class AbstractButton;
+class MultiButton;
+class CodalComponent;
+
+typedef void (*reset_fn_t)();
+void registerResetFunction(reset_fn_t fn);
+void soft_panic(int errorCode);
+} // namespace pxt
 
 #define IMAGE_BITS 4
 
@@ -47,5 +45,17 @@ namespace pxt
 #define PXT_IOS 1
 #endif
 #endif
+
+#ifdef PXT64
+#ifdef PXT_IOS
+// allocate 1M of heap on iOS
+#define PXT_IOS_HEAP_ALLOC_BITS 20
+extern uint8_t *gcBase;
+#define PXT_IS_READONLY(v)                                                                         \
+    (!isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0)
+#else
+#define PXT_IS_READONLY(v) (!isPointer(v) || !((uintptr_t)v >> 37))
+#endif
+#else
 
 #endif

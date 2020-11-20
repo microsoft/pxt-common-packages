@@ -399,8 +399,7 @@ class RefObject;
 static inline RefObject *incrRC(RefObject *r) {
     return r;
 }
-static inline void decrRC(RefObject *) {
-}
+static inline void decrRC(RefObject *) {}
 
 inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
@@ -493,23 +492,13 @@ extern const VTable RefAction_vtable;
 
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
 
-// allocate 1M of heap on iOS
-#define PXT_IOS_HEAP_ALLOC_BITS 20
-
-#ifdef PXT_IOS
-extern uint8_t *gcBase;
+#ifndef PXT_IS_READONLY
+// assume ARM - ram addresses are 0x2000_0000+; flash is either 0x0+ or 0x0800_0000+
+#define PXT_IS_READONLY(v) (isTagged(v) || !((uintptr_t)v >> 28))
 #endif
 
 inline bool isReadOnly(TValue v) {
-#ifdef PXT64
-#ifdef PXT_IOS
-    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
-#else
-    return !isPointer(v) || !((uintptr_t)v >> 37);
-#endif
-#else
-    return isTagged(v) || !((uintptr_t)v >> 28);
-#endif
+    return PXT_IS_READONLY(v);
 }
 
 // A base abstract class for ref-counted objects.
