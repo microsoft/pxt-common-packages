@@ -9,11 +9,13 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#ifndef PXT_ESP32
 // __MINGW32__ is defined on both mingw32 and mingw64
 #ifdef __MINGW32__
 #include <windows.h>
 #else
 #include <sys/mman.h>
+#endif
 #endif
 
 // should this be something like CXX11 or whatever?
@@ -380,6 +382,9 @@ uint8_t *gcBase;
 #endif
 
 void *gcAllocBlock(size_t sz) {
+#ifdef PXT_ESP32
+    void *r = xmalloc(sz);
+#else
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
 #ifdef __MINGW32__
@@ -403,8 +408,9 @@ void *gcAllocBlock(size_t sz) {
         target_panic(PANIC_INTERNAL_ERROR);
     }
 #endif
-
     currPtr = (uint8_t *)r + sz;
+#endif
+
     if (isReadOnly((TValue)r)) {
         DMESG("mmap returned read-only address: %p", r);
         target_panic(PANIC_INTERNAL_ERROR);
