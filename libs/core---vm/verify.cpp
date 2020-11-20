@@ -27,7 +27,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     for (sect = (VMImageSection *)img->dataStart;                                                  \
          (next = vmNextSection(sect), (uint64_t *)sect < img->dataEnd); sect = next)
 
-#define ALLOC_ARRAY(tp, sz) (tp *)gcPrealloc(sizeof(tp) * sz)
+#define ALLOC_ARRAY(tp, sz) (tp *)xmalloc(sizeof(tp) * sz)
 
 static VMImage *countSections(VMImage *img) {
     auto p = img->dataStart;
@@ -117,11 +117,7 @@ static VMImage *loadSections(VMImage *img) {
             img->numNumberLiterals = (sect->size >> 3) - 1;
             uint64_t *values = (uint64_t *)sect->data;
 
-#ifdef PXT64
-            img->numberLiterals = (TValue *)values;
-#else
             img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
-#endif
 
             for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
                 auto ptr = &values[i];
@@ -132,11 +128,14 @@ static VMImage *loadSections(VMImage *img) {
                     CHECK_AT((v >> 1) <= 0xffffffff, 1006, ptr);
                 else if (v == 0) {
                     // OK - padding probably
-                } else
+                } else {
                     CHECK_AT(false, 1007, ptr);
+                }
 #ifdef PXT32
                 img->numberLiterals[i] =
                     v == 0 ? 0 : isEncodedDouble(v) ? fromDouble(decodeDouble(v)) : fromInt(v >> 1);
+#else
+                img->numberLiterals[i] = v;
 #endif
             }
         }
@@ -334,6 +333,13 @@ VMImage *loadVMImage(void *data, unsigned length) {
 void unloadVMImage(VMImage *img) {
     if (!img)
         return;
+
+    free(img->pointerLiterals);
+    free(img->sections);
+    free(img->opcodes);
+    free(img->opcodeDescs);
+    free(img->numberLiterals);
+
     free(img->dataStart);
     memset(img, 0, sizeof(*img));
     delete img;
