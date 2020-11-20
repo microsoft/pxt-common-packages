@@ -1,12 +1,12 @@
 
 namespace pxsim.pxtcore {
     // general purpose message sending mechanism
-    export function send(channel: string, message: RefBuffer) {
+    export function sendMessage(channel: string, message: RefBuffer, parentOnly?: boolean) {
         if (!channel) return;
 
         Runtime.postMessage({
             type: "messagepacket",
-            broadcast: true,
+            broadcast: !parentOnly,
             channel: channel,
             data: message && message.data
         } as SimulatorControlMessage)
@@ -17,7 +17,7 @@ namespace pxsim.pxtcore {
         const msg = state && state.peek();
         return msg && msg.channel;
     }
-    
+
     export function readMessageData(): RefBuffer {
         const state = getControlMessageState();
         const msg = state && state.read();
@@ -31,7 +31,7 @@ namespace pxsim {
         channel: string;
         data: Uint8Array;
     }
-    
+
     // keep in sync with ts
     export const CONTROL_MESSAGE_EVT_ID = 2999;
     export const CONTROL_MESSAGE_RECEIVED = 1;
@@ -43,7 +43,7 @@ namespace pxsim {
         constructor(private board: CommonBoard) {
             this.messages = [];
             this.enabled = false;
-            this.board.addMessageListener(msg => this.messageHandler(msg));            
+            this.board.addMessageListener(msg => this.messageHandler(msg));
         }
         private messageHandler(msg: SimulatorMessage) {
             if (msg.type == "messagepacket") {
@@ -63,7 +63,7 @@ namespace pxsim {
         }
     }
 
-    
+
     export interface ControlMessageBoard extends CommonBoard {
         controlMessageState: ControlMessageState;
     }

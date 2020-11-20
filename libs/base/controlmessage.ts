@@ -4,11 +4,11 @@ namespace control.simmessages {
     export const CONTROL_MESSAGE_RECEIVED = 1;
 
     //% shim=pxt::sendMessage
-    export declare function send(channel: string, message: Buffer) : void;
+    export declare function send(channel: string, message: Buffer, parentOnly?: boolean) : void;
 
     //% shim=pxt::peekMessageChannel
     declare function peekMessageChannel(): string;
-    
+
     //% shim=pxt::readMessageData
     declare function readMessageData(): Buffer;
 
@@ -27,8 +27,8 @@ namespace control.simmessages {
         }
     }
 
-    /** 
-     * Registers the handler for a message on a given channel 
+    /**
+     * Registers the handler for a message on a given channel
      **/
     export function onReceived(channel: string, handler: (msg: Buffer) => void) {
         if (!channel) return;
