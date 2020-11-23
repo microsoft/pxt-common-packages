@@ -56,6 +56,6 @@ extern uint8_t *gcBase;
 #else
 #define PXT_IS_READONLY(v) (!isPointer(v) || !((uintptr_t)v >> 37))
 #endif
-#else
+#endif
 
 #endif

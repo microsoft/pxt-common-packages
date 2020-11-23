@@ -561,7 +561,7 @@ int length(String s) {
 }
 
 #define isspace(c) ((c) == ' ')
-#define iswhitespace(c) ((c) == 0x09 || (c) == 0x0B || (c) == 0x0C || (c) == 0x20 || (c) == 0xA0 || (c) == 0x0A || (c) == 0x0D)
+#define iswhitespace(c) ((c) == 0x09 || (c) == 0x0B || (c) == 0x0C || (c) == 0x20 || (uint8_t)(c) == 0xA0 || (c) == 0x0A || (c) == 0x0D)
 
 NUMBER mystrtod(const char *p, char **endp) {
     while (iswhitespace(*p))

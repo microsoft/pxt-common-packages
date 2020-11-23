@@ -135,7 +135,7 @@ static VMImage *loadSections(VMImage *img) {
                 img->numberLiterals[i] =
                     v == 0 ? 0 : isEncodedDouble(v) ? fromDouble(decodeDouble(v)) : fromInt(v >> 1);
 #else
-                img->numberLiterals[i] = v;
+                img->numberLiterals[i] = (TValue)v;
 #endif
             }
         }
