@@ -716,40 +716,12 @@ void gcReset() {
 }
 
 #ifdef PXT_VM
-static uint8_t *preallocBlock;
-static uint8_t *preallocPointer;
-
-#define PREALLOC_SIZE (1024 * 1024)
-
 void gcPreStartup() {
-    xfree(preallocBlock);
-    preallocBlock = (uint8_t *)xmalloc(PREALLOC_SIZE);
-    preallocPointer = preallocBlock;
-    if (!isReadOnly((TValue)preallocBlock))
-        oops(40);
     inGC |= IN_GC_PREALLOC;
 }
 
 void gcStartup() {
     inGC &= ~IN_GC_PREALLOC;
-    preallocPointer = NULL;
-}
-
-void *gcPrealloc(int numbytes) {
-    if (!preallocPointer)
-        oops(49);
-    void *r = preallocPointer;
-    preallocPointer += ALIGN_TO_WORD(numbytes);
-    if (preallocPointer > preallocBlock + PREALLOC_SIZE) {
-        DMESG("pre-alloc size exceeded! block=%p ptr=%p sz=%d", preallocBlock, preallocPointer,
-              (int)PREALLOC_SIZE);
-        oops(48);
-    }
-    return r;
-}
-
-bool inGCPrealloc() {
-    return (inGC & IN_GC_PREALLOC) != 0;
 }
 #endif
 
@@ -760,13 +732,8 @@ void *gcAllocate(int numbytes) {
     if (numbytes > GC_MAX_ALLOC_SIZE)
         target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
 
-    if (PXT_IN_ISR() || (inGC & (IN_GC_ALLOC | IN_GC_COLLECT | IN_GC_FREEZE)))
+    if (PXT_IN_ISR() || (inGC & (IN_GC_PREALLOC | IN_GC_ALLOC | IN_GC_COLLECT | IN_GC_FREEZE)))
         target_panic(PANIC_CALLED_FROM_ISR);
-
-#ifdef PXT_VM
-    if (inGCPrealloc())
-        return gcPrealloc(numbytes);
-#endif
 
     inGC |= IN_GC_ALLOC;
 

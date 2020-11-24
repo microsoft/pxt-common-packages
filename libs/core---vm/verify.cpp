@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1060
+// next free error 1061
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -218,23 +218,44 @@ static VMImage *loadSections(VMImage *img) {
             img->numNumberLiterals = (sect->size >> 3) - 1;
             uint64_t *values = (uint64_t *)sect->data;
 
-            img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
+            int numBoxed = 0;
 
             for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
                 auto ptr = &values[i];
-                auto v = *ptr;
-                if (isEncodedDouble(v))
+                uint64_t v = *ptr;
+                if (isEncodedDouble(v)) {
                     CHECK_AT(!isnan(decodeDouble(v)), 1005, ptr);
-                else if (v & 1)
+                    numBoxed++;
+                } else if (v & 1) {
                     CHECK_AT((v >> 1) <= 0xffffffff, 1006, ptr);
-                else if (v == 0) {
+                    if (!canBeTagged(v >> 1))
+                        numBoxed++;
+                } else if (v == 0) {
                     // OK - padding probably
                 } else {
                     CHECK_AT(false, 1007, ptr);
                 }
+            }
+
+            img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
 #ifdef PXT32
-                img->numberLiterals[i] =
-                    v == 0 ? 0 : isEncodedDouble(v) ? fromDouble(decodeDouble(v)) : fromInt(v >> 1);
+            img->boxedNumbers = ALLOC_ARRAY(BoxedNumber, numBoxed);
+            int boxedPtr = 0;
+#endif
+
+            for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
+                uint64_t v = values[i];
+#ifdef PXT32
+                if (!isEncodedDouble(v) && canBeTagged(v >> 1)) {
+                    img->numberLiterals[i] = (TValue)v;
+                } else {
+                    CHECK(boxedPtr < numBoxed, 1060); // should never happen
+                    img->boxedNumbers[boxedPtr].vtable = PXT_VTABLE_TO_INT(&number_vt);
+                    img->boxedNumbers[boxedPtr].num =
+                        isEncodedDouble(v) ? decodeDouble(v) : (v >> 1);
+                    img->numberLiterals[i] = (TValue)&img->boxedNumbers[boxedPtr];
+                    boxedPtr++;
+                }
 #else
                 img->numberLiterals[i] = (TValue)v;
 #endif
@@ -425,6 +446,7 @@ void unloadVMImage(VMImage *img) {
     free(img->opcodes);
     free(img->opcodeDescs);
     free(img->numberLiterals);
+    free(img->boxedNumbers);
 
     free(img->dataStart);
     memset(img, 0, sizeof(*img));

@@ -121,6 +121,7 @@ struct VMImageHeader {
 struct VMImage {
     TValue *numberLiterals;
     TValue *pointerLiterals;
+    BoxedNumber *boxedNumbers;
     OpFun *opcodes;
     int32_t *configData;
     uintptr_t *ifaceMemberNames;

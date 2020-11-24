@@ -238,7 +238,7 @@ String mkInternalString(const char *str) {
 String mkStringCore(const char *data, int len) {
     if (len < 0)
         len = (int)strlen(data);
-    if (len == 0 && !inGCPrealloc())
+    if (len == 0)
         return (String)emptyString;
 
     auto vt = &string_inline_ascii_vt;
@@ -274,7 +274,7 @@ String mkString(const char *data, int len) {
 #if PXT_UTF8
     if (len < 0)
         len = (int)strlen(data);
-    if (len == 0 && !inGCPrealloc())
+    if (len == 0)
         return (String)emptyString;
 
     int sz = utf8canon(NULL, data, len);
@@ -326,7 +326,7 @@ uint32_t toRealUTF8(String str, uint8_t *dst) {
 #endif
 
 Buffer mkBuffer(const void *data, int len) {
-    if (len <= 0 && !inGCPrealloc())
+    if (len <= 0)
         return (Buffer)emptyBuffer;
     Buffer r = new (gcAllocate(sizeof(BoxedBuffer) + len)) BoxedBuffer();
     r->length = len;
