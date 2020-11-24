@@ -24,7 +24,8 @@ static HandlerBinding *handlerBindings;
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value) {
     for (auto p = curr; p; p = p->next) {
         // DEVICE_ID_ANY == DEVICE_EXT_ANY == 0
-        if ((p->source == source || p->source == 0) && (value == -1 || p->value == value || p->value == 0)) {
+        if ((p->source == source || p->source == 0) &&
+            (value == -1 || p->value == value || p->value == 0)) {
             return p;
         }
     }
@@ -202,21 +203,23 @@ static bool isUTF8(const char *data, int len) {
 }
 
 #define NUM_SKIP_ENTRIES(p) ((p)->skip.length / SKIP_INCR)
-#define SKIP_DATA(p) (const char *)(p->skip.list + NUM_SKIP_ENTRIES(p))
+#define SKIP_DATA_IND(p) (const char *)(p->skip.list + NUM_SKIP_ENTRIES(p))
+#define SKIP_DATA_PACK(p) (const char *)(p->skip_pack.list + NUM_SKIP_ENTRIES(p))
 
-static void setupSkipList(String r, const char *data) {
-    char *dst = (char *)SKIP_DATA(r);
+static void setupSkipList(String r, const char *data, int packed) {
+    char *dst = (char *)(packed ? SKIP_DATA_PACK(r) : SKIP_DATA_IND(r));
     auto len = r->skip.size;
     if (data)
         memcpy(dst, data, len);
     dst[len] = 0;
     const char *ptr = dst;
     auto skipEntries = NUM_SKIP_ENTRIES(r);
+    auto lst = packed ? r->skip_pack.list : r->skip.list;
     for (int i = 0; i < skipEntries; ++i) {
         ptr = utf8Skip(ptr, (int)(len - (ptr - dst)), SKIP_INCR);
         if (!ptr)
             oops(80);
-        r->skip.list[i] = ptr - dst;
+        lst[i] = ptr - dst;
     }
 }
 #endif
@@ -243,18 +246,15 @@ String mkStringCore(const char *data, int len) {
 
 #if PXT_UTF8
     if (data && isUTF8(data, len)) {
-        vt = len >= MIN_SKIP ? &string_skiplist16_vt : &string_inline_utf8_vt;
+        vt = len >= MIN_SKIP ? &string_skiplist16_packed_vt : &string_inline_utf8_vt;
     }
-    if (vt == &string_skiplist16_vt) {
-        r = new (gcAllocate(sizeof(void *) + sizeof(r->skip))) BoxedString(vt);
-        r->skip.list = NULL;
-        registerGCObj(r);
-        r->skip.size = len;
-        r->skip.length = utf8Len(data, len);
-        r->skip.list = NULL; // in case gc triggers below
-        r->skip.list = (uint16_t *)gcAllocateArray(NUM_SKIP_ENTRIES(r) * 2 + len + 1);
-        setupSkipList(r, data);
-        unregisterGCObj(r);
+    if (vt == &string_skiplist16_packed_vt) {
+        int ulen = utf8Len(data, len);
+        r = new (gcAllocate(sizeof(void *) + 2 + 2 + (ulen / SKIP_INCR) * 2 + len + 1))
+            BoxedString(vt);
+        r->skip_pack.size = len;
+        r->skip_pack.length = ulen;
+        setupSkipList(r, data, 1);
     } else
 #endif
     {
@@ -561,7 +561,9 @@ int length(String s) {
 }
 
 #define isspace(c) ((c) == ' ')
-#define iswhitespace(c) ((c) == 0x09 || (c) == 0x0B || (c) == 0x0C || (c) == 0x20 || (uint8_t)(c) == 0xA0 || (c) == 0x0A || (c) == 0x0D)
+#define iswhitespace(c)                                                                            \
+    ((c) == 0x09 || (c) == 0x0B || (c) == 0x0C || (c) == 0x20 || (uint8_t)(c) == 0xA0 ||           \
+     (c) == 0x0A || (c) == 0x0D)
 
 NUMBER mystrtod(const char *p, char **endp) {
     while (iswhitespace(*p))
@@ -1056,7 +1058,7 @@ TNumber asrs(TNumber a, TNumber b) {
 }
 
 //%
-TNumber eors(TNumber a, TNumber b){BITOP (^)}
+TNumber eors(TNumber a, TNumber b){BITOP(^)}
 
 //%
 TNumber orrs(TNumber a, TNumber b){BITOP(|)}
@@ -1746,8 +1748,7 @@ void anyPrint(TValue v) {
             auto vt = getVTable(o);
             auto meth = ((RefObjectMethod)vt->methods[1]);
             if ((void *)meth == (void *)&anyPrint)
-                DMESG("[RefObject vt=%p cl=%d sz=%d]", o->vtable, vt->classNo,
-                      vt->numbytes);
+                DMESG("[RefObject vt=%p cl=%d sz=%d]", o->vtable, vt->classNo, vt->numbytes);
             else
                 meth(o);
         } else {
@@ -1798,14 +1799,14 @@ void gcMarkArray(void *data);
 void gcScan(TValue v);
 
 #if PXT_UTF8
-static const char *skipLookup(BoxedString *p, uint32_t idx) {
+static const char *skipLookup(BoxedString *p, uint32_t idx, int packed) {
     if (idx > p->skip.length)
         return NULL;
     auto ent = idx / SKIP_INCR;
-    auto data = SKIP_DATA(p);
+    auto data = packed ? SKIP_DATA_PACK(p) : SKIP_DATA_IND(p);
     auto size = p->skip.size;
     if (ent) {
-        auto off = p->skip.list[ent - 1];
+        auto off = packed ? p->skip_pack.list[ent - 1] : p->skip.list[ent - 1];
         data += off;
         size -= off;
         idx &= SKIP_INCR - 1;
@@ -1869,19 +1870,22 @@ static void fixCons(BoxedString *r) {
     r->skip.size = sz;
     r->skip.length = length;
     r->skip.list = data;
-    setupSkipList(r, NULL);
+    setupSkipList(r, NULL, 0);
 }
 #endif
 
 STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.data, p->ascii.length,
           p->ascii.length, idx <= p->ascii.length ? p->ascii.data + idx : NULL)
 #if PXT_UTF8
-STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.length + 1, p->utf8.data, p->utf8.length,
-          utf8Len(p->utf8.data, p->utf8.length), utf8Skip(p->utf8.data, p->utf8.length, idx))
+STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.size + 1, p->utf8.data, p->utf8.size,
+          utf8Len(p->utf8.data, p->utf8.size), utf8Skip(p->utf8.data, p->utf8.size, idx))
 STRING_VT(string_skiplist16, NOOP, if (p->skip.list) gcMarkArray(p->skip.list), 2 * sizeof(void *),
-          SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
+          SKIP_DATA_IND(p), p->skip.size, p->skip.length, skipLookup(p, idx, 0))
+STRING_VT(string_skiplist16_packed, NOOP, NOOP, 2 + 2 + NUM_SKIP_ENTRIES(p) * 2 + p->skip.size + 1,
+          SKIP_DATA_PACK(p), p->skip.size, p->skip.length, skipLookup(p, idx, 1))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
-          2 * sizeof(void *), SKIP_DATA(p), p->skip.size, p->skip.length, skipLookup(p, idx))
+          2 * sizeof(void *), SKIP_DATA_PACK(p), p->skip.size, p->skip.length,
+          skipLookup(p, idx, 0))
 #endif
 
 PRIM_VTABLE(number, ValType::Number, BoxedNumber, 0)

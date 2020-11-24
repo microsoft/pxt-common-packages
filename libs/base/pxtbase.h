@@ -450,8 +450,10 @@ enum class BuiltInType : uint16_t {
     RefCollection = 6,
     RefRefLocal = 7,
     RefMap = 8,
-    RefMImage = 9,
-    MMap = 10, // linux, mostly ev3
+    RefMImage = 9,             // microbit-specific
+    MMap = 10,                 // linux, mostly ev3
+    BoxedString_SkipList = 11, // used by VM bytecode representation only
+    BoxedString_ASCII = 12,    // ditto
     User0 = 16,
 };
 
@@ -482,6 +484,8 @@ extern const VTable string_inline_utf8_vt;
 extern const VTable string_cons_vt;
 //%
 extern const VTable string_skiplist16_vt;
+//%
+extern const VTable string_skiplist16_packed_vt;
 #endif
 //%
 extern const VTable buffer_vt;
@@ -652,16 +656,15 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 // Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
-#if defined(PXT_VM) && defined(PXT32)
-    uint32_t _padding; // match binary format in .pxt64 files
-#endif
     uint16_t len;
     uint16_t numArgs;
 #ifdef PXT_VM
     uint16_t initialLen;
     uint16_t flags;
-#endif
+    uintptr_t func;
+#else
     ActionCB func; // The function pointer
+#endif
     // fields[] contain captured locals
     TValue fields[];
 
@@ -705,12 +708,12 @@ class BoxedString : public RefObject {
   public:
     union {
         struct {
-            uint16_t length;
+            uint16_t length; // ==size
             char data[0];
         } ascii;
 #if PXT_UTF8
         struct {
-            uint16_t length;
+            uint16_t size;
             char data[0];
         } utf8;
         struct {
@@ -718,10 +721,15 @@ class BoxedString : public RefObject {
             BoxedString *right;
         } cons;
         struct {
-            uint16_t size;
-            uint16_t length;
+            uint16_t size;   // in bytes
+            uint16_t length; // in characters
             uint16_t *list;
         } skip;
+        struct {
+            uint16_t size;   // in bytes
+            uint16_t length; // in characters
+            uint16_t list[0];
+        } skip_pack;
 #endif
     };
 
@@ -762,12 +770,12 @@ class BoxedString : public RefObject {
 
 class BoxedBuffer : public RefObject {
   public:
-    // data needs to be word-aligned, so we use 32 bits for length
-    int length;
 #ifdef PXT_VM
-    // VM can be 64 bit and it compiles as such
+    // maybe this is only needed in pxt64?
     int32_t _padding;
 #endif
+    // data needs to be word-aligned, so we use 32 bits for length
+    int length;
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
 };
