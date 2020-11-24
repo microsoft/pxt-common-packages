@@ -86,7 +86,7 @@ static int triangleTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
 static int squareWaveTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {
     (void)cycle;
     uint8_t wave = sound->currInstr->soundWave;
-    return position < (102 * (wave - SW_SQUARE_10 + 1)) ? -0x7fff : 0x7fff;
+    return (int)position < (102 * (wave - SW_SQUARE_10 + 1)) ? -0x7fff : 0x7fff;
 }
 
 static int tunedNoiseTone(PlayingSound* sound, uint32_t position, uint8_t cycle) {

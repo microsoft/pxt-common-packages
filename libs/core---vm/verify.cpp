@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1059
+// next free error 1060
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -29,7 +29,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
 
 #define ALLOC_ARRAY(tp, sz) (tp *)xmalloc(sizeof(tp) * sz)
 
-#define VM_MAX_PATCH 5
+#define VM_MAX_PATCH 7
 
 struct VMPatchState {
     uint32_t offset;
@@ -71,6 +71,14 @@ static bool isStringSection(VMImageSection *sect) {
     return false;
 }
 
+VMPatchState *vm_alloc_patch_state() {
+    return (VMPatchState *)calloc(sizeof(VMPatchState), 1);
+}
+
+void vm_finish_patch(VMPatchState *state) {
+    free(state);
+}
+
 const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len) {
     if (state->error)
         return state->error;
@@ -102,15 +110,13 @@ const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len) {
                 state->patch[0] = (uint64_t)(uint32_t)vt << 32;
 #endif
             } else if (sect.type == SectionType::VTable) {
-                auto dest = (void **)state->patch;
+                auto dest = (void **)((uint32_t *)state->patch + 4);
                 dest[0] = (void *)pxt::RefRecord_destroy;
                 dest[1] = (void *)pxt::RefRecord_print;
                 dest[2] = (void *)pxt::RefRecord_scan;
                 dest[3] = (void *)pxt::RefRecord_gcsize;
             }
-        }
-
-        if (state->patchOff != 0) {
+        } else if (state->patchOff != 0) {
             uint64_t p = state->patch[state->patchOff - 1];
             if (p)
                 memcpy(data, &p, sizeof(p));
@@ -249,6 +255,8 @@ static VMImage *loadSections(VMImage *img) {
             // TODO validate size/length of boxed string/buffer; check utf8 encoding?; 1042 error
         } else if (sect->type == SectionType::Function) {
             img->pointerLiterals[idx] = vmLiteralVal(sect);
+            if (!img->entryPoint)
+                img->entryPoint = (RefAction *)img->pointerLiterals[idx];
         } else if (sect->type == SectionType::VTable) {
             img->pointerLiterals[idx] = (TValue)(sect->data);
         } else {
@@ -262,6 +270,7 @@ static VMImage *loadSections(VMImage *img) {
     CHECK_AT(img->opcodes != NULL, 1020, 0);
     CHECK_AT(img->numberLiterals != NULL, 1021, 0);
     CHECK_AT(img->configData != NULL, 1022, 0);
+    CHECK_AT(img->entryPoint != NULL, 1059, 0);
 
     return NULL;
 }
@@ -396,8 +405,8 @@ VMImage *loadVMImage(void *data, unsigned length) {
     img->dataStart = (uint64_t *)data;
     img->dataEnd = (uint64_t *)((uint8_t *)data + length);
 
-    if (countSections(img) || loadSections(img) || loadIfaceNames(img) || validateFunctions(img) ||
-        checkVTables(img)) {
+    if (countSections(img) || checkVTables(img) || loadSections(img) || loadIfaceNames(img) ||
+        validateFunctions(img)) {
         // error!
         return img;
     }

@@ -10,6 +10,10 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 
     gcPreStartup();
 
+    auto state = vm_alloc_patch_state();
+    vm_patch_image(state, data, len);
+    vm_finish_patch(state);
+
     auto img = loadVMImage(data, len);
     if (img->errorCode) {
         dmesg("validation error %d at 0x%x", img->errorCode, img->errorOffset);
@@ -37,7 +41,7 @@ static void vmStartFile(const char *fn) {
     fseek(f, 0, SEEK_END);
     auto len = (unsigned)ftell(f);
     fseek(f, 0, SEEK_SET);
-    auto data = (uint8_t*)malloc(len + 16);
+    auto data = (uint8_t *)malloc(len + 16);
     fread(data, len, 1, f);
     fclose(f);
 
@@ -82,7 +86,7 @@ static void *startFromUserWorker(void *fn) {
     pthread_join(vm_thread, &dummy);
     vm_thread = pthread_self();
     panicCode = 0;
-    vmStartFile((char*)fn);
+    vmStartFile((char *)fn);
     return NULL;
 }
 
@@ -95,7 +99,7 @@ void vmStartFromUser(const char *fn) {
     }
     lastFN = fn;
     if (fn)
-        pthread_create(&pt, NULL, startFromUserWorker, (void*)fn);
+        pthread_create(&pt, NULL, startFromUserWorker, (void *)fn);
     systemReset();
 }
 

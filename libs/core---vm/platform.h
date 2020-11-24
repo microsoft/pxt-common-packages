@@ -47,15 +47,23 @@ void soft_panic(int errorCode);
 #endif
 
 #ifdef PXT64
+#define GC_BASE 0x2000000000
+#define GC_PAGE_SIZE (64 * 1024)
+
 #ifdef PXT_IOS
 // allocate 1M of heap on iOS
 #define PXT_IOS_HEAP_ALLOC_BITS 20
 extern uint8_t *gcBase;
 #define PXT_IS_READONLY(v)                                                                         \
     (!isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0)
-#else
-#define PXT_IS_READONLY(v) (!isPointer(v) || !((uintptr_t)v >> 37))
+#else // not iOS
+#define PXT_IS_READONLY(v) (!isPointer(v) || (((uintptr_t)v) >> 32) != (GC_BASE >> 32))
 #endif
-#endif
+
+#else // PXT32
+#define GC_BASE 0x20000000
+#define GC_PAGE_SIZE 4096
+
+#endif // PXT32 vs 64
 
 #endif

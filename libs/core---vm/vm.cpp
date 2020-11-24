@@ -132,7 +132,7 @@ static inline void runAction(FiberContext *ctx, RefAction *ra) {
     PUSH((TValue)ctx->currAction);
     PUSH(VM_ENCODE_PC(ctx->pc - ctx->imgbase));
     ctx->currAction = ra;
-    ctx->pc = (uint16_t *)ra->func;
+    ctx->pc = actionPC(ra);
 }
 
 //%
@@ -556,7 +556,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
 
     if (ra->vtable != PXT_VTABLE_TO_INT(&pxt::RefAction_vtable))
         FNERR(1251);
-    if ((uint16_t *)img->dataStart + ra->func != code)
+    if ((uint8_t *)img->dataStart + ra->func != (uint8_t *)code)
         FNERR(1252);
 
     unsigned numArgs = ra->numArgs;
@@ -711,7 +711,8 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
             auto fsec = img->sections[arg];
             if (fsec->type != SectionType::Function)
                 FNERR(1220);
-            unsigned calledArgs = ((RefAction *)fsec)->numArgs;
+            auto ra = (RefAction *)img->pointerLiterals[arg];
+            unsigned calledArgs = ra->numArgs;
             currStack -= calledArgs;
             if (currStack < baseStack)
                 FNERR(1221);

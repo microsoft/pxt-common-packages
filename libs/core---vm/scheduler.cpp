@@ -188,7 +188,7 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     if (ra->numArgs > 2)
         target_panic(PANIC_INVALID_IMAGE);
     t->currAction = ra;
-    t->resumePC = (uint16_t *)ra->func;
+    t->resumePC = actionPC(ra);
 
     t->img = vmImg;
     t->imgbase = (uint16_t *)vmImg->dataStart;
@@ -368,14 +368,6 @@ void initRuntime() {
     mainRunLoop();
     systemReset();
 }
-
-#ifdef PXT64
-#define GC_BASE 0x2000000000
-#define GC_PAGE_SIZE (64 * 1024)
-#else
-#define GC_BASE 0x20000000
-#define GC_PAGE_SIZE 4096
-#endif
 
 #ifdef PXT_IOS
 uint8_t *gcBase;

@@ -14,7 +14,7 @@
 #define VM_FIRST_RTCALL (VM_OPCODE_BASE_MASK + 1)
 #define VM_RTCALL_PUSH_MASK 0x2000
 
-#define VM_FUNCTION_CODE_OFFSET (8*4)
+#define VM_FUNCTION_CODE_OFFSET (8 * 4)
 
 // The binary has space for 4 64 bit pointers, so on 32 bit machines we pretend there is 8 of them
 #ifdef PXT32
@@ -80,6 +80,11 @@ static inline TValue vmLiteralVal(VMImageSection *sect) {
 static inline VMImageSection *vmNextSection(VMImageSection *sect) {
     return (VMImageSection *)((uint8_t *)sect + sect->size);
 }
+
+struct VMPatchState;
+VMPatchState *vm_alloc_patch_state();
+void vm_finish_patch(VMPatchState *state);
+const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len);
 
 STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
@@ -181,6 +186,10 @@ void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx);
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;
 extern volatile int panicCode;
+
+static inline uint16_t *actionPC(RefAction *ra) {
+    return (uint16_t *)((uint8_t *)vmImg->dataStart + (uint32_t)ra->func);
+}
 
 void vmStart();
 VMImage *loadVMImage(void *data, unsigned length);
