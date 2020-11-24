@@ -71,7 +71,7 @@ void op_jmpnz(FiberContext *ctx, unsigned arg) {
 }
 
 static inline VTable *getStaticVTable(VMImage *img, unsigned classId) {
-    return (VTable *)((uintptr_t)img->pointerLiterals[classId] + 8);
+    return (VTable *)(img->pointerLiterals[classId]);
 }
 
 //%
@@ -529,7 +529,7 @@ void exec_loop(FiberContext *ctx) {
 
 namespace pxt {
 
-// 1251
+// 1253
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -552,7 +552,12 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
     auto lastPC = (sect->size - VM_FUNCTION_CODE_OFFSET) >> 1;
     auto atEnd = false;
 
-    RefAction *ra = (RefAction *)sect;
+    RefAction *ra = (RefAction *)vmLiteralVal(sect);
+
+    if (ra->vtable != PXT_VTABLE_TO_INT(&pxt::RefAction_vtable))
+        FNERR(1251);
+    if ((uint16_t *)img->dataStart + ra->func != code)
+        FNERR(1252);
 
     unsigned numArgs = ra->numArgs;
     unsigned numCaps = ra->initialLen;

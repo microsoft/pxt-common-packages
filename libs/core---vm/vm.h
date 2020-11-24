@@ -14,7 +14,7 @@
 #define VM_FIRST_RTCALL (VM_OPCODE_BASE_MASK + 1)
 #define VM_RTCALL_PUSH_MASK 0x2000
 
-#define VM_FUNCTION_CODE_OFFSET 24
+#define VM_FUNCTION_CODE_OFFSET (8*4)
 
 // The binary has space for 4 64 bit pointers, so on 32 bit machines we pretend there is 8 of them
 #ifdef PXT32
@@ -69,7 +69,15 @@ struct VMImageSection {
     uint8_t data[0];
 };
 
-static inline VMImageSection * vmNextSection(VMImageSection *sect) {
+static inline TValue vmLiteralVal(VMImageSection *sect) {
+#ifdef PXT64
+    return (TValue)sect->data;
+#else
+    return (TValue)(sect->data + 4);
+#endif
+}
+
+static inline VMImageSection *vmNextSection(VMImageSection *sect) {
     return (VMImageSection *)((uint8_t *)sect + sect->size);
 }
 
@@ -164,7 +172,6 @@ struct FiberContext {
     // for sleep
     uint64_t wakeTime;
 };
-
 
 #define PXT_EXN_CTX() currentFiber
 
