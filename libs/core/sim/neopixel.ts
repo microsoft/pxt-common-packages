@@ -134,6 +134,7 @@ namespace pxsim.visuals {
     }
     export class NeoPixel {
         public el: SVGElement;
+        public cx: number;
         public cy: number;
 
         constructor(xy: Coord = [0, 0]) {
@@ -141,8 +142,10 @@ namespace pxsim.visuals {
             let r = PIXEL_RADIUS;
             let [cx, cy] = xy;
             let y = cy - r;
-            svg.hydrate(el, { x: "-50%", y: y, width: "100%", height: r * 2, class: "sim-neopixel" });
+            let x = cx - r;
+            svg.hydrate(el, { x: x, y: y, width: r*2, height: r * 2, class: "sim-neopixel" });
             this.el = el;
+            this.cx = cx;
             this.cy = cy;
         }
 
@@ -162,21 +165,24 @@ namespace pxsim.visuals {
         public pixels: NeoPixel[];
         private viewBox: [number, number, number, number];
         private background: SVGRectElement;
+        private width: number;
 
-        constructor(pin: number) {
+        constructor(pin: number, wid: number = 16) {
             this.pixels = [];
             this.pin = pin;
+            this.width = wid;
             let el = <SVGSVGElement>svg.elt("svg");
+            let canvas_width = CANVAS_WIDTH * this.width;
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
                 "x": "0px",
                 "y": "0px",
-                "width": `${CANVAS_WIDTH}px`,
+                "width": `${canvas_width}px`,
                 "height": `${CANVAS_HEIGHT}px`,
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(-CANVAS_VIEW_WIDTH / 2, 0, CANVAS_VIEW_WIDTH, CANVAS_VIEW_HEIGHT);
+            this.updateViewBox(-canvas_width / 2, 0, canvas_width, CANVAS_VIEW_HEIGHT);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -193,6 +199,11 @@ namespace pxsim.visuals {
                 let pixel = this.pixels[i];
                 if (!pixel) {
                     let cxy: Coord = [0, CANVAS_VIEW_PADDING + i * PIXEL_SPACING];
+                    if (this.width > 1) {
+                        const row = Math.floor(i / this.width);
+                        const col = i - row * this.width;
+                        cxy  = [col*CANVAS_WIDTH, CANVAS_VIEW_PADDING + row * PIXEL_SPACING]
+                    }
                     pixel = this.pixels[i] = new NeoPixel(cxy);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
                     this.canvas.appendChild(pixel.el);
