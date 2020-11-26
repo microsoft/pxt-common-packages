@@ -1,3 +1,7 @@
+// TODO:
+// 1. center (background)
+// 2. plumbing for setMatrix
+// 3. aspect ratio on pixel
 
 namespace pxsim {
     export enum NeoPixelMode {
@@ -172,7 +176,7 @@ namespace pxsim.visuals {
             this.pin = pin;
             this.width = wid;
             let el = <SVGSVGElement>svg.elt("svg");
-            let canvas_width = CANVAS_WIDTH * this.width;
+            let canvas_width = this.width > 1 ? PIXEL_SPACING * this.width : CANVAS_WIDTH;
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
                 "x": "0px",
@@ -182,7 +186,7 @@ namespace pxsim.visuals {
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(-canvas_width / 2, 0, canvas_width, CANVAS_VIEW_HEIGHT);
+            this.updateViewBox(this.width == 1 ? -canvas_width / 2 : 0, 0, canvas_width, CANVAS_VIEW_HEIGHT);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -202,7 +206,7 @@ namespace pxsim.visuals {
                     if (this.width > 1) {
                         const row = Math.floor(i / this.width);
                         const col = i - row * this.width;
-                        cxy  = [col*CANVAS_WIDTH, CANVAS_VIEW_PADDING + row * PIXEL_SPACING]
+                        cxy  = [col*PIXEL_SPACING,  row * PIXEL_SPACING]
                     }
                     pixel = this.pixels[i] = new NeoPixel(cxy);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
@@ -222,8 +226,8 @@ namespace pxsim.visuals {
             let [oldX, oldY, oldW, oldH] = this.viewBox;
             if (oldH < newH) {
                 let scalar = newH / oldH;
-                let newW = oldW * scalar;
-                this.updateViewBox(-newW / 2, oldY, newW, newH);
+                let newW = oldW * scalar;   // ???
+                this.updateViewBox(this.width == 1 ? -newW / 2 : 0, oldY, newW, newH);
             }
         }
 
