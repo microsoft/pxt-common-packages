@@ -1,7 +1,8 @@
 // TODO:
-// 1. center (background)
-// 2. plumbing for setMatrix
-// 3. aspect ratio on pixel
+// - fix cropping of row 0 and col 0
+// - proper size of background
+// - center backgroun
+// - plumbing for setMatrix
 
 namespace pxsim {
     export enum NeoPixelMode {
@@ -77,7 +78,7 @@ namespace pxsim.light {
 }
 
 namespace pxsim.visuals {
-    const PIXEL_SPACING = PIN_DIST * 3;
+    const PIXEL_SPACING = PIN_DIST * 2.5;
     const PIXEL_RADIUS = PIN_DIST;
     const CANVAS_WIDTH = 1.2 * PIN_DIST;
     const CANVAS_HEIGHT = 12 * PIN_DIST;
@@ -176,7 +177,7 @@ namespace pxsim.visuals {
             this.pin = pin;
             this.width = wid;
             let el = <SVGSVGElement>svg.elt("svg");
-            let canvas_width = this.width > 1 ? PIXEL_SPACING * this.width : CANVAS_WIDTH;
+            let canvas_width = this.width > 1 ? PIXEL_SPACING * (1+this.width) : CANVAS_WIDTH;
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
                 "x": "0px",
@@ -206,7 +207,7 @@ namespace pxsim.visuals {
                     if (this.width > 1) {
                         const row = Math.floor(i / this.width);
                         const col = i - row * this.width;
-                        cxy  = [col*PIXEL_SPACING,  row * PIXEL_SPACING]
+                        cxy  = [(col+1)*PIXEL_SPACING,  (row+1) * PIXEL_SPACING]
                     }
                     pixel = this.pixels[i] = new NeoPixel(cxy);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
@@ -219,14 +220,14 @@ namespace pxsim.visuals {
             //show the canvas if it's hidden
             pxsim.U.removeClass(this.background, "hidden");
 
-            //resize if necessary
+            // resize if necessary
             let [first, last] = [this.pixels[0], this.pixels[this.pixels.length - 1]]
             let yDiff = last.cy - first.cy;
             let newH = yDiff + CANVAS_VIEW_PADDING * 2;
             let [oldX, oldY, oldW, oldH] = this.viewBox;
             if (oldH < newH) {
                 let scalar = newH / oldH;
-                let newW = oldW * scalar;   // ???
+                let newW = oldW * scalar;
                 this.updateViewBox(this.width == 1 ? -newW / 2 : 0, oldY, newW, newH);
             }
         }
