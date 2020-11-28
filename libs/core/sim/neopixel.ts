@@ -79,7 +79,7 @@ namespace pxsim.light {
 }
 
 namespace pxsim.visuals {
-    const PIXEL_SPACING = PIN_DIST * 2.5;
+    const PIXEL_SPACING = PIN_DIST * 2.5;  // 3
     const PIXEL_RADIUS = PIN_DIST;
     const CANVAS_WIDTH = 1.2 * PIN_DIST;
     const CANVAS_HEIGHT = 12 * PIN_DIST;
@@ -140,18 +140,20 @@ namespace pxsim.visuals {
     }
     export class NeoPixel {
         public el: SVGElement;
-        public cx: number;
         public cy: number;
 
-        constructor(xy: Coord = [0, 0]) {
+        constructor(xy: Coord = [0, 0], width: number = 1) {
             let el = <SVGElement>svg.elt("rect");
             let r = PIXEL_RADIUS;
             let [cx, cy] = xy;
             let y = cy - r;
-            let x = cx - r;
-            svg.hydrate(el, { x: x, y: y, width: r*2, height: r * 2, class: "sim-neopixel" });
+            if (width == 1)
+                svg.hydrate(el, { x: "-50%", y: y, width: "100%", height: r * 2, class: "sim-neopixel" });
+            else {
+                let x = cx - r;
+                svg.hydrate(el, { x: x, y: y, width: r*2, height: r * 2, class: "sim-neopixel" });
+            }
             this.el = el;
-            this.cx = cx;
             this.cy = cy;
         }
 
@@ -212,7 +214,7 @@ namespace pxsim.visuals {
                         const col = i - row * this.width;
                         cxy  = [(col+1)*PIXEL_SPACING,  (row+1) * PIXEL_SPACING]
                     }
-                    pixel = this.pixels[i] = new NeoPixel(cxy);
+                    pixel = this.pixels[i] = new NeoPixel(cxy, this.width);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
                     this.canvas.appendChild(pixel.el);
                 }
@@ -310,7 +312,7 @@ namespace pxsim.visuals {
         }
         public updateState(): void {
             if (this.state.width != this.canvas.width) {
-                this.makeCanvas();
+                // this.makeCanvas();
             } else {
                 let colors: number[][] = [];
                 for (let i = 0; i < this.state.length; i++) {
