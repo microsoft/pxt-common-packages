@@ -163,7 +163,7 @@ namespace pxsim.visuals {
 
     export class NeoPixelCanvas {
         public canvas: SVGSVGElement;
-N        private pixels: NeoPixel[];
+        private pixels: NeoPixel[];
         private viewBox: [number, number, number, number];
         private background: SVGRectElement;
 
@@ -174,9 +174,9 @@ N        private pixels: NeoPixel[];
             let canvas_height = CANVAS_HEIGHT;
             if (cols > 1) {
                 let rows = Math.floor(length / cols);
-                let ps = CANVAS_HEIGHT / ( 2 + rows );
-                canvas_width = ps * (2 + cols); 
-                canvas_height = ps * (2 + rows);
+                let ps = CANVAS_HEIGHT / rows;
+                canvas_width = ps * cols; 
+                canvas_height = ps * rows
             }
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
