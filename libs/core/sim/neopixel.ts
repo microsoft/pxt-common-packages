@@ -1,8 +1,7 @@
 // TODO:
 // - proper size of background
 // - center background
-// * plumbing for setMatrix
-// - fix for width = 1
+// - neopixel package update
 
 namespace pxsim {
     export enum NeoPixelMode {
@@ -283,7 +282,6 @@ namespace pxsim.visuals {
                 || this.parsePinString("pins.MOSI");
             this.lastLocation = [0, 0];
             this.state = state(this.pin);
-
             let part = mkNeoPixelPart();
             this.part = part;
             this.stripGroup.appendChild(part.el);
@@ -312,7 +310,7 @@ namespace pxsim.visuals {
         }
         public updateState(): void {
             if (this.state.width != this.canvas.width) {
-                // this.makeCanvas();
+                this.makeCanvas();
             } else {
                 let colors: number[][] = [];
                 for (let i = 0; i < this.state.length; i++) {
