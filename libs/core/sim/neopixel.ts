@@ -146,7 +146,7 @@ namespace pxsim.visuals {
             let r = PIXEL_RADIUS;
             let [cx, cy] = xy;
             let y = cy - r;
-            if (width == 1)
+            if (width <= 1)
                 svg.hydrate(el, { x: "-50%", y: y, width: "100%", height: r * 2, class: "sim-neopixel" });
             else {
                 let x = cx - r;
@@ -190,8 +190,8 @@ namespace pxsim.visuals {
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(this.width == 1 ? -canvas_width / 2 : 0, 0, canvas_width, 
-                               this.width == 1 ? CANVAS_VIEW_HEIGHT : canvas_height);
+            this.updateViewBox(this.width <= 1 ? -canvas_width / 2 : 0, 0, canvas_width, 
+                               this.width <= 1 ? CANVAS_VIEW_HEIGHT : canvas_height);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -232,7 +232,7 @@ namespace pxsim.visuals {
             if (oldH < newH) {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
-                this.updateViewBox(this.width == 1 ? -newW / 2 : 0, oldY, newW, newH);
+                this.updateViewBox(this.width <= 1 ? -newW / 2 : 0, oldY, newW, newH);
             }
         }
 
@@ -285,14 +285,20 @@ namespace pxsim.visuals {
             let part = mkNeoPixelPart();
             this.part = part;
             this.stripGroup.appendChild(part.el);
+            this.overElement = null;
             this.makeCanvas();
         }
         private makeCanvas() {
             let canvas = new NeoPixelCanvas(this.pin.id, this.state.width);
+            if (this.overElement) {
+                this.overElement.removeChild(this.canvas.canvas);
+                this.overElement.appendChild(canvas.canvas)
+            } else {
+                let canvasG = svg.elt("g", { class: "sim-neopixel-canvas-parent" });
+                canvasG.appendChild(canvas.canvas);
+                this.overElement = canvasG;
+            }
             this.canvas = canvas;
-            let canvasG = svg.elt("g", { class: "sim-neopixel-canvas-parent" });
-            this.overElement = canvasG;
-            canvasG.appendChild(canvas.canvas);
             this.updateStripLoc();
         }
 
@@ -311,13 +317,12 @@ namespace pxsim.visuals {
         public updateState(): void {
             if (this.state.width != this.canvas.width) {
                 this.makeCanvas();
-            } else {
-                let colors: number[][] = [];
-                for (let i = 0; i < this.state.length; i++) {
-                    colors.push(this.state.pixelColor(i));
-                }
-                this.canvas.update(colors);
             }
+            let colors: number[][] = [];
+            for (let i = 0; i < this.state.length; i++) {
+                colors.push(this.state.pixelColor(i));
+            }
+           this.canvas.update(colors);
         }
         public updateTheme(): void { }
     }
