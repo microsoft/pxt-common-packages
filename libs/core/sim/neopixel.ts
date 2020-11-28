@@ -1,8 +1,3 @@
-// TODO:
-// - proper size of background
-// - center background
-// - neopixel package update
-
 namespace pxsim {
     export enum NeoPixelMode {
         RGB = 1,
@@ -168,19 +163,21 @@ namespace pxsim.visuals {
 
     export class NeoPixelCanvas {
         public canvas: SVGSVGElement;
-        public pin: number;
-        public pixels: NeoPixel[];
-        public width: number;
+N        private pixels: NeoPixel[];
         private viewBox: [number, number, number, number];
         private background: SVGRectElement;
 
-        constructor(pin: number, w: number = 1) {
+        constructor(pin: number, private length: number, public cols: number = 1) {
             this.pixels = [];
-            this.pin = pin;
-            this.width = w;
             let el = <SVGSVGElement>svg.elt("svg");
-            let canvas_width = this.width > 1 ? PIXEL_SPACING * (1+this.width) : CANVAS_WIDTH;
-            let canvas_height = this.width > 1 ? CANVAS_HEIGHT : CANVAS_HEIGHT;
+            let canvas_width = CANVAS_WIDTH;
+            let canvas_height = CANVAS_HEIGHT;
+            if (cols > 1) {
+                let rows = Math.floor(length / cols);
+                let ps = CANVAS_HEIGHT / ( 2 + rows );
+                canvas_width = ps * (2 + cols); 
+                canvas_height = ps * (2 + rows);
+            }
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
                 "x": "0px",
@@ -190,8 +187,7 @@ namespace pxsim.visuals {
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(this.width <= 1 ? -canvas_width / 2 : 0, 0, canvas_width, 
-                               this.width <= 1 ? CANVAS_VIEW_HEIGHT : canvas_height);
+            this.updateViewBox(this.cols <= 1 ? -canvas_width / 2 : 0, 0, canvas_width, canvas_height);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -208,17 +204,16 @@ namespace pxsim.visuals {
                 let pixel = this.pixels[i];
                 if (!pixel) {
                     let cxy: Coord = [0, CANVAS_VIEW_PADDING + i * PIXEL_SPACING];
-                    if (this.width > 1) {
-                        const row = Math.floor(i / this.width);
-                        const col = i - row * this.width;
+                    if (this.cols > 1) {
+                        const row = Math.floor(i / this.cols);
+                        const col = i - row * this.cols;
                         cxy  = [(col+1)*PIXEL_SPACING,  (row+1) * PIXEL_SPACING]
                     }
-                    pixel = this.pixels[i] = new NeoPixel(cxy, this.width);
+                    pixel = this.pixels[i] = new NeoPixel(cxy, this.cols);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
                     this.canvas.appendChild(pixel.el);
                 }
-                let color = colors[i];
-                pixel.setRgb(color as [number, number, number]);
+                pixel.setRgb(colors[i] as [number, number, number]);
             }
 
             //show the canvas if it's hidden
@@ -232,7 +227,7 @@ namespace pxsim.visuals {
             if (oldH < newH) {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
-                this.updateViewBox(this.width <= 1 ? -newW / 2 : 0, oldY, newW, newH);
+                this.updateViewBox(this.cols <= 1 ? -newW / 2 : 0, oldY, newW, newH);
             }
         }
 
@@ -289,7 +284,7 @@ namespace pxsim.visuals {
             this.makeCanvas();
         }
         private makeCanvas() {
-            let canvas = new NeoPixelCanvas(this.pin.id, this.state.width);
+            let canvas = new NeoPixelCanvas(this.pin.id, this.state.length, this.state.width);
             if (this.overElement) {
                 this.overElement.removeChild(this.canvas.canvas);
                 this.overElement.appendChild(canvas.canvas)
@@ -315,7 +310,7 @@ namespace pxsim.visuals {
             svg.hydrate(this.part.el, { transform: `translate(${x} ${y})` }); //TODO: update part's l,h, etc.
         }
         public updateState(): void {
-            if (this.state.width != this.canvas.width) {
+            if (this.state.width != this.canvas.cols) {
                 this.makeCanvas();
             }
             let colors: number[][] = [];
