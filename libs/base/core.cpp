@@ -1033,7 +1033,11 @@ TNumber muls(TNumber a, TNumber b) {
 }
 
 //%
-TNumber div(TNumber a, TNumber b){NUMOP(/)}
+TNumber div(TNumber a, TNumber b) {
+    if (b == TAG_NUMBER(1))
+        return a;
+    NUMOP(/)
+}
 
 //%
 TNumber mod(TNumber a, TNumber b) {
