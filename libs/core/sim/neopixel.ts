@@ -70,6 +70,12 @@ namespace pxsim.light {
 
         runtime.queueDisplayUpdate();
     }
+    
+    export function setMatrixWidth(pin: { id: number}, width: number) {
+        const state = neopixelState(pin.id);
+        if (!state) return;
+        state.width = width;
+    }
 }
 
 namespace pxsim.visuals {
@@ -173,7 +179,7 @@ namespace pxsim.visuals {
             let canvas_width = CANVAS_WIDTH;
             let canvas_height = CANVAS_HEIGHT;
             if (cols > 1) {
-                let rows = Math.floor(length / cols);
+                let rows = Math.floor((length / cols) + 1);
                 let ps = CANVAS_HEIGHT / rows;
                 canvas_width = ps * cols; 
                 canvas_height = ps * rows
