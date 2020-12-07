@@ -70,12 +70,6 @@ namespace pxsim.light {
 
         runtime.queueDisplayUpdate();
     }
-    
-    export function setMatrixWidth(pin: { id: number}, width: number) {
-        const state = neopixelState(pin.id);
-        if (!state) return;
-        state.width = width;
-    }
 }
 
 namespace pxsim.visuals {

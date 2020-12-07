@@ -173,8 +173,6 @@ void clear() {
             off[i] = 0xe0;
         bitBangDotStarSendData(data, clk, 0x100, off, sizeof(off));
     }
-
-    void setMatrixWidth(DevicePin* pin, int width) {}
 }
 
 } // namespace pxt

@@ -20,12 +20,6 @@ namespace light {
     void sendBuffer(DigitalInOutPin data, DigitalInOutPin clk, int mode, Buffer buf);
 
     void neopixelSendData(DevicePin* pin, int mode, const uint8_t* data, unsigned length);
-
-    /**
-     * Sets the width of neopixel matrix
-     **/
-    //%
-    void setMatrixWidth(DevicePin* pin, int width);
 }
 
 #endif
