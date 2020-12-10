@@ -26,12 +26,6 @@ namespace pxsim.pxtcore {
 }
 
 namespace pxsim {
-    export interface SimulatorControlMessage extends SimulatorBroadcastMessage {
-        type: "messagepacket";
-        channel: string;
-        data: Uint8Array;
-    }
-
     // keep in sync with ts
     export const CONTROL_MESSAGE_EVT_ID = 2999;
     export const CONTROL_MESSAGE_RECEIVED = 1;
