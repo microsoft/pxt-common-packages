@@ -145,7 +145,7 @@ namespace pxsim.visuals {
                 svg.hydrate(el, { x: "-50%", y: y, width: "100%", height: r * 2, class: "sim-neopixel" });
             else {
                 let x = cx - r;
-                svg.hydrate(el, { x: x, y: y, width: r*2, height: r * 2, class: "sim-neopixel" });
+                svg.hydrate(el, { x: x, y: y, width: r * 2, height: r * 2, class: "sim-neopixel" });
             }
             this.el = el;
             this.cy = cy;
@@ -167,27 +167,20 @@ namespace pxsim.visuals {
         private viewBox: [number, number, number, number];
         private background: SVGRectElement;
 
-        constructor(pin: number, private length: number, public cols: number = 1) {
+        constructor(pin: number, public cols: number = 1) {
             this.pixels = [];
             let el = <SVGSVGElement>svg.elt("svg");
-            let canvas_width = CANVAS_WIDTH;
-            let canvas_height = CANVAS_HEIGHT;
-            if (cols > 1) {
-                let rows = Math.floor((length / cols) + 1);
-                let ps = CANVAS_HEIGHT / rows;
-                canvas_width = ps * cols; 
-                canvas_height = ps * rows
-            }
+            let canvas_width = cols > 1 ? CANVAS_HEIGHT : CANVAS_WIDTH;
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
                 "x": "0px",
                 "y": "0px",
                 "width": `${canvas_width}px`,
-                "height": `${canvas_height}px`,
+                "height": `${CANVAS_HEIGHT}px`,
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(this.cols <= 1 ? -canvas_width / 2 : 0, 0, canvas_width, canvas_height);
+            this.updateViewBox(this.cols <= 1 ? -canvas_width / 2 : 0, 0, canvas_width, CANVAS_HEIGHT);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -200,6 +193,15 @@ namespace pxsim.visuals {
             if (!colors || colors.length <= 0)
                 return;
 
+            if (this.pixels.length == 0 && this.cols > 1) {
+                // first time, so redo width of canvas
+                let rows = Math.ceil(colors.length / this.cols);
+                let rt = CANVAS_HEIGHT / rows;
+                let width = this.cols * rt;
+                this.canvas.setAttributeNS(null, "width", `${width}px`)
+                this.updateViewBox(0, 0, width, CANVAS_HEIGHT);
+            }
+
             for (let i = 0; i < colors.length; i++) {
                 let pixel = this.pixels[i];
                 if (!pixel) {
@@ -207,7 +209,7 @@ namespace pxsim.visuals {
                     if (this.cols > 1) {
                         const row = Math.floor(i / this.cols);
                         const col = i - row * this.cols;
-                        cxy  = [(col+1)*PIXEL_SPACING,  (row+1) * PIXEL_SPACING]
+                        cxy  = [(col + 1) * PIXEL_SPACING,  (row + 1) * PIXEL_SPACING]
                     }
                     pixel = this.pixels[i] = new NeoPixel(cxy, this.cols);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
@@ -219,14 +221,19 @@ namespace pxsim.visuals {
             //show the canvas if it's hidden
             pxsim.U.removeClass(this.background, "hidden");
 
-            // resize if necessary
+            // resize
             let [first, last] = [this.pixels[0], this.pixels[this.pixels.length - 1]]
             let yDiff = last.cy - first.cy;
             let newH = yDiff + CANVAS_VIEW_PADDING * 2;
             let [oldX, oldY, oldW, oldH] = this.viewBox;
-            if (oldH < newH) {
+            if (newH > oldH) {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
+                if (this.cols > 1) {
+                    let rows = Math.ceil(colors.length / this.cols);
+                    let rt = newH / rows;
+                    newW = rt * this.cols;
+                }
                 this.updateViewBox(this.cols <= 1 ? -newW / 2 : 0, oldY, newW, newH);
             }
         }
@@ -284,7 +291,7 @@ namespace pxsim.visuals {
             this.makeCanvas();
         }
         private makeCanvas() {
-            let canvas = new NeoPixelCanvas(this.pin.id, this.state.length, this.state.width);
+            let canvas = new NeoPixelCanvas(this.pin.id, this.state.width);
             if (this.overElement) {
                 this.overElement.removeChild(this.canvas.canvas);
                 this.overElement.appendChild(canvas.canvas)
