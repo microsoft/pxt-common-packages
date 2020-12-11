@@ -77,8 +77,6 @@ namespace pxsim.visuals {
     const PIXEL_RADIUS = PIN_DIST;
     const CANVAS_WIDTH = 1.2 * PIN_DIST;
     const CANVAS_HEIGHT = 12 * PIN_DIST;
-    const CANVAS_VIEW_WIDTH = CANVAS_WIDTH;
-    const CANVAS_VIEW_HEIGHT = CANVAS_HEIGHT;
     const CANVAS_VIEW_PADDING = PIN_DIST * 4;
     const CANVAS_LEFT = 1.4 * PIN_DIST;
     const CANVAS_TOP = PIN_DIST;
@@ -170,17 +168,16 @@ namespace pxsim.visuals {
         constructor(pin: number, public cols: number = 1) {
             this.pixels = [];
             let el = <SVGSVGElement>svg.elt("svg");
-            let canvas_width = cols > 1 ? CANVAS_HEIGHT : CANVAS_WIDTH;
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
                 "x": "0px",
                 "y": "0px",
-                "width": `${canvas_width}px`,
+                "width": `${CANVAS_WIDTH}px`,
                 "height": `${CANVAS_HEIGHT}px`,
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(this.cols <= 1 ? -canvas_width / 2 : 0, 0, canvas_width, CANVAS_HEIGHT);
+            this.updateViewBox(CANVAS_WIDTH, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -230,7 +227,8 @@ namespace pxsim.visuals {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
                 if (this.cols > 1) {
-                    let rows = Math.ceil(colors.length / this.cols);
+                    newH = yDiff + PIXEL_SPACING * 2;
+                    let rows = colors.length / this.cols;
                     let rt = newH / rows;
                     newW = rt * this.cols;
                 }
@@ -273,7 +271,7 @@ namespace pxsim.visuals {
         private pin: Pin;
 
         constructor(public parsePinString: (name: string) => Pin) {
-            
+
         }
 
         public init(bus: EventBus, state: CommonNeoPixelStateConstructor, svgEl: SVGSVGElement, otherParams: Map<string>): void {
