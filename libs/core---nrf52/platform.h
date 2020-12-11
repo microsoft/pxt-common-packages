@@ -2,7 +2,6 @@
 #define __PXT_PLATFORM_H
 
 #include "Image.h"
-#include "NRF52Microphone.h"
 #include "NRF52SPI.h"
 #include "NRF52I2C.h"
 #include "NRF52Pin.h"

@@ -114,6 +114,10 @@ static void disableNFConPins() {
     }
 }
 
+void deepSleep() {
+    NRF_POWER->SYSTEMOFF = 1;
+}
+
 void platform_init() {
     initRandomSeed();
 

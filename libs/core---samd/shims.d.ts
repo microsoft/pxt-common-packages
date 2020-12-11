@@ -53,7 +53,6 @@ declare interface AnalogInPin {
     //% help=pins/analog-read weight=53
     //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
     //% blockNamespace=pins
-    //% parts="photocell" trackArgs=0
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4 shim=AnalogInPinMethods::analogRead
@@ -86,7 +85,6 @@ declare interface DigitalInOutPin {
      */
     //% help=pins/digital-read weight=61
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
-    //% parts="slideswitch" trackArgs=0
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
@@ -100,7 +98,6 @@ declare interface DigitalInOutPin {
      */
     //% help=pins/digital-write weight=60
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value=toggleHighLow"
-    //% parts="led" trackArgs=0
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
@@ -117,7 +114,6 @@ declare interface DigitalInOutPin {
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
     //% pin.fieldOptions.columns=4
-    //% parts="slideswitch" trackArgs=0
     //% deprecated=1 hidden=1 shim=DigitalInOutPinMethods::onPulsed
     onPulsed(pulse: PulseValue, body: () => void): void;
 
@@ -130,7 +126,7 @@ declare interface DigitalInOutPin {
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
     //% pin.fieldOptions.columns=4
-    //% parts="slideswitch" trackArgs=0 shim=DigitalInOutPinMethods::onEvent
+    //% shim=DigitalInOutPinMethods::onEvent
     onEvent(event: PinEvent, body: () => void): void;
 
     /**

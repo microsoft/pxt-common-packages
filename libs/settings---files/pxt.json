@@ -1,5 +1,5 @@
 {
-    "name": "settings",
+    "name": "settings---files",
     "description": "Settings storage in files",
     "files": [
         "settings.cpp",
