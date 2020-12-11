@@ -227,10 +227,11 @@ namespace pxsim.visuals {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
                 if (this.cols > 1) {
-                    newH = yDiff + PIXEL_SPACING * 2;
-                    let rows = colors.length / this.cols;
-                    let rt = newH / rows;
-                    newW = rt * this.cols;
+                    // newH = yDiff + PIXEL_SPACING * 2;
+                    let rows = Math.ceil(colors.length / this.cols);
+                    newH = PIXEL_SPACING * (rows + 1);
+                    // let rt = newH / rows;
+                    newW = PIXEL_SPACING * (this.cols + 1);
                 }
                 this.updateViewBox(this.cols <= 1 ? -newW / 2 : 0, oldY, newW, newH);
             }
