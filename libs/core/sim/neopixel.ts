@@ -177,7 +177,7 @@ namespace pxsim.visuals {
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(CANVAS_WIDTH, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            this.updateViewBox(-CANVAS_WIDTH / 2, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -227,13 +227,13 @@ namespace pxsim.visuals {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
                 if (this.cols > 1) {
-                    // newH = yDiff + PIXEL_SPACING * 2;
+                    // different computation for matrix
                     let rows = Math.ceil(colors.length / this.cols);
                     newH = PIXEL_SPACING * (rows + 1);
-                    // let rt = newH / rows;
                     newW = PIXEL_SPACING * (this.cols + 1);
-                }
-                this.updateViewBox(this.cols <= 1 ? -newW / 2 : 0, oldY, newW, newH);
+                    this.updateViewBox(0, oldY, newW, newH);
+                } else
+                    this.updateViewBox(-newW / 2, oldY, newW, newH);
             }
         }
 
