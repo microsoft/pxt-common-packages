@@ -31,6 +31,26 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
 
 #define VM_MAX_PATCH 7
 
+namespace pxt {
+#define PXT_EXPORT(p) (uintptr_t)(void *)(p)
+const uintptr_t PXT_EXPORTData[] __attribute__((used, aligned(0x20))) = {
+    0x08010801,
+    0x42424242,
+    0x08010801,
+    0x8de9d83e,
+    PXT_EXPORT(&pxt::buffer_vt),
+    PXT_EXPORT(&pxt::RefAction_vtable),
+    PXT_EXPORT(&pxt::string_inline_ascii_vt),
+    PXT_EXPORT(&pxt::string_skiplist16_packed_vt),
+    PXT_EXPORT(&pxt::string_inline_utf8_vt),
+    PXT_EXPORT(pxt::RefRecord_destroy),
+    PXT_EXPORT(pxt::RefRecord_print),
+    PXT_EXPORT(pxt::RefRecord_scan),
+    PXT_EXPORT(pxt::RefRecord_gcsize),
+    PXT_EXPORT(0),
+};
+} // namespace pxt
+
 struct VMPatchState {
     uint32_t offset;
     uint32_t bytesLeftInSect;
