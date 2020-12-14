@@ -88,19 +88,16 @@ namespace pxsim {
         groupId: number;
         band: number;
 
-        constructor(runtime: Runtime, dal: RadioDAL) {
+        constructor(private readonly runtime: Runtime, private readonly board: BaseBoard, dal: RadioDAL) {
             this.datagram = new RadioDatagram(runtime, dal);
             this.power = 6; // default value
             this.groupId = 0;
             this.band = 7; // https://github.com/lancaster-university/microbit-dal/blob/master/inc/core/MicroBitConfig.h#L320
+
+            this.board.addMessageListener(this.handleMessage.bind(this))
         }
 
-        addListeners() {
-            const board = runtime.board as pxsim.BaseBoard;
-            board.addMessageListener(msg => this.messageHandler(msg));
-        }
-
-        private messageHandler(msg: SimulatorMessage) {
+        private handleMessage(msg: SimulatorMessage) {
             if (msg.type == "radiopacket") {
                 let packet = <SimulatorRadioPacketMessage>msg;
                 this.receivePacket(packet);
