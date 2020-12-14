@@ -69,7 +69,6 @@ declare interface AnalogOutPin {
     //% help=pins/analog-write weight=52
     //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
     //% blockNamespace=pins
-    //% parts="analogled" trackArgs=0
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
     //% name.fieldOptions.columns=4
@@ -125,8 +124,7 @@ declare interface DigitalInOutPin {
     //% blockNamespace=pins
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
-    //% pin.fieldOptions.columns=4
-    //% shim=DigitalInOutPinMethods::onEvent
+    //% pin.fieldOptions.columns=4 shim=DigitalInOutPinMethods::onEvent
     onEvent(event: PinEvent, body: () => void): void;
 
     /**
