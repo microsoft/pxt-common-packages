@@ -247,10 +247,17 @@ namespace music {
             control.runInParallel(() => {
                 while (this._player == p) {
                     p.play(volume)
-                    if (!loop)
+                    if (!loop) {
+                        // Unregister the melody when done playing, but
+                        // only if it hasn't been restarted. (Looping
+                        // melodies never stop on their own, they only
+                        // get unregistered via stop().)
+                        if (this._player == p) {
+                            this.unregisterMelody();
+                        }
                         break
+                    }
                 }
-                this.unregisterMelody();
             })
         }
 
