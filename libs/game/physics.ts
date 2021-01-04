@@ -277,27 +277,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         sprite._vx = this.constrain(sprite._vx);
         sprite._vy = this.constrain(sprite._vy);
 
-        const dx = Fx.idiv(
-            Fx.mul(
-                Fx.add(
-                    sprite._vx,
-                    ovx
-                ),
-                dt2
-            ),
-            1000
-        );
-
-        const dy = Fx.idiv(
-            Fx.mul(
-                Fx.add(
-                    sprite._vy,
-                    ovy
-                ),
-                dt2
-            ),
-            1000
-        );
+        const dx = Fx8(Fx.toFloat(Fx.add(sprite._vx, ovx)) * Fx.toInt(dt2) / 1000);
+        const dy = Fx8(Fx.toFloat(Fx.add(sprite._vy, ovy)) * Fx.toInt(dt2) / 1000);
 
         let xStep = dx;
         let yStep = dy;
