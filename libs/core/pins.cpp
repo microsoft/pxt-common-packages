@@ -31,7 +31,10 @@ DevicePin *getPin(int id) {
 
 //%
 DevicePin *getPinCfg(int key) {
-    return getPin(getConfig(key));
+    int p = getConfig(key, -1);
+    if (p == -1)
+        DMESG("no pin cfg: %d", key);
+    return getPin(p);
 }
 
 void linkPin(int from, int to) {

@@ -23,7 +23,7 @@ class PhysicsEngine {
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
-const MAX_TIME_STEP = Fx8(100); // milliseconds
+const MAX_TIME_STEP = 100; // milliseconds
 const SPRITE_CANNOT_COLLIDE = SpriteFlag.NoTileCollisions | sprites.Flag.Destroyed | SpriteFlag.RelativeToCamera;
 const SPRITE_CANNOT_OVERLAP = SpriteFlag.NoSpriteOverlaps | sprites.Flag.Destroyed | SpriteFlag.RelativeToCamera;
 const MIN_MOVE_GAP = Fx8(0.1);
@@ -110,17 +110,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     move(dt: number) {
         // Sprite movement logic is done in milliseconds to avoid rounding errors with Fx8 numbers
-        const dtf = Fx.min(
-            MAX_TIME_STEP,
-            Fx8(dt * 1000)
-        );
-        const dt2 = Fx.idiv(dtf, 2);
+        const dtMs = Math.min(MAX_TIME_STEP, dt * 1000);
+        const dt2 = Math.idiv(dtMs, 2);
 
         const scene = game.currentScene();
 
         const tileMap = scene.tileMap;
         const movingSprites = this.sprites
-            .map(sprite => this.createMovingSprite(sprite, dtf, dt2));
+            .map(sprite => this.createMovingSprite(sprite, dtMs, dt2));
 
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
@@ -132,12 +129,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
         const MAX_STEP_COUNT = Fx.toInt(
             Fx.idiv(
-                Fx.mul(
+                Fx.imul(
                     Fx.div(
                         this.maxVelocity,
                         this.minSingleStep
                     ),
-                    dtf
+                    dtMs
                 ),
                 1000
             )
@@ -212,7 +209,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    private createMovingSprite(sprite: Sprite, dtMs: Fx8, dt2: Fx8): MovingSprite {
+    private createMovingSprite(sprite: Sprite, dtMs: number, dt2: number): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
         sprite._lastX = sprite._x;
@@ -222,7 +219,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             sprite._vx = Fx.add(
                 sprite._vx,
                 Fx.idiv(
-                    Fx.mul(
+                    Fx.imul(
                         sprite._ax,
                         dtMs
                     ),
@@ -231,7 +228,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             );
         } else if (sprite._fx) {
             const fx = Fx.idiv(
-                Fx.mul(
+                Fx.imul(
                     sprite._fx,
                     dtMs
                 ),
@@ -250,7 +247,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             sprite._vy = Fx.add(
                 sprite._vy,
                 Fx.idiv(
-                    Fx.mul(
+                    Fx.imul(
                         sprite._ay,
                         dtMs
                     ),
@@ -259,7 +256,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             );
         } else if (sprite._fy) {
             const fy = Fx.idiv(
-                Fx.mul(
+                Fx.imul(
                     sprite._fy,
                     dtMs
                 ),
@@ -277,27 +274,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         sprite._vx = this.constrain(sprite._vx);
         sprite._vy = this.constrain(sprite._vy);
 
-        const dx = Fx.idiv(
-            Fx.mul(
-                Fx.add(
-                    sprite._vx,
-                    ovx
-                ),
-                dt2
-            ),
-            1000
-        );
-
-        const dy = Fx.idiv(
-            Fx.mul(
-                Fx.add(
-                    sprite._vy,
-                    ovy
-                ),
-                dt2
-            ),
-            1000
-        );
+        const dx = Fx8(Fx.toFloat(Fx.add(sprite._vx, ovx)) * dt2 / 1000);
+        const dy = Fx8(Fx.toFloat(Fx.add(sprite._vy, ovy)) * dt2 / 1000);
 
         let xStep = dx;
         let yStep = dy;

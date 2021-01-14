@@ -9,7 +9,6 @@ namespace AnalogInPinMethods {
 //% help=pins/analog-read weight=53
 //% blockId=device_get_analog_pin block="analog read|pin %name" blockGap="8"
 //% blockNamespace=pins
-//% parts="photocell" trackArgs=0
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
@@ -29,7 +28,6 @@ void analogWrite(AnalogOutPin name, int value) __attribute__ ((weak));
 //% help=pins/analog-write weight=52
 //% blockId=device_set_analog_pin block="analog write|pin %name|to %value" blockGap=8
 //% blockNamespace=pins
-//% parts="analogled" trackArgs=0
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
