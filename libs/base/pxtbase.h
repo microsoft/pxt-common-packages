@@ -511,7 +511,7 @@ class RefObject {
     uintptr_t vtable;
 
     RefObject(const VTable *vt) {
-#if defined(PXT32) && defined(PXT_VM)
+#if defined(PXT32) && defined(PXT_VM) && !defined(PXT_ESP32)
         if ((uint32_t)vt & 0xf0000000)
             target_panic(PANIC_INVALID_VTABLE);
 #endif

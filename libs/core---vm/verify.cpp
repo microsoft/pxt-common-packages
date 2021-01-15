@@ -27,7 +27,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     for (sect = (VMImageSection *)img->dataStart;                                                  \
          (next = vmNextSection(sect), (uint64_t *)sect < img->dataEnd); sect = next)
 
-#define ALLOC_ARRAY(tp, sz) (tp *)xmalloc(sizeof(tp) * sz)
+#define ALLOC_ARRAY(tp, sz) (tp *)xmalloc(sz == 0 ? 1 : sizeof(tp) * sz)
 
 #define VM_MAX_PATCH 7
 

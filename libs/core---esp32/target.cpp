@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <fcntl.h>
 
+#include "esp_log.h"
+
 //#define LOG_TO_STDERR 1
 //#define LOG_TO_FILE 1
 
@@ -196,8 +198,11 @@ void vdmesg(const char *format, va_list arg) {
 
     snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
     dmesgRaw(buf, (uint32_t)strlen(buf));
+    
     vsnprintf(buf, sizeof(buf), format, arg);
+    ets_printf(LOG_FORMAT(I, "%s"), esp_log_timestamp(), "DMESG", buf);
     dmesgRaw(buf, (uint32_t)strlen(buf));
+
     dmesgRaw("\n", 1);
 
     target_enable_irq();

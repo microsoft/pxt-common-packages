@@ -1,7 +1,5 @@
 #include "pxt.h"
 
-
-
 namespace pxt {
 
 VMImage *vmImg;
@@ -32,7 +30,7 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 void vmStart() {
     auto sect = (VMImageSection *)PXT_EXPORTData[4];
     auto hd = (VMImageHeader *)sect->data;
-    if (sect->type != SectionType::InfoHeader || hd->magic0 == VM_MAGIC0 || hd->imageSize < 256) {
+    if (sect->type != SectionType::InfoHeader || hd->magic0 != VM_MAGIC0 || hd->imageSize < 256) {
         dmesg("invalid image at %p", sect);
         return;
     }

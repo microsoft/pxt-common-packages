@@ -99,8 +99,12 @@ static void panic_core(int error_code) {
 extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
+#ifdef PXT_ESP32
+    abort();
+#else
     while (1)
         sleep_core_us(10000);
+#endif
 }
 
 DLLEXPORT int pxt_get_panic_code() {
