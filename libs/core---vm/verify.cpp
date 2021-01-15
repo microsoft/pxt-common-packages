@@ -31,7 +31,6 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
 
 #define VM_MAX_PATCH 7
 
-namespace pxt {
 #define PXT_EXPORT(p) (uintptr_t)(void *)(p)
 const uintptr_t PXT_EXPORTData[] __attribute__((used, aligned(0x20))) = {
     0x08010801,
@@ -49,7 +48,6 @@ const uintptr_t PXT_EXPORTData[] __attribute__((used, aligned(0x20))) = {
     PXT_EXPORT(pxt::RefRecord_gcsize),
     PXT_EXPORT(0),
 };
-} // namespace pxt
 
 struct VMPatchState {
     uint32_t offset;

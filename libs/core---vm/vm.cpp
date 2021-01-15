@@ -507,7 +507,7 @@ void exec_loop(FiberContext *ctx) {
             if (opcode & VM_OPCODE_PUSH_MASK)
                 PUSH(ctx->r0);
         } else if (opcode >> 14 == 0b10) {
-            ((ApiFun)opcodes[opcode & 0x1fff])(ctx);
+            ((ApiFun)(void*)opcodes[opcode & 0x1fff])(ctx);
             if (opcode & VM_RTCALL_PUSH_MASK)
                 PUSH(ctx->r0);
         } else {

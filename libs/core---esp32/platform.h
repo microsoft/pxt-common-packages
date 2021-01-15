@@ -1,6 +1,9 @@
 #ifndef __PXT_PLATFORM_H
 #define __PXT_PLATFORM_H
 
+#include "esp_timer.h"
+#include "esp_system.h"
+
 #define PXT_ESP32 1
 
 #define PAGE_SIZE 1024 // not really
@@ -34,5 +37,7 @@ void soft_panic(int errorCode);
 
 // 0x3f400000-0x3f700000 range of data SPI flash
 #define PXT_IS_READONLY(v) (isTagged(v) || ((uintptr_t)v >> 22) == 0xfd)
+
+#define CODAL_PIN ::pxt::ZPin
 
 #endif

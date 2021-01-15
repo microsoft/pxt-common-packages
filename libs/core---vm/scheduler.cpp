@@ -117,11 +117,17 @@ void soft_panic(int errorCode) {
 }
 
 void sleep_core_us(uint64_t us) {
+#ifdef PXT_ESP32
+    uint64_t endp = esp_timer_get_time() + us;
+    while (esp_timer_get_time() < endp)
+        ;
+#else
     struct timespec ts;
     ts.tv_sec = us / 1000000;
     ts.tv_nsec = (us % 1000000) * 1000;
     while (nanosleep(&ts, &ts))
         ;
+#endif
 }
 
 void sleep_ms(uint32_t ms) {
@@ -170,7 +176,7 @@ void disposeFiber(FiberContext *t) {
 }
 
 FiberContext *setupThread(Action a, TValue arg = 0) {
-    //DMESG("setup thread: %p", a);
+    // DMESG("setup thread: %p", a);
     auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
     memset(t, 0, sizeof(*t));
     t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
@@ -426,7 +432,6 @@ void gcProcessStacks(int flags) {
     }
 }
 
-
 #define MAX_RESET_FN 32
 static reset_fn_t resetFunctions[MAX_RESET_FN];
 
@@ -442,6 +447,9 @@ void registerResetFunction(reset_fn_t fn) {
 }
 
 void systemReset() {
+#ifdef PXT_ESP32
+    esp_restart();
+#else
     if (!panicCode)
         panicCode = -1;
 
@@ -469,6 +477,7 @@ void systemReset() {
     gcReset();
 
     pthread_exit(NULL);
+#endif
 }
 
 } // namespace pxt

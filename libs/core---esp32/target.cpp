@@ -16,7 +16,7 @@ void target_exit() {
 }
 
 extern "C" void target_reset() {
-    vmStartFromUser(NULL);
+    esp_restart();
 }
 
 void target_startup() {}

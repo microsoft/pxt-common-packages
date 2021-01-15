@@ -1,3 +1,5 @@
+#include "pxt.h"
+
 namespace pxt {
 
 VMImage *vmImg;
@@ -26,9 +28,19 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 }
 
 void vmStart() {
-    VMImage *hd = (VMImageHeader *)0x3ff00000; // TODO
-    int len = 1024 * 4;                        // TODO hd->size
-    vmStartCore((uint8_t *)hd, len);
+    auto sect = (VMImageSection *)0x3ff00000;
+    auto hd = (VMImageHeader *)sect->data;
+    if (sect->type != SectionType::InfoHeader || hd->magic0 == VM_MAGIC0 || hd->imageSize < 256) {
+        dmesg("invalid image at %p", sect);
+        return;
+    }
+
+    vmStartCore((uint8_t *)sect, hd->imageSize);
+}
+
+//% expose
+void updateScreen(Image_ img) {
+    // dummy
 }
 
 } // namespace pxt
