@@ -114,7 +114,8 @@ struct VMImageHeader {
     uint64_t lastUsageTime;
     uint64_t installationTime;
     uint64_t publicationTime;
-    uint8_t reserved[64];
+    uint32_t imageSize;
+    uint8_t reserved[60];
     uint8_t name[128];
 };
 
