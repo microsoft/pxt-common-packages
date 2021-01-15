@@ -40,4 +40,8 @@ void soft_panic(int errorCode);
 
 #define CODAL_PIN ::pxt::ZPin
 
+extern "C" {
+extern const uintptr_t PXT_EXPORTData[];
+}
+
 #endif

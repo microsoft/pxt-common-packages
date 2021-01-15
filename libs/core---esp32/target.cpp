@@ -9,6 +9,29 @@
 //#define LOG_TO_STDERR 1
 //#define LOG_TO_FILE 1
 
+// make sure compiler doesn't optimize accesses to PXT_EXPORTData in vmload.cpp by placing
+// it in different file (this one)
+// also this is rewritten by pxt; don't rely on values here
+#define PXT_EXPORT(p) (uintptr_t)(void *)(p)
+extern "C" {
+__attribute__((used)) __attribute__((aligned(0x20))) const uintptr_t PXT_EXPORTData[] = {
+    0x08010801,
+    0x42424242,
+    0x08010801,
+    0x8de9d83e,
+    PXT_EXPORT(&pxt::buffer_vt),
+    PXT_EXPORT(&pxt::RefAction_vtable),
+    PXT_EXPORT(&pxt::string_inline_ascii_vt),
+    PXT_EXPORT(&pxt::string_skiplist16_packed_vt),
+    PXT_EXPORT(&pxt::string_inline_utf8_vt),
+    PXT_EXPORT(pxt::RefRecord_destroy),
+    PXT_EXPORT(pxt::RefRecord_print),
+    PXT_EXPORT(pxt::RefRecord_scan),
+    PXT_EXPORT(pxt::RefRecord_gcsize),
+    PXT_EXPORT(0),
+};
+}
+
 namespace pxt {
 
 void target_exit() {
