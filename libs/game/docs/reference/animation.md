@@ -2,7 +2,7 @@
 
 ## Sprite animations
 
-Create and run animations on sprites. You can create image frame animations or 
+Create and run animations on sprites. You can create image frame animations or
 use animated movements on an existing sprite.
 
 ```cards

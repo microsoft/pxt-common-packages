@@ -3,7 +3,6 @@
     "description": "An animation library for sprite",
     "files": [
         "README.md",
-        "animation.ts",
         "legacy.ts",
         "targetoverrides.ts"
     ],
