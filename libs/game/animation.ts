@@ -1,8 +1,9 @@
 /*
     Animation library for sprites
 */
-//% color="#03AA74" weight=78 icon="\uf021" block="Animation"
+//% color="#03AA74" weight=100 icon="\uf021" block="Animation"
 //% groups='["Animate", "Legacy"]'
+//% advanced=true
 namespace animation {
     const stateNamespace = "__animation";
 
