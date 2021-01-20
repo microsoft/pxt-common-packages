@@ -43,7 +43,8 @@
         "particleeffects.ts",
         "effects.ts",
         "texteffects.ts",
-        "assetTemplates.ts"
+        "assetTemplates.ts",
+        "animation.ts"
     ],
     "public": true,
     "dependencies": {
