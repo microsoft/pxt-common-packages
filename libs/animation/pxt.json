@@ -1,6 +1,6 @@
 {
     "name": "animation",
-    "description": "Legacy state based animations for sprites",
+    "description": "Advanced state based animations for sprites",
     "files": [
         "README.md",
         "legacy.ts",

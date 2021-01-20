@@ -11,9 +11,9 @@ animation.runMovementAnimation(null, "")
 animation.stopAnimation(0, null)
 ```
 
-## Older animations
+## Advanced animations
 
-These blocks are available to support programs using older animation methods.
+These blocks are available to support programs using advanced animation methods.
 They can be found by adding the `animation` extension to your project.
 
 ```cards

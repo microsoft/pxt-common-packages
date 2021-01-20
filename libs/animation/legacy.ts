@@ -71,7 +71,7 @@ namespace animation {
                 this.index = (this.index + 1) % this.frames.length;
                 this.lastTime = currentTime;
             }
-            
+
             this.sprites = this.sprites.filter(sprite => !(sprite.flags & sprites.Flag.Destroyed));
 
             this.sprites.forEach(sprite => {
@@ -106,7 +106,7 @@ namespace animation {
         */
         //% blockId=addAnimationFrame
         //% block="add frame $frame=screen_image_picker to $this=variables_get(anim)"
-        //% group="Legacy"
+        //% group="Advanced"
         //% weight=40
         //% help=animation/add-animation-frame
         addAnimationFrame(frame: Image) {
@@ -124,7 +124,7 @@ namespace animation {
     //% shim=ENUM_GET
     //% blockId=action_enum_shim
     //% block="%arg"
-    //% group="Legacy"
+    //% group="Advanced"
     //% enumName="ActionKind"
     //% enumMemberName="action"
     //% enumPromptHint="e.g. Walking, Idle, Jumping, ..."
@@ -141,7 +141,7 @@ namespace animation {
      */
     //% blockId=createAnimation
     //% block="create animation of $action=action_enum_shim with interval $interval ms"
-    //% group="Legacy"
+    //% group="Advanced"
     //% interval.defl=1000
     //% blockSetVariable="anim"
     //% weight=50
@@ -155,7 +155,7 @@ namespace animation {
      */
     //% blockId=attachAnimation
     //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
-    //% group="Legacy"
+    //% group="Advanced"
     //% weight=30
     //% help=animation/attach-animation
     export function attachAnimation(sprite: Sprite, set: Animation) {
@@ -167,7 +167,7 @@ namespace animation {
      */
     //% blockId=setAction
     //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
-    //% group="Legacy"
+    //% group="Advanced"
     //% weight=20
     //% help=animation/set-action
     export function setAction(sprite: Sprite, action: number) {
