@@ -52,7 +52,6 @@ namespace sprites {
      * @param kind the target kind
      */
     //% blockId=allOfKind block="array of sprites of kind %kind=spritekind"
-    //% blockNamespace="arrays" blockSetVariable="sprite list"
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
