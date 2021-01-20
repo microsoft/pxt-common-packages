@@ -299,13 +299,14 @@ static VMImage *loadSections(VMImage *img) {
 static VMImage *loadIfaceNames(VMImage *img) {
     FOR_SECTIONS() {
         if (sect->type == SectionType::IfaceMemberNames) {
-            uint64_t *ptrs = (uint64_t *)sect->data;
-            uintptr_t *dst = (uintptr_t *)ptrs;
-            img->ifaceMemberNames = dst;
+            uint32_t *ptrs = (uint32_t *)sect->data;
             auto len = *ptrs++;
-            img->numIfaceMemberNames = (uint32_t)len;
+            CHECK(len < 0x40000, 1047);
+            uintptr_t *dst = ALLOC_ARRAY(uintptr_t, len);
+            img->ifaceMemberNames = dst;
+            img->numIfaceMemberNames = len;
             *dst++ = len;
-            CHECK(sect->size >= 16 + len * 8, 1047);
+            CHECK(sect->size >= 12 + len * 4, 1047);
             for (unsigned i = 0; i < len; ++i) {
                 CHECK(ptrs[i] < img->numSections, 1051);
                 auto ss = img->sections[ptrs[i]];
@@ -447,6 +448,7 @@ void unloadVMImage(VMImage *img) {
     free(img->opcodeDescs);
     free(img->numberLiterals);
     free(img->boxedNumbers);
+    free(img->ifaceMemberNames);
 
     free(img->dataStart);
     memset(img, 0, sizeof(*img));
