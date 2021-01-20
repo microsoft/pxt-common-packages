@@ -302,7 +302,7 @@ static VMImage *loadIfaceNames(VMImage *img) {
             uint32_t *ptrs = (uint32_t *)sect->data;
             auto len = *ptrs++;
             CHECK(len < 0x40000, 1047);
-            uintptr_t *dst = ALLOC_ARRAY(uintptr_t, len);
+            uintptr_t *dst = ALLOC_ARRAY(uintptr_t, len + 1);
             img->ifaceMemberNames = dst;
             img->numIfaceMemberNames = len;
             *dst++ = len;
