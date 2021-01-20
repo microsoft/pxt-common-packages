@@ -134,10 +134,6 @@ typedef int PinName;
 #define PB29 61
 #define PB30 62
 #define PB31 63
-
-
-// 128 pin packages
-#ifdef SAMD51
 #define PC00  64
 #define PC01  65
 #define PC02  66
@@ -202,6 +198,4 @@ typedef int PinName;
 #define PD29  125
 #define PD30  126
 #define PD31  127
-#endif
-
 #endif
