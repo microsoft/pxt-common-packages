@@ -199,6 +199,7 @@ void unloadVMImage(VMImage *img);
 VMImage *setVMImgError(VMImage *img, int code, void *pos);
 void exec_loop(FiberContext *ctx);
 void vmStartFromUser(const char *fn);
+void target_yield();
 
 #define DEF_CONVERSION(retp, tp, btp)                                                              \
     static inline retp tp(TValue v) {                                                              \

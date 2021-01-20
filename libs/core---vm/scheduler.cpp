@@ -134,13 +134,21 @@ void sleep_core_us(uint64_t us) {
 #endif
 }
 
+void target_yield() {
+#ifdef PXT_ESP32
+    vTaskDelay(1);
+#else
+    sleep_core_us(1000);
+#endif
+}
+
 void sleep_ms(uint32_t ms) {
     currentFiber->wakeTime = current_time_ms() + ms;
     schedule();
 }
 
 void sleep_us(uint64_t us) {
-    if (us > 50000) {
+    if (us > 20000) {
         sleep_ms((uint32_t)(us / 1000));
     } else {
         sleep_core_us(us);
@@ -319,7 +327,7 @@ static void mainRunLoop() {
             }
             f = n;
         } else if (fromBeg) {
-            sleep_core_us(1000);
+            target_yield();
         }
     }
 }
