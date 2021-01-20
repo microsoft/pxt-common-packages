@@ -152,8 +152,9 @@ namespace sprites {
         Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
         IsClipping = 1 << 8, // whether the sprite is currently clipping into a wall. This can happen when a sprite is created or moved explicitly.
         RelativeToCamera = 1 << 9, // draw relative to the camera, not the world (e.g. HUD elements)
-        NoTileCollisions = 1 << 10, // No collisions or overlaps with tiles
-        NoSpriteOverlaps = 1 << 11, // No overlaps with other sprites
-        Ghost = sprites.Flag.NoSpriteOverlaps | sprites.Flag.NoTileCollisions, // doesn't collide with other sprites or walls
+        GhostThroughTiles = 1 << 10, // No overlaps with tiles
+        GhostThroughWalls = 1 << 11, // No collisions with walls
+        GhostThroughSprites = 1 << 12, // No overlaps with other sprites
+        Ghost = sprites.Flag.GhostThroughSprites | sprites.Flag.GhostThroughWalls | sprites.Flag.GhostThroughTiles, // doesn't collide with other sprites or walls
     }
 }

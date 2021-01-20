@@ -15,10 +15,12 @@ enum SpriteFlag {
     Invisible = sprites.Flag.Invisible,
     //% block="relative to camera"
     RelativeToCamera = sprites.Flag.RelativeToCamera,
-    //% block="no tile collisions"
-    NoTileCollisions = sprites.Flag.NoTileCollisions,
-    //% block="no sprite overlaps"
-    NoSpriteOverlaps = sprites.Flag.NoSpriteOverlaps,
+    //% block="ghost through sprites"
+    GhostThroughSprites = sprites.Flag.GhostThroughSprites,
+    //% block="ghost through tiles"
+    GhostThroughTiles = sprites.Flag.GhostThroughTiles,
+    //% block="ghost through walls"
+    GhostThroughWalls = sprites.Flag.GhostThroughWalls,
 }
 
 enum TileDirection {
@@ -753,9 +755,9 @@ class Sprite extends sprites.BaseSprite {
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & (SpriteFlag.NoSpriteOverlaps | SpriteFlag.RelativeToCamera))
+        if (this.flags & (SpriteFlag.GhostThroughSprites | SpriteFlag.RelativeToCamera))
             return false
-        if (other.flags & (SpriteFlag.NoSpriteOverlaps | SpriteFlag.RelativeToCamera))
+        if (other.flags & (SpriteFlag.GhostThroughSprites | SpriteFlag.RelativeToCamera))
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }
