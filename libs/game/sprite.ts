@@ -728,10 +728,43 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
-     * Set a sprite flag
+     * Set whether a sprite should be constrained within the screen (on) or not (off)
      */
     //% group="Effects"
     //% weight=30
+    //% blockId=spritesetsetstayinscreen block="set %sprite(mySprite) stay in screen %on=toggleOnOff"
+    //% on.defl=true
+    setStayInScreen(on: boolean) {
+        this.setFlag(SpriteFlag.StayInScreen, on);
+    }
+
+    /**
+     * Set whether a sprite should bounce when it hits a wall (on) or not (off)
+     */
+    //% group="Effects"
+    //% weight=25
+    //% blockId=spritesetsetbounceonwall block="set %sprite(mySprite) bounce on wall %on=toggleOnOff"
+    //% on.defl=true
+    setBounceOnWall(on: boolean) {
+        this.setFlag(SpriteFlag.BounceOnWall, on);
+    }
+
+    /**
+     * Set whether a sprite should be destroyed when it leaves the screen (on) or not (off)
+     */
+    //% group="Effects"
+    //% weight=20
+    //% blockId=spritesetsetautodestroy block="set %sprite(mySprite) auto destroy %on=toggleOnOff"
+    //% on.defl=true
+    setAutoDestroy(on: boolean) {
+        this.setFlag(SpriteFlag.AutoDestroy, on);
+    }
+
+    /**
+     * Set a sprite flag
+     */
+    //% group="Effects"
+    //% weight=10
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
     //% flag.defl=SpriteFlag.StayInScreen
     //% help=sprites/sprite/set-flag
