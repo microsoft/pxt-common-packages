@@ -570,7 +570,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         tileScale
                     );
 
-                    // if the sprite can can move through walls, it can overlap the underlying tile.
+                    // if the sprite can move through walls, it can overlap the underlying tile.
                     if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
                         overlappedTiles.push(tm.getTile(x0, y0));
                     }
