@@ -750,23 +750,12 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
-     * Set whether a sprite should be destroyed when it leaves the screen (on) or not (off)
-     */
-    //% group="Effects"
-    //% weight=20
-    //% blockId=spritesetsetautodestroy block="set %sprite(mySprite) auto destroy %on=toggleOnOff"
-    //% on.defl=true
-    setAutoDestroy(on: boolean) {
-        this.setFlag(SpriteFlag.AutoDestroy, on);
-    }
-
-    /**
      * Set a sprite flag
      */
     //% group="Effects"
     //% weight=10
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
-    //% flag.defl=SpriteFlag.StayInScreen
+    //% flag.defl=SpriteFlag.AutoDestroy
     //% help=sprites/sprite/set-flag
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
