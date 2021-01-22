@@ -421,6 +421,89 @@ namespace tiles {
             );
         }
 
+        public _checkClipping(s: Sprite, maxStep = 2) {
+            if (this.isOnWall(s) && !this.canResolveClipping(s, maxStep)) {
+                // if no luck, flag as clipping into a wall
+                s.flags |= sprites.Flag.IsClipping;
+            } else {
+                // or clear clipping if no longer clipping
+                s.flags &= ~sprites.Flag.IsClipping;
+            }
+        }
+
+        // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
+        protected canResolveClipping(s: Sprite, maxStep: number) {
+            if (!s.isStatic()) s.setHitbox();
+            const hbox = s._hitbox;
+            const sz = 1 << this.scale;
+            const origY = s._y;
+            const origX = s._x;
+            const l = Fx.toInt(hbox.left);
+            const r = Fx.toInt(hbox.right);
+            const t = Fx.toInt(hbox.top);
+            const b = Fx.toInt(hbox.bottom);
+
+            {   // bump up and test;
+                const offset = (b + 1) % sz;
+                if (offset <= maxStep) {
+                    s._y = Fx.sub(
+                        s._y,
+                        Fx8(offset)
+                    );
+                    if (!this.isOnWall(s)) {
+                        return true;
+                    } else {
+                        s._y = origY;
+                    }
+                }
+            }
+            {   // bump down and test;
+                const offset = (Math.floor(t / sz) + 1) * sz - t;
+                if (offset <= maxStep) {
+                    s._y = Fx.add(
+                        s._y,
+                        Fx8(offset)
+                    );
+                    if (!this.isOnWall(s)) {
+                        return true;
+                    } else {
+                        s._y = origY;
+                    }
+                }
+            }
+            {   // bump left and test;
+                const offset = (r + 1) % sz;
+                if (offset <= maxStep) {
+                    s._x = Fx.sub(
+                        s._x,
+                        Fx8(offset)
+                    );
+                    if (!this.isOnWall(s)) {
+                        return true;
+                    } else {
+                        s._x = origX;
+                    }
+                }
+            }
+            {   // bump right and test;
+                const offset = (Math.floor(l / sz) + 1) * sz - l;
+                if (offset <= maxStep) {
+                    s._x = Fx.add(
+                        s._x,
+                        Fx8(offset)
+                    );
+                    if (!this.isOnWall(s)) {
+                        return true;
+                    } else {
+                        s._x = origX;
+                    }
+                }
+            }
+
+            // no trivial adjustment worked; it's going to clip for now
+            return false;
+        }
+
         public isOnWall(s: Sprite) {
             const hbox = s._hitbox;
 
