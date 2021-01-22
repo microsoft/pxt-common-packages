@@ -265,6 +265,7 @@ namespace tiles {
 
         setData(map: TileMapData) {
             this._map = map;
+            this.checkForNewClipping();
         }
 
         public getTile(col: number, row: number): Location {
@@ -296,8 +297,13 @@ namespace tiles {
         }
 
         public setWallAt(col: number, row: number, on: boolean): void {
-            if (!this._map.isOutsideMap(col, row))
+            if (!this._map.isOutsideMap(col, row)) {
                 this._map.setWall(col, row, on);
+
+                if (on) {
+                    this.checkForNewClipping();
+                }
+            }
         }
 
         public getTilesByType(index: number): Location[] {
@@ -419,6 +425,17 @@ namespace tiles {
                 this.layer,
                 index
             );
+        }
+
+        protected checkForNewClipping() {
+            const p = game.currentScene().physicsEngine;
+            const allSprites = p._allSprites() || [];
+
+            for (const s of allSprites) {
+                if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                    this._checkClipping(s, 2);
+                }
+            }
         }
 
         public _checkClipping(s: Sprite, maxStep = 2) {

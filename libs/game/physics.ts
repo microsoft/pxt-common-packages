@@ -10,6 +10,10 @@ class PhysicsEngine {
 
     removeSprite(sprite: Sprite) { }
 
+    _allSprites(): Sprite[] {
+        return null;
+    }
+
     /** move a single sprite **/
     moveSprite(s: Sprite, dx: Fx8, dy: Fx8) { }
 
@@ -100,6 +104,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (tm && tm.isOnWall(sprite)) {
             sprite.flags |= sprites.Flag.IsClipping;
         }
+    }
+
+    _allSprites(): Sprite[] {
+        return this.sprites;
     }
 
     removeSprite(sprite: Sprite) {
