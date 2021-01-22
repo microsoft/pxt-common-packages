@@ -350,27 +350,25 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const s = movingSprite.sprite;
         // if the sprite is already clipping into a wall,
         // allow free movement rather than randomly 'fixing' it
-        if (s.flags & sprites.Flag.IsClipping) {
-            if (!tm.isOnWall(s)) {
-                s.flags &= ~sprites.Flag.IsClipping;
-            }
+        if ((s.flags & sprites.Flag.IsClipping) && !tm.isOnWall(s)) {
+            s.flags &= ~sprites.Flag.IsClipping;
         }
         if (!s.isStatic()) s.setHitbox();
         const hbox = s._hitbox;
         const tileScale = tm.scale;
         const tileSize = 1 << tileScale;
 
-        const xDiff = Fx.sub(
-            s._x,
-            s._lastX
-        );
-
-        const yDiff = Fx.sub(
-            s._y,
-            s._lastY
-        );
-
         if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+            const xDiff = Fx.sub(
+                s._x,
+                s._lastX
+            );
+
+            const yDiff = Fx.sub(
+                s._y,
+                s._lastY
+            );
+
             if (xDiff !== Fx.zeroFx8) {
                 const right = xDiff > Fx.zeroFx8;
                 const x0 = Fx.toIntShifted(
