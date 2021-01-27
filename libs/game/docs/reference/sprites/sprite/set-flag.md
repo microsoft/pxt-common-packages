@@ -600,6 +600,8 @@ ghost.vx = 40
 
 ## See also #seealso
 
+[set stay in screen](/reference/sprites/sprite/set-stay-in-screen),
+[set bounce on wall](/reference/sprites/sprite/set-bounce-on-wall),
 [on overlap](/reference/sprites/on-overlap),
 [on hit wall](/reference/tiles/on-hit-wall),
 [camera follow sprite](/reference/scene/camera-follow-sprite)
