@@ -32,7 +32,7 @@ let mySprite: Sprite = null
 mySprite.setFlag(SpriteFlag.StayInScreen, true)
 ```
 
-Setting ``stay in screen`` to **ON** forces the sprite to remain in the view of the screen. The sprite stays in the current view of the screen even if a new position set for it is outside of the screen. The sprite in the following example always appears on the screen event though is initial position is off the screen and its motion will send it past the screen edge.
+Setting ``stay in screen`` to **ON** forces the sprite to remain in the view of the screen. The sprite stays in the current view of the screen even if a new position set for it is outside of the screen. The sprite in the following example always appears on the screen even though is initial position is off the screen and its motion will send it past the screen edge.
 
 ```blocks
 let mySprite = sprites.create(img`
