@@ -11,16 +11,17 @@ Sprite flags are settings that change the way a sprite reacts on the screen. Whe
 ## Parameters
 
 * **flag**: the sprite flag to turn on or off. The flags are:
->* [stay in screen](#stay-in-screen): the sprite is forced to stay on the screen when it reaches a screen edge
->* [ghost](#ghost): the sprite never overlaps other sprites and won't collide with obstacles
->* [auto destroy](#auto-destroy): the sprite is automatically destroyed when it moves off the screen
->* [destroy on wall](#destroy-on-wall): the sprite is automatically destroyed when it collides with a wall tile
+>* [stay in screen](#stay-in-screen): the sprite is forced to stay on the screen when it reaches a screen edge.
+>* [ghost](#ghost): the sprite never overlaps other sprites, it goes through wall tiles, and tile overlaps and wall hits aren't detected.
+>* [auto destroy](#auto-destroy): the sprite is automatically destroyed when it moves off the screen.
+>* [destroy on wall](#destroy-on-wall): the sprite is automatically destroyed when it collides with a wall tile.
 >* [bounce on wall](#bounce-on-wall): the sprite will deflect when it collides with a wall tile
->* [show physics](#show-physics): the sprite will display its position, velocity, and acceleration below it
->* [invisible](#invisible): the sprite will not be drawn to the screen
->* [relative to camera](#relative-to-camera): the sprite is drawn relative to the camera rather than relative to the world and the sprite never overlaps other sprites or collides with obstacles. This is useful for drawing static elements to the screen (scores, dialog boxes, etc.) that shouldn't move when the camera pans
->* [no tile collisions](#no-tile-collisions): the sprite will pass through and not collide with wall tiles
->* [no sprite overlaps](#no-sprite-overlaps): the sprite will not trigger events when overlapping other sprites
+>* [show physics](#show-physics): the sprite will display its position, velocity, and acceleration below it.
+>* [invisible](#invisible): the sprite will not be drawn to the screen.
+>* [relative to camera](#relative-to-camera): the sprite is drawn relative to the camera rather than relative to the world and the sprite never overlaps other sprites or collides with obstacles. This is useful for drawing static elements to the screen (scores, dialog boxes, etc.) that shouldn't move when the camera pans.
+>* [ghost through sprites](#ghost-through-sprites): the sprite will pass over or under other sprites and not create an overlap event.
+>* [ghost through tiles](#ghost-through-tiles): the sprite will not trigger events when passing over tiles.
+>* [ghost through walls](#ghost-through-walls): the sprite will pass through wall tiles not trigger a will hit event.
 
 ## Flags
 
@@ -75,15 +76,20 @@ let mySprite: Sprite = null
 mySprite.setFlag(SpriteFlag.Ghost, true)
 ```
 
-A ``ghost`` sprite will pass through wall tiles and causes no overlap events with other sprites.
+A ``ghost`` sprite will pass through wall tiles and causes no overlap events with tiles or other sprites.
 
-The example here shows a ghost sprite moving past another sprite without an overlap event occuring and through a tile wall.
+The example here shows a ghost sprite moving past another sprite without an overlap event occuring. It also passes over a non-wall tile and through a wall tile without stopping or triggering tile events.
 
 ```blocks
+scene.onHitWall(SpriteKind.Player, function (sprite, location) {
+    sprite.say("Ouch!")
+})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Player, function (sprite, otherSprite) {
     otherSprite.say("Boo!")
 })
-let mySprite: Sprite = null
+scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.floorDark2, function (sprite, location) {
+    sprite.say("Pass!")
+})
 let ghost = sprites.create(img`
     . . . . . . d d d d d . . . . . 
     . . . d d d d 1 1 1 d d d . . . 
@@ -120,9 +126,10 @@ let person = sprites.create(img`
     . . c c 3 3 b 3 b 3 c c . . 
     . . . . c b b c c c . . . . 
     `, SpriteKind.Player)
-tiles.setTilemap(tilemap`level_0`)
-ghost.setFlag(SpriteFlag.Ghost, false)
+tiles.setTilemap(tilemap`level_2`)
+ghost.setFlag(SpriteFlag.Ghost, true)
 ghost.left = 0
+person.left = 30
 ghost.vx = 40
 ```
 
@@ -353,7 +360,7 @@ The ``relative to camera`` flag fixes the position of the sprite on the screen a
 The following example sets a sprite in the upper right corner of the screen. The sprite remains at the same location on the screen as the camera view of the scene moves from left to right.
 
 ```blocks
-tiles.setTilemap(tilemap`level_2`)
+tiles.setTilemap(tilemap`level_3`)
 let mover = sprites.create(img`
     . . . . . 2 2 2 2 2 2 . . . . . 
     . . . 2 2 2 2 2 2 2 2 2 2 . . . 
@@ -398,130 +405,138 @@ mover.vx = 50
 scene.cameraFollowSprite(mover)
 ```
 
-### No tile collisions
+### Ghost through sprites
 
 ```block
 let mySprite: Sprite = null
-mySprite.setFlag(SpriteFlag.NoTileCollisions, true)
+mySprite.setFlag(SpriteFlag.GhostThroughSprites, true)
 ```
 
-When ``no tile collisions`` is set to **ON**, a sprite passes through wall tiles and hit wall events don't occur.
+Setting ``ghost through sprites`` will allow a sprite to pass over or under another sprite without causing an overlap event.
 
-This example shows a sprite passing through a tile wall without triggering a hit wall event.
-
-```blocks
-scene.onHitWall(SpriteKind.Player, function (sprite, location) {
-    mySprite.say("ouch!")
-})
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
-    . . . . . 2 2 2 2 2 2 . . . . . 
-    . . . 2 2 2 2 2 2 2 2 2 2 . . . 
-    . . 2 2 2 2 2 2 2 2 2 2 2 2 . . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . . 2 2 2 2 2 2 2 2 2 2 2 2 . . 
-    . . . 2 2 2 2 2 2 2 2 2 2 . . . 
-    . . . . . 2 2 2 2 2 2 . . . . . 
-    `, SpriteKind.Player)
-tiles.setTilemap(tilemap`level_0`)
-mySprite.setFlag(SpriteFlag.NoTileCollisions, true)
-mySprite.left = 0
-mySprite.vx = 30
-```
-
-### No sprite overlaps
-
-```block
-let mySprite: Sprite = null
-mySprite.setFlag(SpriteFlag.NoSpriteOverlaps, true)
-```
-
-The ``no sprite overlaps`` flag will turn off detection of the sprite overlapping another sprite.
+The following example shows a ghost sprite passing under another sprite without triggering an overlap event.
 
 ```blocks
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Player, function (sprite, otherSprite) {
-    sprite.say("overlap", 500)
+    otherSprite.say("Boo!")
 })
-let mySprite = sprites.create(img`
-    . . . . . 2 2 2 2 2 2 . . . . . 
-    . . . 2 2 2 2 2 2 2 2 2 2 . . . 
-    . . 2 2 2 2 2 2 2 2 2 2 2 2 . . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . . 2 2 2 2 2 2 2 2 2 2 2 2 . . 
-    . . . 2 2 2 2 2 2 2 2 2 2 . . . 
-    . . . . . 2 2 2 2 2 2 . . . . . 
+let ghost = sprites.create(img`
+    . . . . . . d d d d d . . . . . 
+    . . . d d d d 1 1 1 d d d . . . 
+    . . d d 1 1 1 1 1 1 1 1 d d . . 
+    . . d 1 1 1 1 1 1 1 1 1 1 d . . 
+    . . d 1 1 1 1 1 1 1 1 1 1 d d . 
+    . d d 1 1 1 f 1 1 1 f 1 1 1 d . 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 d d 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    d d 1 1 1 1 1 1 f f 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 f f 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 d 1 1 1 1 1 1 d 
+    d 1 d d d 1 1 d d d d 1 d 1 1 d 
+    d d d . d d d d . . d d d d d d 
+    d d . . . d d . . . . d . . d d 
     `, SpriteKind.Player)
-let mySprite2 = sprites.create(img`
-    . . . . . 7 7 7 7 7 7 . . . . . 
-    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
-    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-    . 7 7 7 7 7 7 7 7 7 7 7 7 7 7 . 
-    . 7 7 7 7 7 7 7 7 7 7 7 7 7 7 . 
-    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-    7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
-    . 7 7 7 7 7 7 7 7 7 7 7 7 7 7 . 
-    . 7 7 7 7 7 7 7 7 7 7 7 7 7 7 . 
-    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
-    . . . . . 7 7 7 7 7 7 . . . . . 
+    let person = sprites.create(img`
+    . . . . . . . . . . . . . . 
+    . . . . . f f f f . . . . . 
+    . . . f f 5 5 5 5 f f . . . 
+    . . f 5 5 5 5 5 5 5 5 f . . 
+    . f 5 5 5 5 5 5 5 5 5 5 f . 
+    c b 5 5 5 d b b d 5 5 5 b c 
+    f 5 5 5 b 4 4 4 4 b 5 5 5 f 
+    f 5 5 c c 4 4 4 4 c c 5 5 f 
+    f b b f b f 4 4 f b f b b f 
+    f b b e 1 f d d f 1 e b b f 
+    c f b f d d d d d 4 4 b f c 
+    . c e c 6 9 9 9 4 d d d c . 
+    . e 4 c 9 9 9 9 4 d d 4 c . 
+    . e c b b 3 b b b e e c . . 
+    . . c c 3 3 b 3 b 3 c c . . 
+    . . . . c b b c c c . . . . 
     `, SpriteKind.Player)
-mySprite.setFlag(SpriteFlag.NoSpriteOverlaps, true)
-mySprite.left = 0
-mySprite2.right = scene.screenWidth()
-mySprite.vx = 30
-mySprite2.vx = -30
+ghost.setFlag(SpriteFlag.GhostThroughSprites, true)
+ghost.left = 0
+ghost.vx = 40
 ```
 
-This flag has no effect on a sprite overlapping a tile.
+### Ghost through tiles
+
+```block
+let mySprite: Sprite = null
+mySprite.setFlag(SpriteFlag.GhostThroughTiles, true)
+```
+
+Setting ``ghost through tiles`` to **ON** lets a sprite pass over a tile without causing an overlap event.
+
+The example here shows a ghost sprite crossing over a tile without being detected in an overlap event.
 
 ```blocks
 scene.onOverlapTile(SpriteKind.Player, sprites.dungeon.floorDark0, function (sprite, location) {
-    sprite.say("overlap", 500)
+    sprite.say("Pass!")
 })
-let mySprite = sprites.create(img`
-    . . . . . 2 2 2 2 2 2 . . . . . 
-    . . . 2 2 2 2 2 2 2 2 2 2 . . . 
-    . . 2 2 2 2 2 2 2 2 2 2 2 2 . . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . 2 2 2 2 2 2 2 2 2 2 2 2 2 2 . 
-    . . 2 2 2 2 2 2 2 2 2 2 2 2 . . 
-    . . . 2 2 2 2 2 2 2 2 2 2 . . . 
-    . . . . . 2 2 2 2 2 2 . . . . . 
+let ghost = sprites.create(img`
+    . . . . . . d d d d d . . . . . 
+    . . . d d d d 1 1 1 d d d . . . 
+    . . d d 1 1 1 1 1 1 1 1 d d . . 
+    . . d 1 1 1 1 1 1 1 1 1 1 d . . 
+    . . d 1 1 1 1 1 1 1 1 1 1 d d . 
+    . d d 1 1 1 f 1 1 1 f 1 1 1 d . 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 d d 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    d d 1 1 1 1 1 1 f f 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 f f 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 d 1 1 1 1 1 1 d 
+    d 1 d d d 1 1 d d d d 1 d 1 1 d 
+    d d d . d d d d . . d d d d d d 
+    d d . . . d d . . . . d . . d d 
+    `, SpriteKind.Player)
+tiles.setTilemap(tilemap`level_0`)
+ghost.setFlag(SpriteFlag.GhostThroughTiles, true)
+ghost.left = 0
+ghost.vx = 40
+```
+
+### Ghost through walls
+
+```block
+let mySprite: Sprite = null
+mySprite.setFlag(SpriteFlag.GhostThroughWalls, true)
+```
+
+Setting the ``ghost through walls`` flag lets a sprite pass through wall tiles. Also, a wall hit won't occur when it reaches a wall tile.
+
+The example here shows a ghost sprite passing through a wall tile without being detected.
+
+```blocks
+scene.onHitWall(SpriteKind.Player, function (sprite, location) {
+    sprite.say("Ouch!")
+})
+let ghost = sprites.create(img`
+    . . . . . . d d d d d . . . . . 
+    . . . d d d d 1 1 1 d d d . . . 
+    . . d d 1 1 1 1 1 1 1 1 d d . . 
+    . . d 1 1 1 1 1 1 1 1 1 1 d . . 
+    . . d 1 1 1 1 1 1 1 1 1 1 d d . 
+    . d d 1 1 1 f 1 1 1 f 1 1 1 d . 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 d d 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    . d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    d d 1 1 1 1 1 1 f f 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 f f 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
+    d 1 1 1 1 1 1 1 d 1 1 1 1 1 1 d 
+    d 1 d d d 1 1 d d d d 1 d 1 1 d 
+    d d d . d d d d . . d d d d d d 
+    d d . . . d d . . . . d . . d d 
     `, SpriteKind.Player)
 tiles.setTilemap(tilemap`level_1`)
-mySprite.setFlag(SpriteFlag.NoSpriteOverlaps, true)
-mySprite.left = 0
-mySprite.vx = 30
+ghost.setFlag(SpriteFlag.GhostThroughWalls, true)
+ghost.left = 0
+ghost.vx = 40
 ```
 
 ```jres
@@ -538,8 +553,7 @@ mySprite.vx = 30
         "tileset": [
             "myTiles.transparency16",
             "sprites.dungeon.floorDark0"
-        ],
-        "displayName": "level1"
+        ]
     },
     "level_1": {
         "id": "level_1",
@@ -550,8 +564,18 @@ mySprite.vx = 30
             "sprites.dungeon.floorDark0"
         ]
     },
-    "level_22": {
+    "level_2": {
         "id": "level_2",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDAwMjAwMDAwMTAwMDAwMDAwMDAwMDAyMDAwMDAxMDAwMDAwMDAwMDAwMDIwMDAwMDEwMDAwMDAwMDAwMDAwMjAwMDAwMTAwMDAwMDAwMDAwMDAyMDAwMDAxMDAwMDAwMDAwMDAwMDIwMDAwMDEwMDAwMDAwMDAwMDAwMjAwMDAwMTAwMDAwMDAwMDAwMDAyMDAwMDAxMDAwMDAwMDAwMDAyMDAwMDAwMDAwMjAwMDAwMDAwMDIwMDAwMDAwMDAyMDAwMDAwMDAwMjAwMDAwMDAwMDIwMDAwMDAwMDAyMDAwMDAwMDAwMg==",
+        "tileset": [
+            "myTiles.transparency16",
+            "sprites.dungeon.floorLight2",
+            "sprites.dungeon.floorDark2"
+        ]
+    },
+    "level_3": {
+        "id": "level_3",
         "mimeType": "application/mkcd-tilemap",
         "data": "MTAyNDAwMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDEwMTAyMDIwMjAzMDMwMzA0MDQwNDAzMDMwMzA0MDQwNDA1MDUwNTA1MDYwNjA2MDYwNzA3MDcwNzA1MDUwNTA1MDgwODAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
         "tileset": [
