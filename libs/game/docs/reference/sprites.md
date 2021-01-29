@@ -20,6 +20,8 @@ sprites.create(null).setImage(null)
 sprites.create(null).setPosition(0, 0)
 sprites.create(null).setKind(0)
 sprites.create(null).kind()
+sprites.create(null).setBounceOnWall(false)
+sprites.create(null).setStayInScreen(false)
 ```
 
 ## Sprite effects
@@ -71,6 +73,8 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 [overlaps with](/reference/sprites/sprite/overlaps-with),
 [destroy](/reference/sprites/sprite/destroy),
 [set flag](/reference/sprites/sprite/set-flag),
+[set stay in screen](/reference/sprites/sprite/set-stay-in-screen),
+[set bounce on wall](/reference/sprites/sprite/set-bounce-on-wall),
 [set image](/reference/sprites/sprite/set-image),
 [set position](/reference/sprites/sprite/set-position),
 [set kind](/reference/sprites/sprite/set-kind),
