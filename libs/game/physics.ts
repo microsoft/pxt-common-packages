@@ -265,9 +265,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             if (c < 0) // v < f, v += f
                 sprite._vy = Fx.min(Fx.zeroFx8, Fx.add(sprite._vy, fy));
             else if (c > 0) // v > f, v -= f
-                sprite._vy = Fx.min(Fx.zeroFx8, Fx.sub(sprite._vy, fy));
+                sprite._vy = Fx.max(Fx.zeroFx8, Fx.sub(sprite._vy, fy));
             else
-                sprite._vy = Fx.zeroFx8
+                sprite._vy = Fx.zeroFx8;
         }
 
         sprite._vx = this.constrain(sprite._vx);
