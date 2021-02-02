@@ -652,8 +652,8 @@ class Sprite extends sprites.BaseSprite {
         const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
         const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
 
-        const l = this.left - ox;
-        const t = this.top - oy;
+        const l = Math.floor(this.left - ox);
+        const t = Math.floor(this.top - oy);
 
         screen.drawTransparentImage(this._image, l, t)
 
