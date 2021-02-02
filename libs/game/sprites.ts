@@ -48,6 +48,19 @@ namespace sprites {
     }
 
     /**
+     * Create a new sprite from an image
+     * @param img the image
+     */
+    //% group="Create"
+    //% blockId=spritescreatenoset block="sprite %img=screen_image_picker of kind %kind=spritekind"
+    //% blockAliasFor="sprites.create"
+    //% expandableArgumentMode=toggle
+    //% weight=99 help=sprites/create
+    export function __create(img: Image, kind?: number): Sprite {
+        return sprites.create(img, kind);
+    }
+
+    /**
      * Return an array of all sprites of the given kind.
      * @param kind the target kind
      */
