@@ -652,8 +652,8 @@ class Sprite extends sprites.BaseSprite {
         const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
         const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
 
-        const l = this.left - ox;
-        const t = this.top - oy;
+        const l = Math.floor(this.left - ox);
+        const t = Math.floor(this.top - oy);
 
         screen.drawTransparentImage(this._image, l, t)
 
@@ -734,6 +734,7 @@ class Sprite extends sprites.BaseSprite {
     //% weight=30
     //% blockId=spritesetsetstayinscreen block="set %sprite(mySprite) stay in screen %on=toggleOnOff"
     //% on.defl=true
+    //% help=sprites/sprite/set-stay-in-screen
     setStayInScreen(on: boolean) {
         this.setFlag(SpriteFlag.StayInScreen, on);
     }
@@ -745,6 +746,7 @@ class Sprite extends sprites.BaseSprite {
     //% weight=25
     //% blockId=spritesetsetbounceonwall block="set %sprite(mySprite) bounce on wall %on=toggleOnOff"
     //% on.defl=true
+    //% help=sprites/sprite/set-bounce-on-wall
     setBounceOnWall(on: boolean) {
         this.setFlag(SpriteFlag.BounceOnWall, on);
     }
