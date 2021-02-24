@@ -76,7 +76,8 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     inProgress = false;
     stepWaiting = false;
     displayServiceNum = 0;
-    controlsServiceNum = 0;
+    controlsStartServiceNum = 0;
+    controlsEndServiceNum = 0;
     buttonState = 0;
     brightness = 100;
     EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &JDDisplay::sendDone);
@@ -133,7 +134,9 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
                 displayServiceNum = servIdx;
                 VLOG("JDA: found screen, serv=%d", servIdx);
             } else if (service_class == JD_SERVICE_CLASS_ARCADE_GAMEPAD) {
-                controlsServiceNum = servIdx;
+                if (!controlsStartServiceNum)
+                    controlsStartServiceNum = servIdx;
+                controlsEndServiceNum = servIdx;
                 VLOG("JDA: found controls, serv=%d", servIdx);
             } else {
                 VLOG("JDA: unknown service: %x", service_class);
@@ -142,7 +145,8 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
     } else if (pkt->service_number == JD_SERVICE_NUMBER_CTRL &&
                pkt->service_command == JD_CMD_CTRL_NOOP) {
         // do nothing
-    } else if (pkt->service_number == controlsServiceNum &&
+    } else if (controlsStartServiceNum <= pkt->service_number &&
+               pkt->service_number <= controlsEndServiceNum &&
                pkt->service_command == (JD_CMD_GET_REG | JD_REG_READING)) {
         auto report = (jd_arcade_gamepad_buttons_t *)pkt->data;
         auto endp = pkt->data + pkt->service_size;
@@ -162,7 +166,7 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
                 target_reset();
 
             if (1 <= b && b <= 7) {
-                idx = b;
+                idx = b + 7 * (pkt->service_number - controlsStartServiceNum);
             }
 
             if (idx > 0)
@@ -228,17 +232,20 @@ void JDDisplay::step() {
     if (palette) {
         {
 #define PALETTE_SIZE (16 * 4)
-            auto cmd = queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_PALETTE), PALETTE_SIZE);
+            auto cmd =
+                queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_PALETTE), PALETTE_SIZE);
             memcpy(cmd, palette, PALETTE_SIZE);
             palette = NULL;
         }
         {
             auto cmd = (jd_arcade_screen_start_update_t *)queuePkt(
-                displayServiceNum, JD_ARCADE_SCREEN_CMD_START_UPDATE, sizeof(jd_arcade_screen_start_update_t));
+                displayServiceNum, JD_ARCADE_SCREEN_CMD_START_UPDATE,
+                sizeof(jd_arcade_screen_start_update_t));
             *cmd = this->addr;
         }
         {
-            auto cmd = (uint8_t *)queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_BRIGHTNESS), 1);
+            auto cmd =
+                (uint8_t *)queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_BRIGHTNESS), 1);
             *cmd = this->brightness * 0xff / 100;
         }
         flushSend();

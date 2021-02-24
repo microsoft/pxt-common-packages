@@ -22,7 +22,8 @@ class JDDisplay {
     bool inProgress;
     volatile bool stepWaiting;
     uint8_t displayServiceNum;
-    uint8_t controlsServiceNum;
+    uint8_t controlsStartServiceNum;
+    uint8_t controlsEndServiceNum;
     uint32_t buttonState;
     jd_arcade_screen_announce_report_t displayAd;
 
