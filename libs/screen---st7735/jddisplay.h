@@ -3,12 +3,13 @@
 
 #include "pxt.h"
 #include "jdprotocol.h"
-#include "jdarcade.h"
+#include "arcadegamepad.h"
+#include "arcadescreen.h"
 
 namespace pxt {
 
 class JDDisplay {
-    jd_display_set_window_t addr;
+    jd_arcade_screen_start_update_t addr;
     SPI *spi;
     Pin *cs;
     Pin *flow;
@@ -23,7 +24,7 @@ class JDDisplay {
     uint8_t displayServiceNum;
     uint8_t controlsServiceNum;
     uint32_t buttonState;
-    jd_display_advertisement_data_t displayAd;
+    jd_arcade_screen_announce_report_t displayAd;
 
     void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size);
     void flushSend();

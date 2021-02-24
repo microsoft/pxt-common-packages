@@ -18,7 +18,8 @@
         "imagesoverrides.ts",
         "font12.jres",
         "jdprotocol.h",
-        "jdarcade.h",
+        "arcadegamepad.h",
+        "arcadescreen.h",
         "jddisplay.h",
         "jddisplay.cpp"
     ],
