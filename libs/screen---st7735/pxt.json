@@ -20,6 +20,7 @@
         "jdprotocol.h",
         "arcadegamepad.h",
         "arcadescreen.h",
+        "arcadesound.h",
         "jddisplay.h",
         "jddisplay.cpp"
     ],

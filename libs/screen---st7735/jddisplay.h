@@ -5,6 +5,7 @@
 #include "jdprotocol.h"
 #include "arcadegamepad.h"
 #include "arcadescreen.h"
+#include "arcadesound.h"
 
 namespace pxt {
 
@@ -23,9 +24,16 @@ class JDDisplay {
     volatile bool stepWaiting;
     uint8_t displayServiceNum;
     uint8_t controlsStartServiceNum;
-    uint8_t controlsEndServiceNum;
+    uint8_t controlsEndServiceNum;    
+    uint8_t soundServiceNum;    
     uint32_t buttonState;
     jd_arcade_screen_announce_report_t displayAd;
+    uint32_t avgFrameTime; // in us
+    uint32_t lastFrameTimestamp;
+
+    uint32_t soundBufferDesiredSize;
+    uint32_t soundBufferPending;
+    uint16_t soundSampleRate;
 
     void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size);
     void flushSend();

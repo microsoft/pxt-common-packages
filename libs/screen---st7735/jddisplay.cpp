@@ -78,8 +78,14 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     displayServiceNum = 0;
     controlsStartServiceNum = 0;
     controlsEndServiceNum = 0;
+    soundServiceNum = 0;
     buttonState = 0;
     brightness = 100;
+    soundBufferPending = 0;
+    soundSampleRate = 44100;
+    avgFrameTime = 26300; // start with a reasonable default
+    lastFrameTimestamp = 0;
+
     EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &JDDisplay::sendDone);
 
     flow->getDigitalValue(PullMode::Down);
@@ -138,6 +144,9 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
                     controlsStartServiceNum = servIdx;
                 controlsEndServiceNum = servIdx;
                 VLOG("JDA: found controls, serv=%d", servIdx);
+            } else if (service_class == JD_SERVICE_CLASS_ARCADE_SOUND) {
+                soundServiceNum = servIdx;
+                VLOG("JDA: found sound, serv=%d", servIdx);
             } else {
                 VLOG("JDA: unknown service: %x", service_class);
             }
@@ -145,6 +154,15 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
     } else if (pkt->service_number == JD_SERVICE_NUMBER_CTRL &&
                pkt->service_command == JD_CMD_CTRL_NOOP) {
         // do nothing
+    } else if (pkt->service_number == soundServiceNum) {
+        switch (pkt->service_command) {
+        case JD_GET(JD_ARCADE_SOUND_REG_BUFFER_PENDING):
+            soundBufferPending = *(uint32_t *)pkt->data;
+            break;
+        case JD_GET(JD_ARCADE_SOUND_REG_SAMPLE_RATE):
+            soundSampleRate = *(uint32_t *)pkt->data >> 10;
+            break;
+        }
     } else if (controlsStartServiceNum <= pkt->service_number &&
                pkt->service_number <= controlsEndServiceNum &&
                pkt->service_command == (JD_CMD_GET_REG | JD_REG_READING)) {
@@ -248,6 +266,20 @@ void JDDisplay::step() {
                 (uint8_t *)queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_BRIGHTNESS), 1);
             *cmd = this->brightness * 0xff / 100;
         }
+
+        if (soundServiceNum) {
+            // we only need this for sending sound
+            uint32_t now = (uint32_t)current_time_us();
+            if (lastFrameTimestamp) {
+                uint32_t thisFrame = now - lastFrameTimestamp;
+                avgFrameTime = (avgFrameTime * 15 + thisFrame) >> 4;
+            }
+            lastFrameTimestamp = now;
+            // send around 2 frames of sound; typically around 60ms, so ~3000 samples
+            soundBufferDesiredSize =
+                sizeof(int16_t *) * ((((avgFrameTime * 2) >> 10) * soundSampleRate) >> 10);
+        }
+
         flushSend();
         return;
     }
@@ -260,6 +292,19 @@ void JDDisplay::step() {
         memcpy(pixels, dataPtr, transfer);
         dataPtr += transfer;
         dataLeft -= transfer;
+        flushSend();
+    } else if (soundServiceNum && soundBufferPending < soundBufferDesiredSize) {
+        int bytesLeft = soundBufferDesiredSize - soundBufferPending;
+        if (bytesLeft > bytesPerTransfer)
+            bytesLeft = bytesPerTransfer;
+        auto samples = (int16_t *)queuePkt(soundServiceNum, JD_ARCADE_SOUND_CMD_PLAY, bytesLeft);
+        if (pxt::redirectSamples(samples, bytesLeft >> 1, soundSampleRate)) {
+            soundBufferPending += bytesLeft;
+        } else {
+            // no sound generated, fill with 0 and stop
+            memset(samples, 0, bytesLeft);
+            soundBufferDesiredSize = 0;
+        }
         flushSend();
     } else {
         // trigger sendDone(), which executes outside of IRQ context, so there
