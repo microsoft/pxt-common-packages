@@ -5,8 +5,9 @@ Create and move game objects. Handle overlaps between objects.
 ## Create sprites
 
 ```cards
-sprites.create(img`.`)
-sprites.createProjectile(img`.`, 0, 0, 0)
+sprites.create(img`.`, SpriteKind.Player)
+sprites.createProjectileFromSprite(img`.`, null, 50, 50)
+sprites.createProjectileFromSide(img`.`, 50, 50)
 ```
 
 ## Sprite actions
@@ -68,7 +69,8 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 ## See also
 
 [create](/reference/sprites/create),
-[create projectile](/reference/sprites/create-projectile),
+[create projectile from side](/reference/sprites/create-projectile-from-side),
+[create projectile from sprite](/reference/sprites/create-projectile-from-sprite),
 [say](/reference/sprites/sprite/say),
 [overlaps with](/reference/sprites/sprite/overlaps-with),
 [destroy](/reference/sprites/sprite/destroy),
