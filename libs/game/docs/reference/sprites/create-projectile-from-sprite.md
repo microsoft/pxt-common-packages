@@ -8,7 +8,7 @@ sprites.createProjectileFromSprite(img`.`, null, 50, 50)
 
 A projectile is a motion sprite that moves from the location it's created at. It moves with speeds (velocities `vx` and `vy`) that you set in both the horizontal and vertical directions.
 
-The projectile sprite starts from the center of a `sprite` that you set for it. The `vx` and `vy` velocities have either positive or negative values which determine the direction the projectile moves in.
+The projectile sprite starts from the center of a `sprite` that you set for it. The `vx` and `vy` velocities have either positive or negative values which determine the direction that the projectile moves in.
 
 The projectile has many of the same properties that a non-moving sprite has. It will overlap with other sprites, hit and overlap tiles.
 
