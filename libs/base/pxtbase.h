@@ -493,20 +493,16 @@ extern const VTable RefAction_vtable;
 
 #define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
 
-// allocate 1M of heap on iOS
-#define PXT_IOS_HEAP_ALLOC_BITS 20
+// allocate 1M of heap on VM
+#define PXT_VM_HEAP_ALLOC_BITS 20
 
-#ifdef PXT_IOS
+#ifdef PXT_VM
 extern uint8_t *gcBase;
 #endif
 
 inline bool isReadOnly(TValue v) {
-#ifdef PXT64
-#ifdef PXT_IOS
-    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
-#else
-    return !isPointer(v) || !((uintptr_t)v >> 37);
-#endif
+#ifdef PXT_VM
+    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_VM_HEAP_ALLOC_BITS) != 0;
 #else
     return isTagged(v) || !((uintptr_t)v >> 28);
 #endif
