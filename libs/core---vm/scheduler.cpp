@@ -97,8 +97,12 @@ static void panic_core(int error_code) {
 extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
+#if defined(PXT_VM)
+    systemReset();
+#else
     while (1)
         sleep_core_us(10000);
+#endif
 }
 
 DLLEXPORT int pxt_get_panic_code() {
@@ -375,22 +379,16 @@ void initRuntime() {
 #define GC_PAGE_SIZE 4096
 #endif
 
-#ifdef PXT_IOS
+#ifdef PXT_VM
 uint8_t *gcBase;
 #endif
 
 void *gcAllocBlock(size_t sz) {
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-#ifdef __MINGW32__
-    void *r = VirtualAlloc(currPtr, sz, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (r == NULL) {
-        DMESG("VirtualAlloc %p failed; err=%d", currPtr, GetLastError());
-        target_panic(PANIC_INTERNAL_ERROR);
-    }
-#elif defined(PXT_IOS)
+#if defined(PXT_VM)
     if (!gcBase) {
-        gcBase = (uint8_t *)xmalloc(1 << PXT_IOS_HEAP_ALLOC_BITS);
+        gcBase = (uint8_t *)xmalloc(1 << PXT_VM_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;
