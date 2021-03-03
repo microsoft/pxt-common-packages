@@ -19,7 +19,7 @@
         "font12.jres",
         "jdprotocol.h",
         "arcadegamepad.h",
-        "arcadescreen.h",
+        "indexedscreen.h",
         "arcadesound.h",
         "jddisplay.h",
         "jddisplay.cpp"

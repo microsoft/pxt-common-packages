@@ -4,13 +4,13 @@
 #include "pxt.h"
 #include "jdprotocol.h"
 #include "arcadegamepad.h"
-#include "arcadescreen.h"
+#include "indexedscreen.h"
 #include "arcadesound.h"
 
 namespace pxt {
 
 class JDDisplay {
-    jd_arcade_screen_start_update_t addr;
+    jd_indexed_screen_start_update_t addr;
     SPI *spi;
     Pin *cs;
     Pin *flow;
@@ -26,8 +26,8 @@ class JDDisplay {
     uint8_t controlsStartServiceNum;
     uint8_t controlsEndServiceNum;    
     uint8_t soundServiceNum;    
+    uint16_t screenWidth, screenHeight;
     uint32_t buttonState;
-    jd_arcade_screen_announce_report_t displayAd;
     uint32_t avgFrameTime; // in us
     uint32_t lastFrameTimestamp;
 

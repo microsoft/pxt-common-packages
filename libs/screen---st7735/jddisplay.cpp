@@ -136,7 +136,7 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
         int numServ = pkt->service_size >> 2;
         for (uint8_t servIdx = 1; servIdx < numServ; ++servIdx) {
             uint32_t service_class = servptr[servIdx];
-            if (service_class == JD_SERVICE_CLASS_ARCADE_SCREEN) {
+            if (service_class == JD_SERVICE_CLASS_INDEXED_SCREEN) {
                 displayServiceNum = servIdx;
                 VLOG("JDA: found screen, serv=%d", servIdx);
             } else if (service_class == JD_SERVICE_CLASS_ARCADE_GAMEPAD) {
@@ -161,6 +161,15 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
             break;
         case JD_GET(JD_ARCADE_SOUND_REG_SAMPLE_RATE):
             soundSampleRate = *(uint32_t *)pkt->data >> 10;
+            break;
+        }
+    } else if (pkt->service_number == displayServiceNum) {
+        switch (pkt->service_command) {
+        case JD_GET(JD_INDEXED_SCREEN_REG_HEIGHT):
+            screenHeight = *(uint16_t *)pkt->data;
+            break;
+        case JD_GET(JD_INDEXED_SCREEN_REG_WIDTH):
+            screenWidth = *(uint16_t *)pkt->data;
             break;
         }
     } else if (controlsStartServiceNum <= pkt->service_number &&
@@ -251,19 +260,19 @@ void JDDisplay::step() {
         {
 #define PALETTE_SIZE (16 * 4)
             auto cmd =
-                queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_PALETTE), PALETTE_SIZE);
+                queuePkt(displayServiceNum, JD_SET(JD_INDEXED_SCREEN_REG_PALETTE), PALETTE_SIZE);
             memcpy(cmd, palette, PALETTE_SIZE);
             palette = NULL;
         }
         {
-            auto cmd = (jd_arcade_screen_start_update_t *)queuePkt(
-                displayServiceNum, JD_ARCADE_SCREEN_CMD_START_UPDATE,
-                sizeof(jd_arcade_screen_start_update_t));
+            auto cmd = (jd_indexed_screen_start_update_t *)queuePkt(
+                displayServiceNum, JD_INDEXED_SCREEN_CMD_START_UPDATE,
+                sizeof(jd_indexed_screen_start_update_t));
             *cmd = this->addr;
         }
         {
             auto cmd =
-                (uint8_t *)queuePkt(displayServiceNum, JD_SET(JD_ARCADE_SCREEN_REG_BRIGHTNESS), 1);
+                (uint8_t *)queuePkt(displayServiceNum, JD_SET(JD_INDEXED_SCREEN_REG_BRIGHTNESS), 1);
             *cmd = this->brightness * 0xff / 100;
         }
 
@@ -288,7 +297,7 @@ void JDDisplay::step() {
         uint32_t transfer = bytesPerTransfer;
         if (dataLeft < transfer)
             transfer = dataLeft;
-        auto pixels = queuePkt(displayServiceNum, JD_ARCADE_SCREEN_CMD_SET_PIXELS, transfer);
+        auto pixels = queuePkt(displayServiceNum, JD_INDEXED_SCREEN_CMD_SET_PIXELS, transfer);
         memcpy(pixels, dataPtr, transfer);
         dataPtr += transfer;
         dataLeft -= transfer;
@@ -322,7 +331,7 @@ int JDDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned hei
     if (inProgress)
         target_panic(PANIC_SCREEN_ERROR);
 
-    if (addr.y > displayAd.height)
+    if (addr.y && addr.y >= screenHeight)
         return 0; // out of range
 
     inProgress = true;
