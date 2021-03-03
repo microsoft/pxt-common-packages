@@ -55,7 +55,7 @@ static int jd_shift_frame(jd_frame_t *frame) {
 }
 
 static void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned service_cmd,
-                       unsigned service_size) {
+                              unsigned service_size) {
     if (service_num >> 8)
         jd_panic();
     if (service_cmd >> 16)
@@ -76,9 +76,16 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     inProgress = false;
     stepWaiting = false;
     displayServiceNum = 0;
-    controlsServiceNum = 0;
+    controlsStartServiceNum = 0;
+    controlsEndServiceNum = 0;
+    soundServiceNum = 0;
     buttonState = 0;
     brightness = 100;
+    soundBufferPending = 0;
+    soundSampleRate = 44100;
+    avgFrameTime = 26300; // start with a reasonable default
+    lastFrameTimestamp = 0;
+
     EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &JDDisplay::sendDone);
 
     flow->getDigitalValue(PullMode::Down);
@@ -129,12 +136,17 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
         int numServ = pkt->service_size >> 2;
         for (uint8_t servIdx = 1; servIdx < numServ; ++servIdx) {
             uint32_t service_class = servptr[servIdx];
-            if (service_class == JD_SERVICE_CLASS_DISPLAY) {
+            if (service_class == JD_SERVICE_CLASS_INDEXED_SCREEN) {
                 displayServiceNum = servIdx;
                 VLOG("JDA: found screen, serv=%d", servIdx);
-            } else if (service_class == JD_SERVICE_CLASS_ARCADE_CONTROLS) {
-                controlsServiceNum = servIdx;
+            } else if (service_class == JD_SERVICE_CLASS_ARCADE_GAMEPAD) {
+                if (!controlsStartServiceNum)
+                    controlsStartServiceNum = servIdx;
+                controlsEndServiceNum = servIdx;
                 VLOG("JDA: found controls, serv=%d", servIdx);
+            } else if (service_class == JD_SERVICE_CLASS_ARCADE_SOUND) {
+                soundServiceNum = servIdx;
+                VLOG("JDA: found sound, serv=%d", servIdx);
             } else {
                 VLOG("JDA: unknown service: %x", service_class);
             }
@@ -142,9 +154,28 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
     } else if (pkt->service_number == JD_SERVICE_NUMBER_CTRL &&
                pkt->service_command == JD_CMD_CTRL_NOOP) {
         // do nothing
-    } else if (pkt->service_number == controlsServiceNum &&
+    } else if (pkt->service_number == soundServiceNum) {
+        switch (pkt->service_command) {
+        case JD_GET(JD_ARCADE_SOUND_REG_BUFFER_PENDING):
+            soundBufferPending = *(uint32_t *)pkt->data;
+            break;
+        case JD_GET(JD_ARCADE_SOUND_REG_SAMPLE_RATE):
+            soundSampleRate = *(uint32_t *)pkt->data >> 10;
+            break;
+        }
+    } else if (pkt->service_number == displayServiceNum) {
+        switch (pkt->service_command) {
+        case JD_GET(JD_INDEXED_SCREEN_REG_HEIGHT):
+            screenHeight = *(uint16_t *)pkt->data;
+            break;
+        case JD_GET(JD_INDEXED_SCREEN_REG_WIDTH):
+            screenWidth = *(uint16_t *)pkt->data;
+            break;
+        }
+    } else if (controlsStartServiceNum <= pkt->service_number &&
+               pkt->service_number <= controlsEndServiceNum &&
                pkt->service_command == (JD_CMD_GET_REG | JD_REG_READING)) {
-        auto report = (jd_arcade_controls_report_entry_t *)pkt->data;
+        auto report = (jd_arcade_gamepad_buttons_t *)pkt->data;
         auto endp = pkt->data + pkt->service_size;
         uint32_t state = 0;
 
@@ -155,14 +186,14 @@ void JDDisplay::handleIncoming(jd_packet_t *pkt) {
             if (report->pressure < 0x20)
                 continue;
 
-            if (b == JD_ARCADE_CONTROLS_BUTTON_MENU2)
-                b = JD_ARCADE_CONTROLS_BUTTON_MENU;
+            if (b == JD_ARCADE_GAMEPAD_BUTTON_SELECT)
+                b = JD_ARCADE_GAMEPAD_BUTTON_MENU;
 
-            if (b == JD_ARCADE_CONTROLS_BUTTON_RESET || b == JD_ARCADE_CONTROLS_BUTTON_EXIT)
+            if (b == JD_ARCADE_GAMEPAD_BUTTON_RESET || b == JD_ARCADE_GAMEPAD_BUTTON_EXIT)
                 target_reset();
 
             if (1 <= b && b <= 7) {
-                idx = b + 7 * report->player_index;
+                idx = b + 7 * (pkt->service_number - controlsStartServiceNum);
             }
 
             if (idx > 0)
@@ -227,20 +258,37 @@ void JDDisplay::step() {
 
     if (palette) {
         {
-            auto cmd = (jd_display_palette_t *)queuePkt(displayServiceNum, JD_DISPLAY_CMD_PALETTE,
-                                                        sizeof(jd_display_palette_t));
-            memcpy(cmd->palette, palette, sizeof(jd_display_palette_t));
+#define PALETTE_SIZE (16 * 4)
+            auto cmd =
+                queuePkt(displayServiceNum, JD_SET(JD_INDEXED_SCREEN_REG_PALETTE), PALETTE_SIZE);
+            memcpy(cmd, palette, PALETTE_SIZE);
             palette = NULL;
         }
         {
-            auto cmd = (jd_display_set_window_t *)queuePkt(
-                displayServiceNum, JD_DISPLAY_CMD_SET_WINDOW, sizeof(jd_display_set_window_t));
+            auto cmd = (jd_indexed_screen_start_update_t *)queuePkt(
+                displayServiceNum, JD_INDEXED_SCREEN_CMD_START_UPDATE,
+                sizeof(jd_indexed_screen_start_update_t));
             *cmd = this->addr;
         }
         {
-            auto cmd = (uint8_t *)queuePkt(displayServiceNum, JD_DISPLAY_CMD_SET_BRIGHTNESS, 1);
+            auto cmd =
+                (uint8_t *)queuePkt(displayServiceNum, JD_SET(JD_INDEXED_SCREEN_REG_BRIGHTNESS), 1);
             *cmd = this->brightness * 0xff / 100;
         }
+
+        if (soundServiceNum) {
+            // we only need this for sending sound
+            uint32_t now = (uint32_t)current_time_us();
+            if (lastFrameTimestamp) {
+                uint32_t thisFrame = now - lastFrameTimestamp;
+                avgFrameTime = (avgFrameTime * 15 + thisFrame) >> 4;
+            }
+            lastFrameTimestamp = now;
+            // send around 2 frames of sound; typically around 60ms, so ~3000 samples
+            soundBufferDesiredSize =
+                sizeof(int16_t *) * ((((avgFrameTime * 2) >> 10) * soundSampleRate) >> 10);
+        }
+
         flushSend();
         return;
     }
@@ -249,10 +297,23 @@ void JDDisplay::step() {
         uint32_t transfer = bytesPerTransfer;
         if (dataLeft < transfer)
             transfer = dataLeft;
-        auto pixels = queuePkt(displayServiceNum, JD_DISPLAY_CMD_PIXELS, transfer);
+        auto pixels = queuePkt(displayServiceNum, JD_INDEXED_SCREEN_CMD_SET_PIXELS, transfer);
         memcpy(pixels, dataPtr, transfer);
         dataPtr += transfer;
         dataLeft -= transfer;
+        flushSend();
+    } else if (soundServiceNum && soundBufferPending < soundBufferDesiredSize) {
+        int bytesLeft = soundBufferDesiredSize - soundBufferPending;
+        if (bytesLeft > bytesPerTransfer)
+            bytesLeft = bytesPerTransfer;
+        auto samples = (int16_t *)queuePkt(soundServiceNum, JD_ARCADE_SOUND_CMD_PLAY, bytesLeft);
+        if (pxt::redirectSamples(samples, bytesLeft >> 1, soundSampleRate)) {
+            soundBufferPending += bytesLeft;
+        } else {
+            // no sound generated, fill with 0 and stop
+            memset(samples, 0, bytesLeft);
+            soundBufferDesiredSize = 0;
+        }
         flushSend();
     } else {
         // trigger sendDone(), which executes outside of IRQ context, so there
@@ -270,7 +331,7 @@ int JDDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned hei
     if (inProgress)
         target_panic(PANIC_SCREEN_ERROR);
 
-    if (addr.y > displayAd.height)
+    if (addr.y && addr.y >= screenHeight)
         return 0; // out of range
 
     inProgress = true;

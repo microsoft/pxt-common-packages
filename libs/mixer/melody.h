@@ -102,6 +102,8 @@ class WSynthesizer
 
 #ifdef CODAL
     virtual ManagedBuffer pull() {
+        if (!upstream)
+            return ManagedBuffer();
         ManagedBuffer data(512);
         auto dp = (int16_t *)data.getBytes();
         auto sz = 512 / 2;

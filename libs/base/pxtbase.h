@@ -994,6 +994,8 @@ extern "C" void *app_free(void *ptr);
 extern "C" void *app_alloc_at(void *at, int numbytes);
 void gcPreAllocateBlock(uint32_t sz);
 
+int redirectSamples(int16_t *dst, int numsamples, int samplerate);
+
 #ifdef PXT64
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
 #else
