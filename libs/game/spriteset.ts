@@ -1,13 +1,13 @@
 namespace sprites {
-    /* 
-    * A set of sprites 
+    /*
+    * A set of sprites
     */
     export class SpriteSet {
         private _sprites: Sprite[];
 
         /**
          * Create a new set from an array of sprites
-         * @param sprites 
+         * @param sprites
          */
         static createFromArray(sprites: Sprite[]): SpriteSet {
             const sp = new SpriteSet();
@@ -32,12 +32,12 @@ namespace sprites {
          * Gets the snapshot of the current list of sprites
          */
         sprites() {
-            return this._sprites.slice(0, this._sprites.length);
+            return this._sprites.filter(s => !(s.flags & sprites.Flag.Destroyed));
         }
 
         /**
          * Adds the sprite, returns true if added; false if the sprite was already in the set
-         * @param sprite 
+         * @param sprite
          */
         add(sprite: Sprite): boolean {
             if (!sprite) return false; // don't add nulls
@@ -51,8 +51,8 @@ namespace sprites {
 
         /**
          * Adds sprite and removes from old set. Returns true if sprite was in old set and not in new set.
-         * @param oldSet 
-         * @param sprite 
+         * @param oldSet
+         * @param sprite
          */
         addFrom(oldSet: SpriteSet, sprite: Sprite): boolean {
             const removed = oldSet.remove(sprite);
@@ -62,7 +62,7 @@ namespace sprites {
 
         /**
          * Removes sprite from set. Returns true if the sprite was in the set
-         * @param sprite 
+         * @param sprite
          */
         remove(sprite: Sprite): boolean {
             const i = this._sprites.indexOf(sprite);
@@ -75,13 +75,13 @@ namespace sprites {
 
         /**
          * Checks if the sprite is part of the set
-         * @param sprite 
+         * @param sprite
          */
         contains(sprite: Sprite): boolean {
             return this._sprites.indexOf(sprite) > -1;
         }
 
-        /** 
+        /**
          * Removes all the sprites from the set
         */
         clear() {

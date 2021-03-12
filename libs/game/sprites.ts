@@ -48,11 +48,23 @@ namespace sprites {
     }
 
     /**
+     * Create a new sprite from an image
+     * @param img the image
+     */
+    //% group="Create"
+    //% blockId=spritescreatenoset block="sprite %img=screen_image_picker of kind %kind=spritekind"
+    //% blockAliasFor="sprites.create"
+    //% expandableArgumentMode=toggle
+    //% weight=99 help=sprites/create
+    export function __create(img: Image, kind?: number): Sprite {
+        return sprites.create(img, kind);
+    }
+
+    /**
      * Return an array of all sprites of the given kind.
      * @param kind the target kind
      */
     //% blockId=allOfKind block="array of sprites of kind %kind=spritekind"
-    //% blockNamespace="arrays" blockSetVariable="sprite list"
     //% weight=87
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
@@ -142,7 +154,7 @@ namespace sprites {
 
     export enum Flag {
         None = 0, // no flags are set
-        Ghost = 1 << 0, // doesn't collide with other sprites
+        // 1 << 0 was previously used for Ghost / is now available.
         Destroyed = 1 << 1, // whether the sprite has been destroyed or not
         AutoDestroy = 1 << 2, // remove the sprite when no longer visible
         StayInScreen = 1 << 3, // sprite cannot move outside the camera region
@@ -151,6 +163,10 @@ namespace sprites {
         ShowPhysics = 1 << 6, // display position, velocity, acc
         Invisible = 1 << 7, // makes the sprite invisible, so it does not show up on the screen
         IsClipping = 1 << 8, // whether the sprite is currently clipping into a wall. This can happen when a sprite is created or moved explicitly.
-        RelativeToCamera = 1 << 9 // draw relative to the camera, not the world (e.g. HUD elements)
+        RelativeToCamera = 1 << 9, // draw relative to the camera, not the world (e.g. HUD elements)
+        GhostThroughTiles = 1 << 10, // No overlaps with tiles
+        GhostThroughWalls = 1 << 11, // No collisions with walls
+        GhostThroughSprites = 1 << 12, // No overlaps with other sprites
+        Ghost = sprites.Flag.GhostThroughSprites | sprites.Flag.GhostThroughWalls | sprites.Flag.GhostThroughTiles, // doesn't collide with other sprites or walls
     }
 }

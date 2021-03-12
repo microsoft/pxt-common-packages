@@ -3,12 +3,14 @@
 
 #include "pxt.h"
 #include "jdprotocol.h"
-#include "jdarcade.h"
+#include "arcadegamepad.h"
+#include "indexedscreen.h"
+#include "arcadesound.h"
 
 namespace pxt {
 
 class JDDisplay {
-    jd_display_set_window_t addr;
+    jd_indexed_screen_start_update_t addr;
     SPI *spi;
     Pin *cs;
     Pin *flow;
@@ -21,9 +23,17 @@ class JDDisplay {
     bool inProgress;
     volatile bool stepWaiting;
     uint8_t displayServiceNum;
-    uint8_t controlsServiceNum;
+    uint8_t controlsStartServiceNum;
+    uint8_t controlsEndServiceNum;    
+    uint8_t soundServiceNum;    
+    uint16_t screenWidth, screenHeight;
     uint32_t buttonState;
-    jd_display_advertisement_data_t displayAd;
+    uint32_t avgFrameTime; // in us
+    uint32_t lastFrameTimestamp;
+
+    uint32_t soundBufferDesiredSize;
+    uint32_t soundBufferPending;
+    uint16_t soundSampleRate;
 
     void *queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size);
     void flushSend();

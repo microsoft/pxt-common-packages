@@ -14,7 +14,13 @@ enum SpriteFlag {
     //% block="invisible"
     Invisible = sprites.Flag.Invisible,
     //% block="relative to camera"
-    RelativeToCamera = sprites.Flag.RelativeToCamera
+    RelativeToCamera = sprites.Flag.RelativeToCamera,
+    //% block="ghost through sprites"
+    GhostThroughSprites = sprites.Flag.GhostThroughSprites,
+    //% block="ghost through tiles"
+    GhostThroughTiles = sprites.Flag.GhostThroughTiles,
+    //% block="ghost through walls"
+    GhostThroughWalls = sprites.Flag.GhostThroughWalls,
 }
 
 enum TileDirection {
@@ -646,8 +652,8 @@ class Sprite extends sprites.BaseSprite {
         const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
         const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
 
-        const l = this.left - ox;
-        const t = this.top - oy;
+        const l = Math.floor(this.left - ox);
+        const t = Math.floor(this.top - oy);
 
         screen.drawTransparentImage(this._image, l, t)
 
@@ -722,12 +728,36 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
-     * Set a sprite flag
+     * Set whether a sprite should be constrained within the screen (on) or not (off)
      */
     //% group="Effects"
     //% weight=30
+    //% blockId=spritesetsetstayinscreen block="set %sprite(mySprite) stay in screen %on=toggleOnOff"
+    //% on.defl=true
+    //% help=sprites/sprite/set-stay-in-screen
+    setStayInScreen(on: boolean) {
+        this.setFlag(SpriteFlag.StayInScreen, on);
+    }
+
+    /**
+     * Set whether a sprite should bounce when it hits a wall (on) or not (off)
+     */
+    //% group="Effects"
+    //% weight=25
+    //% blockId=spritesetsetbounceonwall block="set %sprite(mySprite) bounce on wall %on=toggleOnOff"
+    //% on.defl=true
+    //% help=sprites/sprite/set-bounce-on-wall
+    setBounceOnWall(on: boolean) {
+        this.setFlag(SpriteFlag.BounceOnWall, on);
+    }
+
+    /**
+     * Set a sprite flag
+     */
+    //% group="Effects"
+    //% weight=10
     //% blockId=spritesetsetflag block="set %sprite(mySprite) %flag %on=toggleOnOff"
-    //% flag.defl=SpriteFlag.StayInScreen
+    //% flag.defl=SpriteFlag.AutoDestroy
     //% help=sprites/sprite/set-flag
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
@@ -749,9 +779,9 @@ class Sprite extends sprites.BaseSprite {
     overlapsWith(other: Sprite) {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
+        if (this.flags & (SpriteFlag.GhostThroughSprites | SpriteFlag.RelativeToCamera))
             return false
-        if (other.flags & (sprites.Flag.Ghost | sprites.Flag.RelativeToCamera))
+        if (other.flags & (SpriteFlag.GhostThroughSprites | SpriteFlag.RelativeToCamera))
             return false
         return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
     }

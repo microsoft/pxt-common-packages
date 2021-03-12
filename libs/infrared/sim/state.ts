@@ -8,6 +8,17 @@ namespace pxsim {
         IR_PACKET_EVENT = 0x2;
         IR_PACKET_ERROR_EVENT = 0x3;
 
+        constructor(private readonly board: BaseBoard) {
+            this.board.addMessageListener(this.handleMessage.bind(this));
+        }
+
+        private handleMessage(msg: SimulatorMessage) {
+            if (msg.type === "irpacket") {
+                const irpacket = <SimulatorInfraredPacketMessage>msg;
+                this.receive(irpacket.packet);    
+            }
+        }
+
         send(buf: RefBuffer) {
             Runtime.postMessage(<SimulatorInfraredPacketMessage>{
                 type: "irpacket",

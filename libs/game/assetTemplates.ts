@@ -31,6 +31,7 @@ namespace assets {
 
     //% helper=getAnimationByName
     //% pyConvertToTaggedTemplate
+    //% blockIdentity="animation._animationFrames"
     export function animation(lits: any, ...args: any[]): Image[] { return null }
 }
 
