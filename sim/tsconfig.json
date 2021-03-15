@@ -4,6 +4,12 @@
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "out": "../built/common-sim.js",
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2017",
+            "ES2018.Promise"
+        ],
         "rootDir": ".",
         "newLine": "LF",
         "declaration": true,
