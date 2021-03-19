@@ -567,7 +567,7 @@ namespace animation {
                 return true;
             });
         }
-        if (type == AnimationTypes.All) {
+        if (type == AnimationTypes.All || type == AnimationTypes.ImageAnimation) {
             //stop state based animation if any as well
             sprite._action = -1
         }
