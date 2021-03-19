@@ -567,6 +567,10 @@ namespace animation {
                 return true;
             });
         }
+        if (type == AnimationTypes.All) {
+            //stop state based animation if any as well
+            sprite._action = -1
+        }
     }
 
     //% fixedInstance whenUsed block="fly to center"
