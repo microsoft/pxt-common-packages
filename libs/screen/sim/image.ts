@@ -87,6 +87,8 @@ namespace pxsim.ImageMethods {
     }
 
     export function fillRect(img: RefImage, x: number, y: number, w: number, h: number, c: number) {
+        if (w == 0 || h == 0 || x >= img._width || y >= img._height || x + w - 1 < 0 || y + h - 1 < 0)
+            return;
         img.makeWritable()
         let [x2, y2] = img.clamp(x + w - 1, y + h - 1);
         [x, y] = img.clamp(x, y)
