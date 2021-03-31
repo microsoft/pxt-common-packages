@@ -56,6 +56,9 @@ extern "C" {
 #define JD_CMD_GET_REG 0x1000
 #define JD_CMD_SET_REG 0x2000
 
+#define JD_GET(reg) (JD_CMD_GET_REG | (reg))
+#define JD_SET(reg) (JD_CMD_SET_REG | (reg))
+
 // Commands 0x000-0x07f - common to all services
 // Commands 0x080-0xeff - defined per-service
 // Commands 0xf00-0xfff - reserved for implementation

@@ -99,8 +99,10 @@ static void panic_core(int error_code) {
 extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
-#ifdef PXT_ESP32
+#if defined(PXT_ESP32)
     abort();
+#elif defined(PXT_VM)
+    systemReset();
 #else
     while (1)
         sleep_core_us(10000);
@@ -387,9 +389,15 @@ void initRuntime() {
     systemReset();
 }
 
-#ifdef PXT_IOS
-uint8_t *gcBase;
+#ifdef PXT64
+#define GC_BASE 0x2000000000
+#define GC_PAGE_SIZE (64 * 1024)
+#else
+#define GC_BASE 0x20000000
+#define GC_PAGE_SIZE 4096
 #endif
+
+uint8_t *gcBase;
 
 void *gcAllocBlock(size_t sz) {
 #ifdef PXT_ESP32
@@ -397,15 +405,9 @@ void *gcAllocBlock(size_t sz) {
 #else
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-#ifdef __MINGW32__
-    void *r = VirtualAlloc(currPtr, sz, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (r == NULL) {
-        DMESG("VirtualAlloc %p failed; err=%d", currPtr, GetLastError());
-        target_panic(PANIC_INTERNAL_ERROR);
-    }
-#elif defined(PXT_IOS)
+#if defined(PXT64)
     if (!gcBase) {
-        gcBase = (uint8_t *)xmalloc(1 << PXT_IOS_HEAP_ALLOC_BITS);
+        gcBase = (uint8_t *)xmalloc(1 << PXT_VM_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;

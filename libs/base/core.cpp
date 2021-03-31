@@ -2035,4 +2035,9 @@ uint32_t hash_fnv1(const void *data, unsigned len) {
     return h;
 }
 
+// redefined in melody.cpp
+__attribute__((weak)) int redirectSamples(int16_t *dst, int numsamples, int samplerate) {
+    return 0;
+}
+
 } // namespace pxt
