@@ -48,7 +48,7 @@ typedef int PinName;
 #define USB_HANDOVER 0
 
 // if we ever want to support 100+ pin packages, need to add PC,PD ports and increase this to 128
-#define DEV_NUM_PINS 64
+#define DEV_NUM_PINS 128
 
 #define IS_ANALOG_PIN(id) 1
 
