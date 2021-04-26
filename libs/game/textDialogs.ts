@@ -245,7 +245,6 @@ namespace game {
 
             const textLeft = 1 + this.innerLeft + Math.min(this.unit, MAX_FRAME_UNIT) + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
             const textTop = 1 + (this.image.height >> 1) - ((lines.length * this.rowHeight()) >> 1);
-            console.log(`top: ${textTop} inner: ${this.innerTop} rows: ${this.rows} avheight: ${availableHeight}`)
 
             for (let row = 0; row < lines.length; row++) {
                 this.image.print(
