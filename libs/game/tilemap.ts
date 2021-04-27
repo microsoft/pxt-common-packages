@@ -207,12 +207,13 @@ namespace tiles {
 
         protected _layer: number;
         protected _map: TileMapData;
+        renderable: scene.Renderable;
 
         constructor(scale: TileScale = TileScale.Sixteen) {
             this._layer = 1;
             this.scale = scale;
 
-            scene.createRenderable(
+            this.renderable = scene.createRenderable(
                 scene.TILE_MAP_Z,
                 (t, c) => this.draw(t, c)
             );
