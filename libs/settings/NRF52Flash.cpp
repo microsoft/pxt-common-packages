@@ -27,11 +27,7 @@ NRF_SDH_SOC_OBSERVER(nrfflash_soc_observer, 0, nvmc_event_handler, NULL);
 bool ble_running()
 {
     uint8_t t = 0;
-
-#ifdef SOFTDEVICE_PRESENT
     sd_softdevice_is_enabled(&t);
-#endif
-
     return t==1;
 }
 #endif
