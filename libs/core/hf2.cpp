@@ -230,6 +230,9 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #ifdef SAMD51
 #define DBL_TAP_PTR ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
+#if defined(NRF52840) || defined(NRF52833)
+#define DBL_TAP_PTR ((volatile uint32_t*)0x20007F7C)
+#endif
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 #define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
 #endif
