@@ -13,6 +13,7 @@ static volatile bool flash_op_complete = false;
 
 #ifdef SOFTDEVICE_PRESENT
 #include "nrf_sdh_soc.h"
+#include "nrf_sdm.h"
 
 static void nvmc_event_handler(uint32_t sys_evt, void *)
 {
@@ -21,6 +22,19 @@ static void nvmc_event_handler(uint32_t sys_evt, void *)
 }
 
 NRF_SDH_SOC_OBSERVER(nrfflash_soc_observer, 0, nvmc_event_handler, NULL);
+
+#ifndef MICROBIT_CODAL
+bool ble_running()
+{
+    uint8_t t = 0;
+
+#ifdef SOFTDEVICE_PRESENT
+    sd_softdevice_is_enabled(&t);
+#endif
+
+    return t==1;
+}
+#endif
 
 #endif
 
