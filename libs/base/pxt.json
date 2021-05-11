@@ -21,6 +21,7 @@
         "math.ts",
         "ns.ts",
         "control.cpp",
+        "controlgc.cpp",
         "control.ts",
         "interval.ts",
         "gcstats.ts",
@@ -33,7 +34,8 @@
         "forever.ts",
         "utfdecoder.ts",
         "scheduling.ts",
-        "controlmessage.ts"
+        "controlmessage.ts",
+        "perfcounters.ts"
     ],
     "testFiles": [
         "test.ts"
