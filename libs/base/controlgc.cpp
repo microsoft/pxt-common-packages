@@ -3,14 +3,6 @@
 
 namespace control {
     /**
-     * Dump internal information about a value.
-     */
-    //%
-    void dmesgValue(TValue v) {
-        anyPrint(v);
-    }
-
-    /**
      * Force GC and dump basic information about heap.
      */
     //%
