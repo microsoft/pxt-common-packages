@@ -28,6 +28,18 @@ namespace game {
         return _scene
     }
 
+    export function pushScene() {
+        pushEventContext()
+    }
+
+    export function popScene() {
+        popEventContext()
+    }
+
+    export function popEventContext() {
+        control.popEventContext()
+    }
+
     export function pushEventContext() {
         const ctx = control.pushEventContext()
         ctx.registerFrameHandler(scene.SCREEN_CLEAR_PRIORITY, () => {
