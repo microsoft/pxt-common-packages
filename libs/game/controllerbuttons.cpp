@@ -1,5 +1,7 @@
 #include "pxt.h"
 
+#ifdef PXT_CODAL
+
 namespace pxt {
 
 class PressureButton : public codal::Button {
@@ -158,3 +160,5 @@ void setupButton(int buttonId, int key) {
 }
 
 } // namespace pxt
+
+#endif
