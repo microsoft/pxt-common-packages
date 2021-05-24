@@ -29,23 +29,15 @@ namespace game {
     }
 
     export function pushScene() {
-        pushEventContext()
-    }
-
-    export function popScene() {
-        popEventContext()
-    }
-
-    export function popEventContext() {
-        control.popEventContext()
-    }
-
-    export function pushEventContext() {
         const ctx = control.pushEventContext()
         ctx.registerFrameHandler(scene.SCREEN_CLEAR_PRIORITY, () => {
             screen.fill(0)
         });
         ctx.registerFrameHandler(scene.UPDATE_SCREEN_PRIORITY, control.__screen.update);
+    }
+
+    export function popScene() {
+        control.popEventContext()
     }
 
     export function eventContext() {
