@@ -8,8 +8,11 @@ namespace scene {
     export const SCREEN_CLEAR_PRIORITY = 1;
     export const UPDATE_INTERVAL_PRIORITY = 19;
     export const UPDATE_PRIORITY = 20;
-    export const ON_PAINT_PRIORITY = 100;
-    export const ON_SHADE_PRIORITY = 110;
+
+    export const PRE_RENDER_UPDATE_PRIORITY = 55;
+    export const RENDER_BACKGROUND_PRIORITY = 60;
+    export const RENDER_SPRITES_PRIORITY = 90;
+    export const RENDER_DIAGNOSTICS_PRIORITY = 150;
     export const UPDATE_SCREEN_PRIORITY = 200;
 }
 
@@ -28,18 +31,22 @@ namespace game {
         return _scene
     }
 
-    export function pushEventContext() {
+    export function pushScene() {
         const ctx = control.pushEventContext()
-        ctx.registerFrameHandler(scene.SCREEN_CLEAR_PRIORITY, () => {
+        ctx.registerFrameHandler(scene.RENDER_BACKGROUND_PRIORITY, () => {
             screen.fill(0)
         });
         ctx.registerFrameHandler(scene.UPDATE_SCREEN_PRIORITY, control.__screen.update);
     }
 
+    export function popScene() {
+        control.popEventContext()
+    }
+
     export function eventContext() {
         if (!inited) {
             inited = true
-            pushEventContext()
+            pushScene()
         }
         return control.eventContext()
     }
@@ -57,7 +64,7 @@ namespace game {
     //% help=game/paint weight=10 afterOnStart=true
     export function onPaint(a: () => void): void {
         if (!a) return;
-        control.eventContext().registerFrameHandler(scene.ON_PAINT_PRIORITY, a);
+        control.eventContext().registerFrameHandler(scene.RENDER_SPRITES_PRIORITY - 1, a);
     }
 
     /**
@@ -68,7 +75,7 @@ namespace game {
     //% help=game/shade weight=10 afterOnStart=true
     export function onShade(a: () => void): void {
         if (!a) return;
-        control.eventContext().registerFrameHandler(scene.ON_SHADE_PRIORITY, a);
+        control.eventContext().registerFrameHandler(scene.RENDER_SPRITES_PRIORITY, a);
     }
 
 }
