@@ -1156,8 +1156,9 @@ extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
         src = s;
     }
 
-    uint8_t *dd = (uint8_t *)dst;
-    uint8_t *ss = (uint8_t *)src;
+    // see comment in memset() below (have not seen optimization here, but better safe than sorry)
+    volatile uint8_t *dd = (uint8_t *)dst;
+    volatile uint8_t *ss = (uint8_t *)src;
 
     while (sz--) {
         *dd++ = *ss++;
@@ -1179,7 +1180,8 @@ extern "C" void *memset(void *dst, int v, size_t sz) {
         dst = d;
     }
 
-    uint8_t *dd = (uint8_t *)dst;
+    // without volatile here, GCC may optimize the loop to memset() call which is obviously not great
+    volatile uint8_t *dd = (uint8_t *)dst;
 
     while (sz--) {
         *dd++ = v;

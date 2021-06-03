@@ -28,7 +28,7 @@ namespace texteffects {
         }
     }
 
-    //% fixedInstance
+    //% fixedInstance whenUsed
     export const shake = new TextEffect(() => { 
         return { xOffset: (Math.random() * 2 - 1),
                  yOffset: (Math.random() * 2 - 1) }
@@ -39,7 +39,7 @@ namespace texteffects {
         up: boolean;
     }
 
-    //% fixedInstance
+    //% fixedInstance whenUsed
     export const wave = new TextEffect((index?: number, state?: WaveEffectState) => {  // TODO cast state type
         if (!state) {
             state = {

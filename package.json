@@ -1,6 +1,6 @@
 {
   "name": "pxt-common-packages",
-  "version": "8.9.3",
+  "version": "8.9.12",
   "description": "Microsoft MakeCode (PXT) common packages",
   "keywords": [
     "MakeCode",
@@ -24,10 +24,10 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "^6.12.1"
+    "pxt-core": "^6.13.9"
   },
   "devDependencies": {
-    "typescript": "^3.7.5"
+    "typescript": "^4.2.3"
   },
   "targetDependencies": {},
   "extraIncludes": [

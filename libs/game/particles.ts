@@ -6,6 +6,7 @@ namespace particles {
     }
 
     // maximum count of sources before removing previous sources
+    //% whenUsed
     const MAX_SOURCES = (() => {
         const sz = control.ramSize();
         if (sz <= 1024 * 100) {
