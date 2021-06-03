@@ -1,6 +1,6 @@
 # MakeCode Common packages
 
-A set of packages used in various MakeCode editors such as https://makecode.adafruit.com, https://maker.makecode.com, https://makecode.microbit.org, https://makecode.mindstorms.com, etc...
+A set of packages used in various MakeCode editors such as https://arcade.makecode.com, https://makecode.adafruit.com, https://maker.makecode.com https://makecode.microbit.org, etc...
 
 ## Contributing
 
