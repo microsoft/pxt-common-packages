@@ -51,10 +51,10 @@ void soft_panic(int errorCode);
 #define GC_PAGE_SIZE (64 * 1024)
 
 // always allocate 1M of heap
-#define PXT_IOS_HEAP_ALLOC_BITS 20
+#define PXT_VM_HEAP_ALLOC_BITS 20
 extern uint8_t *gcBase;
 #define PXT_IS_READONLY(v)                                                                         \
-    (!isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0)
+    (!isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_VM_HEAP_ALLOC_BITS) != 0)
 
 #else // PXT32
 #define GC_BASE 0x20000000
