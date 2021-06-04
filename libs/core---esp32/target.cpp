@@ -50,7 +50,7 @@ void target_startup() {}
 static FILE *dmesgFile;
 #endif
 
-#define LOG_QUEUE_SIZE (128 * 1024)
+#define LOG_QUEUE_SIZE (32 * 1024)
 class LogQueue {
     void writeCore(const char *buf, int len);
 
