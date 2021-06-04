@@ -252,7 +252,7 @@ static VMImage *loadSections(VMImage *img) {
                     CHECK(boxedPtr < numBoxed, 1060); // should never happen
                     img->boxedNumbers[boxedPtr].vtable = PXT_VTABLE_TO_INT(&number_vt);
                     img->boxedNumbers[boxedPtr].num =
-                        isEncodedDouble(v) ? decodeDouble(v) : (v >> 1);
+                        isEncodedDouble(v) ? decodeDouble(v) : (int32_t)(v >> 1);
                     img->numberLiterals[i] = (TValue)&img->boxedNumbers[boxedPtr];
                     boxedPtr++;
                 }
