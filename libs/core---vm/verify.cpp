@@ -285,7 +285,33 @@ static VMImage *loadSections(VMImage *img) {
         img->sections[idx] = sect;
 
         if (sect->type == SectionType::Literal) {
-            CHECK(vtFor(sect) != NULL, 1050);
+            CHECK(sect->size >= 20, 1066);
+            switch ((BuiltInType)sect->aux) {
+            case BuiltInType::BoxedString_ASCII:
+            case BuiltInType::BoxedString: {
+                auto p = (BoxedString *)vmLiteralVal(sect);
+                CHECK(sect->size >= 16 + 2 + p->ascii.length + 1, 1067);
+                CHECK(p->ascii.data[p->ascii.length] == 0, 1068);
+                break;
+            }
+            case BuiltInType::BoxedString_SkipList: {
+                auto p = (BoxedString *)vmLiteralVal(sect);
+                CHECK(sect->size >= 16 + 4 + PXT_NUM_SKIP_ENTRIES(p) * 2 + p->skip_pack.size + 1,
+                      1069);
+                CHECK(PXT_SKIP_DATA_PACK(p)[p->skip_pack.size] == 0, 1070);
+                for (int i = 0; i < PXT_NUM_SKIP_ENTRIES(p); ++i) {
+                    CHECK(p->skip_pack.list[i] <= p->skip_pack.size, 1071);
+                }
+                break;
+            }
+            case BuiltInType::BoxedBuffer: {
+                auto p = (BoxedBuffer *)vmLiteralVal(sect);
+                CHECK(sect->size >= 16 + 4 + p->length, 1072);
+                break;
+            }
+            default:
+                CHECK(false, 1050);
+            }
             img->pointerLiterals[idx] = vmLiteralVal(sect);
             // TODO validate size/length of boxed string/buffer; check utf8 encoding?; 1042 error
         } else if (sect->type == SectionType::Function) {

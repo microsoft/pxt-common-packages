@@ -9,12 +9,6 @@ using namespace std;
 // try not to create cons-strings shorter than this
 #define SHORT_CONCAT_STRING 50
 
-// bigger value - less memory, but slower
-// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings),
-// which is similar to amortized allocation time
-#define SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
-#define MIN_SKIP 20  // min. size of string to use skip list; static code has its own limit
-
 namespace pxt {
 
 PXT_DEF_STRING(emptyString, "")
@@ -209,21 +203,17 @@ static bool isUTF8(const char *data, int len) {
     return false;
 }
 
-#define NUM_SKIP_ENTRIES(p) ((p)->skip.length / SKIP_INCR)
-#define SKIP_DATA_IND(p) (const char *)(p->skip.list + NUM_SKIP_ENTRIES(p))
-#define SKIP_DATA_PACK(p) (const char *)(p->skip_pack.list + NUM_SKIP_ENTRIES(p))
-
 static void setupSkipList(String r, const char *data, int packed) {
-    char *dst = (char *)(packed ? SKIP_DATA_PACK(r) : SKIP_DATA_IND(r));
+    char *dst = (char *)(packed ? PXT_SKIP_DATA_PACK(r) : PXT_SKIP_DATA_IND(r));
     auto len = r->skip.size;
     if (data)
         memcpy(dst, data, len);
     dst[len] = 0;
     const char *ptr = dst;
-    auto skipEntries = NUM_SKIP_ENTRIES(r);
+    auto skipEntries = PXT_NUM_SKIP_ENTRIES(r);
     auto lst = packed ? r->skip_pack.list : r->skip.list;
     for (int i = 0; i < skipEntries; ++i) {
-        ptr = utf8Skip(ptr, (int)(len - (ptr - dst)), SKIP_INCR);
+        ptr = utf8Skip(ptr, (int)(len - (ptr - dst)), PXT_STRING_SKIP_INCR);
         if (!ptr)
             oops(80);
         lst[i] = ptr - dst;
@@ -242,11 +232,11 @@ String mkStringCore(const char *data, int len) {
 
 #if PXT_UTF8
     if (data && isUTF8(data, len)) {
-        vt = len >= MIN_SKIP ? &string_skiplist16_packed_vt : &string_inline_utf8_vt;
+        vt = len >= PXT_STRING_MIN_SKIP ? &string_skiplist16_packed_vt : &string_inline_utf8_vt;
     }
     if (vt == &string_skiplist16_packed_vt) {
         int ulen = utf8Len(data, len);
-        r = new (gcAllocate(sizeof(void *) + 2 + 2 + (ulen / SKIP_INCR) * 2 + len + 1))
+        r = new (gcAllocate(sizeof(void *) + 2 + 2 + (ulen / PXT_STRING_SKIP_INCR) * 2 + len + 1))
             BoxedString(vt);
         r->skip_pack.size = len;
         r->skip_pack.length = ulen;
@@ -1802,14 +1792,14 @@ void gcScan(TValue v);
 static const char *skipLookup(BoxedString *p, uint32_t idx, int packed) {
     if (idx > p->skip.length)
         return NULL;
-    auto ent = idx / SKIP_INCR;
-    auto data = packed ? SKIP_DATA_PACK(p) : SKIP_DATA_IND(p);
+    auto ent = idx / PXT_STRING_SKIP_INCR;
+    auto data = packed ? PXT_SKIP_DATA_PACK(p) : PXT_SKIP_DATA_IND(p);
     auto size = p->skip.size;
     if (ent) {
         auto off = packed ? p->skip_pack.list[ent - 1] : p->skip.list[ent - 1];
         data += off;
         size -= off;
-        idx &= SKIP_INCR - 1;
+        idx &= PXT_STRING_SKIP_INCR - 1;
     }
     return utf8Skip(data, size, idx);
 }
@@ -1859,7 +1849,7 @@ static void fixCopy(BoxedString *p, char *dst) {
 static void fixCons(BoxedString *r) {
     uint32_t length = 0;
     auto sz = fixSize(r, &length);
-    auto numSkips = length / SKIP_INCR;
+    auto numSkips = length / PXT_STRING_SKIP_INCR;
     // allocate first, while [r] still holds references to its children
     // because allocation might trigger GC
     auto data = (uint16_t *)gcAllocateArray(numSkips * 2 + sz + 1);
@@ -1880,11 +1870,11 @@ STRING_VT(string_inline_ascii, NOOP, NOOP, 2 + p->ascii.length + 1, p->ascii.dat
 STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.size + 1, p->utf8.data, p->utf8.size,
           utf8Len(p->utf8.data, p->utf8.size), utf8Skip(p->utf8.data, p->utf8.size, idx))
 STRING_VT(string_skiplist16, NOOP, if (p->skip.list) gcMarkArray(p->skip.list), 2 * sizeof(void *),
-          SKIP_DATA_IND(p), p->skip.size, p->skip.length, skipLookup(p, idx, 0))
-STRING_VT(string_skiplist16_packed, NOOP, NOOP, 2 + 2 + NUM_SKIP_ENTRIES(p) * 2 + p->skip.size + 1,
-          SKIP_DATA_PACK(p), p->skip.size, p->skip.length, skipLookup(p, idx, 1))
+          PXT_SKIP_DATA_IND(p), p->skip.size, p->skip.length, skipLookup(p, idx, 0))
+STRING_VT(string_skiplist16_packed, NOOP, NOOP, 2 + 2 + PXT_NUM_SKIP_ENTRIES(p) * 2 + p->skip.size + 1,
+          PXT_SKIP_DATA_PACK(p), p->skip.size, p->skip.length, skipLookup(p, idx, 1))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
-          2 * sizeof(void *), SKIP_DATA_IND(p), p->skip.size, p->skip.length,
+          2 * sizeof(void *), PXT_SKIP_DATA_IND(p), p->skip.size, p->skip.length,
           skipLookup(p, idx, 0))
 #endif
 

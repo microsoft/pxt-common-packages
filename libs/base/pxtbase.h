@@ -1050,6 +1050,16 @@ template <size_t N> constexpr size_t _boxedStringLen(char const (&)[N]) {
     const BoxedStringLayout<_boxedStringLen(val)> name[1] = {                                  \
         {&pxt::string_inline_ascii_vt, _boxedStringLen(val) - 1, val}};
 
+// bigger value - less memory, but slower
+// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings),
+// which is similar to amortized allocation time
+#define PXT_STRING_SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
+#define PXT_STRING_MIN_SKIP 20  // min. size of string to use skip list; static code has its own limit
+
+#define PXT_NUM_SKIP_ENTRIES(p) ((p)->skip.length / PXT_STRING_SKIP_INCR)
+#define PXT_SKIP_DATA_IND(p) ((const char *)(p->skip.list + PXT_NUM_SKIP_ENTRIES(p)))
+#define PXT_SKIP_DATA_PACK(p) ((const char *)(p->skip_pack.list + PXT_NUM_SKIP_ENTRIES(p)))
+
 } // namespace pxt
 
 using namespace pxt;
