@@ -1047,8 +1047,8 @@ template <size_t N> constexpr size_t _boxedStringLen(char const (&)[N]) {
 
 // strings defined here as used as (String)name
 #define PXT_DEF_STRING(name, val)                                                                  \
-    const BoxedStringLayout<_boxedStringLen(val) + 1> name[1] = {                                  \
-        {&pxt::string_inline_ascii_vt, _boxedStringLen(val), val}};
+    const BoxedStringLayout<_boxedStringLen(val)> name[1] = {                                  \
+        {&pxt::string_inline_ascii_vt, _boxedStringLen(val) - 1, val}};
 
 } // namespace pxt
 
