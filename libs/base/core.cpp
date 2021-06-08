@@ -458,7 +458,7 @@ String charAt(String s, int pos) {
     return fromCharCode(numValue(v));
 }
 
-#define IS_CONS(s) ((s)->vtable == (uintptr_t)&string_cons_vt)
+#define IS_CONS(s) ((s)->vtable == &string_cons_vt)
 #define IS_EMPTY(s) ((s) == (String)emptyString)
 
 //%
@@ -515,7 +515,7 @@ String concat(String s, String other) {
         memcpy(dst + lenA, dataB, lenB);
 #if PXT_UTF8
         if (isUTF8(dst, lenA + lenB))
-            r->vtable = PXT_VTABLE_TO_INT(&string_inline_utf8_vt);
+            r->vtable = &string_inline_utf8_vt;
 #endif
         return r;
     }
@@ -1866,7 +1866,7 @@ static void fixCons(BoxedString *r) {
     // copy, while [r] is still cons
     fixCopy(r, (char *)(data + numSkips));
     // now, set [r] up properly
-    r->vtable = PXT_VTABLE_TO_INT(&string_skiplist16_vt);
+    r->vtable = &string_skiplist16_vt;
     r->skip.size = sz;
     r->skip.length = length;
     r->skip.list = data;

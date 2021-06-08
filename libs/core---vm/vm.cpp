@@ -566,7 +566,7 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
 
     RefAction *ra = (RefAction *)vmLiteralVal(sect);
 
-    if (ra->vtable != PXT_VTABLE_TO_INT(&pxt::RefAction_vtable))
+    if (ra->vtable != &pxt::RefAction_vtable)
         FNERR(1251);
     if ((uint8_t *)img->dataStart + ra->func != (uint8_t *)code)
         FNERR(1252);

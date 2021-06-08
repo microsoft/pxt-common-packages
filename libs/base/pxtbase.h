@@ -209,7 +209,7 @@ inline bool canBeTagged(int v) {
 #endif
 }
 
-    // see https://anniecherkaev.com/the-secret-life-of-nan
+// see https://anniecherkaev.com/the-secret-life-of-nan
 
 #define NanBoxingOffset 0x1000000000000LL
 
@@ -494,8 +494,6 @@ extern const VTable number_vt;
 //%
 extern const VTable RefAction_vtable;
 
-#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
-
 #ifndef PXT_IS_READONLY
 // assume ARM - ram addresses are 0x2000_0000+; flash is either 0x0+ or 0x0800_0000+
 #define PXT_IS_READONLY(v) (isTagged(v) || !((uintptr_t)v >> 28))
@@ -508,18 +506,21 @@ inline bool isReadOnly(TValue v) {
 // A base abstract class for ref-counted objects.
 class RefObject {
   public:
-    uintptr_t vtable;
+    const VTable *vtable;
 
     RefObject(const VTable *vt) {
 #if defined(PXT32) && defined(PXT_VM) && !defined(PXT_ESP32)
         if ((uint32_t)vt & 0xf0000000)
             target_panic(PANIC_INVALID_VTABLE);
 #endif
-        vtable = PXT_VTABLE_TO_INT(vt);
+        vtable = vt;
     }
 
     void destroyVT();
     void printVT();
+
+    inline uintptr_t vt() { return (uintptr_t)vtable; }
+    inline void setVT(uintptr_t v) { vtable = (const VTable *)v; }
 
     inline void ref() {}
     inline void unref() {}
@@ -629,7 +630,7 @@ class RefRecord : public RefObject {
 };
 
 static inline VTable *getVTable(RefObject *r) {
-    return (VTable *)(r->vtable & ~1);
+    return (VTable *)(r->vt() & ~1);
 }
 
 static inline VTable *getAnyVTable(TValue v) {
@@ -735,7 +736,7 @@ class BoxedString : public RefObject {
 
 #if PXT_UTF8
     uintptr_t runMethod(int idx) {
-        return ((uintptr_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
+        return ((uintptr_t(*)(BoxedString *))vtable->methods[idx])(this);
     }
     const char *getUTF8Data() { return (const char *)runMethod(4); }
     uint32_t getUTF8Size() { return (uint32_t)runMethod(5); }
@@ -743,7 +744,7 @@ class BoxedString : public RefObject {
     uint32_t getLength() { return (uint32_t)runMethod(6); }
     const char *getUTF8DataAt(uint32_t pos) {
         auto meth =
-            ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
+            ((const char *(*)(BoxedString *, uint32_t))vtable->methods[7]);
         return meth(this, pos);
     }
 #else

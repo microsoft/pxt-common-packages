@@ -265,7 +265,7 @@ static VMImage *loadSections(VMImage *img) {
                 } else {
                     CHECK(boxedPtr < numBoxed, 1060); // should never happen
                     double x = isEncodedDouble(v) ? decodeDouble(v) : (int32_t)(v >> 1);
-                    CHECK(img->boxedNumbers[boxedPtr].vtable == PXT_VTABLE_TO_INT(&number_vt), 1064);
+                    CHECK(img->boxedNumbers[boxedPtr].vtable == &number_vt, 1064);
                     CHECK(img->boxedNumbers[boxedPtr].num == x, 1065);
                     img->numberLiterals[i] = (TValue)&img->boxedNumbers[boxedPtr];
                     boxedPtr++;
@@ -414,7 +414,7 @@ static VMImage *checkVTables(VMImage *img) {
     FOR_SECTIONS() {
         auto vt = vtFor(sect);
         if (vt) {
-            CHECK(((RefObject *)vmLiteralVal(sect))->vtable == PXT_VTABLE_TO_INT(vt), 1057);
+            CHECK(((RefObject *)vmLiteralVal(sect))->vtable == vt, 1057);
         }
         if (sect->type == SectionType::Literal) {
             CHECK(vt != NULL, 1043);

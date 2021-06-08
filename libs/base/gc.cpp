@@ -304,7 +304,7 @@ void gcProcess(TValue v) {
         while (workQueue.getLength()) {
             auto curr = (RefObject *)workQueue.pop();
             VVLOG(" - %p", curr);
-            scan = getScanMethod(curr->vtable & ~ANY_MARKED_MASK);
+            scan = getScanMethod(curr->vt() & ~ANY_MARKED_MASK);
             if (scan)
                 scan(curr);
         }
@@ -381,7 +381,7 @@ static void mark(int flags) {
 }
 
 static uint32_t getObjectSize(RefObject *o) {
-    auto vt = o->vtable & ~ANY_MARKED_MASK;
+    auto vt = o->vt() & ~ANY_MARKED_MASK;
     uint32_t r;
     GC_CHECK(vt != 0, 49);
     if (IS_VAR_BLOCK(vt)) {
@@ -398,7 +398,7 @@ static uint32_t getObjectSize(RefObject *o) {
 static void setupFreeBlock(GCBlock *curr) {
     gcStats.numBlocks++;
     gcStats.totalBytes += curr->blockSize;
-    curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
+    curr->data[0].setVT(FREE_MASK | (TOWORDS(curr->blockSize) << 2));
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
@@ -472,7 +472,7 @@ static GCBlock *allocateBlockCore() {
     curr->blockSize = sz - sizeof(GCBlock);
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
-    curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
+    curr->data[4].setVT((uintptr_t)dummy);
     return curr;
 }
 
@@ -502,7 +502,7 @@ static void sweep(int flags) {
         while (d < end) {
             if (IS_LIVE(d->vtable)) {
                 VVLOG("Live %p", d);
-                d->vtable &= ~MARKED_MASK;
+                d->setVT(d->vt() & ~MARKED_MASK);
                 d += getObjectSize(d);
             } else {
                 auto start = (RefBlock *)d;
@@ -515,7 +515,7 @@ static void sweep(int flags) {
                         VVLOG("Dead Arr %p", d);
                     } else {
                         VVLOG("Dead Obj %p", d);
-                        GC_CHECK(((VTable *)d->vtable)->magic == VTABLE_MAGIC, 41);
+                        GC_CHECK(d->vtable->magic == VTABLE_MAGIC, 41);
                         d->destroyVT();
                         VVLOG("destroyed");
                     }
@@ -528,7 +528,7 @@ static void sweep(int flags) {
 #ifdef PXT_GC_CHECKS
                 memset((void *)start, 0xff, WORDS_TO_BYTES(sz));
 #endif
-                start->vtable = (sz << 2) | FREE_MASK;
+                start->setVT((sz << 2) | FREE_MASK);
                 if (sz > 1) {
                     start->nextFree = NULL;
                     if (!prevFreePtr) {
@@ -648,12 +648,12 @@ static void *gcAllocAt(void *hint, int numbytes) {
         // we give ourselves some space here, so we don't get some strange overlaps
         if (offset >= 8 && left >= 8) {
             auto nf = (RefBlock *)((void **)p + numwords + offset);
-            nf->vtable = (left << 2) | FREE_MASK;
+            nf->setVT((left << 2) | FREE_MASK);
             nf->nextFree = p->nextFree;
             p->nextFree = nf;
-            p->vtable = (offset << 2) | FREE_MASK;
+            p->setVT((offset << 2) | FREE_MASK);
             p = (RefBlock *)((void **)p + offset);
-            p->vtable = 0;
+            p->setVT(0);
             return p;
         }
     }
@@ -768,7 +768,7 @@ void *gcAllocate(int numbytes) {
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
                 // VVLOG("nf=%p nef=%p", nf, nextFree);
                 if (left)
-                    nf->vtable = (left << 2) | FREE_MASK;
+                    nf->setVT((left << 2) | FREE_MASK);
                 if (left >= 2) {
                     nf->nextFree = nextFree;
                 } else {
@@ -778,7 +778,7 @@ void *gcAllocate(int numbytes) {
                     prev->nextFree = nf;
                 else
                     firstFree = nf;
-                p->vtable = 0;
+                p->setVT(0);
                 VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf ? nf->nextFree : 0,
                       nf ? (void *)nf->vtable : 0);
                 GC_CHECK(!nf || !nf->nextFree || !isReadOnly((TValue)nf->nextFree), 48);
