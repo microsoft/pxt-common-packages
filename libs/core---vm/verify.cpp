@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1061
+// next free error 1066
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -100,6 +100,11 @@ const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len) {
             state->patchOff = 1;
 
             const VTable *vt = NULL;
+#ifdef PXT32
+            if (sect.type == SectionType::NumberBoxes) {
+                return (state->error = "TODO: NumberBoxes");
+            }
+#endif
             if (sect.type == SectionType::Literal || sect.type == SectionType::Function) {
                 vt = vtFor(&sect);
                 if (!vt)
@@ -153,6 +158,7 @@ static VMImage *countSections(VMImage *img) {
 
 static VMImage *loadSections(VMImage *img) {
     auto idx = 0;
+    VMImageSection *numberBoxes = NULL;
 
     FOR_SECTIONS() {
         CHECK(sect->size < 32000, 1014);
@@ -213,7 +219,13 @@ static VMImage *loadSections(VMImage *img) {
                 return img;
         }
 
+        if (sect->type == SectionType::NumberBoxes) {
+            CHECK(!numberBoxes, 1061);
+            numberBoxes = sect;
+        }
+
         if (sect->type == SectionType::NumberLiterals) {
+            CHECK(!!numberBoxes, 1062);
             CHECK(!img->numberLiterals, 1004);
             img->numNumberLiterals = (sect->size >> 3) - 1;
             uint64_t *values = (uint64_t *)sect->data;
@@ -237,9 +249,11 @@ static VMImage *loadSections(VMImage *img) {
                 }
             }
 
+            CHECK(numberBoxes->size == sizeof(VMImageSection) + (numBoxed + 1) * 12, 1063);
+
             img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
 #ifdef PXT32
-            img->boxedNumbers = ALLOC_ARRAY(BoxedNumber, numBoxed);
+            img->boxedNumbers = (BoxedNumber *)numberBoxes->data;
             int boxedPtr = 0;
 #endif
 
@@ -250,9 +264,9 @@ static VMImage *loadSections(VMImage *img) {
                     img->numberLiterals[i] = (TValue)v;
                 } else {
                     CHECK(boxedPtr < numBoxed, 1060); // should never happen
-                    img->boxedNumbers[boxedPtr].vtable = PXT_VTABLE_TO_INT(&number_vt);
-                    img->boxedNumbers[boxedPtr].num =
-                        isEncodedDouble(v) ? decodeDouble(v) : (int32_t)(v >> 1);
+                    double x = isEncodedDouble(v) ? decodeDouble(v) : (int32_t)(v >> 1);
+                    CHECK(img->boxedNumbers[boxedPtr].vtable == PXT_VTABLE_TO_INT(&number_vt), 1064);
+                    CHECK(img->boxedNumbers[boxedPtr].num == x, 1065);
                     img->numberLiterals[i] = (TValue)&img->boxedNumbers[boxedPtr];
                     boxedPtr++;
                 }
@@ -447,7 +461,6 @@ void unloadVMImage(VMImage *img) {
     free(img->opcodes);
     free(img->opcodeDescs);
     free(img->numberLiterals);
-    free(img->boxedNumbers);
     free(img->ifaceMemberNames);
 
     free(img->dataStart);

@@ -54,6 +54,7 @@ enum class SectionType : uint8_t {
     NumberLiterals = 0x03,   // array of boxed doubles and ints
     ConfigData = 0x04,       // sorted array of pairs of int32s; zero-terminated
     IfaceMemberNames = 0x05, // array of 32 bit offsets, that point to string literals
+    NumberBoxes = 0x06,      // numbers from NumberLiteral that need to be boxed on 32 bit hosts
 
     // repetitive sections
     Function = 0x20,

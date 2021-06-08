@@ -22,6 +22,7 @@ __attribute__((used)) __attribute__((aligned(0x20))) const uintptr_t PXT_EXPORTD
     0x08010801,
     0x8de9d83e,
     PXT_EXPORT(&pxt::buffer_vt),
+    PXT_EXPORT(&pxt::number_vt),
     PXT_EXPORT(&pxt::RefAction_vtable),
     PXT_EXPORT(&pxt::string_inline_ascii_vt),
     PXT_EXPORT(&pxt::string_skiplist16_packed_vt),
