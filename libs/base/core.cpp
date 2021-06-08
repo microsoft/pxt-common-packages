@@ -62,7 +62,14 @@ void coreReset() {
     handlerBindings = NULL;
 }
 
-static const char emptyBuffer[] __attribute__((aligned(4))) = "@PXT#:\x00\x00\x00";
+struct EmptyBufferLayout {
+    const void *vtable;
+    // data needs to be word-aligned, so we use 32 bits for length
+    int length;
+    uint8_t data[1];
+};
+
+static const EmptyBufferLayout emptyBuffer[1] = {{&pxt::buffer_vt, 0, {0}}};
 
 #if PXT_UTF8
 int utf8Len(const char *data, int size) {

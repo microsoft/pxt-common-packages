@@ -209,7 +209,7 @@ inline bool canBeTagged(int v) {
 #endif
 }
 
-// see https://anniecherkaev.com/the-secret-life-of-nan
+    // see https://anniecherkaev.com/the-secret-life-of-nan
 
 #define NanBoxingOffset 0x1000000000000LL
 
@@ -770,10 +770,6 @@ class BoxedString : public RefObject {
 
 class BoxedBuffer : public RefObject {
   public:
-#ifdef PXT_VM
-    // maybe this is only needed in pxt64?
-    int32_t _padding;
-#endif
     // data needs to be word-aligned, so we use 32 bits for length
     int length;
     uint8_t data[0];
@@ -1035,13 +1031,23 @@ inline void initPerfCounters() {}
 inline void dumpPerfCounters() {}
 #endif
 
-#ifdef PXT_VM
-String mkInternalString(const char *str);
-#define PXT_DEF_STRING(name, val) String name = mkInternalString(val);
-#else
+// Handling of built-in string literals (like "[Object]", "true" etc.).
+
+// This has the same layout as BoxedString, but has statically allocated buffer
+template <size_t N> struct BoxedStringLayout {
+    const void *vtable;
+    uint16_t size;
+    const char data[N];
+};
+
+template <size_t N> constexpr size_t _boxedStringLen(char const (&)[N]) {
+    return N;
+}
+
+// strings defined here as used as (String)name
 #define PXT_DEF_STRING(name, val)                                                                  \
-    static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
-#endif
+    const BoxedStringLayout<_boxedStringLen(val) + 1> name[1] = {                                  \
+        {&pxt::string_inline_ascii_vt, _boxedStringLen(val), val}};
 
 } // namespace pxt
 
