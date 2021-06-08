@@ -34,6 +34,18 @@ void op_ldcap(FiberContext *ctx, unsigned arg) {
 }
 
 //%
+void op_bitconv(FiberContext *ctx, unsigned arg) {
+    int shift = 32 - ((arg & 0xf) * 8);
+    if (arg & 0x10) {
+        int v = toInt(ctx->r0);
+        ctx->r0 = fromInt((v << shift) >> shift);
+    } else {
+        unsigned v = toUInt(ctx->r0);
+        ctx->r0 = fromUInt((v << shift) >> shift);
+    }
+}
+
+//%
 void op_stglb(FiberContext *ctx, unsigned arg) {
     globals[arg] = ctx->r0;
 }
@@ -71,7 +83,7 @@ void op_jmpnz(FiberContext *ctx, unsigned arg) {
 }
 
 static inline VTable *getStaticVTable(VMImage *img, unsigned classId) {
-    return (VTable *)((uintptr_t)img->pointerLiterals[classId] + 8);
+    return (VTable *)(img->pointerLiterals[classId]);
 }
 
 //%
@@ -132,7 +144,7 @@ static inline void runAction(FiberContext *ctx, RefAction *ra) {
     PUSH((TValue)ctx->currAction);
     PUSH(VM_ENCODE_PC(ctx->pc - ctx->imgbase));
     ctx->currAction = ra;
-    ctx->pc = (uint16_t *)ra->func;
+    ctx->pc = actionPC(ra);
 }
 
 //%
@@ -507,7 +519,7 @@ void exec_loop(FiberContext *ctx) {
             if (opcode & VM_OPCODE_PUSH_MASK)
                 PUSH(ctx->r0);
         } else if (opcode >> 14 == 0b10) {
-            ((ApiFun)opcodes[opcode & 0x1fff])(ctx);
+            ((ApiFun)(void *)opcodes[opcode & 0x1fff])(ctx);
             if (opcode & VM_RTCALL_PUSH_MASK)
                 PUSH(ctx->r0);
         } else {
@@ -529,7 +541,7 @@ void exec_loop(FiberContext *ctx) {
 
 namespace pxt {
 
-// 1251
+// 1255
 #define FNERR(errcode)                                                                             \
     do {                                                                                           \
         setVMImgError(img, errcode, &code[pc]);                                                    \
@@ -552,7 +564,12 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
     auto lastPC = (sect->size - VM_FUNCTION_CODE_OFFSET) >> 1;
     auto atEnd = false;
 
-    RefAction *ra = (RefAction *)sect;
+    RefAction *ra = (RefAction *)vmLiteralVal(sect);
+
+    if (ra->vtable != &pxt::RefAction_vtable)
+        FNERR(1251);
+    if ((uint8_t *)img->dataStart + ra->func != (uint8_t *)code)
+        FNERR(1252);
 
     unsigned numArgs = ra->numArgs;
     unsigned numCaps = ra->initialLen;
@@ -706,7 +723,8 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
             auto fsec = img->sections[arg];
             if (fsec->type != SectionType::Function)
                 FNERR(1220);
-            unsigned calledArgs = ((RefAction *)fsec)->numArgs;
+            auto ra = (RefAction *)img->pointerLiterals[arg];
+            unsigned calledArgs = ra->numArgs;
             currStack -= calledArgs;
             if (currStack < baseStack)
                 FNERR(1221);
@@ -740,6 +758,12 @@ void validateFunction(VMImage *img, VMImageSection *sect, int debug) {
                 FNERR(1224);
         } else if (fn == op_ldint || fn == op_ldintneg) {
             // nothing to check!
+        } else if (fn == op_bitconv) {
+            if (arg & ~0x1f)
+                FNERR(1253);
+            auto sz = arg & 0xf;
+            if (sz != 1 && sz != 2 && sz != 4)
+                FNERR(1254);
         } else if (fn == op_jmp || fn == op_jmpnz || fn == op_jmpz) {
             unsigned newPC = pc + arg; // will overflow for backjump, but this is fine
             if (newPC >= lastPC)
