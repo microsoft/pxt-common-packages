@@ -231,17 +231,6 @@ static void setupSkipList(String r, const char *data, int packed) {
 }
 #endif
 
-#ifdef PXT_VM
-String mkInternalString(const char *str) {
-    int len = (int)strlen(str);
-    String r = new (xmalloc(sizeof(void *) + 2 + len + 1)) BoxedString(&string_inline_ascii_vt);
-    r->ascii.length = len;
-    memcpy(r->ascii.data, str, len);
-    r->ascii.data[len] = 0;
-    return r;
-}
-#endif
-
 String mkStringCore(const char *data, int len) {
     if (len < 0)
         len = (int)strlen(data);
@@ -1895,7 +1884,7 @@ STRING_VT(string_skiplist16, NOOP, if (p->skip.list) gcMarkArray(p->skip.list), 
 STRING_VT(string_skiplist16_packed, NOOP, NOOP, 2 + 2 + NUM_SKIP_ENTRIES(p) * 2 + p->skip.size + 1,
           SKIP_DATA_PACK(p), p->skip.size, p->skip.length, skipLookup(p, idx, 1))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
-          2 * sizeof(void *), SKIP_DATA_PACK(p), p->skip.size, p->skip.length,
+          2 * sizeof(void *), SKIP_DATA_IND(p), p->skip.size, p->skip.length,
           skipLookup(p, idx, 0))
 #endif
 
