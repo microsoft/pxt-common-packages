@@ -1068,6 +1068,15 @@ void _blitRow(Image_ img, int xy, Image_ from, int xh) {
     blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh));
 }
 
+void blit(Image_ dst, int xDst, int yDst, int wDst, int hDst, Image_ src, int xSrc, int ySrc, int wSrc, int hSrc, bool transparent) {
+    // TODO
+}
+
+//%
+void _blit(Image_ dst, int xyDst, int whDst, Image_ src, int xySrc, int whSrc, bool transparent) {
+    blit(dst, XX(xyDst), YY(xyDst), XX(whDst), YY(whDst), src, XX(xySrc), YY(xySrc), XX(whSrc), YY(whSrc), transparent);
+}
+
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {
     int x = r - 1;
     int y = 0;

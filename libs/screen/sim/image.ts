@@ -633,6 +633,45 @@ namespace pxsim.ImageMethods {
             fy += stepFY
         }
     }
+
+    export function _blit(img: RefImage, xyDst: number, whDst: number, src: RefImage, xySrc: number, whSrc: number, transparent: boolean) {
+        blit(img, XX(xyDst), YY(xyDst), XX(whDst), YY(whDst), src, XX(xySrc), YY(xySrc), XX(whSrc), YY(whSrc), transparent);
+    }
+
+    export function blit(dst: RefImage, xDst: number, yDst: number, wDst: number, hDst: number, src: RefImage, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean) {
+        // Coerse to integers
+        xSrc |= 0; ySrc |= 0; wSrc |= 0; hSrc |= 0;
+        xDst |= 0; yDst |= 0; wDst |= 0; hDst |= 0;
+
+        if (xSrc < 0 || ySrc < 0 || wSrc <= 0 || hSrc <= 0 ||
+            xSrc > src._width || ySrc > src._height ||
+            xSrc + wSrc > src._width || ySrc + hSrc > src._height) {
+            // Would read outside src image
+            return;
+        }
+
+        if (xDst < 0 || yDst < 0 || wDst <= 0 || hDst <= 0 ||
+            xDst > dst._width || yDst > dst._height ||
+            xDst + wDst > dst._width || yDst + hDst > dst._height) {
+            // Would write outside dst image, or div by zero in step calculation (below)
+            return;
+        }
+
+        const xSrcStep = ((wSrc << 16) / wDst) | 0;
+        const ySrcStep = ((hSrc << 16) / hDst) | 0;
+
+        let ySrcCur = ySrc << 16;
+        for (let yDstCur = yDst; yDstCur < yDst + hDst; ++yDstCur) {
+            const ySrcCurI = ySrcCur >> 16;
+            for (let xDstCur = xDst, xSrcCur = xSrc << 16; xDstCur < xDst + wDst; ++xDstCur, xSrcCur += xSrcStep) {
+                const cSrc = src.data[src.pix(xSrcCur >> 16, ySrcCurI)];
+                if (!transparent || cSrc) {
+                    dst.data[dst.pix(xDstCur, yDstCur)] = cSrc;
+                }
+            }
+            ySrcCur += ySrcStep;
+        }
+    }
 }
 
 
