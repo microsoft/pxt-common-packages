@@ -37,8 +37,14 @@ void soft_panic(int errorCode);
 
 #define PXT_REGISTER_RESET(fn) pxt::registerResetFunction(fn)
 
+#ifdef CONFIG_IDF_TARGET_ESP32S2
+// 0x3f000000-... range of data SPI flash (we only support first 4M)
+#define PXT_IS_READONLY(v) (isTagged(v) || ((uintptr_t)v >> 22) == 0xfc)
+#else
 // 0x3f400000-0x3f700000 range of data SPI flash
 #define PXT_IS_READONLY(v) (isTagged(v) || ((uintptr_t)v >> 22) == 0xfd)
+#endif
+
 
 #define CODAL_PIN ::pxt::ZPin
 
