@@ -1073,8 +1073,17 @@ void blit(Image_ dst, int xDst, int yDst, int wDst, int hDst, Image_ src, int xS
 }
 
 //%
-void _blit(Image_ dst, int xyDst, int whDst, Image_ src, int xySrc, int whSrc, bool transparent) {
-    blit(dst, XX(xyDst), YY(xyDst), XX(whDst), YY(whDst), src, XX(xySrc), YY(xySrc), XX(whSrc), YY(whSrc), transparent);
+void _blit(Image_ dst, Image_ src, RefCollection args) {
+    int xDst = toInt(args.getAt(0));
+    int yDst = toInt(args.getAt(1));
+    int wDst = toInt(args.getAt(2));
+    int hDst = toInt(args.getAt(3));
+    int xSrc = toInt(args.getAt(4));
+    int ySrc = toInt(args.getAt(5));
+    int wSrc = toInt(args.getAt(6));
+    int hSrc = toInt(args.getAt(7));
+    auto transparent = toBoolQuick(args.getAt(8));
+    blit(dst, xDst, yDst, wDst, hDst, src, xSrc, ySrc, wSrc, hSrc, transparent);
 }
 
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {

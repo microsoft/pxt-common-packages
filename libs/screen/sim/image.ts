@@ -634,11 +634,21 @@ namespace pxsim.ImageMethods {
         }
     }
 
-    export function _blit(img: RefImage, xyDst: number, whDst: number, src: RefImage, xySrc: number, whSrc: number, transparent: boolean) {
-        blit(img, XX(xyDst), YY(xyDst), XX(whDst), YY(whDst), src, XX(xySrc), YY(xySrc), XX(whSrc), YY(whSrc), transparent);
+    export function _blit(img: RefImage, src: RefImage, args: any[]) {
+        blit(img, src, args);
     }
 
-    export function blit(dst: RefImage, xDst: number, yDst: number, wDst: number, hDst: number, src: RefImage, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean) {
+    export function blit(dst: RefImage, src: RefImage, args: any[]) {
+        let xDst = args[0] as number;
+        let yDst = args[1] as number;
+        let wDst = args[2] as number;
+        let hDst = args[3] as number;
+        let xSrc = args[4] as number;
+        let ySrc = args[5] as number;
+        let wSrc = args[6] as number;
+        let hSrc = args[7] as number;
+        let transparent = args[8] as boolean;
+
         // Coerse to integers
         xSrc |= 0; ySrc |= 0; wSrc |= 0; hSrc |= 0;
         xDst |= 0; yDst |= 0; wDst |= 0; hDst |= 0;
