@@ -315,8 +315,7 @@ void RefAction::destroy(RefAction *t) {}
 
 void RefAction::print(RefAction *t) {
 #ifdef PXT_VM
-    DMESG("RefAction %p pc=%X size=%d", t,
-          (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
+    DMESG("RefAction %p pc=%X size=%d", t, (uint32_t)t->func, t->len);
 #else
     DMESG("RefAction %p pc=%X size=%d", t, (const uint8_t *)t->func - (const uint8_t *)bytecode,
           t->len);
