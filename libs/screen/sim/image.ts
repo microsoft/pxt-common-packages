@@ -9,6 +9,7 @@ namespace pxsim {
 
         constructor(w: number, h: number, bpp: number) {
             super();
+            this.revision = 0;
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
