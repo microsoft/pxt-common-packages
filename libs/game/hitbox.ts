@@ -1,5 +1,7 @@
 namespace game {
     export class Hitbox {
+        img: Image;
+        rev: number;
         parent: Sprite;
         ox: Fx8;
         oy: Fx8;
@@ -7,6 +9,8 @@ namespace game {
         height: Fx8;
 
         constructor(parent: Sprite, width: number, height: number, ox: number, oy: number) {
+            this.img = parent.image;
+            this.rev = parent.image.revision();
             this.parent = parent;
             this.width = Fx8(width);
             this.height = Fx8(height);
@@ -35,10 +39,17 @@ namespace game {
                 Fx.oneFx8
             );
         }
+
+        isValid() {
+            return this.img === this.parent.image && this.rev === this.parent.image.revision();
+        }
     }
 
 
     export function calculateHitBox(s: Sprite): Hitbox {
+        if (s._hitbox && s._hitbox.isValid())
+            return s._hitbox;
+
         const i = s.image;
         let minX = i.width;
         let minY = i.height;
