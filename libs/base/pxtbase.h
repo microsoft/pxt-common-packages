@@ -818,6 +818,7 @@ struct ImageHeader {
 class RefImage : public RefObject {
   public:
     BoxedBuffer *buffer;
+    uint32_t revision;
 
     RefImage(BoxedBuffer *buf);
     RefImage(uint32_t sz);

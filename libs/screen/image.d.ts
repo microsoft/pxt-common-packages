@@ -107,6 +107,9 @@ interface Image {
 
     //% shim=ImageMethods::isStatic
     isStatic(): boolean;
+
+    //% shim=ImageMethods::revision
+    revision(): number;
 }
 
 declare namespace image {
