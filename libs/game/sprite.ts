@@ -263,9 +263,9 @@ class Sprite extends sprites.BaseSprite {
     }
 
     setHitbox() {
-        let newHitBox = game.calculateHitBox(this);
+        const newHitBox = game.calculateHitBox(this);
 
-        if (!this._hitbox) {
+        if (!this._hitbox || this._hitbox.isValid()) {
             this._hitbox = newHitBox;
             return;
         }

@@ -5,9 +5,11 @@ namespace pxsim {
         _bpp: number;
         data: Uint8Array;
         isStatic = true;
+        revision: number;
 
         constructor(w: number, h: number, bpp: number) {
             super();
+            this.revision = 0;
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
@@ -48,6 +50,7 @@ namespace pxsim {
         }
 
         makeWritable() {
+            this.revision++;
             this.isStatic = false
         }
 
@@ -68,6 +71,8 @@ namespace pxsim.ImageMethods {
     export function isMono(img: RefImage) { return img._bpp == 1 }
 
     export function isStatic(img: RefImage) { return img.gcIsStatic() }
+
+    export function revision(img: RefImage) { return img.revision }
 
     export function setPixel(img: RefImage, x: number, y: number, c: number) {
         img.makeWritable()

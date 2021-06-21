@@ -28,6 +28,7 @@ int RefImage::wordHeight() {
 }
 
 void RefImage::makeWritable() {
+    ++revision;
     if (buffer->isReadOnly()) {
         buffer = mkBuffer(data(), length());
     }
@@ -47,6 +48,7 @@ void RefImage::clamp(int *x, int *y) {
 }
 
 RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), buffer(buf) {
+    revision = 0;
     if (!buf)
         oops(21);
 }
@@ -143,6 +145,11 @@ bool isMono(Image_ img) {
 //% property
 bool isStatic(Image_ img) {
     return img->buffer->isReadOnly();
+}
+
+//% property
+bool revision(Image_ img) {
+    return img->revision;
 }
 
 /**
