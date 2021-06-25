@@ -132,7 +132,7 @@ namespace helpers {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
 
-    const _blitArgs: any[] = [];
+    const _blitArgs: any = [];
 
     export function imageBlit(img: Image, xDst: number, yDst: number, wDst: number, hDst: number, src: Image, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean) {
         _blitArgs[0] = xDst;
