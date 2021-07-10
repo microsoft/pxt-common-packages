@@ -214,9 +214,10 @@ namespace game {
     
             const seconds = Math.idiv(millis, 1000) + 1;
             const secondsString = seconds.toString()
-            const letter = image.create(CELL_WIDTH, CELL_HEIGHT);
 
             if(this.timerSprite === undefined) {
+                const letter = image.create(CELL_WIDTH, CELL_HEIGHT);
+
                 this.timerSprite = sprites.create(letter, -1);
 
                 // Set to the top right corner of the screen
