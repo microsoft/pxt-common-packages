@@ -8,7 +8,7 @@ namespace net {
 
         constructor() {
             super()
-            control.internalOnEvent(_wifi.eventID(), WifiEvent.ScanDone, this.scanDone)
+            control.internalOnEvent(_wifi.eventID(), WifiEvent.ScanDone, () => this.scanDone())
             control.internalOnEvent(_wifi.eventID(), WifiEvent.Disconnected, () => {
                 this._isConnected = false
             })
@@ -55,6 +55,16 @@ namespace net {
             return this.networks
         }
 
+        public connectAP(ssid: string, pass: string) {
+            control.dmesg(`connecting to [${ssid}]...`)
+            const res = _wifi.connect(ssid, pass)
+            if (res != 0)
+                return false
+            pauseUntil(() => this.isConnected, 15000)
+            control.dmesg(`${this.isConnected ? "" : "not "}connected to [${ssid}]`)
+            return this.isConnected
+        }
+
         public socket(): number {
             return -1;
         }
@@ -82,7 +92,23 @@ namespace net {
         }
         get isIdle(): boolean { return true; }
         get isConnected(): boolean { return this._isConnected; }
-        connect(): void { }
+        connect(): boolean {
+            if (this.isConnected) return true;
+
+            const wifis = net.knownAccessPoints();
+            const ssids = Object.keys(wifis);
+            const networks = this.scanNetworks()
+                .filter(network => ssids.indexOf(network.ssid) > -1);
+            // try connecting to known networks
+            for (const network of networks) {
+                if (this.connectAP(network.ssid, wifis[network.ssid]))
+                    return true;
+            }
+
+            // no compatible SSID
+            net.log(`connection failed`)
+            return false;
+        }
         get ssid(): string { return undefined; }
         get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }

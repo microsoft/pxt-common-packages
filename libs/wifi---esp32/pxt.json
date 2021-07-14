@@ -5,6 +5,7 @@
         "README.md",
         "shims.d.ts",
         "enums.d.ts",
+        "controller.ts",
         "wifi.cpp"
     ],
     "public": true,

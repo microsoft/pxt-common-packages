@@ -13,75 +13,9 @@ void settings_init(void);
 
 #if 0
 
-const int CONNECTED_BIT = BIT0;
-const int DISCONNECTED_BIT = BIT1;
-
-struct srv_state {
-    SRV_COMMON;
-};
-
-static srv_t *wifi_state;
-
-static bool reconnect = true;
-
-static EventGroupHandle_t wifi_event_group;
-static opipe_desc_t scan_stream;
-static worker_t worker;
-
-static void wifi_cmd_scan(jd_packet_t *pkt) {
-    wifi_scan_config_t scan_config = {0};
-
-    if (opipe_open(&scan_stream, pkt) < 0)
-        return;
-
-    ESP_ERROR_CHECK(esp_wifi_scan_start(&scan_config, false));
-}
-
-#define JD_WIFI_SCAN_ENTRY_HEADER_SIZE (uint32_t)(&((jd_wifi_results_t *)0)->ssid)
-
-static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
-                               void *event_data) {
-    if (reconnect) {
-        LOG("sta disconnect, reconnect...");
-        esp_wifi_connect();
-    } else {
-        LOG("sta disconnect");
-    }
-    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
-    xEventGroupSetBits(wifi_event_group, DISCONNECTED_BIT);
-    jd_send_event(wifi_state, JD_WIFI_EV_LOST_IP);
-}
-
-static void disconnect(void) {
-    reconnect = false;
-    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
-    ESP_ERROR_CHECK(esp_wifi_disconnect());
-    xEventGroupWaitBits(wifi_event_group, DISCONNECTED_BIT, 0, 1, 5000 / portTICK_RATE_MS);
-}
-
 static void do_connect(void *cfg_) {
     wifi_config_t *cfg = cfg_;
 
-    int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-    if (bits & CONNECTED_BIT)
-        disconnect();
-
-    reconnect = true;
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, cfg));
-    ESP_ERROR_CHECK(esp_wifi_connect());
-
-    LOG("waiting for connection");
-
-    free(cfg);
-
-    bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 15000 / portTICK_RATE_MS);
-
-    LOG("waited conn=%d", (bits & CONNECTED_BIT) != 0);
-
-    // do we need this?
-    if (bits & CONNECTED_BIT)
-        jd_send(wifi_state->service_number, JD_WIFI_CMD_CONNECT, NULL, 0);
 }
 
 static void wifi_cmd_disconnect(void *arg) {
@@ -90,73 +24,12 @@ static void wifi_cmd_disconnect(void *arg) {
 }
 
 static int wifi_cmd_sta_join(jd_packet_t *pkt) {
-    if (pkt->service_size < 2 || pkt->data[0] == 0 || pkt->data[pkt->service_size - 1] != 0)
-        return -1;
-
-    const char *ssid = (char *)pkt->data;
-    const char *pass = NULL;
-
-    for (int i = 0; i < pkt->service_size; ++i) {
-        if (!pkt->data[i] && i + 1 < pkt->service_size) {
-            if (!pass)
-                pass = (char *)&pkt->data[i + 1];
-            else
-                break;
-        }
-    }
-
-    wifi_config_t *cfg = calloc(sizeof(wifi_config_t), 1);
-
-    strlcpy((char *)cfg->sta.ssid, ssid, sizeof(cfg->sta.ssid));
-    if (pass)
-        strlcpy((char *)cfg->sta.password, pass, sizeof(cfg->sta.password));
 
     worker_run(worker, do_connect, cfg);
 
     return true;
 }
 
-static int wifi_cmd_query(int argc, char **argv) {
-    wifi_config_t cfg;
-    wifi_mode_t mode;
-
-    esp_wifi_get_mode(&mode);
-    if (WIFI_MODE_STA == mode) {
-        int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-        if (bits & CONNECTED_BIT) {
-            esp_wifi_get_config(WIFI_IF_STA, &cfg);
-            LOG("sta mode, connected %s", cfg.ap.ssid);
-        } else {
-            LOG("sta mode, disconnected");
-        }
-    } else {
-        LOG("NULL mode");
-        return 0;
-    }
-
-    return 0;
-}
-
-static uint32_t wifi_get_local_ip(void) {
-    int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-    tcpip_adapter_if_t ifx = TCPIP_ADAPTER_IF_AP;
-    tcpip_adapter_ip_info_t ip_info;
-    wifi_mode_t mode;
-
-    esp_wifi_get_mode(&mode);
-    if (WIFI_MODE_STA == mode) {
-        bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, 0, 1, 0);
-        if (bits & CONNECTED_BIT) {
-            ifx = TCPIP_ADAPTER_IF_STA;
-        } else {
-            ESP_LOGE(TAG, "sta has no IP");
-            return 0;
-        }
-    }
-
-    tcpip_adapter_get_ip_info(ifx, &ip_info);
-    return ip_info.ip.addr;
-}
 #endif
 
 namespace _wifi {
@@ -176,7 +49,7 @@ int eventID() {
     return WIFI_ID;
 }
 
-static bool scan_done, reconnect;
+static bool scan_done, reconnect, is_connected;
 
 static void raiseWifiEvent(WifiEvent e) {
     raiseEvent(eventID(), (int)e);
@@ -190,9 +63,9 @@ static void scan_done_handler(void *arg, esp_event_base_t event_base, int32_t ev
 
 static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                                void *event_data) {
+    is_connected = false;
     if (reconnect) {
         LOG("sta disconnect, reconnect...");
-        reconnect = false;
         esp_wifi_connect();
     } else {
         LOG("sta disconnect");
@@ -202,6 +75,7 @@ static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t e
 
 static void got_ip_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                            void *event_data) {
+    is_connected = true;
     raiseWifiEvent(WifiEvent::GotIP);
 }
 
@@ -215,10 +89,17 @@ static void init() {
 
     settings_init();
 
-    esp_netif_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    esp_netif_init();
+    esp_netif_config_t netif_config = ESP_NETIF_DEFAULT_WIFI_STA();
+    esp_netif_t *netif = esp_netif_new(&netif_config);
+    assert(netif);
+    esp_netif_attach_wifi_station(netif);
+    esp_wifi_set_default_wifi_sta_handlers();
+
     ESP_ERROR_CHECK(
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &scan_done_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED,
@@ -298,5 +179,41 @@ Buffer scanResults() {
 
     return res;
 }
+
+/** Initiate connection. */
+//%
+int connect(String ssid, String pass) {
+    wifi_config_t cfg;
+    memset(&cfg,0,sizeof(cfg));
+    strlcpy((char *)cfg.sta.ssid, ssid->getUTF8Data(), sizeof(cfg.sta.ssid));
+    strlcpy((char *)cfg.sta.password, pass->getUTF8Data(), sizeof(cfg.sta.password));
+
+    if (is_connected)
+        return -1;
+
+    reconnect = true;
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
+    ESP_ERROR_CHECK(esp_wifi_connect());
+
+    return 0;
+}
+
+/** Initiate disconnection. */
+//%
+int disconnect() {
+    reconnect = false;
+    if (!is_connected)
+        return -1;
+    ESP_ERROR_CHECK(esp_wifi_disconnect());
+    return 0;
+}
+
+/** Check if connected. */
+//%
+bool isConnected() {
+    return is_connected;
+}
+
 
 } // namespace _wifi
