@@ -262,7 +262,9 @@ Buffer scanResults() {
 
     Buffer res = NULL;
 
-    if (esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer) == ESP_OK) {
+    esp_err_t err = esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer);
+
+    if (err == ESP_OK) {
         int buffer_size = 0;
         for (i = 0; i < sta_number; i++) {
             wifi_ap_record_t *src = &ap_list_buffer[i];
@@ -289,7 +291,7 @@ Buffer scanResults() {
         if (dst - res->data != buffer_size)
             abort();
     } else {
-        DMESG("failed to read scan results");
+        DMESG("failed to read scan results: %d", err);
     }
 
     free(ap_list_buffer);

@@ -201,7 +201,7 @@ void vdmesg(const char *format, va_list arg) {
     dmesgRaw(buf, (uint32_t)strlen(buf));
     
     vsnprintf(buf, sizeof(buf), format, arg);
-    ets_printf(LOG_FORMAT(I, "%s"), esp_log_timestamp(), "DMESG", buf);
+    ets_printf(LOG_FORMAT(W, "%s"), esp_log_timestamp(), "DMESG", buf);
     dmesgRaw(buf, (uint32_t)strlen(buf));
 
     dmesgRaw("\n", 1);

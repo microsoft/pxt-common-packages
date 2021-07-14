@@ -100,6 +100,7 @@ extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
 #if defined(PXT_ESP32)
+    sleep_core_us(5 * 1000 * 1000);
     abort();
 #elif defined(PXT_VM)
     systemReset();
