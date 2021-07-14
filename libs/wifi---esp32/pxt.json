@@ -1,0 +1,15 @@
+{
+    "name": "wifi---esp32",
+    "description": "WiFi implementation for ESP32",
+    "files": [
+        "README.md",
+        "shims.d.ts",
+        "enums.d.ts",
+        "wifi.cpp"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "net": "file:../net"
+    }
+}
