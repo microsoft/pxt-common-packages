@@ -5,6 +5,7 @@ namespace net {
         private networks: net.AccessPoint[]
         private inScan: boolean
         private _isConnected: boolean
+        private _ssid: string
 
         constructor() {
             super()
@@ -62,6 +63,8 @@ namespace net {
                 return false
             pauseUntil(() => this.isConnected, 15000)
             control.dmesg(`${this.isConnected ? "" : "not "}connected to [${ssid}]`)
+            if (this.isConnected)
+                this._ssid = ssid
             return this.isConnected
         }
 
@@ -109,7 +112,7 @@ namespace net {
             net.log(`connection failed`)
             return false;
         }
-        get ssid(): string { return undefined; }
+        get ssid(): string { return this._ssid; }
         get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
     }

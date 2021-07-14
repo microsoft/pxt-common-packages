@@ -52,4 +52,10 @@ extern "C" {
 extern const uintptr_t PXT_EXPORTData[];
 }
 
+#ifdef CONFIG_IDF_TARGET_ESP32S2
+#define WORKER_CPU PRO_CPU_NUM
+#else
+#define WORKER_CPU APP_CPU_NUM
+#endif
+
 #endif

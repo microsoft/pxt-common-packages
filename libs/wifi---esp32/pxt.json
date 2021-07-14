@@ -6,6 +6,8 @@
         "shims.d.ts",
         "enums.d.ts",
         "controller.ts",
+        "wifi.h",
+        "ssl.cpp",
         "wifi.cpp"
     ],
     "public": true,

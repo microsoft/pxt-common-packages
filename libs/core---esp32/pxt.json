@@ -24,6 +24,7 @@
         "vm.h",
         "verify.cpp",
         "vmload.cpp",
+        "worker.cpp",
         "pxtparts.json",
         "CMakeLists.txt",
         "sdkconfig.defaults"

@@ -32,6 +32,12 @@ extern volatile int panicCode;
 // Buffer, Sound, and Image share representation.
 typedef Buffer Sound;
 
+
+typedef struct worker *worker_t;
+worker_t worker_alloc(const char *id, uint32_t stack_size);
+int worker_run(worker_t w, TaskFunction_t fn, void *arg);
+void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
+
 } // namespace pxt
 
 #undef PXT_MAIN

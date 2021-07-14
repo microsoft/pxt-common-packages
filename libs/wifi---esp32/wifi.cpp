@@ -1,8 +1,7 @@
-#include "pxt.h"
+#include "wifi.h"
 
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
-#include "esp_log.h"
 #include "esp_netif.h"
 
 #define TAG "wifi"
