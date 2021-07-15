@@ -3,10 +3,13 @@
 namespace pxt {
 
 VMImage *vmImg;
+TaskHandle_t userCodeTask;
 
 static void vmStartCore(uint8_t *data, unsigned len) {
     unloadVMImage(vmImg);
     vmImg = NULL;
+
+    userCodeTask = xTaskGetCurrentTaskHandle();
 
     gcPreStartup();
 

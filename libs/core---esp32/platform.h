@@ -27,11 +27,13 @@ class CodalComponent;
 typedef void (*reset_fn_t)();
 void registerResetFunction(reset_fn_t fn);
 void soft_panic(int errorCode);
+
+extern TaskHandle_t userCodeTask;
 } // namespace pxt
 
 #define IMAGE_BITS 4
 
-#define PXT_IN_ISR() false
+#define PXT_IN_ISR() (xTaskGetCurrentTaskHandle() != userCodeTask)
 
 #define GC_BLOCK_SIZE (1024 * 64)
 
