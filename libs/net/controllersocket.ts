@@ -89,12 +89,12 @@ namespace net {
             while (this._buffer.indexOf(hex`0d0a`) < 0) {
                 // there's no line already in there, read some more
                 let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
-                if (avail) {
+                if (avail > 0) {
                     this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
-                } else if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
+                } else if (avail < 0 || (this._timeout > 0 && monotonic() - stamp > this._timeout)) {
                     // Make sure to close socket so that we don't exhaust sockets.
                     this.close()
-                    control.fail("Didn't receive full response, failing out")
+                    throw "Didn't receive full response, failing out"
                 } else {
                     pause(20)
                 }
@@ -112,8 +112,10 @@ namespace net {
             if (size == 0) {
                 if (this._buffer.length == 0) {
                     let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
-                    if (avail)
+                    if (avail > 0)
                         this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
+                    if (avail < 0)
+                        this.close()
                 }
                 let ret = this._buffer
                 this._buffer = hex``
@@ -126,7 +128,7 @@ namespace net {
             while (to_read > 0) {
                 // print("Bytes to read:", to_read)
                 let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
-                if (avail) {
+                if (avail > 0) {
                     stamp = monotonic()
                     let recv = this.controller.socketRead(this._socknum, Math.min(to_read, avail))
                     received.push(recv)
@@ -135,7 +137,7 @@ namespace net {
                     pause(20)
                 }
 
-                if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
+                if (avail < 0 || (this._timeout > 0 && monotonic() - stamp > this._timeout)) {
                     break
                 }
 
@@ -163,6 +165,7 @@ namespace net {
         /** Close the socket, after reading whatever remains */
         public close() {
             this._closed = true;
+            this._buffer = hex``
             this.controller.socketClose(this._socknum)
             if (this._closeHandler)
                 this._closeHandler();
