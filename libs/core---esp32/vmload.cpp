@@ -31,6 +31,8 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 }
 
 void vmStart() {
+    memInfo();
+
     auto sect = (VMImageSection *)PXT_EXPORTData[4];
     auto hd = (VMImageHeader *)sect->data;
     if (sect->type != SectionType::InfoHeader || hd->magic0 != VM_MAGIC0 || hd->imageSize < 256) {

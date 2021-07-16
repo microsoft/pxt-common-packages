@@ -166,8 +166,6 @@ static void worker_write(write_args *args) {
 int socketWrite(int fd, Buffer data) {
     GET_SOCK_SSL();
 
-    memInfo();
-
     auto args = new write_args;
     args->data = data;
     args->sock = sock;
@@ -188,7 +186,6 @@ static Buffer mk_read_buffer(read_args *args) {
     auto res = mkBuffer(args->buf, args->size);
     free(args->buf);
     delete args;
-    memInfo();
     return res;
 }
 
