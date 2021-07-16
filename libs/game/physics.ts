@@ -428,7 +428,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     for (const tile of collidedTiles) {
-                        s.registerObstacle(collisionDirection, tile, tm);
+                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                            s.registerObstacle(collisionDirection, tile, tm);
+                        }
                     }
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
@@ -507,7 +509,9 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     for (const tile of collidedTiles) {
-                        s.registerObstacle(collisionDirection, tile, tm);
+                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                            s.registerObstacle(collisionDirection, tile, tm);
+                        }
                     }
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
