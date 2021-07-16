@@ -8,6 +8,8 @@
         "controller.ts",
         "wifi.h",
         "ssl.cpp",
+        "certs.cpp",
+        "socket.cpp",
         "wifi.cpp"
     ],
     "public": true,

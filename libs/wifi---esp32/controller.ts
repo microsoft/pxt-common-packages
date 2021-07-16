@@ -69,25 +69,45 @@ namespace net {
         }
 
         public socket(): number {
-            return -1;
+            return _wifi.socketAlloc()
+        }
+
+        private logError(lbl: string, res: number) {
+            if (res != 0) {
+                control.dmesg(`sock ${lbl} failed: ${res}`)
+                return false
+            }
+            return true
         }
 
         public socketConnect(socket_num: number, dest: string | Buffer, port: number, conn_mode = TCP_MODE): boolean {
-            return false;
+            if (conn_mode != TLS_MODE)
+                throw "only TLS supported for now"
+            if (typeof dest != "string")
+                throw "connection by IP not supported in TLS mode"
+            return this.logError("connect", _wifi.socketConnectTLS(socket_num, dest, port))
         }
 
         public socketWrite(socket_num: number, buffer: Buffer): void {
+            this.logError("write", _wifi.socketWrite(socket_num, buffer))
         }
 
         public socketAvailable(socket_num: number): number {
-            return -1;
+            return _wifi.socketBytesAvailable(socket_num)
         }
 
         public socketRead(socket_num: number, size: number): Buffer {
-            return undefined;
+            const r = _wifi.socketRead(socket_num, size)
+            if (typeof r == "number") {
+                this.logError("read", r)
+                return undefined
+            } else {
+                return (r as any) as Buffer
+            }
         }
 
         public socketClose(socket_num: number): void {
+            this.logError("close", _wifi.socketClose(socket_num))
         }
 
         public hostbyName(hostname: string): Buffer {
@@ -116,4 +136,7 @@ namespace net {
         get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
     }
+
+    // initialize Net.instance
+    new net.Net(() => new WifiController())
 }
