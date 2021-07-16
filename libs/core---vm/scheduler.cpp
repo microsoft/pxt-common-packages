@@ -243,6 +243,27 @@ void waitForEvent(int source, int value) {
     schedule();
 }
 
+FiberContext *suspendFiber() {
+    currentFiber->waitSource = PXT_WAIT_SOURCE_PROMISE;
+    schedule();
+    return currentFiber;
+}
+
+void resumeFiberWithFn(FiberContext *ctx, fiber_resume_t fn, void *arg) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->wakeFn = fn;
+    ctx->wakeFnArg = arg;
+}
+
+void resumeFiber(FiberContext *ctx, TValue v) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->r0 = v;
+}
+
 static void dispatchEvent(Event &e) {
     lastEvent = e;
 
@@ -309,6 +330,13 @@ static void mainRunLoop() {
             currentFiber = f;
             f->pc = f->resumePC;
             f->resumePC = NULL;
+            if (f->wakeFn) {
+                auto fn = f->wakeFn;
+                f->wakeFn = NULL;
+                f->r0 = fn(f->wakeFnArg);
+                if (f->wakeTime || f->waitSource)
+                    continue; // we got suspended again
+            }
             exec_loop(f);
             if (panicCode)
                 return;
