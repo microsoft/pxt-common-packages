@@ -10,27 +10,6 @@
 
 void settings_init(void);
 
-#if 0
-
-static void do_connect(void *cfg_) {
-    wifi_config_t *cfg = cfg_;
-
-}
-
-static void wifi_cmd_disconnect(void *arg) {
-    disconnect();
-    jd_send(wifi_state->service_number, JD_WIFI_CMD_DISCONNECT, NULL, 0);
-}
-
-static int wifi_cmd_sta_join(jd_packet_t *pkt) {
-
-    worker_run(worker, do_connect, cfg);
-
-    return true;
-}
-
-#endif
-
 namespace _wifi {
 
 enum class WifiEvent {

@@ -38,6 +38,8 @@ worker_t worker_alloc(const char *id, uint32_t stack_size);
 int worker_run(worker_t w, TaskFunction_t fn, void *arg);
 void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
 
+void memInfo();
+
 } // namespace pxt
 
 #undef PXT_MAIN

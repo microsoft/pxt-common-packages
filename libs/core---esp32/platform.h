@@ -35,7 +35,7 @@ extern TaskHandle_t userCodeTask;
 
 #define PXT_IN_ISR() (xTaskGetCurrentTaskHandle() != userCodeTask)
 
-#define GC_BLOCK_SIZE (1024 * 64)
+#define GC_BLOCK_SIZE (1024 * 16)
 
 #define PXT_REGISTER_RESET(fn) pxt::registerResetFunction(fn)
 

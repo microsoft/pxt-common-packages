@@ -57,12 +57,19 @@ extern "C" void target_init() {
 #if CONFIG_IDF_TARGET_ESP32S2
     install_gpio0_handler();
 #endif
+    memInfo();
 }
 
 void updateScreen(Image_ img);
 
 void screen_init() {
     updateScreen(NULL);
+}
+
+void memInfo() {
+    //heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
+    DMESG("mem: %d free (%d total)", heap_caps_get_free_size(MALLOC_CAP_DEFAULT),
+          heap_caps_get_total_size(MALLOC_CAP_DEFAULT));
 }
 
 } // namespace pxt
