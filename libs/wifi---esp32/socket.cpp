@@ -1,18 +1,19 @@
 #include "wifi.h"
 
-#include "freertos/event_groups.h"
-#include "esp_wifi.h"
-#include "esp_netif.h"
+#include "esp_tls.h"
+#include "esp_crt_bundle.h"
 
-#define TAG "tcp"
+#define TAG "ssl"
 #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__)
 
 #define MAX_SOCKET 16
 
 namespace _wifi {
 
+static esp_tls_cfg_t tls_cfg;
+
 struct socket_t {
-    ssl_conn_t *ssl;
+    esp_tls_t *ssl;
     int bytesAvailable;
     struct read_args *readers;
 };
@@ -22,12 +23,30 @@ static socket_t *sockets[MAX_SOCKET];
 
 static void process_reader(struct read_args *args);
 
+static void update_bytes_avail(socket_t *sock) {
+    if (!sock->ssl)
+        return;
+
+    int ret = esp_tls_conn_read(sock->ssl, NULL, 0);
+    int bytes = esp_tls_get_bytes_avail(sock->ssl);
+
+    if (bytes == 0 && ret != 0 && ret != ESP_TLS_ERR_SSL_WANT_READ) {
+        esp_tls_conn_destroy(sock->ssl);
+        sock->ssl = NULL;
+    }
+
+    if (bytes > 0)
+        sock->bytesAvailable = bytes;
+    else
+        sock->bytesAvailable = 0;
+}
+
 static void flush_ssl(void *) {
     for (int i = 0; i < MAX_SOCKET; ++i) {
         auto s = sockets[i];
         if (!s || !s->ssl)
             continue;
-        s->bytesAvailable = ssl_get_bytes_avail(s->ssl);
+        update_bytes_avail(s);
         while (s->bytesAvailable && s->readers) {
             process_reader(s->readers);
         }
@@ -39,6 +58,9 @@ static void socket_init() {
         return;
     worker = worker_alloc("ssl", 10 * 1024);
     worker_set_idle(worker, flush_ssl, NULL);
+    tls_cfg.crt_bundle_attach = esp_crt_bundle_attach;
+    tls_cfg.non_block = true;
+    tls_cfg.timeout_ms = 30000;
 }
 
 /** Allocate new socket. */
@@ -55,11 +77,6 @@ int socketAlloc() {
     return -1;
 }
 
-/*
-        public socketClose(socket_num: number): void {
-        }
-*/
-
 #define GET_SOCK()                                                                                 \
     if (fd <= 0 || fd >= MAX_SOCKET)                                                               \
         return -10;                                                                                \
@@ -70,9 +87,7 @@ int socketAlloc() {
 #define GET_SOCK_SSL()                                                                             \
     GET_SOCK();                                                                                    \
     if (!sock->ssl)                                                                                \
-        return -12;                                                                                \
-    if (!ssl_is_connected(sock->ssl))                                                              \
-        return -13;
+        return -12;
 
 struct conn_args {
     socket_t *sock;
@@ -81,8 +96,35 @@ struct conn_args {
     int port;
 };
 
+PXT_DEF_STRING(sOOM, "ssl: Out of memory")
+PXT_DEF_STRING(sHandshake, "ssl: Handshake failed")
+PXT_DEF_STRING(sError, "ssl: error")
+
+static void check_error(socket_t *sock, int r) {
+    if (r < 0) {
+        int err_code, flags;
+        esp_err_t err =
+            esp_tls_get_and_clear_last_error(sock->ssl->error_handle, &err_code, &flags);
+
+        DMESG("ESP TLS error: err=%x (%d/%d) res=%d", err, err_code, flags, r);
+
+#if 0
+        // can't really throw from here
+        if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
+            pxt::throwValue((TValue)sOOM);
+        } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
+            pxt::throwValue((TValue)sHandshake);
+        } else {
+            pxt::throwValue((TValue)sError);
+        }
+#endif
+    }
+}
+
 static void worker_conn(conn_args *args) {
-    int r = ssl_connect(args->sock->ssl, args->host, args->port);
+    int r = esp_tls_conn_new_sync(args->host, strlen(args->host), args->port, &tls_cfg,
+                                  args->sock->ssl);
+    check_error(args->sock, r);
     resumeFiber(args->ctx, fromInt(r));
     delete args;
 }
@@ -96,7 +138,7 @@ int socketConnectTLS(int fd, String host, int port) {
         return -2;
     if (port <= 0 || port > 0xffff)
         return -3;
-    sock->ssl = ssl_alloc();
+    sock->ssl = esp_tls_init();
     auto args = new conn_args;
     args->host = host->getUTF8Data();
     args->port = port;
@@ -113,7 +155,8 @@ struct write_args {
 };
 
 static void worker_write(write_args *args) {
-    int r = ssl_write(args->sock->ssl, args->data->data, args->data->length);
+    int r = esp_tls_conn_write(args->sock->ssl, args->data->data, args->data->length);
+    check_error(args->sock, r);
     resumeFiber(args->ctx, fromInt(r));
     delete args;
 }
@@ -156,7 +199,7 @@ static void process_reader(read_args *args) {
     if (num > sock->bytesAvailable)
         num = sock->bytesAvailable;
     args->buf = malloc(num);
-    int r = ssl_read(sock->ssl, args->buf, num);
+    int r = esp_tls_conn_read(sock->ssl, args->buf, num);
     if (r < 0) {
         free(args->buf);
         resumeFiber(args->ctx, fromInt(r));
@@ -166,7 +209,7 @@ static void process_reader(read_args *args) {
         resumeFiberWithFn(args->ctx, (fiber_resume_t)mk_read_buffer, args);
     }
 
-    sock->bytesAvailable = ssl_get_bytes_avail(sock->ssl);
+    update_bytes_avail(sock);
 }
 
 static void worker_read(read_args *args) {
@@ -180,7 +223,7 @@ static void worker_read(read_args *args) {
     }
 
     sock->readers = args;
-    sock->bytesAvailable = ssl_get_bytes_avail(sock->ssl);
+    update_bytes_avail(sock);
     if (sock->bytesAvailable)
         process_reader(args);
 }
@@ -213,8 +256,10 @@ int socketBytesAvailable(int fd) {
 }
 
 static void worker_close(socket_t *sock) {
-    ssl_close(sock->ssl);
-    sock->ssl = NULL;
+    if (sock->ssl) {
+        esp_tls_conn_destroy(sock->ssl);
+        sock->ssl = NULL;
+    }
     free(sock);
 }
 

@@ -3,6 +3,7 @@ namespace net {
 
     export class WifiController extends net.Controller {
         private networks: net.AccessPoint[]
+        private _scansLeft: number = 0
         private inScan: boolean
         private _isConnected: boolean
         private _ssid: string
@@ -24,6 +25,12 @@ namespace net {
             this.inScan = false
             if (!buf)
                 return
+            if (buf.length == 0 && this._scansLeft > 0) {
+                control.dmesg("re-trying wifi scan")
+                this._scansLeft--
+                _wifi.scanStart()
+                return
+            }
 
             let i = 0
             while (i < buf.length) {
@@ -50,6 +57,7 @@ namespace net {
         public scanNetworks(): net.AccessPoint[] {
             if (!this.inScan) {
                 this.inScan = true
+                this._scansLeft = 2
                 _wifi.scanStart()
             }
             control.waitForEvent(_wifi.eventID(), EV_ScanCompleted)
@@ -73,7 +81,7 @@ namespace net {
         }
 
         private logError(lbl: string, res: number) {
-            if (res != 0) {
+            if (res < 0) {
                 control.dmesg(`sock ${lbl} failed: ${res}`)
                 return false
             }

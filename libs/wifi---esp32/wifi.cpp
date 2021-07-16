@@ -117,13 +117,14 @@ Buffer scanResults() {
     wifi_ap_record_t *ap_list_buffer;
 
     esp_wifi_scan_get_ap_num(&sta_number);
+
     ap_list_buffer = (wifi_ap_record_t *)malloc(sta_number * sizeof(wifi_ap_record_t));
 
     Buffer res = NULL;
 
     esp_err_t err = esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer);
 
-    if (err == ESP_OK) {
+    if (err == ESP_OK || sta_number == 0) {
         int buffer_size = 0;
         for (i = 0; i < sta_number; i++) {
             wifi_ap_record_t *src = &ap_list_buffer[i];
