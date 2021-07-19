@@ -143,6 +143,10 @@ namespace net {
         get ssid(): string { return this._ssid; }
         get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
+
+        public dataAvailableSrc(socket_num: number): number { return _wifi.eventID(); }
+        public dataAvailableValue(socket_num: number): number { return 1000 + socket_num; }
+
     }
 
     // initialize Net.instance

@@ -6,3 +6,7 @@
 namespace pxt {
 // nothing here yet
 } // namespace pxt
+
+namespace _wifi {
+int eventID();
+}

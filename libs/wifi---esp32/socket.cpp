@@ -29,16 +29,31 @@ static void update_bytes_avail(socket_t *sock) {
 
     int ret = esp_tls_conn_read(sock->ssl, NULL, 0);
     int bytes = esp_tls_get_bytes_avail(sock->ssl);
+    int emitEvent = 0;
 
     if (bytes == 0 && ret != 0 && ret != ESP_TLS_ERR_SSL_WANT_READ) {
         esp_tls_conn_destroy(sock->ssl);
         sock->ssl = NULL;
+        emitEvent = 1;
     }
 
-    if (bytes > 0)
+    // DMESG("updbyt: %d r=%d", bytes, ret);
+
+    if (bytes > 0) {
+        // if we went from 0 to more, raise event
+        if (sock->bytesAvailable == 0)
+            emitEvent = 1;
         sock->bytesAvailable = bytes;
-    else
+    } else
         sock->bytesAvailable = 0;
+
+    if (emitEvent)
+        for (int i = 0; i < MAX_SOCKET; ++i) {
+            if (sockets[i] == sock) {
+                raiseEvent(eventID(), 1000 + i);
+                break;
+            }
+        }
 }
 
 static void flush_ssl(void *) {
@@ -263,7 +278,7 @@ static void worker_close(socket_t *sock) {
 /** Close the socket if open */
 //%
 int socketClose(int fd) {
-    GET_SOCK_SSL();
+    GET_SOCK();
     sockets[fd] = NULL;
     worker_run(worker, (TaskFunction_t)worker_close, sock);
     // don't wait for the actual close
