@@ -127,7 +127,7 @@ namespace net {
                 if (this._buffer.length == 0) {
                     let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
                     if (avail > 0)
-                        this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
+                        this._buffer = this.controller.socketRead(this._socknum, avail)
                     if (avail < 0)
                         this.close()
                 }

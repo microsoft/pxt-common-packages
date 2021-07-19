@@ -1,6 +1,7 @@
 #include "pxt.h"
 
 #include "esp_system.h"
+#include "esp_log.h"
 #include "driver/gpio.h"
 #include "esp_private/system_internal.h"
 
@@ -20,13 +21,7 @@ static void initRandomSeed() {
 }
 
 void sendSerial(const char *data, int len) {
-    /*
-    if (!serial) {
-        serial = new codal::_mbed::Serial(USBTX, NC);
-        serial->baud(9600);
-    }
-    serial->send((uint8_t*)data, len);
-    */
+    ets_printf(LOG_BOLD(LOG_COLOR_PURPLE) "%s" LOG_RESET_COLOR "\n", data);
 }
 
 extern "C" void drawPanic(int code) {
@@ -67,7 +62,7 @@ void screen_init() {
 }
 
 void memInfo() {
-    //heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
+    // heap_caps_print_heap_info(MALLOC_CAP_DEFAULT);
     DMESG("mem: %d free (%d total)", heap_caps_get_free_size(MALLOC_CAP_DEFAULT),
           heap_caps_get_total_size(MALLOC_CAP_DEFAULT));
 }
