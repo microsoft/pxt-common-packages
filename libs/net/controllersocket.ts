@@ -65,19 +65,33 @@ namespace net {
         onError(handler: (msg: string) => void): void {
             this._errorHandler = handler;
         }
+
+        private flushReadBuffer() {
+            while (!this._closed && this._messageHandler) {
+                const buf = this.read()
+                if (buf.length) {
+                    this._messageHandler(buf)
+                } else {
+                    break
+                }
+            }
+        }
+
         onMessage(handler: (data: Buffer) => void): void {
             if (this._messageHandler === undefined) {
-                control.runInParallel(() => {
-                    while (!this._closed) {
-                        let buf = this.read()
-                        if (buf.length) {
-                            if (this._messageHandler)
-                                this._messageHandler(buf)
-                        } else {
+                const src = this.controller.dataAvailableSrc(this._socknum)
+                const value = this.controller.dataAvailableValue(this._socknum)
+                if (src > 0 && value > 0) {
+                    this.flushReadBuffer()
+                    control.internalOnEvent(src, value, () => this.flushReadBuffer())
+                } else {
+                    control.runInParallel(() => {
+                        while (!this._closed) {
+                            this.flushReadBuffer()
                             pause(200)
                         }
-                    }
-                })
+                    })
+                }
             }
             this._messageHandler = handler || null;
         }
@@ -106,7 +120,7 @@ namespace net {
             return pref.toString()
         }
 
-        /** Read up to 'size' bytes from the socket, this may be buffered internally! If 'size' isnt specified, return everything in the buffer. */
+        /** Read up to 'size' bytes from the socket, this may be buffered internally! If 'size' isn't specified, return everything in the buffer. */
         public read(size: number = 0): Buffer {
             // print("Socket read", size)
             if (size == 0) {
