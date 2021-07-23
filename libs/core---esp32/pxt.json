@@ -3,6 +3,7 @@
     "files": [
         "README.md",
         "Makefile",
+        "certs.mk",
         "dal.d.ts",
         "scheduler.cpp",
         "config.cpp",
