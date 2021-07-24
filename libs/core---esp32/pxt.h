@@ -2,8 +2,9 @@
 #define __PXT_H
 
 #include "pxtbase.h"
-
 #include "vm.h"
+#include "pins.h"
+#include "pintarget.h"
 
 #define OUTPUT_BITS 12
 

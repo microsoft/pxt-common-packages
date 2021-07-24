@@ -10,7 +10,7 @@
 
 #define PAGE_SIZE 1024 // not really
 
-#define DEV_NUM_PINS 40
+#define DEV_NUM_PINS 50
 
 #define DEV_PWM_PINS 0xffff_ffff_ffffULL
 #define DEV_AIN_PINS 0ULL
@@ -22,7 +22,10 @@ namespace pxt {
 class ZPin;
 class AbstractButton;
 class MultiButton;
+class Button;
 class CodalComponent;
+
+typedef int8_t PinName;
 
 typedef void (*reset_fn_t)();
 void registerResetFunction(reset_fn_t fn);
