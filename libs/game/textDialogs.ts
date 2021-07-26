@@ -410,8 +410,10 @@ namespace game {
      */
     //% blockId=game_show_long_text group="Dialogs"
     //% block="show long text %str %layout"
+    //% str.shadow=text
     //% help=game/show-long-text
-    export function showLongText(str: string, layout: DialogLayout) {
+    export function showLongText(str: any, layout: DialogLayout) {
+        str = console.inspect(str);
         controller._setUserEventsEnabled(false);
         game.pushScene();
         game.currentScene().flags |= scene.Flag.SeeThrough;
@@ -623,8 +625,12 @@ namespace game {
      */
     //% weight=90 help=game/splash
     //% blockId=gameSplash block="splash %title||%subtitle"
+    //% title.shadow=text
+    //% subtitle.shadow=text
     //% group="Prompt"
-    export function splash(title: string, subtitle?: string) {
+    export function splash(title: any, subtitle?: any) {
+        title = console.inspect(title);
+        subtitle = subtitle ? console.inspect(subtitle) : subtitle;
         controller._setUserEventsEnabled(false);
         game.pushScene();
         game.currentScene().flags |= scene.Flag.SeeThrough;

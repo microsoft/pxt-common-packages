@@ -8,15 +8,16 @@ namespace game {
     //% group="Gameplay"
     //% weight=10 help=game/ask-for-number
     //% blockId=gameaskfornumber block="ask for number %message || and max length %answerLength"
+    //% message.shadow=text
     //% message.defl=""
     //% answerLength.defl="6"
     //% answerLength.min=1
     //% answerLength.max=10
     //% group="Prompt"
-    export function askForNumber(message: string, answerLength = 6) {
+    export function askForNumber(message: any, answerLength = 6) {
         answerLength = Math.max(0, Math.min(10, answerLength));
         let p = new game.NumberPrompt();
-        const result = p.show(message, answerLength);
+        const result = p.show(console.inspect(message), answerLength);
         return result;
     }
 

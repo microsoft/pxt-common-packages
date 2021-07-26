@@ -7,11 +7,15 @@ namespace game {
     //% group="Gameplay"
     //% weight=89 help=game/ask
     //% blockId=gameask block="ask %title||%subtitle"
+    //% title.shadow=text
+    //% subtitle.shadow=text
     //% group="Prompt"
-    export function ask(title: string, subtitle?: string): boolean {
+    export function ask(title: any, subtitle?: any): boolean {
         controller._setUserEventsEnabled(false);
         game.eventContext(); // initialize the game
         control.pushEventContext();
+        title = console.inspect(title);
+        subtitle = subtitle ? console.inspect(subtitle) : subtitle;
         game.showDialog(title, subtitle, "A = OK, B = CANCEL");
         // short pause so that players don't skip through prompt
         pause(500);
