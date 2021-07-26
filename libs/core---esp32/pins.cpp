@@ -5,7 +5,7 @@ static DevicePin **pinPtrs;
 static uint8_t numPinPtrs;
 static uint8_t pinPos[DEV_NUM_PINS];
 
-//%
+//% expose
 DevicePin *getPin(int id) {
 
     id &= CFG_PIN_NAME_MSK;
@@ -25,7 +25,7 @@ DevicePin *getPin(int id) {
     return pinPtrs[ptr - 1];
 }
 
-//%
+//% expose
 DevicePin *getPinCfg(int key) {
     int p = getConfig(key, -1);
     if (p == -1)
@@ -40,7 +40,7 @@ void linkPin(int from, int to) {
     pinPos[from] = pinPos[to];
 }
 
-//%
+//% expose
 DevicePin *lookupPin(int pinName) {
     if (pinName < 0 || pinName == 0xff)
         return NULL;
@@ -48,7 +48,7 @@ DevicePin *lookupPin(int pinName) {
     return getPin(pinName);
 }
 
-//%
+//% expose
 DevicePin *lookupPinCfg(int key) {
     return lookupPin(getConfig(key));
 }
