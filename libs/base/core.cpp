@@ -1497,6 +1497,8 @@ int *getBootloaderConfigData() {
 //%
 int getConfig(int key, int defl) {
 #ifdef PXT_VM
+    if (!vmImg)
+        return defl;
     int *cfgData = vmImg->configData;
 #else
     int *cfgData = bytecode ? *(int **)&bytecode[18] : NULL;

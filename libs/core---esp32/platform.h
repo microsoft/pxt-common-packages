@@ -32,6 +32,9 @@ void registerResetFunction(reset_fn_t fn);
 void soft_panic(int errorCode);
 
 extern TaskHandle_t userCodeTask;
+
+void install_gpio0_handler();
+
 } // namespace pxt
 
 #define IMAGE_BITS 4

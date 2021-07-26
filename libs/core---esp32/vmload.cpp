@@ -32,6 +32,7 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 
 void vmStart() {
     memInfo();
+    install_gpio0_handler();
 
     auto sect = (VMImageSection *)PXT_EXPORTData[4];
     auto hd = (VMImageHeader *)sect->data;

@@ -53,7 +53,9 @@ static void bootloader_handler(void *) {
     reboot_to_uf2();
 }
 
-static void install_gpio0_handler() {
+void install_gpio0_handler() {
+    DMESG("reset reason: %x", esp_reset_reason_get_hint());
+    gpio_install_isr_service(0);
     gpio_config_t gpio_conf;
     gpio_conf.intr_type = GPIO_INTR_POSEDGE;
     gpio_conf.mode = GPIO_MODE_INPUT;
@@ -63,15 +65,14 @@ static void install_gpio0_handler() {
     gpio_config(&gpio_conf);
     gpio_isr_handler_add(GPIO_NUM_0, bootloader_handler, NULL);
 }
+#else
+void install_gpio0_handler() {
+    gpio_install_isr_service(0);
+}
 #endif
 
 extern "C" void target_init() {
-    DMESG("reset reason: %x", esp_reset_reason_get_hint());
     initRandomSeed();
-    gpio_install_isr_service(0);
-#if CONFIG_IDF_TARGET_ESP32S2
-    install_gpio0_handler();
-#endif
     memInfo();
 }
 
@@ -104,10 +105,10 @@ static void config_channel(ledc_channel_t ch, int pin) {
     CHK(ledc_channel_config(&cfg));
 }
 
+// do not expose for now - this will probably conflict with regular Pin APIs
 /**
  * Set the color of the built-in status LED
  */
-//%
 void setStatusLed(uint32_t color) {
     static bool inited;
     if (PIN(LED_R) == -1)
