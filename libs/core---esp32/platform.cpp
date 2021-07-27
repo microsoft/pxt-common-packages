@@ -88,6 +88,9 @@ void memInfo() {
           heap_caps_get_total_size(MALLOC_CAP_DEFAULT));
 }
 
+void (*logJDFrame)(const uint8_t *data);
+void (*sendJDFrame)(const uint8_t *data);
+
 } // namespace pxt
 
 #include "driver/ledc.h"
