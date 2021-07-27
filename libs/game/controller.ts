@@ -162,6 +162,8 @@ namespace controller {
         //% vx.defl=100 vy.defl=100
         //% help=controller/move-sprite
         //% group="Multiplayer"
+        //% vx.shadow="speedPicker"
+        //% vy.shadow="speedPicker"
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
             if (!sprite) return;
             if (!this._controlledSprites) this._controlledSprites = [];
@@ -381,6 +383,8 @@ namespace controller {
     //% vx.defl=100 vy.defl=100
     //% help=controller/move-sprite
     //% group="Single Player"
+    //% vx.shadow=spriteSpeedPicker
+    //% vy.shadow=spriteSpeedPicker
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
         _player1().moveSprite(sprite, vx, vy);
     }
