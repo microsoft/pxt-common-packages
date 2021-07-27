@@ -42,7 +42,7 @@ namespace controller {
     }
 
     export function _moveSprites() {
-        // todo: move to currecnt sceane
+        // todo: move to current scene
         control.enablePerfCounter("controller")
         players().forEach(ctrl => ctrl.__preUpdate());
     }
