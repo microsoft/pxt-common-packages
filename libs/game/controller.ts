@@ -162,8 +162,8 @@ namespace controller {
         //% vx.defl=100 vy.defl=100
         //% help=controller/move-sprite
         //% group="Multiplayer"
-        //% vx.shadow="speedPicker"
-        //% vy.shadow="speedPicker"
+        //% vx.shadow="spriteSpeedPicker"
+        //% vy.shadow="spriteSpeedPicker"
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
             if (!sprite) return;
             if (!this._controlledSprites) this._controlledSprites = [];
