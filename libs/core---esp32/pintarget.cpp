@@ -15,7 +15,9 @@
 
 namespace pxt {
 
-ZPin::ZPin(int gpio_num) {
+PXT_EXT_VTABLE(ZPin);
+
+ZPin::ZPin(int gpio_num) : RefObject(&ZPin_vtable) {
     this->gpio_num = gpio_num;
     this->status = 0;
     this->pullMode = PullMode::None;

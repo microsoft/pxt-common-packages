@@ -13,7 +13,7 @@
 namespace pxt {
 enum class PullMode : uint8_t { None = 0, Down, Up };
 
-class ZPin {
+class ZPin : RefObject {
     uint8_t gpio_num;
     uint8_t status;
     PullMode pullMode;

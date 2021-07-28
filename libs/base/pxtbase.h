@@ -454,6 +454,7 @@ enum class BuiltInType : uint16_t {
     MMap = 10,                 // linux, mostly ev3
     BoxedString_SkipList = 11, // used by VM bytecode representation only
     BoxedString_ASCII = 12,    // ditto
+    ZPin = 13,
     User0 = 16,
 };
 
@@ -743,8 +744,7 @@ class BoxedString : public RefObject {
     // in characters
     uint32_t getLength() { return (uint32_t)runMethod(6); }
     const char *getUTF8DataAt(uint32_t pos) {
-        auto meth =
-            ((const char *(*)(BoxedString *, uint32_t))vtable->methods[7]);
+        auto meth = ((const char *(*)(BoxedString *, uint32_t))vtable->methods[7]);
         return meth(this, pos);
     }
 #else
@@ -980,6 +980,8 @@ void coreReset();
 void gcReset();
 void systemReset();
 
+void doNothing();
+
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 extern "C" void *app_alloc(int numbytes);
@@ -1047,14 +1049,15 @@ template <size_t N> constexpr size_t _boxedStringLen(char const (&)[N]) {
 
 // strings defined here as used as (String)name
 #define PXT_DEF_STRING(name, val)                                                                  \
-    const BoxedStringLayout<_boxedStringLen(val)> name[1] = {                                  \
+    const BoxedStringLayout<_boxedStringLen(val)> name[1] = {                                      \
         {&pxt::string_inline_ascii_vt, _boxedStringLen(val) - 1, val}};
 
 // bigger value - less memory, but slower
 // 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings),
 // which is similar to amortized allocation time
 #define PXT_STRING_SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
-#define PXT_STRING_MIN_SKIP 20  // min. size of string to use skip list; static code has its own limit
+#define PXT_STRING_MIN_SKIP                                                                        \
+    20 // min. size of string to use skip list; static code has its own limit
 
 #define PXT_NUM_SKIP_ENTRIES(p) ((p)->skip.length / PXT_STRING_SKIP_INCR)
 #define PXT_SKIP_DATA_IND(p) ((const char *)(p->skip.list + PXT_NUM_SKIP_ENTRIES(p)))
@@ -1169,6 +1172,11 @@ bool removeElement(RefCollection *c, TValue x);
 #define PXT_VTABLE(classname, valtp)                                                               \
     DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print, (void *)&classname::scan, (void *)&classname::gcsize)
+
+#define PXT_EXT_VTABLE(classname)                                                                  \
+    static int classname##_gcsize() { return sizeof(classname); }                                  \
+    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&pxt::doNothing,            \
+               (void *)&pxt::anyPrint, (void *)&pxt::doNothing, (void *)&classname##_gcsize)
 
 #define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 
