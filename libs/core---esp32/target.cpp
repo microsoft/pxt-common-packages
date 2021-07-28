@@ -34,6 +34,8 @@ __attribute__((used)) __attribute__((aligned(0x20))) const uintptr_t PXT_EXPORTD
 
 namespace pxt {
 
+worker_t fg_worker;
+
 void target_exit() {
     systemReset();
 }
@@ -42,7 +44,15 @@ extern "C" void target_reset() {
     esp_restart();
 }
 
-void target_startup() {}
+void ets_log_dmesg();
+static void fg_worker_idle(void *) {
+    ets_log_dmesg();
+}
+
+void target_startup() {
+    fg_worker = worker_alloc("pxt_fg", 2048);
+    worker_set_idle(fg_worker, fg_worker_idle, NULL);
+}
 
 #define LOG_QUEUE_SIZE (2 * 1024)
 class LogQueue {
@@ -137,6 +147,7 @@ int LogQueue::write(const char *buf, int len) {
 void dumpDmesg() {
     // not enabled
 }
+
 } // namespace pxt
 
 LogQueue codalLogStore;
@@ -159,14 +170,14 @@ void vdmesg(const char *format, va_list arg) {
 
     target_disable_irq();
 
-    snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
-    dmesgRaw(buf, (uint32_t)strlen(buf));
+    // snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
+    // dmesgRaw(buf, (uint32_t)strlen(buf));
 
-    vsnprintf(buf, sizeof(buf), format, arg);
-    ets_printf(LOG_FORMAT(W, "%s"), esp_log_timestamp(), "DMESG", buf);
-    dmesgRaw(buf, (uint32_t)strlen(buf));
-
-    dmesgRaw("\n", 1);
+    vsnprintf(buf, sizeof(buf) - 3, format, arg);
+    // ets_printf(LOG_FORMAT(W, "%s"), esp_log_timestamp(), "DMESG", buf);
+    int len = strlen(buf);
+    buf[len++] = '\n';
+    dmesgRaw(buf, len);
 
     target_enable_irq();
 }
@@ -178,7 +189,54 @@ void dmesg(const char *format, ...) {
     va_end(arg);
 }
 
+extern int int_level;
+extern "C" void panic_print_char(const char c);
+extern "C" void panic_print_str(const char *str);
+extern "C" void panic_print_dec(int d);
+
+extern "C" void user_panic_handler() {
+    panic_print_str("\r\nDMESG:\r\n");
+    for (;;) {
+        char c;
+        int r = codalLogStore.read(&c, 1);
+        if (r == 0)
+            break;
+        if (c == '\n')
+            panic_print_char('\r');
+        panic_print_char(c);
+    }
+    panic_print_str("END DMESG\r\nInt: ");
+    panic_print_dec(int_level);
+    panic_print_str("\r\n");
+}
+
 namespace pxt {
+
+void ets_log_dmesg() {
+    char buf[500];
+    int prefix = 0;
+    for (;;) {
+        int len = codalLogStore.read(buf + prefix, sizeof(buf) - 1 - prefix);
+        if (len == 0 && prefix != 0) {
+            buf[prefix] = '\n'; // make sure we flush
+            len = 1;
+        }
+        len += prefix;
+        if (len == 0)
+            return;
+        int beg = 0;
+        for (int i = 0; i < len; ++i) {
+            if (buf[i] == '\n' || i - beg > 200) {
+                buf[i] = 0;
+                ets_printf(LOG_FORMAT(W, "%s"), esp_log_timestamp(), "DMESG", buf + beg);
+                beg = i + 1;
+            }
+        }
+        prefix = len - beg;
+        if (prefix)
+            memmove(buf, buf + beg, prefix);
+    }
+}
 
 void dmesg_flush() {}
 

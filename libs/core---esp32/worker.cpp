@@ -30,6 +30,8 @@ static void worker_main(void *arg) {
 worker_t worker_alloc(const char *id, uint32_t stack_size) {
     worker_t w = (worker_t)calloc(1, sizeof(struct worker));
     w->queue = xQueueCreate(20, sizeof(qitem_t));
+    // The main task is at priority 1, so we're higher priority (run "more often").
+    // Timer task runs at much higher priority (~20).
     xTaskCreatePinnedToCore(worker_main, id, stack_size, w, 2, &w->task, WORKER_CPU);
     return w;
 }
