@@ -249,7 +249,8 @@ static VMImage *loadSections(VMImage *img) {
                 }
             }
 
-            CHECK(numberBoxes->size == sizeof(VMImageSection) + (numBoxed + 1) * 12, 1063);
+            CHECK(numberBoxes->size >= sizeof(VMImageSection) + (numBoxed + 1) * 12, 1063);
+            CHECK(numberBoxes->size <= 4 + sizeof(VMImageSection) + (numBoxed + 1) * 12, 1063);
 
             img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
 #ifdef PXT32
