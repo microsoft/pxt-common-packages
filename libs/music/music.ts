@@ -123,7 +123,9 @@ enum BeatFraction {
     //% block="2"
     Double = 32,
     //% block="4",
-    Breve = 64
+    Breve = 64,
+    //% block="1/3",
+    Triplet = 128
 }
 
 namespace music {
@@ -181,6 +183,7 @@ namespace music {
             case BeatFraction.Sixteenth: beat /= 16; break;
             case BeatFraction.Double: beat *= 2; break;
             case BeatFraction.Breve: beat *= 4; break;
+            case BeatFraction.Triplet: beat /= 3; break;
         }
         return beat >> 0;
     }

@@ -14,7 +14,7 @@ Your program works with the game engine using an update function. The update fun
 
 ## The Game Loop
 
-On of the basic parts of game programming is the use of a game loop. This is part of the game engine in @boardname@. A game loop keeps the actions in the game moving along. As simple code it might look like this:
+One of the basic parts of game programming is the use of a game loop. This is part of the game engine in @boardname@. A game loop keeps the actions in the game moving along. As simple code it might look like this:
 
 ```typescript-ignore
 while (!gameOver) {

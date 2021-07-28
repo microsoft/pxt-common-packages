@@ -1,8 +1,9 @@
 /*
     Animation library for sprites
 */
-//% color="#03AA74" weight=78 icon="\uf021" block="Animation"
-//% groups='["Animate", "Legacy"]'
+//% color="#03AA74" weight=100 icon="\uf021" block="Animation"
+//% groups='["Animate", "Advanced"]'
+//% advanced=true
 namespace animation {
     const stateNamespace = "__animation";
 
@@ -503,6 +504,7 @@ namespace animation {
     //% blockId=run_image_animation
     //% block="animate $sprite=variables_get(mySprite) frames $frames=animation_editor interval (ms) $frameInterval=timePicker loop $loop=toggleOnOff"
     //% group="Animate"
+    //% weight=100
     //% help=animation/run-image-animation
     export function runImageAnimation(sprite: Sprite, frames: Image[], frameInterval?: number, loop?: boolean) {
         const anim = new ImageAnimation(sprite, frames, frameInterval || 500, !!loop);
@@ -518,6 +520,7 @@ namespace animation {
     //% blockId=run_movement_animation
     //% block="animate $sprite=variables_get(mySprite) with $pathString=animation_path for (ms) $duration=timePicker loop $loop=toggleOnOff"
     //% duration.defl=2000
+    //% weight=80
     //% group="Animate"
     //% help=animation/run-movement-animation
     export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number, loop?: boolean) {
@@ -543,6 +546,7 @@ namespace animation {
     //% blockId=stop_animations
     //% block="stop %type animations on %sprite=variables_get(mySprite)"
     //% group="Animate"
+    //% weight=60
     //% help=animation/stop-animation
     export function stopAnimation(type: AnimationTypes, sprite: Sprite) {
         let state: AnimationState = game.currentScene().data[stateNamespace];
@@ -562,6 +566,10 @@ namespace animation {
                 }
                 return true;
             });
+        }
+        if (type == AnimationTypes.All || type == AnimationTypes.ImageAnimation) {
+            //stop state based animation if any as well
+            sprite._action = -1
         }
     }
 
@@ -628,6 +636,7 @@ namespace animation {
     //% frames.fieldEditor="animation"
     //% frames.fieldOptions.decompileLiterals="true"
     //% frames.fieldOptions.filter="!tile !dialog !background"
+    //% weight=40
     //% group="Animate" duplicateShadowOnDrag
     export function _animationFrames(frames: Image[]) {
         return frames

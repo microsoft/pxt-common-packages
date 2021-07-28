@@ -9,11 +9,13 @@
 #include <sys/types.h>
 #include <errno.h>
 
+#ifndef PXT_ESP32
 // __MINGW32__ is defined on both mingw32 and mingw64
 #ifdef __MINGW32__
 #include <windows.h>
 #else
 #include <sys/mman.h>
+#endif
 #endif
 
 // should this be something like CXX11 or whatever?
@@ -97,8 +99,14 @@ static void panic_core(int error_code) {
 extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
+#if defined(PXT_ESP32)
+    abort();
+#elif defined(PXT_VM)
+    systemReset();
+#else
     while (1)
         sleep_core_us(10000);
+#endif
 }
 
 DLLEXPORT int pxt_get_panic_code() {
@@ -115,11 +123,25 @@ void soft_panic(int errorCode) {
 }
 
 void sleep_core_us(uint64_t us) {
+#ifdef PXT_ESP32
+    uint64_t endp = esp_timer_get_time() + us;
+    while (esp_timer_get_time() < endp)
+        ;
+#else
     struct timespec ts;
     ts.tv_sec = us / 1000000;
     ts.tv_nsec = (us % 1000000) * 1000;
     while (nanosleep(&ts, &ts))
         ;
+#endif
+}
+
+void target_yield() {
+#ifdef PXT_ESP32
+    vTaskDelay(1);
+#else
+    sleep_core_us(1000);
+#endif
 }
 
 void sleep_ms(uint32_t ms) {
@@ -128,7 +150,7 @@ void sleep_ms(uint32_t ms) {
 }
 
 void sleep_us(uint64_t us) {
-    if (us > 50000) {
+    if (us > 20000) {
         sleep_ms((uint32_t)(us / 1000));
     } else {
         sleep_core_us(us);
@@ -168,7 +190,7 @@ void disposeFiber(FiberContext *t) {
 }
 
 FiberContext *setupThread(Action a, TValue arg = 0) {
-    //DMESG("setup thread: %p", a);
+    // DMESG("setup thread: %p", a);
     auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
     memset(t, 0, sizeof(*t));
     t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
@@ -186,7 +208,7 @@ FiberContext *setupThread(Action a, TValue arg = 0) {
     if (ra->numArgs > 2)
         target_panic(PANIC_INVALID_IMAGE);
     t->currAction = ra;
-    t->resumePC = (uint16_t *)ra->func;
+    t->resumePC = actionPC(ra);
 
     t->img = vmImg;
     t->imgbase = (uint16_t *)vmImg->dataStart;
@@ -307,7 +329,7 @@ static void mainRunLoop() {
             }
             f = n;
         } else if (fromBeg) {
-            sleep_core_us(1000);
+            target_yield();
         }
     }
 }
@@ -375,22 +397,17 @@ void initRuntime() {
 #define GC_PAGE_SIZE 4096
 #endif
 
-#ifdef PXT_IOS
 uint8_t *gcBase;
-#endif
 
 void *gcAllocBlock(size_t sz) {
+#ifdef PXT_ESP32
+    void *r = xmalloc(sz);
+#else
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-#ifdef __MINGW32__
-    void *r = VirtualAlloc(currPtr, sz, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    if (r == NULL) {
-        DMESG("VirtualAlloc %p failed; err=%d", currPtr, GetLastError());
-        target_panic(PANIC_INTERNAL_ERROR);
-    }
-#elif defined(PXT_IOS)
+#if defined(PXT64)
     if (!gcBase) {
-        gcBase = (uint8_t *)xmalloc(1 << PXT_IOS_HEAP_ALLOC_BITS);
+        gcBase = (uint8_t *)xmalloc(1 << PXT_VM_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;
@@ -403,8 +420,9 @@ void *gcAllocBlock(size_t sz) {
         target_panic(PANIC_INTERNAL_ERROR);
     }
 #endif
-
     currPtr = (uint8_t *)r + sz;
+#endif
+
     if (isReadOnly((TValue)r)) {
         DMESG("mmap returned read-only address: %p", r);
         target_panic(PANIC_INTERNAL_ERROR);
@@ -428,7 +446,6 @@ void gcProcessStacks(int flags) {
     }
 }
 
-
 #define MAX_RESET_FN 32
 static reset_fn_t resetFunctions[MAX_RESET_FN];
 
@@ -444,6 +461,9 @@ void registerResetFunction(reset_fn_t fn) {
 }
 
 void systemReset() {
+#ifdef PXT_ESP32
+    esp_restart();
+#else
     if (!panicCode)
         panicCode = -1;
 
@@ -471,6 +491,7 @@ void systemReset() {
     gcReset();
 
     pthread_exit(NULL);
+#endif
 }
 
 } // namespace pxt

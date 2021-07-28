@@ -207,12 +207,13 @@ namespace tiles {
 
         protected _layer: number;
         protected _map: TileMapData;
+        renderable: scene.Renderable;
 
         constructor(scale: TileScale = TileScale.Sixteen) {
             this._layer = 1;
             this.scale = scale;
 
-            scene.createRenderable(
+            this.renderable = scene.createRenderable(
                 scene.TILE_MAP_Z,
                 (t, c) => this.draw(t, c)
             );
@@ -615,44 +616,3 @@ namespace tiles {
         return sample[0];
     }
 }
-
-//% helper=getTilemapByName
-//% pyConvertToTaggedTemplate
-function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
-
-//% helper=getTilemapByName
-//% pyConvertToTaggedTemplate
-function tilemap8(lits: any, ...args: any[]): tiles.TileMapData { return null }
-
-//% helper=getTilemapByName
-//% pyConvertToTaggedTemplate
-function tilemap16(lits: any, ...args: any[]): tiles.TileMapData { return null }
-
-//% helper=getTilemapByName
-//% pyConvertToTaggedTemplate
-function tilemap32(lits: any, ...args: any[]): tiles.TileMapData { return null }
-
-namespace helpers {
-    export type TilemapFactory = (name: string) => tiles.TileMapData;
-
-    let factories: TilemapFactory[];
-
-    export function registerTilemapFactory(factory: TilemapFactory) {
-        if (!factories) factories = [];
-
-        factories.push(factory);
-    }
-
-    export function getTilemapByName(name: string) {
-        if (factories) {
-            for (const factory of factories) {
-                let data = factory(name);
-
-                if (data) return data;
-            }
-        }
-
-        return null;
-    }
-}
-

@@ -19,14 +19,15 @@ namespace game {
     //% group="Gameplay"
     //% weight=10 help=game/ask-for-string
     //% blockId=gameaskforstring block="ask for string %message || and max length %answerLength"
+    //% message.shadow=text
     //% message.defl=""
     //% answerLength.defl="12"
     //% answerLength.min=1
     //% answerLength.max=24
     //% group="Prompt"
-    export function askForString(message: string, answerLength = 12) {
+    export function askForString(message: any, answerLength = 12) {
         let p = new game.Prompt();
-        const result = p.show(message, answerLength);
+        const result = p.show(console.inspect(message), answerLength);
         return result;
     }
 

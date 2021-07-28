@@ -9,6 +9,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.decompileArgumentAsString="true"
     //% img.fieldOptions.filter="!tile !dialog !background"
     //% weight=100 group="Create" duplicateShadowOnDrag
     export function _spriteImage(img: Image) {
@@ -20,6 +21,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.decompileArgumentAsString="true"
     //% img.fieldOptions.sizes="-1,-1"
     //% img.fieldOptions.filter="background"
     //% weight=100 group="Create"
@@ -68,6 +70,7 @@ namespace images {
     //% img.fieldEditor="sprite"
     //% img.fieldOptions.taggedTemplate="img"
     //% img.fieldOptions.decompileIndirectFixedInstances="true"
+    //% img.fieldOptions.decompileArgumentAsString="true"
     //% img.fieldOptions.sizes="15,15;18,18;21,21;24,24;9,9;12,12"
     //% img.fieldOptions.filter="dialog"
     //% weight=100 group="Create"

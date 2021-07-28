@@ -88,7 +88,7 @@ static GCStats gcStats;
 
 //% expose
 Buffer getGCStats() {
-    return mkBuffer((uint8_t*)&gcStats, sizeof(gcStats));
+    return mkBuffer((uint8_t *)&gcStats, sizeof(gcStats));
 }
 
 //%
@@ -304,7 +304,7 @@ void gcProcess(TValue v) {
         while (workQueue.getLength()) {
             auto curr = (RefObject *)workQueue.pop();
             VVLOG(" - %p", curr);
-            scan = getScanMethod(curr->vtable & ~ANY_MARKED_MASK);
+            scan = getScanMethod(curr->vt() & ~ANY_MARKED_MASK);
             if (scan)
                 scan(curr);
         }
@@ -381,7 +381,7 @@ static void mark(int flags) {
 }
 
 static uint32_t getObjectSize(RefObject *o) {
-    auto vt = o->vtable & ~ANY_MARKED_MASK;
+    auto vt = o->vt() & ~ANY_MARKED_MASK;
     uint32_t r;
     GC_CHECK(vt != 0, 49);
     if (IS_VAR_BLOCK(vt)) {
@@ -398,7 +398,7 @@ static uint32_t getObjectSize(RefObject *o) {
 static void setupFreeBlock(GCBlock *curr) {
     gcStats.numBlocks++;
     gcStats.totalBytes += curr->blockSize;
-    curr->data[0].vtable = FREE_MASK | (TOWORDS(curr->blockSize) << 2);
+    curr->data[0].setVT(FREE_MASK | (TOWORDS(curr->blockSize) << 2));
     ((RefBlock *)curr->data)[0].nextFree = firstFree;
     firstFree = (RefBlock *)curr->data;
     midPtr = (uint8_t *)curr->data + curr->blockSize / 4;
@@ -472,13 +472,13 @@ static GCBlock *allocateBlockCore() {
     curr->blockSize = sz - sizeof(GCBlock);
     // make sure reference to allocated block is stored somewhere, otherwise
     // GCC optimizes out the call to GC_ALLOC_BLOCK
-    curr->data[4].vtable = (uint32_t)(uintptr_t)dummy;
+    curr->data[4].setVT((uintptr_t)dummy);
     return curr;
 }
 
 __attribute__((noinline)) static void allocateBlock() {
     auto curr = allocateBlockCore();
-    LOG("GC alloc: %p", curr);
+    DMESG("GC block %db @ %p", curr->blockSize, curr);
     GC_CHECK((curr->blockSize & 3) == 0, 40);
     setupFreeBlock(curr);
     linkFreeBlock(curr);
@@ -502,7 +502,7 @@ static void sweep(int flags) {
         while (d < end) {
             if (IS_LIVE(d->vtable)) {
                 VVLOG("Live %p", d);
-                d->vtable &= ~MARKED_MASK;
+                d->setVT(d->vt() & ~MARKED_MASK);
                 d += getObjectSize(d);
             } else {
                 auto start = (RefBlock *)d;
@@ -515,7 +515,7 @@ static void sweep(int flags) {
                         VVLOG("Dead Arr %p", d);
                     } else {
                         VVLOG("Dead Obj %p", d);
-                        GC_CHECK(((VTable *)d->vtable)->magic == VTABLE_MAGIC, 41);
+                        GC_CHECK(d->vtable->magic == VTABLE_MAGIC, 41);
                         d->destroyVT();
                         VVLOG("destroyed");
                     }
@@ -526,9 +526,9 @@ static void sweep(int flags) {
                 if (sz > (int)maxFreeBlock)
                     maxFreeBlock = sz;
 #ifdef PXT_GC_CHECKS
-                memset(start, 0xff, WORDS_TO_BYTES(sz));
+                memset((void *)start, 0xff, WORDS_TO_BYTES(sz));
 #endif
-                start->vtable = (sz << 2) | FREE_MASK;
+                start->setVT((sz << 2) | FREE_MASK);
                 if (sz > 1) {
                     start->nextFree = NULL;
                     if (!prevFreePtr) {
@@ -635,6 +635,47 @@ void *gcAllocateArray(int numbytes) {
     return r + 1;
 }
 
+static void *gcAllocAt(void *hint, int numbytes) {
+    gc(0);
+    size_t numwords = BYTES_TO_WORDS(ALIGN_TO_WORD(numbytes));
+
+    for (auto p = firstFree; p; p = p->nextFree) {
+        GC_CHECK(!isReadOnly((TValue)p), 49);
+        auto vt = p->vtable;
+        GC_CHECK(IS_FREE(vt), 43);
+        int offset = BYTES_TO_WORDS((uint8_t *)hint - (uint8_t *)p);
+        int left = (int)(VAR_BLOCK_WORDS(vt) - numwords - offset);
+        // we give ourselves some space here, so we don't get some strange overlaps
+        if (offset >= 8 && left >= 8) {
+            auto nf = (RefBlock *)((void **)p + numwords + offset);
+            nf->setVT((left << 2) | FREE_MASK);
+            nf->nextFree = p->nextFree;
+            p->nextFree = nf;
+            p->setVT((offset << 2) | FREE_MASK);
+            p = (RefBlock *)((void **)p + offset);
+            p->setVT(0);
+            return p;
+        }
+    }
+
+    return NULL;
+}
+
+void *app_alloc_at(void *at, int numbytes) {
+    if (numbytes < 8)
+        return NULL;
+    if (!at)
+        return NULL;
+
+    numbytes = ALIGN_TO_WORD(numbytes) + sizeof(void *);
+    auto r = (uintptr_t *)gcAllocAt((uintptr_t *)at - 1, numbytes);
+    if (!r)
+        return NULL;
+    *r = ARRAY_MASK | PERMA_MASK | (TOWORDS(numbytes) << 2);
+    gc(0);
+    return r + 1;
+}
+
 void *app_alloc(int numbytes) {
     if (!numbytes)
         return NULL;
@@ -675,40 +716,12 @@ void gcReset() {
 }
 
 #ifdef PXT_VM
-static uint8_t *preallocBlock;
-static uint8_t *preallocPointer;
-
-#define PREALLOC_SIZE (1024 * 1024)
-
 void gcPreStartup() {
-    xfree(preallocBlock);
-    preallocBlock = (uint8_t *)xmalloc(PREALLOC_SIZE);
-    preallocPointer = preallocBlock;
-    if (!isReadOnly((TValue)preallocBlock))
-        oops(40);
     inGC |= IN_GC_PREALLOC;
 }
 
 void gcStartup() {
     inGC &= ~IN_GC_PREALLOC;
-    preallocPointer = NULL;
-}
-
-void *gcPrealloc(int numbytes) {
-    if (!preallocPointer)
-        oops(49);
-    void *r = preallocPointer;
-    preallocPointer += ALIGN_TO_WORD(numbytes);
-    if (preallocPointer > preallocBlock + PREALLOC_SIZE) {
-        DMESG("pre-alloc size exceeded! block=%p ptr=%p sz=%d", preallocBlock, preallocPointer,
-              (int)PREALLOC_SIZE);
-        oops(48);
-    }
-    return r;
-}
-
-bool inGCPrealloc() {
-    return (inGC & IN_GC_PREALLOC) != 0;
 }
 #endif
 
@@ -719,13 +732,8 @@ void *gcAllocate(int numbytes) {
     if (numbytes > GC_MAX_ALLOC_SIZE)
         target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
 
-    if (PXT_IN_ISR() || (inGC & (IN_GC_ALLOC | IN_GC_COLLECT | IN_GC_FREEZE)))
+    if (PXT_IN_ISR() || (inGC & (IN_GC_PREALLOC | IN_GC_ALLOC | IN_GC_COLLECT | IN_GC_FREEZE)))
         target_panic(PANIC_CALLED_FROM_ISR);
-
-#ifdef PXT_VM
-    if (inGCPrealloc())
-        return gcPrealloc(numbytes);
-#endif
 
     inGC |= IN_GC_ALLOC;
 
@@ -760,7 +768,7 @@ void *gcAllocate(int numbytes) {
                 auto nextFree = p->nextFree; // p and nf can overlap when allocating 4 bytes
                 // VVLOG("nf=%p nef=%p", nf, nextFree);
                 if (left)
-                    nf->vtable = (left << 2) | FREE_MASK;
+                    nf->setVT((left << 2) | FREE_MASK);
                 if (left >= 2) {
                     nf->nextFree = nextFree;
                 } else {
@@ -770,7 +778,7 @@ void *gcAllocate(int numbytes) {
                     prev->nextFree = nf;
                 else
                     firstFree = nf;
-                p->vtable = 0;
+                p->setVT(0);
                 VVLOG("GC=>%p %d %p -> %p,%p", p, numwords, nf, nf ? nf->nextFree : 0,
                       nf ? (void *)nf->vtable : 0);
                 GC_CHECK(!nf || !nf->nextFree || !isReadOnly((TValue)nf->nextFree), 48);

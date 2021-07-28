@@ -1,9 +1,8 @@
 {
     "name": "animation",
-    "description": "An animation library for sprite",
+    "description": "Advanced state based animations for sprites",
     "files": [
         "README.md",
-        "animation.ts",
         "legacy.ts",
         "targetoverrides.ts"
     ],

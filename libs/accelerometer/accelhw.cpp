@@ -226,11 +226,15 @@ private:
 
 };
 
-SINGLETON_IF_PIN(WAccel, ACCELEROMETER_INT);
-
+static WAccel *instAcc;
 codal::Accelerometer *getAccelerometer() {
-    auto wacc = getWAccel();
-    return wacc ? wacc->acc : NULL;
+    if (instAcc)
+        return instAcc->acc;
+    if (LOOKUP_PIN(ACCELEROMETER_INT) || LOOKUP_PIN(ACCELEROMETER_SDA)) {
+        instAcc = new WAccel();
+        return instAcc->acc;
+    }
+    return NULL;
 }
 
 } // namespace pxt

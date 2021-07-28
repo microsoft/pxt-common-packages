@@ -8,7 +8,6 @@ tiles.placeOnRandomTile(null, 0)
 
 You a can place a sprite on top of a random tile in the tile map. Use the tile image to select which group of tiles the sprite can be placed on.
 
-
 ## Parameters
 
 * **sprite**: the sprite to move onto the tile.
@@ -16,33 +15,72 @@ You a can place a sprite on top of a random tile in the tile map. Use the tile i
 
 ## Example #example
 
-Make a tilemap with several different tiles. Create a circle sprite. Randomly place the sprite on a tile with color number `8`.
+Make a tilemap with two solid color tiles. Create a circle sprite and randomly place the sprite on only the brown tiles.
 
 ```blocks
-let mySprite: Sprite = null
-// TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9)); 
-mySprite = sprites.create(img`
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . 7 7 7 7 7 7 . . . . . 
-. . . 7 7 7 7 7 7 7 7 7 7 . . . 
-. . . 7 7 7 7 7 7 7 7 7 7 . . . 
-. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-. . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
-. . . 7 7 7 7 7 7 7 7 7 7 . . . 
-. . . 7 7 7 7 7 7 7 7 7 7 . . . 
-. . . . . 7 7 7 7 7 7 . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-`, SpriteKind.Player)
-pause(1000)
-tiles.placeOnRandomTile(mySprite, 8)
+tiles.setTilemap(tilemap`level`)
+let mySprite = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 7 7 7 7 7 7 . . . . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . . . . 7 7 7 7 7 7 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player)
+forever(function () {
+    tiles.placeOnRandomTile(mySprite, assets.tile`brownTile`)
+    pause(1000)
+})
 ```
 
 ## See also #seealso
 
 [get tile location](/reference/tiles/get-tile-location)
+
+```jres
+{
+    "transparency16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true
+    },
+    "redTile": {
+        "data": "hwQQABAAAAAiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIg==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "redTile"
+    },
+    "brownTile": {
+        "data": "hwQQABAAAADu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7g==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "brownTile"
+    },
+    "level": {
+        "id": "level",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwNjAwMDUwMDAyMDAwMTAwMDIwMDAwMDIwMDAxMDAwMjAxMDAwMjAwMDEwMDAwMDEwMDAyMDAwMTAyMDAwMTAwMDIwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "tileset": [
+            "myTiles.transparency16",
+            "myTiles.redTile",
+            "myTiles.brownTile"
+        ],
+        "displayName": "level"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myTiles"
+    }
+}
+```

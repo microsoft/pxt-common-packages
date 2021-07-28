@@ -5,9 +5,11 @@ namespace pxsim {
         _bpp: number;
         data: Uint8Array;
         isStatic = true;
+        revision: number;
 
         constructor(w: number, h: number, bpp: number) {
             super();
+            this.revision = 0;
             this.data = new Uint8Array(w * h)
             this._width = w
             this._height = h
@@ -48,6 +50,7 @@ namespace pxsim {
         }
 
         makeWritable() {
+            this.revision++;
             this.isStatic = false
         }
 
@@ -69,6 +72,8 @@ namespace pxsim.ImageMethods {
 
     export function isStatic(img: RefImage) { return img.gcIsStatic() }
 
+    export function revision(img: RefImage) { return img.revision }
+
     export function setPixel(img: RefImage, x: number, y: number, c: number) {
         img.makeWritable()
         if (img.inRange(x, y))
@@ -87,6 +92,8 @@ namespace pxsim.ImageMethods {
     }
 
     export function fillRect(img: RefImage, x: number, y: number, w: number, h: number, c: number) {
+        if (w == 0 || h == 0 || x >= img._width || y >= img._height || x + w - 1 < 0 || y + h - 1 < 0)
+            return;
         img.makeWritable()
         let [x2, y2] = img.clamp(x + w - 1, y + h - 1);
         [x, y] = img.clamp(x, y)

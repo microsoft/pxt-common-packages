@@ -41,6 +41,10 @@ using namespace codal;
 #endif
 #endif
 
+#define PXT_COMM_BASE 0x20002000 // 8k in
+#define PXT_CODAL 1
+
+
 namespace pxt {
 
 #if CONFIG_ENABLED(DEVICE_USB)
