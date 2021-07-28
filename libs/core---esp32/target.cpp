@@ -8,9 +8,6 @@
 
 #include "esp_log.h"
 
-//#define LOG_TO_STDERR 1
-//#define LOG_TO_FILE 1
-
 // make sure compiler doesn't optimize accesses to PXT_EXPORTData in vmload.cpp by placing
 // it in different file (this one)
 // also this is rewritten by pxt; don't rely on values here
@@ -46,10 +43,6 @@ extern "C" void target_reset() {
 }
 
 void target_startup() {}
-
-#ifdef LOG_TO_FILE
-static FILE *dmesgFile;
-#endif
 
 #define LOG_QUEUE_SIZE (2 * 1024)
 class LogQueue {
@@ -157,39 +150,8 @@ DLLEXPORT int pxt_get_logs(int logtype, char *dst, int maxSize) {
     return r;
 }
 
-namespace pxt {
 static void dmesgRaw(const char *buf, uint32_t len) {
-#ifdef LOG_TO_FILE
-    if (!dmesgFile) {
-        dmesgFile = fopen("dmesg.txt", "w");
-        if (!dmesgFile)
-            dmesgFile = stderr;
-    }
-#endif
-
-    if (codalLogStore.write(buf, len) != 0)
-        return; // if message too long, skip
-
-#ifdef LOG_TO_FILE
-    fwrite(buf, 1, len, dmesgFile);
-#endif
-#ifdef LOG_TO_STDERR
-    fwrite(buf, 1, len, stderr);
-#endif
-}
-
-void deepSleep() {
-    // nothing to do
-}
-
-void dmesg_flush() {
-#ifdef LOG_TO_FILE
-    fflush(dmesgFile);
-#endif
-}
-
-static void dmesgFlushRaw() {
-    dmesg_flush();
+    codalLogStore.write(buf, len);
 }
 
 void vdmesg(const char *format, va_list arg) {
@@ -199,7 +161,7 @@ void vdmesg(const char *format, va_list arg) {
 
     snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
     dmesgRaw(buf, (uint32_t)strlen(buf));
-    
+
     vsnprintf(buf, sizeof(buf), format, arg);
     ets_printf(LOG_FORMAT(W, "%s"), esp_log_timestamp(), "DMESG", buf);
     dmesgRaw(buf, (uint32_t)strlen(buf));
@@ -207,8 +169,6 @@ void vdmesg(const char *format, va_list arg) {
     dmesgRaw("\n", 1);
 
     target_enable_irq();
-
-    dmesgFlushRaw();
 }
 
 void dmesg(const char *format, ...) {
@@ -218,8 +178,16 @@ void dmesg(const char *format, ...) {
     va_end(arg);
 }
 
+namespace pxt {
+
+void dmesg_flush() {}
+
 uint64_t getLongSerialNumber() {
     return 0;
+}
+
+void deepSleep() {
+    // nothing to do
 }
 
 } // namespace pxt
