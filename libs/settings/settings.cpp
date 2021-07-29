@@ -36,7 +36,8 @@ class WStorage {
                  : flash.totalSize() - SETTINGS_SIZE,
              SETTINGS_SIZE),
 #elif defined(PICO_BOARD)
-          fs(flash, flash.totalSize() - SETTINGS_SIZE, SETTINGS_SIZE),
+          // XIP bias 0x10000000
+          fs(flash, 0x10000000 + flash.totalSize() - SETTINGS_SIZE, SETTINGS_SIZE),
 #else
           fs(flash),
 #endif
