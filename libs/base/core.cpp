@@ -1699,7 +1699,6 @@ ValType valType(TValue v) {
 #endif
     } else {
         auto vt = getVTable((RefObject *)v);
-        DMESG("vt %p -> %p",v,vt);
         if (vt->magic == VTABLE_MAGIC)
             return vt->objectType;
         else

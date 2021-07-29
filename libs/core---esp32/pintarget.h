@@ -33,7 +33,9 @@ class ZPin : RefObject {
 static inline ZPin *asZPin(TValue v) {
     if (!isPointer(v))
         failedCast(v);
-    // TODO
+    auto vt = getVTable((RefObject *)v);
+    if (vt->classNo != BuiltInType::ZPin)
+        failedCast(v);
     return (ZPin *)v;
 }
 
