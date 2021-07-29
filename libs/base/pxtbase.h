@@ -430,6 +430,7 @@ typedef void **PPVoid;
 typedef void *Object_;
 
 #define VTABLE_MAGIC 0xF9
+#define VTABLE_MAGIC2 0xF8
 
 enum class ValType : uint8_t {
     Undefined,
@@ -1163,9 +1164,15 @@ bool removeElement(RefCollection *c, TValue x);
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,   \
                          0,          0,       {__VA_ARGS__}};
+#define DEF_VTABLE_EXT(name, tp, valtype, ...)                                                     \
+    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC2, 0, BuiltInType::tp, BuiltInType::tp,  \
+                         0,          0,       {__VA_ARGS__}};
 #else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp,                    \
+                         0,          0,       {__VA_ARGS__}};
+#define DEF_VTABLE_EXT(name, tp, valtype, ...)                                                     \
+    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC2, 0, BuiltInType::tp,                   \
                          0,          0,       {__VA_ARGS__}};
 #endif
 
@@ -1175,8 +1182,8 @@ bool removeElement(RefCollection *c, TValue x);
 
 #define PXT_EXT_VTABLE(classname)                                                                  \
     static int classname##_gcsize() { return sizeof(classname); }                                  \
-    DEF_VTABLE(classname##_vtable, classname, ValType::Object, (void *)&pxt::doNothing,            \
-               (void *)&pxt::anyPrint, (void *)&pxt::doNothing, (void *)&classname##_gcsize)
+    DEF_VTABLE_EXT(classname##_vtable, classname, ValType::Object, (void *)&pxt::doNothing,        \
+                   (void *)&pxt::anyPrint, (void *)&pxt::doNothing, (void *)&classname##_gcsize)
 
 #define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 
