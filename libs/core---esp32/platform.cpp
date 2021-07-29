@@ -41,7 +41,7 @@ static void initRandomSeed() {
 }
 
 void sendSerial(const char *data, int len) {
-    ets_printf(LOG_BOLD(LOG_COLOR_PURPLE) "%s" LOG_RESET_COLOR "\n", data);
+    ets_printf(LOG_BOLD(LOG_COLOR_PURPLE) "%s" LOG_RESET_COLOR, data);
 }
 
 extern "C" void drawPanic(int code) {
