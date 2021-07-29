@@ -55,7 +55,15 @@ void target_startup() {
 }
 
 uint64_t getLongSerialNumber() {
-    return 0;
+    static uint64_t addr;
+    if (!addr) {
+        uint8_t mac[6];
+        esp_efuse_mac_get_default(mac);
+        addr = ((uint64_t)0xff << 56) | ((uint64_t)mac[5] << 48) | ((uint64_t)mac[4] << 40) |
+               ((uint64_t)mac[3] << 32) | ((uint64_t)mac[2] << 24) | ((uint64_t)mac[1] << 16) |
+               ((uint64_t)mac[0] << 8) | ((uint64_t)0xfe << 0);
+    }
+    return addr;
 }
 
 void deepSleep() {
