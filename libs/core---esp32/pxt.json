@@ -8,6 +8,7 @@
         "scheduler.cpp",
         "config.cpp",
         "target.cpp",
+        "dmesg.cpp",
         "pxt.h",
         "platform.h",
         "platform.cpp",
