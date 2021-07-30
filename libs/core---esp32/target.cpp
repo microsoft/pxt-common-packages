@@ -70,4 +70,13 @@ void deepSleep() {
     // nothing to do
 }
 
+uint64_t current_time_us() {
+    static uint64_t start_time;
+    if (!start_time) {
+        // try to synchronize with log timestamp
+        start_time = esp_timer_get_time() - esp_log_timestamp() * 1000;
+    }
+    return esp_timer_get_time() - start_time;
+}
+
 } // namespace pxt

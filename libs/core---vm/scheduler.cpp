@@ -158,7 +158,8 @@ void sleep_us(uint64_t us) {
     }
 }
 
-uint64_t currTime() {
+#ifndef PXT_ESP32
+static uint64_t currTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000LL + tv.tv_usec;
@@ -169,6 +170,7 @@ uint64_t current_time_us() {
         startTime = currTime();
     return currTime() - startTime;
 }
+#endif
 
 int current_time_ms() {
     return (int)(current_time_us() / 1000);
