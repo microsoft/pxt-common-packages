@@ -25,13 +25,20 @@ int ZFlash::totalSize() {
 
 int ZFlash::erasePage(uintptr_t address) {
   // address should be aligned to 4096
-  flash_range_erase(address - XIP_BIAS, FLASH_SECTOR_SIZE);
+  if (address % 4096 == 0){
+    target_disable_irq();
+    flash_range_erase(address - XIP_BIAS, FLASH_SECTOR_SIZE);  
+    target_enable_irq();
+  }
   return 0;
 }
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
   // should be aligned to 256
-  flash_range_program(dst - XIP_BIAS, (const uint8_t*)src, len);
+  target_disable_irq();
+  flash_range_program(dst - XIP_BIAS, (const uint8_t*)src, FLASH_PAGE_SIZE);
+  target_enable_irq();
+  
   return 0;
 }
 

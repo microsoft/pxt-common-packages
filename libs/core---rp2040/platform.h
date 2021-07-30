@@ -30,5 +30,8 @@
 
 typedef uint8_t PinName;
 
+// XIP range in 0x1000_0000 ~ 0x1100_0000
+#define PXT_IS_READONLY(v) (isTagged(v) || ((uintptr_t)v & 0x10000000))
+
 
 #endif
