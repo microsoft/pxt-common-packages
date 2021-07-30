@@ -15,6 +15,7 @@
         "platform.h",
         "platform.cpp",
         "pxtcore.h",
+        "uf2hid.h",
         "pins.h",
         "pins.cpp",
         "pintarget.cpp",

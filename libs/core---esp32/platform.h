@@ -8,6 +8,12 @@
 
 #define PXT_ESP32 1
 
+#if CONFIG_IDF_TARGET_ESP32S2
+#define PXT_USB 1
+#else
+#define PXT_USB 0
+#endif
+
 #define PAGE_SIZE 1024 // not really
 
 #define DEV_NUM_PINS 50
