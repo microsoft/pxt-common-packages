@@ -71,9 +71,11 @@ void install_gpio0_handler() {
 }
 #endif
 
+extern "C" void usb_init();
 extern "C" void target_init() {
     initRandomSeed();
     memInfo();
+    usb_init();
 }
 
 void updateScreen(Image_ img);

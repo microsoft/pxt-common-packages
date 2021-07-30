@@ -9,6 +9,8 @@
         "config.cpp",
         "target.cpp",
         "dmesg.cpp",
+        "dmesg.h",
+        "usb.cpp",
         "pxt.h",
         "platform.h",
         "platform.cpp",
