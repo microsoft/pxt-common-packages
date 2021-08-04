@@ -1,8 +1,10 @@
 #include "pxt.h"
+#include "esp_log.h"
+#if PXT_USB
 #include "tinyusb.h"
 #include "tusb_cdc_acm.h"
 #include "uf2hid.h"
-#include "esp_log.h"
+#endif
 
 #define LOG(msg, ...) DMESG("USB: " msg, ##__VA_ARGS__)
 #define LOGV(msg, ...) ((void)0)
