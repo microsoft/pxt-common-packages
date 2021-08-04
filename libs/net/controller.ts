@@ -37,5 +37,9 @@ namespace net {
         get ssid(): string { return undefined; }
         get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
+
+        // optional dataAvailable event
+        public dataAvailableSrc(socket_num: number): number { return -1; }
+        public dataAvailableValue(socket_num: number): number { return -1; }
     }
 }

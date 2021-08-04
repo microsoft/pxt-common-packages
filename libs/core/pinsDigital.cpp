@@ -148,6 +148,8 @@ void setPull(DigitalInOutPin name, PinPullMode pull) {
 
 }
 
+#ifdef PXT_CODAL
+
 namespace pxt {
 
 static void waitABit() {
@@ -285,3 +287,5 @@ void disableButtonMultiplexer() {
 }
 
 }
+
+#endif

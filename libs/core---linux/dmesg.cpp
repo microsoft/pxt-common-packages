@@ -6,15 +6,13 @@
 #include <stdarg.h>
 #include <fcntl.h>
 
-namespace pxt {
-
 static FILE *dmesgFile;
 
 static int dmesgPtr;
 static int dmesgSerialPtr;
 static char dmesgBuf[4096];
 
-void dumpDmesg() {
+void pxt::dumpDmesg() {
     auto len = dmesgPtr - dmesgSerialPtr;
     if (len == 0)
         return;
@@ -71,4 +69,3 @@ void dmesg(const char *format, ...) {
     va_end(arg);
 }
 
-} // namespace pxt

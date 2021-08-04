@@ -3,10 +3,13 @@
 namespace pxt {
 
 VMImage *vmImg;
+TaskHandle_t userCodeTask;
 
 static void vmStartCore(uint8_t *data, unsigned len) {
     unloadVMImage(vmImg);
     vmImg = NULL;
+
+    userCodeTask = xTaskGetCurrentTaskHandle();
 
     gcPreStartup();
 
@@ -28,6 +31,9 @@ static void vmStartCore(uint8_t *data, unsigned len) {
 }
 
 void vmStart() {
+    memInfo();
+    install_gpio0_handler();
+
     auto sect = (VMImageSection *)PXT_EXPORTData[4];
     auto hd = (VMImageHeader *)sect->data;
     if (sect->type != SectionType::InfoHeader || hd->magic0 != VM_MAGIC0 || hd->imageSize < 256) {

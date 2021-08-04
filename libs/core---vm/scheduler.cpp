@@ -100,6 +100,7 @@ extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
 #if defined(PXT_ESP32)
+    // sleep_core_us(5 * 1000 * 1000);
     abort();
 #elif defined(PXT_VM)
     systemReset();
@@ -157,7 +158,8 @@ void sleep_us(uint64_t us) {
     }
 }
 
-uint64_t currTime() {
+#ifndef PXT_ESP32
+static uint64_t currTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000LL + tv.tv_usec;
@@ -168,6 +170,7 @@ uint64_t current_time_us() {
         startTime = currTime();
     return currTime() - startTime;
 }
+#endif
 
 int current_time_ms() {
     return (int)(current_time_us() / 1000);
@@ -242,6 +245,27 @@ void waitForEvent(int source, int value) {
     schedule();
 }
 
+FiberContext *suspendFiber() {
+    currentFiber->waitSource = PXT_WAIT_SOURCE_PROMISE;
+    schedule();
+    return currentFiber;
+}
+
+void resumeFiberWithFn(FiberContext *ctx, fiber_resume_t fn, void *arg) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->wakeFn = fn;
+    ctx->wakeFnArg = arg;
+}
+
+void resumeFiber(FiberContext *ctx, TValue v) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->r0 = v;
+}
+
 static void dispatchEvent(Event &e) {
     lastEvent = e;
 
@@ -308,6 +332,13 @@ static void mainRunLoop() {
             currentFiber = f;
             f->pc = f->resumePC;
             f->resumePC = NULL;
+            if (f->wakeFn) {
+                auto fn = f->wakeFn;
+                f->wakeFn = NULL;
+                f->r0 = fn(f->wakeFnArg);
+                if (f->wakeTime || f->waitSource)
+                    continue; // we got suspended again
+            }
             exec_loop(f);
             if (panicCode)
                 return;
