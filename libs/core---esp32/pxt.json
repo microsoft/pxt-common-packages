@@ -40,5 +40,12 @@
         "CMakeLists.txt",
         "sdkconfig.defaults"
     ],
+    "dalDTS": {
+        "includeDirs": [
+            "main"
+        ],
+        "excludePrefix": [
+        ]
+    },
     "additionalFilePath": "../core---vm"
 }
