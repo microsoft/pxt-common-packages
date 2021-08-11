@@ -665,7 +665,10 @@ namespace game {
         return charCode <= 32 ||
             (charCode >= 58 && charCode <= 64) ||
             (charCode >= 91 && charCode <= 96) ||
-            (charCode >= 123 && charCode <= 126);
+            (charCode >= 123 && charCode <= 126) || 
+            (charCode >= 19968 && charCode <= 40869) ||
+            charCode == 12290 || 
+            charCode == 65292;
     }
 
     function breakIntoPages(text: string, lineLengths: number[]): string[][] {
