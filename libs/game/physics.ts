@@ -21,9 +21,6 @@ class PhysicsEngine {
     setMaxSpeed(speed: number) { }
 
     overlaps(sprite: Sprite): Sprite[] { return []; }
-
-    /** Transfers the sprites from the current engine to a new one */
-    transferSprites(newEngine: PhysicsEngine) { }
 }
 
 const MAX_TIME_STEP = 100; // milliseconds
@@ -739,16 +736,5 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             ),
             this.maxNegativeVelocity
         );
-    }
-
-    /**
-     * Transfers the sprites of the current engine over to a new one
-     * @param newEngine the new physics engine to which to transfer the sprites
-     */
-    transferSprites(newEngine: PhysicsEngine) {
-        for (let sprite of this.sprites) {
-            newEngine.addSprite(sprite)
-        }
-        this.sprites = []
     }
 }
