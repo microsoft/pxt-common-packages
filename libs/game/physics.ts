@@ -242,7 +242,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 sprite._vx = Fx.zeroFx8
         }
 
-        if (sprite._ay) {
+        if (sprite._ay) { // TODO(aznhassan): Consider getting rid of the only ax or fx req
             sprite._vy = Fx.add(
                 sprite._vy,
                 Fx.idiv(
