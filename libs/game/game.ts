@@ -48,6 +48,11 @@ namespace game {
         return _scene.physicsEngine;
     }
 
+    export function setPhysicsEngine(engine: PhysicsEngine) {
+        init();
+        _scene.physicsEngine = engine;
+    }
+
     function init(forceNewScene?: boolean) {
         if (!_scene || forceNewScene) {
             _scene = new scene.Scene(control.pushEventContext(), _scene);
