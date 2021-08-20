@@ -13,6 +13,11 @@ enum ControllerEvent {
 //% blockGap=8
 namespace controller {
     let _players: Controller[];
+    let _retainVelocityOnNoInput = false
+
+    export function setRetainVelocityOnNoInput(retainVelocity: boolean) {
+        _retainVelocityOnNoInput = retainVelocity
+    }
 
     function addController(ctrl: Controller) {
         if (!_players) {
@@ -313,7 +318,7 @@ namespace controller {
                     return;
                 }
 
-                if (controlledSprite._inputLastFrame) {
+                if (controlledSprite._inputLastFrame && !_retainVelocityOnNoInput) {
                     if (vx) s._vx = Fx.zeroFx8;
                     if (vy) s._vy = Fx.zeroFx8;
                 }
