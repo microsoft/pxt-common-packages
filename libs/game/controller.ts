@@ -14,9 +14,14 @@ enum ControllerEvent {
 namespace controller {
     let _players: Controller[];
     let _retainVelocityOnNoInput = false
+    let _useAcceleration = false
 
     export function setRetainVelocityOnNoInput(retainVelocity: boolean) {
         _retainVelocityOnNoInput = retainVelocity
+    }
+
+    export function useAccelerationInstead(useAcceleration: boolean) {
+        _useAcceleration = useAcceleration
     }
 
     function addController(ctrl: Controller) {
@@ -318,21 +323,40 @@ namespace controller {
                     return;
                 }
 
-                if (controlledSprite._inputLastFrame && !_retainVelocityOnNoInput) {
-                    if (vx) s._vx = Fx.zeroFx8;
-                    if (vy) s._vy = Fx.zeroFx8;
+                if (controlledSprite._inputLastFrame) {
+                    if (!_retainVelocityOnNoInput && !_useAcceleration) {
+                        if (vx) s._vx = Fx.zeroFx8;
+                        if (vy) s._vy = Fx.zeroFx8;
+                    } else if (_useAcceleration) {
+                        if (vx) s._ax = Fx.zeroFx8;
+                        if (vy) s._y = Fx.zeroFx8;
+                    }
                 }
 
                 if (svx || svy) {
                     if (vx && vy) {
                         // if moving in both vx/vy use speed vector constrained to be within circle
-                        s._vx = Fx.imul(svxInCricle as any as Fx8, vx)
-                        s._vy = Fx.imul(svyInCircle as any as Fx8, vy)
+                        if (_useAcceleration) {
+                            s._ax = Fx.idiv(Fx.imul(svxInCricle as any as Fx8, vx), 1)
+                            s._ay = Fx.idiv(Fx.imul(svyInCircle as any as Fx8, vy), 1)
+                        } else {
+                            s._vx = Fx.imul(svxInCricle as any as Fx8, vx)
+                            s._vy = Fx.imul(svyInCircle as any as Fx8, vy)
+                        }
                     } else if (vx) {
                         // otherwise don't bother
-                        s._vx = Fx.imul(svx as any as Fx8, vx)
+                        if (_useAcceleration) {
+                            s._ax = Fx.idiv(Fx.imul(svx as any as Fx8, vx), 1)
+                            console.log(`New accel: ${Fx.toFloat(s._ax)}`)
+                        } else {
+                            s._vx = Fx.imul(svx as any as Fx8, vx)
+                        }
                     } else if (vy) {
-                        s._vy = Fx.imul(svy as any as Fx8, vy)
+                        if (_useAcceleration) {
+                            s._ay = Fx.idiv(Fx.imul(svy as any as Fx8, vy), 1)
+                        } else {
+                            s._vy = Fx.imul(svy as any as Fx8, vy)
+                        }
                     }
                     controlledSprite._inputLastFrame = true;
                 }
@@ -340,6 +364,7 @@ namespace controller {
                     controlledSprite._inputLastFrame = false;
                 }
             });
+
 
             if (deadSprites)
                 this._controlledSprites = this._controlledSprites
