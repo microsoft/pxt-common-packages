@@ -9,6 +9,8 @@
         "controller.ts",
         "controllerbutton.ts",
         "hitbox.ts",
+        "renderText.ts",
+        "spritesay.ts",
         "sprites.ts",
         "sprite.ts",
         "sprite.d.ts",
