@@ -638,8 +638,165 @@ namespace pxsim.ImageMethods {
             fy += stepFY
         }
     }
-}
 
+    // This triangle rasterizer inspired by Juan Pineda's seminal 1988 SIGGRAPH paper.
+    // https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.157.4621&rep=rep1&type=pdf
+
+    type V2 = { x: number; y: number; };
+    type V3 = { x: number; y: number; z: number };
+    type Vertex = { pos: V2, uv: V2 };
+    type Bounds = { left: number; top: number; right: number; bottom: number; };
+
+    type DrawTriArgs = {
+        verts: Vertex[],
+        indices: number[],
+        area: V2,
+        dst: RefImage,
+        tex: RefImage
+    };
+
+    function edge(a: V2, b: V2, c: V2): number {
+        return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+    }
+    function barycentric(p0: V2, p1: V2, p2: V2, p: V2, out: V3): boolean {
+        const w0 = edge(p1, p2, p);
+        if (w0 < 0) return false;
+        const w1 = edge(p2, p0, p);
+        if (w1 < 0) return false;
+        const w2 = edge(p0, p1, p);
+        if (w2 < 0) return false;
+        out.x = w0;
+        out.y = w1;
+        out.z = w2;
+        // point is in triangle (or on an edge of it)
+        return true;
+    }
+    function clamp(v: number, min: number, max: number): number {
+        return Math.min(max, Math.max(v, min));
+    }
+    function min3(a: number, b: number, c: number): number {
+        return Math.min(Math.min(a, b), c);
+    }
+    function max3(a: number, b: number, c: number): number {
+        return Math.max(Math.max(a, b), c);
+    }
+    function scaleToRef(v: V2, s: number, ref: V2): V2 {
+        ref.x = v.x * s;
+        ref.y = v.y * s;
+        return ref;
+    }
+    function add3ToRef(a: V2, b: V2, c: V2, ref: V2): V2 {
+        ref.x = a.x + b.x + c.x;
+        ref.y = a.y + b.y + c.y;
+        return ref;
+    }
+    function divToRef(a: V2, b: V2, ref: V2): V2 {
+        ref.x = a.x / b.x;
+        ref.y = a.y / b.y;
+        return ref;
+    }
+
+    export function _drawQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
+        drawQuad(dst, tex, args);
+    }
+
+    function drawQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
+        /**
+         * Quad layout (wound clockwise)
+         * (i:0,uv:0,0) (i:1,uv:1,0)
+         *   +------------+
+         *   |\__         |
+         *   |   \__      |
+         *   |      \__   |
+         *   |         \__|
+         *   +------------+
+         * (i:3,uv:0,1) (i:2,uv:1,1)
+         */
+
+        // Triangle indices. Triangles are wound counterclockwise.
+        const TRI0_INDICES = [0, 3, 2];
+        const TRI1_INDICES = [2, 1, 0];
+    
+        const leftTop: Vertex = {
+            pos: { x: args.getAt(0) | 0, y: args.getAt(1) | 0 },
+            uv: { x: 0, y: 0 }
+        };
+        const rightTop: Vertex = {
+            pos: { x: args.getAt(2) | 0, y: args.getAt(3) | 0 },
+            uv: { x: 1, y: 0 }
+        };
+        const rightBottom: Vertex = {
+            pos: { x: args.getAt(4) | 0, y: args.getAt(5) | 0 },
+            uv: { x: 1, y: 1 }
+        }
+        const leftBottom: Vertex = {
+            pos: { x: args.getAt(6) | 0, y: args.getAt(7) | 0 },
+            uv: { x: 0, y: 1 }
+        };
+        const verts = [leftTop, rightTop, rightBottom, leftBottom];
+
+        // calc area of quad
+        const a = edge(
+            verts[TRI0_INDICES[0]].pos,
+            verts[TRI0_INDICES[1]].pos,
+            verts[TRI0_INDICES[2]].pos);
+        if (a <= 0) return;
+        const area: V2 = { x: a, y: a };
+
+        drawTri({ verts, indices: TRI0_INDICES, area, dst, tex });
+        drawTri({ verts, indices: TRI1_INDICES, area, dst, tex });
+    }
+
+    function drawTri(args: DrawTriArgs): void {
+        const v0 = args.verts[args.indices[0]];
+        const v1 = args.verts[args.indices[1]];
+        const v2 = args.verts[args.indices[2]];
+        // Temp vars
+        const _uv0: V2 = { x: 0, y: 0 };
+        const _uv1: V2 = { x: 0, y: 0 };
+        const _uv2: V2 = { x: 0, y: 0 };
+        const _uv: V2 = { x: 0, y: 0 };
+
+        function shade(bary: V3): number {
+            // Calculate uv coords from given barycentric coords.
+            // TODO: Support different texture wrapping modes.
+            scaleToRef(v0.uv, bary.x, _uv0);
+            scaleToRef(v1.uv, bary.y, _uv1);
+            scaleToRef(v2.uv, bary.z, _uv2);
+            add3ToRef(_uv0, _uv1, _uv2, _uv);
+            divToRef(_uv, args.area, _uv);
+            // Sample texture at uv coords.
+            const x = Math.floor(_uv.x * args.tex._width);
+            const y = Math.floor(_uv.y * args.tex._height);
+            return ImageMethods.getPixel(args.tex, x, y);
+        }
+        // get clipped bounds of tri
+        const bounds: Bounds = {
+            left: clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
+            top: clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
+            right: clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
+            bottom: clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
+        };
+        const p: V2 = { x: bounds.left, y: bounds.top };
+        const bary: V3 = { x: 0, y: 0, z: 0 };
+        // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle.
+        // We should do some prefiltering. This can be done using a tiled rendering approach for larger triangles.
+        for (; p.y < bounds.bottom; ++p.y) {
+            p.x = bounds.left;
+            for (; p.x < bounds.right; ++p.x) {
+                // TODO: This extremely expensive call to `barycentric` can be optimized out by predetermining
+                // the gradients at setup and just adding them at each step. It's not as precise, but at this
+                // small a screen resolution it should be unnoticable at even the largest triangle size.
+                if (barycentric(v0.pos, v1.pos, v2.pos, p, bary)) {
+                    const color = shade(bary);
+                    if (color) {
+                        ImageMethods.setPixel(args.dst, p.x, p.y, color);
+                    }
+                }
+            }
+        }
+    }
+}
 
 namespace pxsim.image {
     export function byteHeight(h: number, bpp: number) {
