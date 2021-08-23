@@ -132,7 +132,7 @@ namespace sprites {
             let bubbleOffset: number = Fx.toInt(owner._hitbox.oy);
             let needsRedraw = true;
 
-            // sets the defaut scroll speed in pixels per second
+            // sets the default scroll speed in pixels per second
             let speed = 45;
             const currentScene = game.currentScene();
 

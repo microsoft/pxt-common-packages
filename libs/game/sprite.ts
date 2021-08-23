@@ -468,7 +468,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Effects"
     //% weight=60
-    //% blockId=spritesay block="%sprite(mySprite) leegacy say %text||for %millis ms"
+    //% blockId=spritesay block="%sprite(mySprite) say %text||for %millis ms"
     //% millis.shadow=timePicker
     //% text.shadow=text
     //% inlineInputMode=inline
