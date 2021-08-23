@@ -337,8 +337,8 @@ namespace controller {
                     if (vx && vy) {
                         // if moving in both vx/vy use speed vector constrained to be within circle
                         if (_useAcceleration) {
-                            s._ax = Fx.idiv(Fx.imul(svxInCricle as any as Fx8, vx), 1)
-                            s._ay = Fx.idiv(Fx.imul(svyInCircle as any as Fx8, vy), 1)
+                            s._ax = Fx.imul(svxInCricle as any as Fx8, vx)
+                            s._ay = Fx.imul(svyInCircle as any as Fx8, vy)
                         } else {
                             s._vx = Fx.imul(svxInCricle as any as Fx8, vx)
                             s._vy = Fx.imul(svyInCircle as any as Fx8, vy)
@@ -346,14 +346,13 @@ namespace controller {
                     } else if (vx) {
                         // otherwise don't bother
                         if (_useAcceleration) {
-                            s._ax = Fx.idiv(Fx.imul(svx as any as Fx8, vx), 1)
-                            console.log(`New accel: ${Fx.toFloat(s._ax)}`)
+                            s._ax = Fx.imul(svx as any as Fx8, vx)
                         } else {
                             s._vx = Fx.imul(svx as any as Fx8, vx)
                         }
                     } else if (vy) {
                         if (_useAcceleration) {
-                            s._ay = Fx.idiv(Fx.imul(svy as any as Fx8, vy), 1)
+                            s._ay = Fx.imul(svy as any as Fx8, vy)
                         } else {
                             s._vy = Fx.imul(svy as any as Fx8, vy)
                         }
