@@ -192,6 +192,30 @@ namespace helpers {
             r.push(buf.getNumber(format, i))
         return r
     }
+
+    export const _b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    export function bufferToBase64(buf: Buffer) {
+        const len = buf.length
+        let r = ""
+        for (let i = 0; i < len; i += 3) {
+            const x0 = buf[i]
+            r += _b64[x0 >> 2]
+            if (i + 1 >= len) {
+                r += _b64[(x0 & 3) << 4] + "=="
+            } else {
+                const x1 = buf[i + 1]
+                r += _b64[(x0 & 3) << 4 | (x1 >> 4)]
+                if (i + 2 >= len) {
+                    r += _b64[(x1 & 15) << 2] + "="
+                } else {
+                    const x2 = buf[i + 2]
+                    r += _b64[(x1 & 15) << 2 | (x2 >> 6)]
+                    r += _b64[x2 & 63]
+                }
+            }
+        }
+        return r
+    }
 }
 
 interface Buffer {
@@ -233,12 +257,17 @@ interface Buffer {
     //% helper=bufferChunked
     chunked(maxSize: number): Buffer[];
 
-
     /**
      * Read contents of buffer as an array in specified format
      */
     //% helper=bufferToArray
     toArray(format: NumberFormat): number[];
+
+    /**
+     * Convert buffer to ASCII base64 encoding.
+     */
+    //% helper=bufferToBase64
+    toBase64(): string;
 
     // rest defined in buffer.cpp
 }
@@ -268,8 +297,60 @@ namespace Buffer {
         return res
     }
 
+    function b64Idx(c: string) {
+        if (c === undefined || c == "=") return -1
+
+        // handle base64url
+        if (c == "-") return 62
+        if (c == "_") return 63
+
+        const r = helpers._b64.indexOf(c)
+        if (r < 0)
+            throw "Invalid Base64"
+        return r
+    }
+
+    function fromBase64Core(trg: Buffer, b64: string) {
+        const len = b64.length
+        let dp = 0
+        for (let i = 0; i < len; i += 4) {
+            const x0 = b64Idx(b64[i])
+            const x1 = b64Idx(b64[i + 1])
+            const x2 = b64Idx(b64[i + 2])
+            const x3 = b64Idx(b64[i + 3])
+            if (x0 < 0 || x1 < 0) throw "Invalid Base64"
+            if (trg)
+                trg[dp] = (x0 << 2) | (x1 >> 4)
+            dp++
+            if (x2 >= 0) {
+                if (trg)
+                    trg[dp] = (x1 << 4) | (x2 >> 2)
+                dp++
+                if (x3 >= 0) {
+                    if (trg)
+                        trg[dp] = (x2 << 6) | x3
+                    dp++
+                }
+            } else {
+                if (x3 >= 0 || i + 4 < len)
+                    throw "Invalid Base64"
+            }
+        }
+        return dp
+    }
+
     /**
-     * Create a new buffer with UTF8-encoded string
+     * Create a new buffer, decoding a Base64 string
+     */
+    export function fromBase64(b64: string) {
+        const sz = fromBase64Core(null, b64)
+        const res = create(sz)
+        fromBase64Core(res, b64)
+        return res
+    }
+
+    /**
+     * Create a new buffer from an UTF8-encoded string
      * @param str the string to put in the buffer
      */
     //% shim=control::createBufferFromUTF8
