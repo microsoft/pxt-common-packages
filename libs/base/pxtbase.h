@@ -776,6 +776,8 @@ class BoxedBuffer : public RefObject {
     int length;
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
+
+    static bool isInstance(TValue v);
 };
 
 // cross version compatible way of access data field
