@@ -1,6 +1,8 @@
 #include "pxt.h"
 #include "mbedtls/sha256.h"
 
+// https://eprint.iacr.org/2012/156.pdf - in case more hash functions are needed
+
 namespace crypto {
 
 /*
