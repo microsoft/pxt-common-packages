@@ -3,7 +3,6 @@ namespace net {
 
     export class WifiController extends net.Controller {
         private networks: net.AccessPoint[]
-        private _scansLeft: number = 0
         private inScan: boolean
         private _isConnected: boolean
         private _ssid: string
@@ -25,13 +24,6 @@ namespace net {
             this.inScan = false
             if (!buf)
                 return
-            if (buf.length == 0 && this._scansLeft > 0) {
-                control.dmesg("re-trying wifi scan")
-                this._scansLeft--
-                _wifi.scanStart()
-                return
-            }
-
             let i = 0
             while (i < buf.length) {
                 const rssi = buf.getNumber(NumberFormat.Int8LE, i++)
@@ -57,7 +49,6 @@ namespace net {
         public scanNetworks(): net.AccessPoint[] {
             if (!this.inScan) {
                 this.inScan = true
-                this._scansLeft = 2
                 _wifi.scanStart()
             }
             control.waitForEvent(_wifi.eventID(), EV_ScanCompleted)
@@ -128,12 +119,16 @@ namespace net {
 
             const wifis = net.knownAccessPoints();
             const ssids = Object.keys(wifis);
-            const networks = this.scanNetworks()
-                .filter(network => ssids.indexOf(network.ssid) > -1);
-            // try connecting to known networks
-            for (const network of networks) {
-                if (this.connectAP(network.ssid, wifis[network.ssid]))
-                    return true;
+
+            for (let i = 0; i < 100; ++i) {
+                const networks = this.scanNetworks()
+                    .filter(network => ssids.indexOf(network.ssid) > -1);
+                // try connecting to known networks
+                for (const network of networks) {
+                    if (this.connectAP(network.ssid, wifis[network.ssid]))
+                        return true;
+                }
+                net.log(`re-trying scan, attempt ${i}...`)
             }
 
             // no compatible SSID
