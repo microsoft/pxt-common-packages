@@ -82,6 +82,11 @@ namespace control {
         panic(108)
     }
 
+    let _evSource = 0x8000
+    export function allocateEventSource() {
+        return ++_evSource
+    }
+
     export class AnimationQueue {
         running: boolean;
         eventID: number;
