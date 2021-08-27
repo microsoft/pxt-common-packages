@@ -511,7 +511,7 @@ namespace mqtt {
 
             switch (controlPacketType) {
                 case ControlPacketType.ConnAck:
-                    const returnCode: number = payload[0];
+                    const returnCode: number = payload[1];
                     if (returnCode === ConnectReturnCode.Accepted) {
                         this.log('MQTT connection accepted.');
                         this.emit('connected');
