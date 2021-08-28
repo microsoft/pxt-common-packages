@@ -334,7 +334,7 @@ namespace mqtt {
 
             this.wdId = Constants.Uninitialized;
             this.piId = Constants.Uninitialized;
-            this.logPriority = ConsolePriority.Silent;
+            this.logPriority = ConsolePriority.Debug;
             this.connected = false;
             opt.port = opt.port || 8883;
             opt.clientId = opt.clientId;

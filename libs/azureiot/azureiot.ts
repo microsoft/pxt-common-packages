@@ -8,7 +8,7 @@ const enum AzureIotEvent {
 namespace azureiot {
     export const SECRETS_KEY = "azureiot"
 
-    export let logPriority = ConsolePriority.Silent;
+    export let logPriority = ConsolePriority.Debug;
 
     type SMap<T> = { [s: string]: T; }
     export type Json = any;
@@ -46,7 +46,8 @@ namespace azureiot {
         const deviceId = connStringParts["DeviceId"];
         let sasToken = connStringParts["SharedAccessSignature"];
         if (!sasToken)
-            sasToken = generateSasToken(`${iotHubHostName}/devices/${deviceId}`, connStringParts["SharedAccessKey"], 4000000000)
+            // token valid until year 2255; in future we may try something more short-lived
+            sasToken = generateSasToken(`${iotHubHostName}/devices/${deviceId}`, connStringParts["SharedAccessKey"], 9000000000)
 
         const opts: mqtt.IConnectionOptions = {
             host: iotHubHostName,
@@ -209,7 +210,7 @@ namespace azureiot {
         const args = parseTopicArgs(msg.topic)
         const h = twinRespHandlers[args["$rid"]]
         const status = parseInt(msg.topic.slice(17))
-        log(`twin resp: ${status} ${msg.content.toString()}`)
+        // log(`twin resp: ${status} ${msg.content.toHex()} ${msg.content.toString()}`)
         if (h)
             h(status, JSON.parse(msg.content.toString() || "{}"))
     }
@@ -221,9 +222,9 @@ namespace azureiot {
             this.evid = control.allocateNotifyEvent()
         }
         setValue(v: any) {
-            this.evid = -1
             this.value = v
             control.raiseEvent(DAL.DEVICE_ID_NOTIFY, this.evid)
+            this.evid = -1
         }
         wait() {
             if (this.evid < 0) return this.value
@@ -232,7 +233,7 @@ namespace azureiot {
         }
     }
 
-    export function getTwin(): Json {
+    function twinReq(path: string, msg?: string): Json {
         const c = mqttClient();
         if (!twinRespHandlers) {
             twinRespHandlers = {}
@@ -241,15 +242,23 @@ namespace azureiot {
         const rid = Math.randomRange(100000000, 900000000) + ""
         const va = new ValueAwaiter()
         twinRespHandlers[rid] = (status, body) => {
-            if (status == 200) {
+            if (status == 204 || status == 200) {
                 va.setValue(body)
             } else {
                 log(`error on get twin -> ${status} ${JSON.stringify(body)}`)
                 va.setValue(null)
             }
         }
-        c.publish("$iothub/twin/GET/?$rid=" + rid)
+        c.publish(`$iothub/twin/${path}/?$rid=${rid}`, msg)
         return va.wait()
+    }
+
+    export function getTwin(): Json {
+        return twinReq("GET")
+    }
+
+    export function patchTwin(patch: Json) {
+        twinReq("PATCH/properties/reported", JSON.stringify(patch))
     }
 
     export function onMethod(methodName: string, handler: (msg: Json) => Json) {
