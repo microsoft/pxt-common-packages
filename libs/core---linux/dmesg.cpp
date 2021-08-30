@@ -43,7 +43,9 @@ static void dmesgRaw(const char *buf, uint32_t len) {
 
 static void dmesgFlushRaw() {
     fflush(dmesgFile);
+
 #ifdef __linux__
+    // we only really care on RPi, so it may reboot/crash and we would like to see this file
     fdatasync(fileno(dmesgFile));
 #else
     //fsync(fileno(dmesgFile));
