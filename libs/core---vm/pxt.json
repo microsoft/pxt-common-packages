@@ -19,6 +19,7 @@
         "timer.ts",
         "platform_includes.h",
         "codalemu.cpp",
+        "dmesg.cpp",
         "keys.cpp",
         "vm.cpp",
         "vmload.cpp",

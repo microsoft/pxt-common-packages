@@ -46,11 +46,11 @@ static void dmesgFlushRaw() {
 #ifdef __linux__
     fdatasync(fileno(dmesgFile));
 #else
-    fsync(fileno(dmesgFile));
+    //fsync(fileno(dmesgFile));
 #endif
 }
 
-void vdmesg(const char *format, va_list arg) {
+extern "C" void vdmesg(const char *format, va_list arg) {
     char buf[500];
 
     snprintf(buf, sizeof(buf), "[%8d] ", current_time_ms());
@@ -62,7 +62,7 @@ void vdmesg(const char *format, va_list arg) {
     dmesgFlushRaw();
 }
 
-void dmesg(const char *format, ...) {
+extern "C" void dmesg(const char *format, ...) {
     va_list arg;
     va_start(arg, format);
     vdmesg(format, arg);
