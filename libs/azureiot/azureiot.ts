@@ -194,7 +194,7 @@ namespace azureiot {
                 resp = resp2
             if (resp["_status"] != null) {
                 status = resp["_status"]
-                resp["_status"] = null
+                resp["_status"] = undefined
             }
             log("method: '" + methodName + "' status=" + status)
         }
@@ -259,6 +259,43 @@ namespace azureiot {
 
     export function patchTwin(patch: Json) {
         twinReq("PATCH/properties/reported", JSON.stringify(patch))
+    }
+
+    function updateJson(trg: Json, patch: Json) {
+        for (const k of Object.keys(patch)) {
+            const v = patch[k]
+            if (v === null) {
+                delete trg[k]
+            } else if (typeof v == "object") {
+                if (!trg[k]) trg[k] = {}
+                updateJson(trg[k], v)
+            } else {
+                trg[k] = v
+            }
+        }
+    }
+
+    export function onTwinUpdate(handler: (twin: Json, patch: Json) => void) {
+        const c = mqttClient()
+        let currTwin: Json = null
+        let lastVersion: number
+        c.subscribe("$iothub/twin/PATCH/properties/desired/#", msg => {
+            if (!currTwin)
+                return
+            const sysProps = parseTopicArgs(msg.topic)
+            const ver = parseInt(sysProps["$version"])
+            if (ver <= lastVersion) {
+                log(`skipping twin update: ${ver}`)
+                return
+            }
+            const update = JSON.parse(msg.content.toString())
+            updateJson(currTwin["desired"], update)
+            log(`new twin: ${JSON.stringify(currTwin)}`)
+            handler(currTwin, update)
+        })
+        currTwin = getTwin()
+        lastVersion = currTwin["desired"]["$version"]
+        handler(currTwin, currTwin["desired"])
     }
 
     export function onMethod(methodName: string, handler: (msg: Json) => Json) {
