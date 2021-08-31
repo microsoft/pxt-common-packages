@@ -13,7 +13,7 @@
     },
     "include": [
         "*.ts",
-        "../*/sim/*.ts",
+        "../../*/sim/*.ts",
         "../../../../pxt/pxtsim/*.ts",
         "../../../../pxt/pxtsim/*/*.ts"
     ]

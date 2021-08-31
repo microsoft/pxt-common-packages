@@ -155,10 +155,18 @@ namespace pxsim._wifi {
     const MAX_SOCKET = 16
     const WIFI_ID = 1234
 
+    export function _allowed() {
+        const bid = board()?.runOptions?.boardDefinition?.id
+        return /esp32|-s2/.test(bid)
+    }
+
     function getState() {
         const b = board() as WifiSocketBoard
-        if (!b.wifiSocketState)
+        if (!b.wifiSocketState) {
+            if (!_allowed())
+                throw new Error("_wifi not enabled")
             b.wifiSocketState = new WifiSocketState()
+        }
         return b.wifiSocketState
     }
 
