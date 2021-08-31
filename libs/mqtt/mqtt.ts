@@ -431,10 +431,12 @@ namespace mqtt {
         // Publish a message
         public publish(topic: string, message?: string | Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             const buf = typeof message == "string" ? control.createBufferFromUTF8(message) : message
+            this.log(`publish: ${topic}`)
             this.send(Protocol.createPublish(topic, buf, qos, retained));
         }
 
         private subscribeCore(topic: string, handler: (msg: IMessage) => void, qos: number = Constants.DefaultQos): MQTTHandler {
+            this.log(`subscribe: ${topic}`)
             this.send(Protocol.createSubscribe(topic, qos));
             if (handler) {
                 if (topic[topic.length - 1] == "#")
@@ -479,10 +481,9 @@ namespace mqtt {
         }
 
         private handleMessage(data: Buffer) {
-            if (this.buf) {
+            if (this.buf)
                 data = this.buf.concat(data)
-                this.buf = null
-            }
+            this.buf = data
             if (data.length < 2)
                 return
             let len = data[1]
@@ -502,6 +503,8 @@ namespace mqtt {
             const payloadEnd = payloadOff + len
             if (data.length < payloadEnd)
                 return // wait for the rest of data
+
+            this.buf = null
 
             const cmd = data[0]
             const controlPacketType: ControlPacketType = cmd >> 4;
@@ -525,6 +528,7 @@ namespace mqtt {
                     break;
                 case ControlPacketType.Publish:
                     const message: IMessage = Protocol.parsePublish(cmd, payload);
+                    this.log(`incoming: ${message.topic}`)
                     let handled = false
                     let cleanup = false
                     if (this.mqttHandlers) {
