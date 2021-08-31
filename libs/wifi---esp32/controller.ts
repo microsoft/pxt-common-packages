@@ -117,6 +117,11 @@ namespace net {
         connect(): boolean {
             if (this.isConnected) return true;
 
+            if (control.deviceDalVersion() == "sim") {
+                this.connectAP("", "")
+                return true
+            }
+
             const wifis = net.knownAccessPoints();
             const ssids = Object.keys(wifis);
 
