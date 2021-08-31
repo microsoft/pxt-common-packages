@@ -126,7 +126,7 @@ namespace pxsim._wifi {
             return Promise.resolve(-11)
         // TODO loosen this up in future
         if (port == 8883 && /\.azure-devices.net$/.test(host)) {
-            return sock.openWS("wss://" + host + "/$iothub/websocket", ["mqtt"])
+            return sock.openWS("wss://" + host + "/$iothub/websocket?iothub-no-client-cert=true", ["mqtt"])
         } else if (port == 443 && host == "microsoft.github.io") {
             return Promise.resolve(-1)
         } else {
