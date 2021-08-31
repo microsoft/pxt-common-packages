@@ -290,7 +290,6 @@ namespace azureiot {
             }
             const update = JSON.parse(msg.content.toString())
             updateJson(currTwin["desired"], update)
-            log(`new twin: ${JSON.stringify(currTwin)}`)
             handler(currTwin, update)
         })
         currTwin = getTwin()
