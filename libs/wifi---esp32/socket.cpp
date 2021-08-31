@@ -177,7 +177,7 @@ static void worker_write(write_args *args) {
 }
 
 /** Write to socket */
-//%
+//% promise
 int socketWrite(int fd, Buffer data) {
     GET_SOCK_SSL();
 

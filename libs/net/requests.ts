@@ -167,14 +167,12 @@ read only when requested
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = net.instance().hostByName(host)
-
         let sock: Socket;
         if (proto == "https:") {
             // for SSL we need to know the host name
             sock = net.instance().createSocket(host, port, true)
         } else {
-            sock = net.instance().createSocket(ipaddr, port, false)
+            sock = net.instance().createSocket(host, port, false)
         }
         // our response
         let resp = new Response(sock)

@@ -6,12 +6,46 @@ namespace pxsim {
     export class WifiSocket {
         ws: WebSocket
         _err: number
-        closed = false
         buffers: Uint8Array[] = []
         readers: (() => void)[] = []
         bytesAvail = 0
 
+        reqInit: RequestInit = {
+            headers: {},
+            credentials: "omit",
+            mode: "cors",
+            cache: "no-cache",
+            redirect: "manual",
+            referrer: "",
+        }
+        reqUrl: string
+        reqSent = false
+
         constructor(private fd: number) { }
+
+        async openReq(host: string, port: number) {
+            if (!/^[\w\-\.]+$/.test(host))
+                throw new Error("bad host")
+            this.reqUrl = "https://" + host + ":" + port + "/"
+            return 0
+        }
+
+        _queue(data: string | Uint8Array | ArrayBuffer) {
+            let buf: Uint8Array
+            if (data instanceof ArrayBuffer)
+                buf = new Uint8Array(data)
+            else if (data instanceof Uint8Array)
+                buf = data
+            else
+                buf = U.stringToUint8Array(U.toUTF8(data))
+            this.buffers.push(buf)
+            if (buf.length && this.bytesAvail == 0)
+                _wifi._raiseEvent(1000 + this.fd)
+            this.bytesAvail += buf.length
+            const rr = this.readers
+            this.readers = []
+            for (const r of rr) r()
+        }
 
         openWS(url: string, proto: string[]) {
             this.ws = new WebSocket(url, proto)
@@ -29,19 +63,7 @@ namespace pxsim {
                     this._err = -20
                 }
                 this.ws.onmessage = ev => {
-                    let buf: Uint8Array
-                    if (ev.data instanceof ArrayBuffer) {
-                        buf = new Uint8Array(ev.data)
-                    } else {
-                        buf = U.stringToUint8Array(U.toUTF8(ev.data))
-                    }
-                    this.buffers.push(buf)
-                    if (buf.length && this.bytesAvail == 0)
-                        pxsim.control.raiseEvent(_wifi.eventID(), 1000 + this.fd, undefined)
-                    this.bytesAvail += buf.length
-                    const rr = this.readers
-                    this.readers = []
-                    for (const r of rr) r()
+                    this._queue(ev.data)
                 }
                 this.ws.onerror = () => resolve(-1)
             })
@@ -70,15 +92,56 @@ namespace pxsim {
             return null
         }
 
-        write(buf: RefBuffer) {
+        private async handleFetch() {
+            // we ignore post for now
+            this.reqSent = true
+            const resp = await fetch(this.reqUrl, this.reqInit)
+            this._queue(`HTTP/1.1 ${resp.status} ${resp.statusText}\r\n`)
+            resp.headers.forEach((v, k) => {
+                if (k.toLowerCase() == "content-length")
+                    return
+                this._queue(`${k}: ${v}\r\n`)
+            })
+            const data = await resp.arrayBuffer()
+            this._queue(`Content-Length: ${data.byteLength}\r\n`)
+            this._queue(`\r\n`)
+            this._queue(data)
+            return 0
+        }
+
+        async write(buf: RefBuffer) {
             if (this._err)
                 return this._err
-            this.ws.send(buf.data)
+            if (this.ws)
+                this.ws.send(buf.data)
+            else {
+                if (this.reqSent)
+                    return -2
+                let str = U.fromUTF8(U.uint8ArrayToString(buf.data))
+                if (str == "\r\n") {
+                    const dummy = this.handleFetch()
+                    return 0
+                }
+                str = str.replace(/\r?\n$/, "")
+                if (!this.reqInit.method) {
+                    const m = /^\s*(\S+)\s+\/(\S+)/.exec(str)
+                    if (m) {
+                        this.reqInit.method = m[1]
+                        this.reqUrl += m[2]
+                    }
+                } else {
+                    const m = /^([^:]+):\s*(.*)/.exec(str)
+                    if (m) {
+                        (this.reqInit.headers as Record<string, string>)[m[1]] = m[2]
+                    }
+                }
+            }
             return 0
         }
 
         close() {
-            this.ws.close()
+            if (this.ws)
+                this.ws.close()
         }
     }
 
@@ -128,14 +191,14 @@ namespace pxsim._wifi {
         if (port == 8883 && /\.azure-devices.net$/.test(host)) {
             return sock.openWS("wss://" + host + "/$iothub/websocket?iothub-no-client-cert=true", ["mqtt"])
         } else if (port == 443 && host == "microsoft.github.io") {
-            return Promise.resolve(-1)
+            return sock.openReq(host, port)
         } else {
             console.log("invalid host: " + host)
             return Promise.resolve(-1)
         }
     }
 
-    export function socketWrite(fd: int32, data: RefBuffer): int32 {
+    export async function socketWrite(fd: int32, data: RefBuffer): Promise<int32> {
         const sock = getSock(fd)
         if (!sock)
             return -11
@@ -185,12 +248,12 @@ namespace pxsim._wifi {
         return new RefBuffer(b)
     }
 
-    export function connect(ssid: string, pass: string): int32 { 
+    export function connect(ssid: string, pass: string): int32 {
         _raiseEvent(WifiEvent.GotIP)
-        return 0 
+        return 0
     }
-    export function disconnect(): int32 { 
-        return 0 
+    export function disconnect(): int32 {
+        return 0
     }
     export function isConnected(): boolean { return true }
 
