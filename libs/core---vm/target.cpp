@@ -115,9 +115,6 @@ int LogQueue::write(const char *buf, int len) {
     return 0;
 }
 
-void dumpDmesg() {
-    // not enabled
-}
 } // namespace pxt
 
 LogQueue codalLogStore;
