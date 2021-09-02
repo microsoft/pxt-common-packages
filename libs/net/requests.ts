@@ -264,7 +264,8 @@ read only when requested
      **/
     //% blockId=netgetstring block="get string $url"
     export function getString(url: string, options?: RequestOptions): string {
-        return get(url, options).text;
+        const res = get(url, options)
+        return res.status_code == 200 ? res.text : undefined;
     }
 
     /** 
@@ -275,7 +276,8 @@ read only when requested
         options = options || {};
         options.headers = options.headers || {};
         options.headers["accept"] = options.headers["accept"] || "application/json";
-        return get(url, options).json;
+        const res = get(url, options);
+        return res.status_code == 200 ? res.json : undefined;
     }
 
     /** Send HTTP POST request */
