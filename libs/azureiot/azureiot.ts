@@ -261,14 +261,41 @@ namespace azureiot {
         twinReq("PATCH/properties/reported", JSON.stringify(patch))
     }
 
-    function updateJson(trg: Json, patch: Json) {
+    export function computePatch(curr: Json, target: Json) {
+        const patch: Json = {}
+        for (const k of Object.keys(curr)) {
+            const vt = target[k]
+            if (vt === undefined) {
+                patch[k] = null
+            } else {
+                const vc = curr[k]
+                if (typeof vt == "object")
+                    if (typeof vc == "object") {
+                        const p0 = computePatch(vc, vt)
+                        if (Object.keys(p0).length > 0)
+                            patch[k] = p0
+                    } else {
+                        patch[k] = vt
+                    }
+                else if (vc != vt)
+                    patch[k] = vt
+            }
+        }
+        for (const k of Object.keys(target)) {
+            if (curr[k] === undefined)
+                patch[k] = target[k]
+        }
+        return patch
+    }
+
+    export function applyPatch(trg: Json, patch: Json) {
         for (const k of Object.keys(patch)) {
             const v = patch[k]
             if (v === null) {
                 delete trg[k]
             } else if (typeof v == "object") {
                 if (!trg[k]) trg[k] = {}
-                updateJson(trg[k], v)
+                applyPatch(trg[k], v)
             } else {
                 trg[k] = v
             }
@@ -289,7 +316,7 @@ namespace azureiot {
                 return
             }
             const update = JSON.parse(msg.content.toString())
-            updateJson(currTwin["desired"], update)
+            applyPatch(currTwin["desired"], update)
             handler(currTwin, update)
         })
         currTwin = getTwin()
