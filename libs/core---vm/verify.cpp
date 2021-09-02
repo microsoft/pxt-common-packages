@@ -291,13 +291,13 @@ static VMImage *loadSections(VMImage *img) {
             case BuiltInType::BoxedString_ASCII:
             case BuiltInType::BoxedString: {
                 auto p = (BoxedString *)vmLiteralVal(sect);
-                CHECK(sect->size >= 16 + 2 + p->ascii.length + 1, 1067);
+                CHECK(sect->size >= 16 + 2 + (uint32_t)p->ascii.length + 1, 1067);
                 CHECK(p->ascii.data[p->ascii.length] == 0, 1068);
                 break;
             }
             case BuiltInType::BoxedString_SkipList: {
                 auto p = (BoxedString *)vmLiteralVal(sect);
-                CHECK(sect->size >= 16 + 4 + PXT_NUM_SKIP_ENTRIES(p) * 2 + p->skip_pack.size + 1,
+                CHECK(sect->size >= 16 + 4 + PXT_NUM_SKIP_ENTRIES(p) * 2 + (uint32_t)p->skip_pack.size + 1,
                       1069);
                 CHECK(PXT_SKIP_DATA_PACK(p)[p->skip_pack.size] == 0, 1070);
                 for (int i = 0; i < PXT_NUM_SKIP_ENTRIES(p); ++i) {
@@ -307,7 +307,7 @@ static VMImage *loadSections(VMImage *img) {
             }
             case BuiltInType::BoxedBuffer: {
                 auto p = (BoxedBuffer *)vmLiteralVal(sect);
-                CHECK(sect->size >= 16 + 4 + p->length, 1072);
+                CHECK(sect->size >= 16 + 4 + (uint32_t)p->length, 1072);
                 break;
             }
             default:

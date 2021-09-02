@@ -43,6 +43,8 @@ void operator delete[](void *p) THROW {
     xfree(p);
 }
 
+uint8_t *gcBase;
+
 namespace pxt {
 
 static uint64_t startTime;
@@ -420,29 +422,19 @@ void initRuntime() {
     systemReset();
 }
 
-#ifdef PXT64
-#define GC_BASE 0x2000000000
-#define GC_PAGE_SIZE (64 * 1024)
-#else
-#define GC_BASE 0x20000000
-#define GC_PAGE_SIZE 4096
-#endif
-
-uint8_t *gcBase;
-
 void *gcAllocBlock(size_t sz) {
 #ifdef PXT_ESP32
     void *r = xmalloc(sz);
 #else
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-#if defined(PXT64)
+#if defined(PXT64) || defined(__MINGW32__)
     if (!gcBase) {
         gcBase = (uint8_t *)xmalloc(1 << PXT_VM_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;
-    if ((uint8_t *)currPtr - gcBase > 1024 * 1024 - sz)
+    if ((uint8_t *)currPtr - gcBase > (1 << PXT_VM_HEAP_ALLOC_BITS) - (int)sz)
         target_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);

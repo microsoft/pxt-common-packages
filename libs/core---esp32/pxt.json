@@ -36,6 +36,8 @@
         "verify.cpp",
         "vmload.cpp",
         "worker.cpp",
+        "crypto.cpp",
+        "crypto.ts",
         "pxtparts.json",
         "CMakeLists.txt",
         "sdkconfig.defaults"

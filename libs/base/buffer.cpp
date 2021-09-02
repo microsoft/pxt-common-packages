@@ -24,8 +24,8 @@ void setByte(Buffer buf, int off, int v) {
 }
 
 /**
-* Reads an unsigned byte at a particular location
-*/
+ * Reads an unsigned byte at a particular location
+ */
 //%
 int getUint8(Buffer buf, int off) {
     return getByte(buf, off);
@@ -40,8 +40,8 @@ bool isReadOnly(Buffer buf) {
 }
 
 /**
-* Writes an unsigned byte at a particular location
-*/
+ * Writes an unsigned byte at a particular location
+ */
 //%
 void setUint8(Buffer buf, int off, int v) {
     setByte(buf, off, v);
@@ -237,6 +237,10 @@ uint32_t hash(Buffer buf, int bits) {
 
 } // namespace BufferMethods
 
+bool BoxedBuffer::isInstance(TValue v) {
+    return getAnyVTable(v) == &buffer_vt;
+}
+
 // The functions below are deprecated in control namespace, but they are referenced
 // in Buffer namespaces via explicit shim=...
 namespace control {
@@ -248,7 +252,6 @@ namespace control {
 Buffer createBuffer(int size) {
     return mkBuffer(NULL, size);
 }
-
 
 /**
  * Create a new buffer with UTF8-encoded string

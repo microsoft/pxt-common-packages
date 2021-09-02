@@ -39,8 +39,8 @@ namespace control {
 
     export function __queuePollEvent(timeOut: number, condition: () => boolean, handler: () => void) {
         const ev = new PollEvent(
+            DAL.DEVICE_ID_NOTIFY,
             control.allocateNotifyEvent(),
-            1,
             control.millis(),
             timeOut,
             condition,

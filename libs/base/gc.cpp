@@ -17,7 +17,7 @@
 #define BYTES_TO_WORDS(x) ((x) >> 3)
 #define WORDS_TO_BYTES(x) ((x) << 3)
 #define ALIGN_TO_WORD(x) (((x) + 7) & (~7ULL))
-#define VAR_BLOCK_WORDS(vt) ((uint32_t)(vt) >> 2)
+#define VAR_BLOCK_WORDS(vt) ((uint32_t)(uint64_t)(vt) >> 2)
 #else
 #define HIGH_SHIFT 28
 #define BYTES_TO_WORDS(x) ((x) >> 2)

@@ -145,7 +145,7 @@ static void worker_conn(conn_args *args) {
 }
 
 /** Connect with TLS */
-//%
+//% promise
 int socketConnectTLS(int fd, String host, int port) {
     memInfo();
     GET_SOCK();
@@ -177,7 +177,7 @@ static void worker_write(write_args *args) {
 }
 
 /** Write to socket */
-//%
+//% promise
 int socketWrite(int fd, Buffer data) {
     GET_SOCK_SSL();
 
@@ -241,7 +241,7 @@ static void worker_read(read_args *args) {
 }
 
 /** Read from a socket; the return type is really number|Buffer */
-//%
+//% promise
 int socketRead(int fd, int size) {
     GET_SOCK_SSL();
 
