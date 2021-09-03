@@ -276,7 +276,7 @@ namespace azureiot {
             if (status == 204 || status == 200) {
                 va.setValue(body)
             } else {
-                log(`error on get twin -> ${status} ${JSON.stringify(body)}`)
+                log(`twin error -> ${status} ${JSON.stringify(body)}`)
                 va.setValue(null)
             }
         }
@@ -302,6 +302,8 @@ namespace azureiot {
         const patch: Json = {}
         for (const k of Object.keys(curr)) {
             const vt = target[k]
+            if (k[0] == "$")
+                continue
             if (vt === undefined) {
                 patch[k] = null
             } else {
@@ -319,7 +321,7 @@ namespace azureiot {
             }
         }
         for (const k of Object.keys(target)) {
-            if (curr[k] === undefined)
+            if (curr[k] === undefined && k[0] != "$")
                 patch[k] = target[k]
         }
         return patch
