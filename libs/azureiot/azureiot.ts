@@ -23,8 +23,10 @@ namespace azureiot {
     }
 
     export function mqttClient(): mqtt.Client {
-        if (!_mqttClient)
+        if (!_mqttClient) {
+            log("creating mqtt client")
             _mqttClient = createMQTTClient();
+        }
         return _mqttClient;
     }
 
@@ -37,13 +39,23 @@ namespace azureiot {
         return token
     }
 
+    export function hubName() {
+        return connectionStringPart("HostName")
+    }
+
+    export function hubDeviceId() {
+        return connectionStringPart("DeviceId")
+    }
+
     function createMQTTClient() {
         _messageBusId = control.allocateEventSource();
 
-        const connString = settings.programSecrets.readSecret(SECRETS_KEY, true);
-        const connStringParts = parsePropertyBag(connString, ";");
-        const iotHubHostName = connStringParts["HostName"];
-        const deviceId = connStringParts["DeviceId"];
+        const iotHubHostName = hubName()
+        const deviceId = hubDeviceId()
+        if (!iotHubHostName || !deviceId)
+            throw "invalid connection string"
+
+        const connStringParts = parseConnectionString();
         let sasToken = connStringParts["SharedAccessSignature"];
         if (!sasToken)
             // token valid until year 2255; in future we may try something more short-lived
@@ -77,7 +89,7 @@ namespace azureiot {
     }
 
     function splitPair(kv: string): string[] {
-        let i = kv.indexOf('=');
+        const i = kv.indexOf('=');
         if (i < 0)
             return [kv, ""];
         else
@@ -85,11 +97,23 @@ namespace azureiot {
     }
 
     function parsePropertyBag(msg: string, separator?: string): SMap<string> {
-        let r: SMap<string> = {};
-        msg.split(separator || "&")
+        const r: SMap<string> = {};
+        (msg || "").split(separator || "&")
             .map(kv => splitPair(kv))
             .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
         return r;
+    }
+
+    function parseConnectionString() {
+        const connString = settings.programSecrets.readSecret(SECRETS_KEY);
+        const connStringParts = parsePropertyBag(connString || "", ";");
+        return connStringParts
+    }
+
+    function connectionStringPart(name: string) {
+        const connStringParts = parseConnectionString()
+        const value = connStringParts[name];
+        return value || ""
     }
 
     function encodeQuery(props: SMap<string>): string {
@@ -106,9 +130,16 @@ namespace azureiot {
      */
     export function connect() {
         const c = mqttClient();
-        // wait for connection
-        if (!c.connected)
-            control.waitForEvent(_messageBusId, AzureIotEvent.Connected);
+        if (!c.connected) {
+            // busy wait for connection
+            const start = control.millis()
+            const timeout = 30000
+            while (!c.connected && control.millis() - start < timeout) {
+                pause(1000)
+            }
+            if (!c.connected)
+                throw "connection failed"
+        }
     }
 
     /**
@@ -334,7 +365,7 @@ namespace azureiot {
         const c = mqttClient();
         if (!_methodHandlers) {
             if (!c.connected)
-                control.fail("not connected")
+                throw "azure iot hub not connected"
             _methodHandlers = {}
             c.subscribe('$iothub/methods/POST/#', handleMethod)
         }
