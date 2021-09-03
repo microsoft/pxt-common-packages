@@ -258,7 +258,13 @@ namespace azureiot {
     }
 
     export function patchTwin(patch: Json) {
-        twinReq("PATCH/properties/reported", JSON.stringify(patch))
+        const p = JSON.stringify(patch)
+        if (p == "{}")
+            log("skipping empty twin patch")
+        else {
+            log(`twin patch: ${JSON.stringify(patch)}`)
+            twinReq("PATCH/properties/reported", p)
+        }
     }
 
     export function computePatch(curr: Json, target: Json) {
