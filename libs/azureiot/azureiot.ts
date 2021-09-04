@@ -22,8 +22,8 @@ namespace azureiot {
         console.add(logPriority, "azureiot: " + msg);
     }
 
-    export function mqttClient(): mqtt.Client {
-        if (!_mqttClient) {
+    export function mqttClient(skipCreate?: boolean): mqtt.Client {
+        if (!_mqttClient && !skipCreate) {
             log("creating mqtt client")
             _mqttClient = createMQTTClient();
         }
@@ -47,9 +47,14 @@ namespace azureiot {
         return connectionStringPart("DeviceId")
     }
 
-    function createMQTTClient() {
-        _messageBusId = control.allocateEventSource();
+    function messageBusId() {
+        if (!_messageBusId)
+            _messageBusId = control.allocateEventSource();
+        return _messageBusId
+    }
 
+    function createMQTTClient() {
+        messageBusId()
         const iotHubHostName = hubName()
         const deviceId = hubDeviceId()
         if (!iotHubHostName || !deviceId)
@@ -69,17 +74,18 @@ namespace azureiot {
             clientId: deviceId
         }
         const c = new mqtt.Client(opts);
+        const evid = messageBusId()
         c.on('connected', () => {
             log("connected")
-            control.raiseEvent(_messageBusId, AzureIotEvent.Connected)
+            control.raiseEvent(evid, AzureIotEvent.Connected)
         });
         c.on('disconnected', () => {
             log("disconnected")
-            control.raiseEvent(_messageBusId, AzureIotEvent.Disconnected)
+            control.raiseEvent(evid, AzureIotEvent.Disconnected)
         });
         c.on('error', (msg) => {
             log("error: " + msg)
-            control.raiseEvent(_messageBusId, AzureIotEvent.Error)
+            control.raiseEvent(evid, AzureIotEvent.Error)
         });
         c.on('receive', (packet: mqtt.IMessage) => {
             log("unhandled msg: " + packet.topic + " / " + packet.content.toString())
@@ -100,14 +106,20 @@ namespace azureiot {
         const r: SMap<string> = {};
         (msg || "").split(separator || "&")
             .map(kv => splitPair(kv))
+            .filter(parts => !!parts[1].length)
             .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
         return r;
     }
 
     function parseConnectionString() {
-        const connString = settings.programSecrets.readSecret(SECRETS_KEY);
-        const connStringParts = parsePropertyBag(connString || "", ";");
-        return connStringParts
+        try {
+            const connString = settings.programSecrets.readSecret(SECRETS_KEY);
+            const connStringParts = parsePropertyBag(connString || "", ";");
+            return connStringParts
+        } catch {
+            settings.programSecrets.setSecret(SECRETS_KEY, "")
+            return {}
+        }
     }
 
     function connectionStringPart(name: string) {
@@ -123,6 +135,27 @@ namespace azureiot {
         return "?" + keys
             .map(k => `${net.urlencode(k)}=${net.urlencode(props[k])}`)
             .join('&');
+    }
+
+    export function setConnectionString(connectionString: string) {
+        // TODO disconnect
+        settings.programSecrets.setSecret(SECRETS_KEY, connectionString)
+        parseConnectionString()
+    }
+
+    /**
+     * Disconnects the hub if any
+     */
+    export function disconnect() {
+        const c = mqttClient(true)
+        if (c) {
+            try {
+                c.disconnect()
+            }
+            finally {
+                _mqttClient = undefined
+            }
+        }
     }
 
     /**
@@ -148,10 +181,13 @@ namespace azureiot {
      * @param handler 
      */
     export function onEvent(event: AzureIotEvent, handler: () => void) {
-        const c = mqttClient();
-        control.onEvent(_messageBusId, event, handler);
-        if (c.connected) // raise connected event by default
-            control.raiseEvent(_messageBusId, AzureIotEvent.Connected);
+        const evid = messageBusId()
+        control.onEvent(evid, event, handler);
+        try {
+            const c = mqttClient(true);
+            if (c && c.connected) // raise connected event by default
+                control.raiseEvent(evid, AzureIotEvent.Connected);
+        } catch { }
     }
 
     /**
@@ -159,8 +195,13 @@ namespace azureiot {
      */
     //%
     export function isConnected(): boolean {
-        const c = mqttClient();
-        return !!c.connected;
+        try {
+            const c = mqttClient(true);
+            return !!c && !!c.connected;
+        }
+        catch {
+            return false
+        }
     }
 
     /**
