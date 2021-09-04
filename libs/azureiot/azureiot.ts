@@ -185,7 +185,7 @@ namespace azureiot {
         control.onEvent(evid, event, handler);
         try {
             const c = mqttClient(true);
-            if (c.connected) // raise connected event by default
+            if (c && c.connected) // raise connected event by default
                 control.raiseEvent(evid, AzureIotEvent.Connected);
         } catch { }
     }
@@ -197,7 +197,7 @@ namespace azureiot {
     export function isConnected(): boolean {
         try {
             const c = mqttClient(true);
-            return !!c.connected;
+            return !!c && !!c.connected;
         }
         catch {
             return false
