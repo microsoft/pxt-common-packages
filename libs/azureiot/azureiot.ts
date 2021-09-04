@@ -100,14 +100,20 @@ namespace azureiot {
         const r: SMap<string> = {};
         (msg || "").split(separator || "&")
             .map(kv => splitPair(kv))
+            .filter(parts => !!parts[1].length)
             .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
         return r;
     }
 
     function parseConnectionString() {
-        const connString = settings.programSecrets.readSecret(SECRETS_KEY);
-        const connStringParts = parsePropertyBag(connString || "", ";");
-        return connStringParts
+        try {
+            const connString = settings.programSecrets.readSecret(SECRETS_KEY);
+            const connStringParts = parsePropertyBag(connString || "", ";");
+            return connStringParts
+        } catch {
+            settings.programSecrets.setSecret(SECRETS_KEY, "")
+            return {}
+        }
     }
 
     function connectionStringPart(name: string) {
