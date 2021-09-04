@@ -104,19 +104,21 @@ namespace azureiot {
 
     function parsePropertyBag(msg: string, separator?: string): SMap<string> {
         const r: SMap<string> = {};
-        (msg || "").split(separator || "&")
-            .map(kv => splitPair(kv))
-            .filter(parts => !!parts[1].length)
-            .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
+        if (msg && typeof msg === "string")
+            msg.split(separator || "&")
+                .map(kv => splitPair(kv))
+                .filter(parts => !!parts[1].length)
+                .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
         return r;
     }
 
     function parseConnectionString() {
         try {
             const connString = settings.programSecrets.readSecret(SECRETS_KEY);
-            const connStringParts = parsePropertyBag(connString || "", ";");
+            const connStringParts = parsePropertyBag(connString, ";");
             return connStringParts
         } catch {
+            console.debug(`clearing invalid azure iot connection string`)
             settings.programSecrets.setSecret(SECRETS_KEY, "")
             return {}
         }
@@ -138,7 +140,7 @@ namespace azureiot {
     }
 
     export function setConnectionString(connectionString: string) {
-        // TODO disconnect
+        disconnect()
         settings.programSecrets.setSecret(SECRETS_KEY, connectionString)
         parseConnectionString()
     }
