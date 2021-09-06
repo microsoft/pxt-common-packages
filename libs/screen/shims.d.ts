@@ -129,6 +129,9 @@ declare interface Image {
     //% shim=ImageMethods::overlapsWith
     overlapsWith(other: Image, x: int32, y: int32): boolean;
 }
+
+
+declare interface Gpu {}
 declare namespace image {
 
     /**

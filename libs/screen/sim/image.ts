@@ -638,10 +638,9 @@ namespace pxsim.ImageMethods {
             fy += stepFY
         }
     }
+}
 
-    // This triangle rasterizer inspired by Juan Pineda's seminal 1988 SIGGRAPH paper.
-    // https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.157.4621&rep=rep1&type=pdf
-
+namespace pxsim.GpuMethods {
     type V2 = { x: number; y: number; };
     type V3 = { x: number; y: number; z: number };
     type Vertex = { pos: V2, uv: V2 };
@@ -650,7 +649,6 @@ namespace pxsim.ImageMethods {
     type DrawTriArgs = {
         verts: Vertex[],
         indices: number[],
-        area: V2,
         dst: RefImage,
         tex: RefImage
     };
@@ -717,40 +715,36 @@ namespace pxsim.ImageMethods {
         const TRI0_INDICES = [0, 3, 2];
         const TRI1_INDICES = [2, 1, 0];
     
-        const leftTop: Vertex = {
+        const V0: Vertex = {
             pos: { x: args.getAt(0) | 0, y: args.getAt(1) | 0 },
             uv: { x: 0, y: 0 }
         };
-        const rightTop: Vertex = {
+        const V1: Vertex = {
             pos: { x: args.getAt(2) | 0, y: args.getAt(3) | 0 },
             uv: { x: 1, y: 0 }
         };
-        const rightBottom: Vertex = {
+        const V2: Vertex = {
             pos: { x: args.getAt(4) | 0, y: args.getAt(5) | 0 },
             uv: { x: 1, y: 1 }
         }
-        const leftBottom: Vertex = {
+        const V3: Vertex = {
             pos: { x: args.getAt(6) | 0, y: args.getAt(7) | 0 },
             uv: { x: 0, y: 1 }
         };
-        const verts = [leftTop, rightTop, rightBottom, leftBottom];
+        const verts = [V0, V1, V2, V3];
 
-        // calc area of quad
-        const a = edge(
-            verts[TRI0_INDICES[0]].pos,
-            verts[TRI0_INDICES[1]].pos,
-            verts[TRI0_INDICES[2]].pos);
-        if (a <= 0) return;
-        const area: V2 = { x: a, y: a };
-
-        drawTri({ verts, indices: TRI0_INDICES, area, dst, tex });
-        drawTri({ verts, indices: TRI1_INDICES, area, dst, tex });
+        drawTri({ verts, indices: TRI0_INDICES, dst, tex });
+        drawTri({ verts, indices: TRI1_INDICES, dst, tex });
     }
 
     function drawTri(args: DrawTriArgs): void {
         const v0 = args.verts[args.indices[0]];
         const v1 = args.verts[args.indices[1]];
         const v2 = args.verts[args.indices[2]];
+
+        const area = edge(v0.pos, v1.pos, v2.pos);
+        if (area <= 0) return;
+
         // Temp vars
         const _uv0: V2 = { x: 0, y: 0 };
         const _uv1: V2 = { x: 0, y: 0 };
@@ -764,26 +758,25 @@ namespace pxsim.ImageMethods {
             scaleToRef(v1.uv, bary.y, _uv1);
             scaleToRef(v2.uv, bary.z, _uv2);
             add3ToRef(_uv0, _uv1, _uv2, _uv);
-            divToRef(_uv, args.area, _uv);
+            divToRef(_uv, { x: area, y: area }, _uv);
             // Sample texture at uv coords.
-            const x = Math.floor(_uv.x * args.tex._width);
-            const y = Math.floor(_uv.y * args.tex._height);
+            const x = Math.round(_uv.x * args.tex._width - 1);
+            const y = Math.round(_uv.y * args.tex._height - 1);
             return ImageMethods.getPixel(args.tex, x, y);
         }
         // get clipped bounds of tri
         const bounds: Bounds = {
-            left: clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
-            top: clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
-            right: clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
-            bottom: clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
+            left: clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width - 1),
+            top: clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height - 1),
+            right: clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width - 1),
+            bottom: clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height - 1),
         };
         const p: V2 = { x: bounds.left, y: bounds.top };
         const bary: V3 = { x: 0, y: 0, z: 0 };
         // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle.
         // We should do some prefiltering. This can be done using a tiled rendering approach for larger triangles.
         for (; p.y < bounds.bottom; ++p.y) {
-            p.x = bounds.left;
-            for (; p.x < bounds.right; ++p.x) {
+            for (p.x = bounds.left; p.x < bounds.right; ++p.x) {
                 // TODO: This extremely expensive call to `barycentric` can be optimized out by predetermining
                 // the gradients at setup and just adding them at each step. It's not as precise, but at this
                 // small a screen resolution it should be unnoticable at even the largest triangle size.

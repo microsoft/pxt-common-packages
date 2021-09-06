@@ -133,7 +133,7 @@ namespace helpers {
     //% shim=ImageMethods::_blitRow
     declare function _blitRow(img: Image, xy: number, from: Image, xh: number): void;
 
-    //% shim=ImageMethods::_drawQuad
+    //% shim=GpuMethods::_drawQuad
     declare function _drawQuad(img: Image, src: Image, args: number[]): void;
 
     function pack(x: number, y: number) {
