@@ -350,7 +350,7 @@ namespace pxsim.ImageMethods {
         const fdata = from.data
         const tdata = img.data
 
-        for (let p = 0; h--; y++ , p += w) {
+        for (let p = 0; h--; y++, p += w) {
             if (0 <= y && y < sh) {
                 let dst = y * sw
                 let src = p
@@ -642,7 +642,6 @@ namespace pxsim.ImageMethods {
 
 namespace pxsim.GpuMethods {
     type V2 = { x: number; y: number; };
-    type V3 = { x: number; y: number; z: number };
     type Vertex = { pos: V2, uv: V2 };
     type Bounds = { left: number; top: number; right: number; bottom: number; };
 
@@ -654,20 +653,7 @@ namespace pxsim.GpuMethods {
     };
 
     function edge(a: V2, b: V2, c: V2): number {
-        return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
-    }
-    function barycentric(p0: V2, p1: V2, p2: V2, p: V2, out: V3): boolean {
-        const w0 = edge(p1, p2, p);
-        if (w0 < 0) return false;
-        const w1 = edge(p2, p0, p);
-        if (w1 < 0) return false;
-        const w2 = edge(p0, p1, p);
-        if (w2 < 0) return false;
-        out.x = w0;
-        out.y = w1;
-        out.z = w2;
-        // point is in triangle (or on an edge of it)
-        return true;
+        return (b.y - a.y) * (c.x - a.x) - (b.x - a.x) * (c.y - a.y);
     }
     function clamp(v: number, min: number, max: number): number {
         return Math.min(max, Math.max(v, min));
@@ -714,7 +700,7 @@ namespace pxsim.GpuMethods {
         // Triangle indices. Triangles are wound counterclockwise.
         const TRI0_INDICES = [0, 3, 2];
         const TRI1_INDICES = [2, 1, 0];
-    
+
         const V0: Vertex = {
             pos: { x: args.getAt(0) | 0, y: args.getAt(1) | 0 },
             uv: { x: 0, y: 0 }
@@ -741,6 +727,9 @@ namespace pxsim.GpuMethods {
         const v0 = args.verts[args.indices[0]];
         const v1 = args.verts[args.indices[1]];
         const v2 = args.verts[args.indices[2]];
+        const p0 = v0.pos;
+        const p1 = v1.pos;
+        const p2 = v2.pos;
 
         const area = edge(v0.pos, v1.pos, v2.pos);
         if (area <= 0) return;
@@ -751,12 +740,12 @@ namespace pxsim.GpuMethods {
         const _uv2: V2 = { x: 0, y: 0 };
         const _uv: V2 = { x: 0, y: 0 };
 
-        function shade(bary: V3): number {
+        function shade(w0: number, w1: number, w2: number): number {
             // Calculate uv coords from given barycentric coords.
             // TODO: Support different texture wrapping modes.
-            scaleToRef(v0.uv, bary.x, _uv0);
-            scaleToRef(v1.uv, bary.y, _uv1);
-            scaleToRef(v2.uv, bary.z, _uv2);
+            scaleToRef(v0.uv, w0, _uv0);
+            scaleToRef(v1.uv, w1, _uv1);
+            scaleToRef(v2.uv, w2, _uv2);
             add3ToRef(_uv0, _uv1, _uv2, _uv);
             divToRef(_uv, { x: area, y: area }, _uv);
             // Sample texture at uv coords.
@@ -764,29 +753,48 @@ namespace pxsim.GpuMethods {
             const y = Math.round(_uv.y * args.tex._height - 1);
             return ImageMethods.getPixel(args.tex, x, y);
         }
+
         // get clipped bounds of tri
         const bounds: Bounds = {
-            left: clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width - 1),
-            top: clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height - 1),
-            right: clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width - 1),
-            bottom: clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height - 1),
+            left: clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
+            top: clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
+            right: clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
+            bottom: clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
         };
         const p: V2 = { x: bounds.left, y: bounds.top };
-        const bary: V3 = { x: 0, y: 0, z: 0 };
+
+        // Get the barycentric gradients
+        const A01 = p1.y - p0.y;
+        const B01 = p0.x - p1.x;
+        const A12 = p2.y - p1.y;
+        const B12 = p1.x - p2.x;
+        const A20 = p0.y - p2.y;
+        const B20 = p2.x - p0.x;
+
+        let w0_row = edge(p1, p2, p);
+        let w1_row = edge(p2, p0, p);
+        let w2_row = edge(p0, p1, p);
+
         // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle.
         // We should do some prefiltering. This can be done using a tiled rendering approach for larger triangles.
         for (; p.y < bounds.bottom; ++p.y) {
+            let w0 = w0_row;
+            let w1 = w1_row;
+            let w2 = w2_row;
             for (p.x = bounds.left; p.x < bounds.right; ++p.x) {
-                // TODO: This extremely expensive call to `barycentric` can be optimized out by predetermining
-                // the gradients at setup and just adding them at each step. It's not as precise, but at this
-                // small a screen resolution it should be unnoticable at even the largest triangle size.
-                if (barycentric(v0.pos, v1.pos, v2.pos, p, bary)) {
-                    const color = shade(bary);
+                if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                    const color = shade(w0, w1, w2);
                     if (color) {
                         ImageMethods.setPixel(args.dst, p.x, p.y, color);
                     }
                 }
+                w0 += A12;
+                w1 += A20;
+                w2 += A01;
             }
+            w0_row += B12;
+            w1_row += B20;
+            w2_row += B01;
         }
     }
 }
