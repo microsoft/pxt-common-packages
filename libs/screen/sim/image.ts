@@ -749,8 +749,8 @@ namespace pxsim.GpuMethods {
             add3ToRef(_uv0, _uv1, _uv2, _uv);
             divToRef(_uv, { x: area, y: area }, _uv);
             // Sample texture at uv coords.
-            const x = Math.round(_uv.x * args.tex._width - 1);
-            const y = Math.round(_uv.y * args.tex._height - 1);
+            const x = Math.floor(_uv.x * args.tex._width);
+            const y = Math.floor(_uv.y * args.tex._height);
             return ImageMethods.getPixel(args.tex, x, y);
         }
 
@@ -777,12 +777,12 @@ namespace pxsim.GpuMethods {
 
         // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle.
         // We should do some prefiltering. This can be done using a tiled rendering approach for larger triangles.
-        for (; p.y < bounds.bottom; ++p.y) {
+        for (; p.y <= bounds.bottom; ++p.y) {
             let w0 = w0_row;
             let w1 = w1_row;
             let w2 = w2_row;
-            for (p.x = bounds.left; p.x < bounds.right; ++p.x) {
-                if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+            for (p.x = bounds.left; p.x <= bounds.right; ++p.x) {
+                if ((w0 | w1 | w2) >= 0) {
                     const color = shade(w0, w1, w2);
                     if (color) {
                         ImageMethods.setPixel(args.dst, p.x, p.y, color);
