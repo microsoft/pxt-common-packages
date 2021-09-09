@@ -754,12 +754,12 @@ namespace pxsim.GpuMethods {
             return ImageMethods.getPixel(args.tex, x, y);
         }
 
-        // get clipped bounds of tri
+        // Get clipped bounds of tri. 0.5 offset to ensure we're sampling pixel center.
         const bounds: Bounds = {
-            left: clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
-            top: clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
-            right: clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
-            bottom: clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
+            left: 0.5 + clamp(min3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
+            top: 0.5 + clamp(min3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
+            right: 0.5 + clamp(max3(v0.pos.x, v1.pos.x, v2.pos.x), 0, args.dst._width),
+            bottom: 0.5 + clamp(max3(v0.pos.y, v1.pos.y, v2.pos.y), 0, args.dst._height),
         };
         const p: V2 = { x: bounds.left, y: bounds.top };
 
