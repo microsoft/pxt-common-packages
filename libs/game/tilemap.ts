@@ -34,7 +34,7 @@ namespace tiles {
         }
 
         //% group="Locations" blockSetVariable="location"
-        //% blockCombine block="column"
+        //% blockCombine block="row"
         //% weight=100
         get row() {
             return this._row;
