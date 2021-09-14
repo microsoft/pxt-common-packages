@@ -74,14 +74,14 @@ namespace tiles {
         //% blockCombine block="right"
         //% weight=100
         get right(): number {
-            return this.left + this.tileMap.scale;
+            return this.left + (1 << this.tileMap.scale);
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="bottom"
         //% weight=100
         get bottom(): number {
-            return this.top + this.tileMap.scale;
+            return this.top + (1 << this.tileMap.scale);
         }
 
         get tileSet(): number {
