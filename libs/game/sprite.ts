@@ -705,7 +705,7 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
-    //% blockNamespace="scene" group="Collisions" blockGap=8
+    //% blockNamespace="scene" group="Tilemaps" blockGap=8
     //% help=sprites/sprite/is-hitting-tile
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
@@ -717,8 +717,9 @@ class Sprite extends sprites.BaseSprite {
      */
     //% blockId=spritetileat block="tile to $direction of $this(mySprite) is $tile"
     //% tile.shadow=tileset_tile_picker
-    //% blockNamespace="scene" group="Collisions" blockGap=8
+    //% blockNamespace="scene" group="Locations" blockGap=24
     //% help=sprites/sprite/tile-kind-at
+    //% weight=20
     tileKindAt(direction: TileDirection, tile: Image): boolean {
         const tilemap = game.currentScene().tileMap;
         let x = this.x >> tilemap.scale;
@@ -748,11 +749,26 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
-    //% blockNamespace="scene" group="Collisions"
+    //% blockNamespace="scene" group="Locations"
+    //% direction.shadow=tiles_collision_direction_editor
     //% help=sprites/sprite/tile-hit-from
     //% deprecated=1
-    tileHitFrom(direction: CollisionDirection): number {
+    tileHitFrom(direction: number): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
+    }
+
+    /**
+     * Gets the tilemap location at the center of a sprite
+     */
+    //% block="tilemap location of $this"
+    //% blockId=tiles_location_of_sprite
+    //% this.shadow=variables_get
+    //% this.defl=mySprite
+    //% blockNamespace="scene" group="Locations" weight=90
+    tilemapLocation(): tiles.Location {
+        const scene = game.currentScene();
+        if (!scene.tileMap) return undefined;
+        return tiles.getTileLocation(this.x >> scene.tileMap.scale, this.y >> scene.tileMap.scale);
     }
 
     clearObstacles() {
