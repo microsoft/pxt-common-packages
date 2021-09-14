@@ -1,5 +1,6 @@
 //% helper=getTilemapByName
 //% pyConvertToTaggedTemplate
+//% blockIdentity="tiles._tilemapEditor"
 function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
 
 //% helper=getTilemapByName
@@ -17,6 +18,7 @@ function tilemap32(lits: any, ...args: any[]): tiles.TileMapData { return null }
 namespace assets {
     //% helper=getTilemapByName
     //% pyConvertToTaggedTemplate
+    //% blockIdentity="tiles._tilemapEditor"
     export function tilemap(lits: any, ...args: any[]): tiles.TileMapData { return null }
 
     //% helper=getImageByName

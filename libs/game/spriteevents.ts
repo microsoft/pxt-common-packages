@@ -82,8 +82,8 @@ namespace scene {
      * @param tile
      * @param handler
      */
-    //% group="Tiles"
-    //% weight=100 draggableParameters="reporter" blockGap=8
+    //% group="Tilemaps"
+    //% weight=120 draggableParameters="reporter" blockGap=8
     //% blockId=spriteshittile block="on $sprite of kind $kind=spritekind overlaps $tile at $location"
     //% tile.shadow=tileset_tile_picker
     //% help=tiles/on-overlap-tile
@@ -105,8 +105,8 @@ namespace scene {
      * @param kind
      * @param handler
      */
-    //% group="Tiles"
-    //% weight=120 draggableParameters="reporter" blockGap=8
+    //% group="Tilemaps"
+    //% weight=100 draggableParameters="reporter" blockGap=8
     //% blockId=spriteshitwall block="on $sprite of kind $kind=spritekind hits wall at $location"
     //% help=tiles/on-hit-wall
     export function onHitWall(kind: number, handler: (sprite: Sprite, location: tiles.Location) => void) {
