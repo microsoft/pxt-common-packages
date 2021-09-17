@@ -181,7 +181,7 @@ namespace settings {
     //% fixedInstances
     export class SecretStore {
         constructor(private key: string) { }
-        
+
         setSecret(name: string, value: any) {
             const secrets = this.readSecrets();
             secrets[name] = value;
@@ -192,7 +192,7 @@ namespace settings {
             const secrets = this.readSecrets();
             const secret = secrets[name];
             if (secret === undefined)
-                secrets[name] = value; 
+                secrets[name] = value;
             else jsonMergeFrom(secret, value);
             const v = JSON.stringify(secrets);
             writeString(this.key, v);
@@ -201,10 +201,8 @@ namespace settings {
         readSecret(name: string, ensure: boolean = false): any {
             const secrets = this.readSecrets();
             const secret = secrets[name];
-            if (ensure && !secret) {
-                control.dmesg("missing secret " + name);
-                control.panic(control.PXT_PANIC.SETTINGS_SECRET_MISSING);
-            }
+            if (ensure && !secret)
+                throw "missing secret " + name;
             return secret;
         }
 

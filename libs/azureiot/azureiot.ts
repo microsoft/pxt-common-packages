@@ -22,9 +22,11 @@ namespace azureiot {
         console.add(logPriority, "azureiot: " + msg);
     }
 
-    export function mqttClient(): mqtt.Client {
-        if (!_mqttClient)
+    export function mqttClient(skipCreate?: boolean): mqtt.Client {
+        if (!_mqttClient && !skipCreate) {
+            log("creating mqtt client")
             _mqttClient = createMQTTClient();
+        }
         return _mqttClient;
     }
 
@@ -37,13 +39,28 @@ namespace azureiot {
         return token
     }
 
-    function createMQTTClient() {
-        _messageBusId = control.allocateEventSource();
+    export function hubName() {
+        return connectionStringPart("HostName")
+    }
 
-        const connString = settings.programSecrets.readSecret(SECRETS_KEY, true);
-        const connStringParts = parsePropertyBag(connString, ";");
-        const iotHubHostName = connStringParts["HostName"];
-        const deviceId = connStringParts["DeviceId"];
+    export function hubDeviceId() {
+        return connectionStringPart("DeviceId")
+    }
+
+    function messageBusId() {
+        if (!_messageBusId)
+            _messageBusId = control.allocateEventSource();
+        return _messageBusId
+    }
+
+    function createMQTTClient() {
+        messageBusId()
+        const iotHubHostName = hubName()
+        const deviceId = hubDeviceId()
+        if (!iotHubHostName || !deviceId)
+            throw "invalid connection string"
+
+        const connStringParts = parseConnectionString();
         let sasToken = connStringParts["SharedAccessSignature"];
         if (!sasToken)
             // token valid until year 2255; in future we may try something more short-lived
@@ -57,17 +74,18 @@ namespace azureiot {
             clientId: deviceId
         }
         const c = new mqtt.Client(opts);
+        const evid = messageBusId()
         c.on('connected', () => {
             log("connected")
-            control.raiseEvent(_messageBusId, AzureIotEvent.Connected)
+            control.raiseEvent(evid, AzureIotEvent.Connected)
         });
         c.on('disconnected', () => {
             log("disconnected")
-            control.raiseEvent(_messageBusId, AzureIotEvent.Disconnected)
+            control.raiseEvent(evid, AzureIotEvent.Disconnected)
         });
         c.on('error', (msg) => {
             log("error: " + msg)
-            control.raiseEvent(_messageBusId, AzureIotEvent.Error)
+            control.raiseEvent(evid, AzureIotEvent.Error)
         });
         c.on('receive', (packet: mqtt.IMessage) => {
             log("unhandled msg: " + packet.topic + " / " + packet.content.toString())
@@ -77,7 +95,7 @@ namespace azureiot {
     }
 
     function splitPair(kv: string): string[] {
-        let i = kv.indexOf('=');
+        const i = kv.indexOf('=');
         if (i < 0)
             return [kv, ""];
         else
@@ -85,11 +103,31 @@ namespace azureiot {
     }
 
     function parsePropertyBag(msg: string, separator?: string): SMap<string> {
-        let r: SMap<string> = {};
-        msg.split(separator || "&")
-            .map(kv => splitPair(kv))
-            .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
+        const r: SMap<string> = {};
+        if (msg && typeof msg === "string")
+            msg.split(separator || "&")
+                .map(kv => splitPair(kv))
+                .filter(parts => !!parts[1].length)
+                .forEach(parts => r[net.urldecode(parts[0])] = net.urldecode(parts[1]));
         return r;
+    }
+
+    function parseConnectionString() {
+        try {
+            const connString = settings.programSecrets.readSecret(SECRETS_KEY);
+            const connStringParts = parsePropertyBag(connString, ";");
+            return connStringParts
+        } catch {
+            console.debug(`clearing invalid azure iot connection string`)
+            settings.programSecrets.setSecret(SECRETS_KEY, "")
+            return {}
+        }
+    }
+
+    function connectionStringPart(name: string) {
+        const connStringParts = parseConnectionString()
+        const value = connStringParts[name];
+        return value || ""
     }
 
     function encodeQuery(props: SMap<string>): string {
@@ -101,14 +139,42 @@ namespace azureiot {
             .join('&');
     }
 
+    export function setConnectionString(connectionString: string) {
+        disconnect()
+        settings.programSecrets.setSecret(SECRETS_KEY, connectionString)
+        parseConnectionString()
+    }
+
+    /**
+     * Disconnects the hub if any
+     */
+    export function disconnect() {
+        const c = mqttClient(true)
+        if (c) {
+            try {
+                c.disconnect()
+            }
+            finally {
+                _mqttClient = undefined
+            }
+        }
+    }
+
     /**
      * Connects to the IoT hub
      */
     export function connect() {
         const c = mqttClient();
-        // wait for connection
-        if (!c.connected)
-            control.waitForEvent(_messageBusId, AzureIotEvent.Connected);
+        if (!c.connected) {
+            // busy wait for connection
+            const start = control.millis()
+            const timeout = 30000
+            while (!c.connected && control.millis() - start < timeout) {
+                pause(1000)
+            }
+            if (!c.connected)
+                throw "connection failed"
+        }
     }
 
     /**
@@ -117,10 +183,13 @@ namespace azureiot {
      * @param handler 
      */
     export function onEvent(event: AzureIotEvent, handler: () => void) {
-        const c = mqttClient();
-        control.onEvent(_messageBusId, event, handler);
-        if (c.connected) // raise connected event by default
-            control.raiseEvent(_messageBusId, AzureIotEvent.Connected);
+        const evid = messageBusId()
+        control.onEvent(evid, event, handler);
+        try {
+            const c = mqttClient(true);
+            if (c && c.connected) // raise connected event by default
+                control.raiseEvent(evid, AzureIotEvent.Connected);
+        } catch { }
     }
 
     /**
@@ -128,8 +197,13 @@ namespace azureiot {
      */
     //%
     export function isConnected(): boolean {
-        const c = mqttClient();
-        return !!c.connected;
+        try {
+            const c = mqttClient(true);
+            return !!c && !!c.connected;
+        }
+        catch {
+            return false
+        }
     }
 
     /**
@@ -245,7 +319,7 @@ namespace azureiot {
             if (status == 204 || status == 200) {
                 va.setValue(body)
             } else {
-                log(`error on get twin -> ${status} ${JSON.stringify(body)}`)
+                log(`twin error -> ${status} ${JSON.stringify(body)}`)
                 va.setValue(null)
             }
         }
@@ -258,17 +332,52 @@ namespace azureiot {
     }
 
     export function patchTwin(patch: Json) {
-        twinReq("PATCH/properties/reported", JSON.stringify(patch))
+        const p = JSON.stringify(patch)
+        if (p == "{}")
+            log("skipping empty twin patch")
+        else {
+            log(`twin patch: ${JSON.stringify(patch)}`)
+            twinReq("PATCH/properties/reported", p)
+        }
     }
 
-    function updateJson(trg: Json, patch: Json) {
+    export function computePatch(curr: Json, target: Json) {
+        const patch: Json = {}
+        for (const k of Object.keys(curr)) {
+            const vt = target[k]
+            if (k[0] == "$")
+                continue
+            if (vt === undefined) {
+                patch[k] = null
+            } else {
+                const vc = curr[k]
+                if (typeof vt == "object")
+                    if (typeof vc == "object") {
+                        const p0 = computePatch(vc, vt)
+                        if (Object.keys(p0).length > 0)
+                            patch[k] = p0
+                    } else {
+                        patch[k] = vt
+                    }
+                else if (vc != vt)
+                    patch[k] = vt
+            }
+        }
+        for (const k of Object.keys(target)) {
+            if (curr[k] === undefined && k[0] != "$")
+                patch[k] = target[k]
+        }
+        return patch
+    }
+
+    export function applyPatch(trg: Json, patch: Json) {
         for (const k of Object.keys(patch)) {
             const v = patch[k]
             if (v === null) {
                 delete trg[k]
             } else if (typeof v == "object") {
                 if (!trg[k]) trg[k] = {}
-                updateJson(trg[k], v)
+                applyPatch(trg[k], v)
             } else {
                 trg[k] = v
             }
@@ -289,7 +398,7 @@ namespace azureiot {
                 return
             }
             const update = JSON.parse(msg.content.toString())
-            updateJson(currTwin["desired"], update)
+            applyPatch(currTwin["desired"], update)
             handler(currTwin, update)
         })
         currTwin = getTwin()
@@ -301,7 +410,7 @@ namespace azureiot {
         const c = mqttClient();
         if (!_methodHandlers) {
             if (!c.connected)
-                control.fail("not connected")
+                throw "azure iot hub not connected"
             _methodHandlers = {}
             c.subscribe('$iothub/methods/POST/#', handleMethod)
         }
