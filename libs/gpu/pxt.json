@@ -1,0 +1,13 @@
+{
+    "name": "gpu",
+    "description": "GPU-friendly render methods",
+    "files": [
+        "gpu.ts",
+        "gpu.cpp",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "screen": "file:../screen"
+    }
+}

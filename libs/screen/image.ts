@@ -78,21 +78,6 @@ interface Image {
      */
     //% helper=imageBlitRow
     blitRow(dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void;
-
-    /**
-     * Copy the image to the provided quadrilateral. Provided coordinates must be in clockwise order.
-     */
-    //% helper=imageDrawQuad
-    drawQuad(
-        tex: Image,
-        p0x: number,
-        p0y: number,
-        p1x: number,
-        p1y: number,
-        p2x: number,
-        p2y: number,
-        p3x: number,
-        p3y: number): void;
 }
 
 interface ScreenImage extends Image {
@@ -133,41 +118,12 @@ namespace helpers {
     //% shim=ImageMethods::_blitRow
     declare function _blitRow(img: Image, xy: number, from: Image, xh: number): void;
 
-    //% shim=GpuMethods::_drawQuad
-    declare function _drawQuad(img: Image, src: Image, args: number[]): void;
-
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
     }
 
     export function imageBlitRow(img: Image, dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void {
         _blitRow(img, pack(dstX, dstY), from, pack(fromX, fromH))
-    }
-
-    let _drawQuadArgs: number[];
-
-    export function imageDrawQuad(
-        img: Image,
-        tex: Image,
-        p0x: number,
-        p0y: number,
-        p1x: number,
-        p1y: number,
-        p2x: number,
-        p2y: number,
-        p3x: number,
-        p3y: number,
-    ) {
-        _drawQuadArgs = _drawQuadArgs || [];
-        _drawQuadArgs[0] = p0x;
-        _drawQuadArgs[1] = p0y;
-        _drawQuadArgs[2] = p1x;
-        _drawQuadArgs[3] = p1y;
-        _drawQuadArgs[4] = p2x;
-        _drawQuadArgs[5] = p2y;
-        _drawQuadArgs[6] = p3x;
-        _drawQuadArgs[7] = p3y;
-        _drawQuad(img, tex, _drawQuadArgs);
     }
 
     export function imageDrawIcon(img: Image, icon: Buffer, x: number, y: number, c: color): void {

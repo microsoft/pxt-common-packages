@@ -25,6 +25,7 @@
         "libs/keyboard",
         "libs/storage",
         "libs/game",
+        "libs/gpu",
         "libs/lcd",
         "libs/screen",
         "libs/servo",
