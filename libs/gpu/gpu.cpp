@@ -57,8 +57,7 @@ static inline void divToRef(const Vec2 &a, const Vec2 &b, Vec2 &ref) {
     ref.x = a.x / b.x;
     ref.y = a.y / b.y;
 }
-static inline bool barycentric(const Vec2 &p0, const Vec2 &p1, const Vec2 &p2, const Vec2 &p,
-                               Vec3 &out) {
+static inline bool barycentric(const Vec2 &p0, const Vec2 &p1, const Vec2 &p2, const Vec2 &p, Vec3 &out) {
     int w0 = edge(p1, p2, p);
     if (w0 < 0)
         return false;
@@ -113,6 +112,7 @@ static void drawTri(const Vertex *verts[], const int indices[], const Vec2 &area
             // predetermining the gradients at setup and just adding them at each step. It's not as
             // precise, but at this small a screen resolution it should be unnoticable at even the
             // largest triangle size.
+            // NOTE: This is already done in the ts implementation. Need to port that here.
             if (barycentric(V0->pos, V1->pos, V2->pos, p, bary)) {
                 int color = shade(area, V0, V1, V2, bary, tex);
                 if (color) {
@@ -126,6 +126,8 @@ static void drawTri(const Vertex *verts[], const int indices[], const Vec2 &area
 static void drawQuad(Image_ dst, Image_ tex, RefCollection *args) {
     Vertex V0, V1, V2, V3;
     const Vertex *verts[4] = {&V0, &V1, &V2, &V3};
+
+    // TODO: Keep everything fixed point until the last possible moment.
 
     V0.pos.set(toInt(args->getAt(0)), toInt(args->getAt(1)));
     V1.pos.set(toInt(args->getAt(2)), toInt(args->getAt(3)));

@@ -56,6 +56,8 @@ namespace pxsim.gpu {
         const TRI0_INDICES = [0, 3, 2];
         const TRI1_INDICES = [2, 1, 0];
 
+        // TODO: Keep everything fixed point until the last possible moment.
+
         const V0: Vertex = {
             pos: { x: args.getAt(0) | 0, y: args.getAt(1) | 0 },
             uv: { x: 0, y: 0 }
