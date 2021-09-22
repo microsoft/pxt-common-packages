@@ -43,6 +43,8 @@ void operator delete[](void *p) THROW {
     xfree(p);
 }
 
+uint8_t *gcBase;
+
 namespace pxt {
 
 static uint64_t startTime;
@@ -100,6 +102,7 @@ extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
 #if defined(PXT_ESP32)
+    // sleep_core_us(5 * 1000 * 1000);
     abort();
 #elif defined(PXT_VM)
     systemReset();
@@ -157,7 +160,8 @@ void sleep_us(uint64_t us) {
     }
 }
 
-uint64_t currTime() {
+#ifndef PXT_ESP32
+static uint64_t currTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000LL + tv.tv_usec;
@@ -168,6 +172,7 @@ uint64_t current_time_us() {
         startTime = currTime();
     return currTime() - startTime;
 }
+#endif
 
 int current_time_ms() {
     return (int)(current_time_us() / 1000);
@@ -242,6 +247,27 @@ void waitForEvent(int source, int value) {
     schedule();
 }
 
+FiberContext *suspendFiber() {
+    currentFiber->waitSource = PXT_WAIT_SOURCE_PROMISE;
+    schedule();
+    return currentFiber;
+}
+
+void resumeFiberWithFn(FiberContext *ctx, fiber_resume_t fn, void *arg) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->wakeFn = fn;
+    ctx->wakeFnArg = arg;
+}
+
+void resumeFiber(FiberContext *ctx, TValue v) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->r0 = v;
+}
+
 static void dispatchEvent(Event &e) {
     lastEvent = e;
 
@@ -308,6 +334,13 @@ static void mainRunLoop() {
             currentFiber = f;
             f->pc = f->resumePC;
             f->resumePC = NULL;
+            if (f->wakeFn) {
+                auto fn = f->wakeFn;
+                f->wakeFn = NULL;
+                f->r0 = fn(f->wakeFnArg);
+                if (f->wakeTime || f->waitSource)
+                    continue; // we got suspended again
+            }
             exec_loop(f);
             if (panicCode)
                 return;
@@ -389,29 +422,19 @@ void initRuntime() {
     systemReset();
 }
 
-#ifdef PXT64
-#define GC_BASE 0x2000000000
-#define GC_PAGE_SIZE (64 * 1024)
-#else
-#define GC_BASE 0x20000000
-#define GC_PAGE_SIZE 4096
-#endif
-
-uint8_t *gcBase;
-
 void *gcAllocBlock(size_t sz) {
 #ifdef PXT_ESP32
     void *r = xmalloc(sz);
 #else
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-#if defined(PXT64)
+#if defined(PXT64) || defined(__MINGW32__)
     if (!gcBase) {
         gcBase = (uint8_t *)xmalloc(1 << PXT_VM_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;
-    if ((uint8_t *)currPtr - gcBase > 1024 * 1024 - sz)
+    if ((uint8_t *)currPtr - gcBase > (1 << PXT_VM_HEAP_ALLOC_BITS) - (int)sz)
         target_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);

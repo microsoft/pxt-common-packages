@@ -15,7 +15,9 @@ namespace info {
         Life = 1 << 2,
         Hud = 1 << 3,
         Multi = 1 << 4,
-        UserHeartImage = 1 << 5
+        UserHeartImage = 1 << 5,
+        _ExplicitlySetScore = 1 << 6,
+        _ExplicitlySetLife = 1 << 7,
     }
 
     export class PlayerState {
@@ -371,6 +373,7 @@ namespace info {
     //% group="Life"
     export function showLife(on: boolean) {
         updateFlag(Visibility.Life, on);
+        updateFlag(Visibility._ExplicitlySetLife, true);
     }
 
     /**
@@ -380,6 +383,7 @@ namespace info {
     //% group="Score"
     export function showScore(on: boolean) {
         updateFlag(Visibility.Score, on);
+        updateFlag(Visibility._ExplicitlySetScore, true);
     }
 
     /**
@@ -506,7 +510,7 @@ namespace info {
         public fc: number; // font color
         public showScore?: boolean;
         public showLife?: boolean;
-        public visilibity: Visibility;
+        public visibility: Visibility;
         public showPlayer?: boolean;
         public x?: number;
         public y?: number;
@@ -517,7 +521,7 @@ namespace info {
             this._player = player;
             this.border = 1;
             this.fc = 1;
-            this.visilibity = Visibility.None;
+            this.visibility = Visibility.None;
             this.showScore = undefined;
             this.showLife = undefined;
             this.showPlayer = undefined;
@@ -596,7 +600,9 @@ namespace info {
         //% help=info/set-score
         setScore(value: number) {
             const state = this.getState();
-            updateFlag(Visibility.Score, true);
+            if (!(infoState.visibilityFlag & Visibility._ExplicitlySetScore)) {
+                updateFlag(Visibility.Score, true);
+            }
 
             this.score(); // invoked for side effects
             state.score = (value | 0);
@@ -645,7 +651,9 @@ namespace info {
         //% help=info/set-life
         setLife(value: number): void {
             const state = this.getState();
-            updateFlag(Visibility.Life, true);
+            if (!(infoState.visibilityFlag & Visibility._ExplicitlySetLife)) {
+                updateFlag(Visibility.Life, true);
+            }
 
             this.life(); // invoked for side effects
             state.life = (value | 0);

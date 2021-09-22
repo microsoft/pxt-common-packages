@@ -1,0 +1,13 @@
+{
+    "name": "settings---esp32",
+    "description": "Settings storage in ESP32 NVS",
+    "files": [
+        "settings.cpp",
+        "settings.ts"
+    ],
+   "additionalFilePath": "../settings",
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

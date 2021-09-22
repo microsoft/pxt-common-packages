@@ -293,15 +293,24 @@ namespace mqtt {
         }
     }
 
+    enum HandlerStatus {
+        Normal = 0,
+        Once = 1,
+        ToRemove = 2,
+    }
+
     class MQTTHandler {
+        public status: HandlerStatus
         constructor(
             public topic: string,
             public handler: (m: IMessage) => void
-        ) { }
+        ) {
+            this.status = HandlerStatus.Normal
+        }
     }
 
     export class Client extends EventEmitter {
-        public logPriority : ConsolePriority;
+        public logPriority: ConsolePriority;
         private log(msg: string) {
             console.add(this.logPriority, `mqtt: ${msg}`);
         }
@@ -325,7 +334,7 @@ namespace mqtt {
 
             this.wdId = Constants.Uninitialized;
             this.piId = Constants.Uninitialized;
-            this.logPriority = ConsolePriority.Silent;
+            this.logPriority = ConsolePriority.Debug;
             this.connected = false;
             opt.port = opt.port || 8883;
             opt.clientId = opt.clientId;
@@ -365,6 +374,7 @@ namespace mqtt {
         }
 
         public disconnect(): void {
+            this.log("disconnect")
             if (this.wdId !== Constants.Uninitialized) {
                 clearInterval(this.wdId);
                 this.wdId = Constants.Uninitialized;
@@ -421,33 +431,59 @@ namespace mqtt {
         // Publish a message
         public publish(topic: string, message?: string | Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             const buf = typeof message == "string" ? control.createBufferFromUTF8(message) : message
+            this.log(`publish: ${topic}`)
             this.send(Protocol.createPublish(topic, buf, qos, retained));
         }
 
-        // Subscribe to topic
-        public subscribe(topic: string, handler?: (msg: IMessage) => void, qos: number = Constants.DefaultQos): void {
+        private subscribeCore(topic: string, handler: (msg: IMessage) => void, qos: number = Constants.DefaultQos): MQTTHandler {
+            this.log(`subscribe: ${topic}`)
             this.send(Protocol.createSubscribe(topic, qos));
             if (handler) {
                 if (topic[topic.length - 1] == "#")
                     topic = topic.slice(0, topic.length - 1)
                 if (!this.mqttHandlers) this.mqttHandlers = []
-                this.mqttHandlers.push(new MQTTHandler(topic, handler))
+                const h = new MQTTHandler(topic, handler)
+                this.mqttHandlers.push(h)
+                return h
+            } else {
+                return null
+            }
+        }
+
+        // Subscribe to topic
+        public subscribe(topic: string, handler?: (msg: IMessage) => void, qos: number = Constants.DefaultQos): void {
+            this.subscribeCore(topic, handler, qos)
+        }
+
+        // Subscribe to one update on the topic. Returns function that waits for the topic to be updated.
+        public awaitUpdate(topic: string, qos: number = Constants.DefaultQos): () => IMessage {
+            let res: IMessage = null
+            const evid = control.allocateNotifyEvent()
+            const h = this.subscribeCore(topic, msg => {
+                res = msg
+                control.raiseEvent(DAL.DEVICE_ID_NOTIFY, evid)
+            }, qos)
+            h.status = HandlerStatus.Once
+            return () => {
+                while (res == null) {
+                    control.waitForEvent(DAL.DEVICE_ID_NOTIFY, evid)
+                }
+                return res
             }
         }
 
         private send(data: Buffer): void {
             if (this.sct) {
                 //this.log("send: " + data[0] + " / " + data.length + " bytes")
-                this.log("send: " + data[0] + " / " + data.length + " bytes: " + data.toString())
+                this.log("send: " + data[0] + " / " + data.length + " bytes: " + data.toHex())
                 this.sct.send(data);
             }
         }
 
         private handleMessage(data: Buffer) {
-            if (this.buf) {
+            if (this.buf)
                 data = this.buf.concat(data)
-                this.buf = null
-            }
+            this.buf = data
             if (data.length < 2)
                 return
             let len = data[1]
@@ -468,6 +504,8 @@ namespace mqtt {
             if (data.length < payloadEnd)
                 return // wait for the rest of data
 
+            this.buf = null
+
             const cmd = data[0]
             const controlPacketType: ControlPacketType = cmd >> 4;
             // this.emit('debug', `Rcvd: ${controlPacketType}: '${data}'.`);
@@ -476,7 +514,7 @@ namespace mqtt {
 
             switch (controlPacketType) {
                 case ControlPacketType.ConnAck:
-                    const returnCode: number = payload[0];
+                    const returnCode: number = payload[1];
                     if (returnCode === ConnectReturnCode.Accepted) {
                         this.log('MQTT connection accepted.');
                         this.emit('connected');
@@ -484,18 +522,28 @@ namespace mqtt {
                         this.piId = setInterval(() => this.ping(), Constants.PingInterval * 1000);
                     } else {
                         const connectionError: string = Client.describe(returnCode);
+                        this.log('MQTT connection error: ' + connectionError);
                         this.emit('error', connectionError);
                     }
                     break;
                 case ControlPacketType.Publish:
                     const message: IMessage = Protocol.parsePublish(cmd, payload);
+                    this.log(`incoming: ${message.topic}`)
                     let handled = false
-                    if (this.mqttHandlers)
+                    let cleanup = false
+                    if (this.mqttHandlers) {
                         for (let h of this.mqttHandlers)
                             if (message.topic.slice(0, h.topic.length) == h.topic) {
                                 h.handler(message)
                                 handled = true
+                                if (h.status == HandlerStatus.Once) {
+                                    h.status = HandlerStatus.ToRemove
+                                    cleanup = true
+                                }
                             }
+                        if (cleanup)
+                            this.mqttHandlers = this.mqttHandlers.filter(h => h.status != HandlerStatus.ToRemove)
+                    }
                     if (!handled)
                         this.emit('receive', message);
                     if (message.qos > 0) {

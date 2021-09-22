@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "lib": [
+            "DOM",
+            "DOM.Iterable",
+            "ES2017"
+        ],
+        "newLine": "LF",
+        "sourceMap": false
+    },
+    "include": [
+        "*.ts",
+        "../../*/sim/*.ts",
+        "../../../../pxt/pxtsim/*.ts",
+        "../../../../pxt/pxtsim/*/*.ts"
+    ]
+}

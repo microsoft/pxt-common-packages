@@ -195,8 +195,8 @@ class Sprite extends sprites.BaseSprite {
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
 
-    private updateSay: (dt: number, camera: scene.Camera) => void;
-    private sayBubbleSprite: Sprite;
+    private sayEndTime: number;
+    private sayRenderer: sprites.BaseSpriteSayRenderer;
 
     _hitbox: game.Hitbox;
     _overlappers: number[];
@@ -460,7 +460,9 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
-     * Display a speech bubble with the text, for the given time
+     * Deprecated! Use sayText instead.
+     *
+     * Display a speech bubble with the text, for the given time.
      * @param text the text to say, eg: ":)"
      * @param time time to keep text on
      */
@@ -470,158 +472,61 @@ class Sprite extends sprites.BaseSprite {
     //% millis.shadow=timePicker
     //% text.shadow=text
     //% inlineInputMode=inline
+    //% deprecated=true
     //% help=sprites/sprite/say
     say(text: any, timeOnScreen?: number, textColor = 15, textBoxColor = 1) {
-        // clear say if nullish or empty string (not on e.g. 0)
         if (text === null || text === undefined || text === "") {
-            this.updateSay = undefined;
-            if (this.sayBubbleSprite) {
-                this.sayBubbleSprite.destroy();
-                this.sayBubbleSprite = undefined;
-            }
-            return;
-        }
-        const textToDisplay = console.inspect(text).split("\n").join(" ");
-
-        // same text, color, time, etc...
-        const SAYKEY = "__saykey";
-        const key = JSON.stringify({
-            text: textToDisplay,
-            textColor: textColor,
-            textBoxColor: textBoxColor
-        })
-        if (timeOnScreen === undefined
-            && this.sayBubbleSprite
-            && this.sayBubbleSprite.data[SAYKEY] == key) {
-            // do nothing!
+            if (this.sayRenderer) this.sayRenderer.destroy();
+            this.sayRenderer = undefined;
             return;
         }
 
-        let pixelsOffset = 0;
-        let holdTextSeconds = 1.5;
-        let bubblePadding = 4;
-        let maxTextWidth = 100;
-        let font = image.getFontForText(textToDisplay);
-        let startX = 2;
-        let startY = 2;
-        let bubbleWidth = textToDisplay.length * font.charWidth + bubblePadding;
-        let maxOffset = textToDisplay.length * font.charWidth - maxTextWidth;
-        let bubbleOffset: number = Fx.toInt(this._hitbox.oy);
-        let needsRedraw = true;
-
-        // sets the defaut scroll speed in pixels per second
-        let speed = 45;
-        const currentScene = game.currentScene();
-
-        // Calculates the speed of the scroll if scrolling is needed and a time is specified
-        if (timeOnScreen && maxOffset > 0) {
-            speed = (maxOffset + (2 * maxTextWidth)) / (timeOnScreen / 1000);
-            speed = Math.max(speed, 45);
-            holdTextSeconds = maxTextWidth / speed;
-            holdTextSeconds = Math.min(holdTextSeconds, 1.5);
+        if (this.sayRenderer && this.sayRenderer instanceof sprites.LegacySpriteSayRenderer &&
+            this.sayRenderer.text === text && this.sayRenderer.bgColor === textBoxColor &&
+            this.sayRenderer.fgColor === textColor && timeOnScreen === undefined && this.sayEndTime === undefined) {
+                return;
         }
 
-        if (timeOnScreen) {
-            timeOnScreen = timeOnScreen + currentScene.millis();
+        if (timeOnScreen >= 0) this.sayEndTime = control.millis() + timeOnScreen;
+
+        if (this.sayRenderer) this.sayRenderer.destroy();
+        this.sayRenderer = undefined;
+        text = console.inspect(text);
+
+        this.sayRenderer = new sprites.LegacySpriteSayRenderer(text, timeOnScreen, this, textColor, textBoxColor);
+    }
+
+    /**
+     * Display a speech bubble with the text, for the given time
+     * @param text the text to say, eg: ":)"
+     * @param time time to keep text on
+     * @param animated whether to print the text character by character or not
+     */
+    //% group="Effects"
+    //% weight=60
+    //% blockId=spritesaytext block="$this say $text||for $timeOnScreen ms with animation $animated"
+    //% timeOnScreen.shadow=timePicker
+    //% text.shadow=text
+    //% this.shadow=variables_get
+    //% this.defl=mySprite
+    //% inlineInputMode=inline
+    //% help=sprites/sprite/say
+    //% expandableArgumentMode=toggle
+    sayText(text: any, timeOnScreen?: number, animated = false, textColor = 15, textBoxColor = 1) {
+        if (text === null || text === undefined || text === "") {
+            if (this.sayRenderer) this.sayRenderer.destroy();
+            this.sayRenderer = undefined;
+            return;
         }
 
-        if (bubbleWidth > maxTextWidth + bubblePadding) {
-            bubbleWidth = maxTextWidth + bubblePadding;
-        } else {
-            maxOffset = -1;
-        }
+        if (this.sayRenderer) this.sayRenderer.destroy();
+        this.sayRenderer = undefined;
 
-        // reuse previous sprite if possible
-        const imgh = font.charHeight + bubblePadding;
-        if (!this.sayBubbleSprite
-            || this.sayBubbleSprite.image.width != bubbleWidth
-            || this.sayBubbleSprite.image.height != imgh) {
-            const sayImg = image.create(bubbleWidth, imgh);
-            if (this.sayBubbleSprite) // sprite with same image size, we can reuse it
-                this.sayBubbleSprite.setImage(sayImg);
-            else { // needs a new sprite
-                this.sayBubbleSprite = sprites.create(sayImg, -1);
-                this.sayBubbleSprite.setFlag(SpriteFlag.Ghost, true);
-                this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, !!(this.flags & sprites.Flag.RelativeToCamera))
-            }
-        }
-        this.sayBubbleSprite.data[SAYKEY] = key;
-        this.updateSay = (dt, camera) => {
-            // The minus 2 is how much transparent padding there is under the sayBubbleSprite
-            this.sayBubbleSprite.y = this.top + bubbleOffset - ((font.charHeight + bubblePadding) >> 1) - 2;
-            this.sayBubbleSprite.x = this.x;
-            this.sayBubbleSprite.z = this.z + 1;
+        if (timeOnScreen >= 0) this.sayEndTime = control.millis() + timeOnScreen;
 
-            // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
-            if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
-                // move bubble
-                if (!this.isOutOfScreen(camera)) {
-                    const ox = camera.offsetX;
-                    const oy = camera.offsetY;
+        text = console.inspect(text);
 
-                    if (this.sayBubbleSprite.left - ox < 0) {
-                        this.sayBubbleSprite.left = 0;
-                    }
-
-                    if (this.sayBubbleSprite.right - ox > screen.width) {
-                        this.sayBubbleSprite.right = screen.width;
-                    }
-
-                    // If sprite bubble above the sprite gets cut off on top, place the bubble below the sprite
-                    if (this.sayBubbleSprite.top - oy < 0) {
-                        this.sayBubbleSprite.y = (this.sayBubbleSprite.y - 2 * this.y) * -1;
-                    }
-                }
-
-                // Pauses at beginning of text for holdTextSeconds length
-                if (holdTextSeconds > 0) {
-                    holdTextSeconds -= game.eventContext().deltaTime;
-                    // If scrolling has reached the end, start back at the beginning
-                    if (holdTextSeconds <= 0 && pixelsOffset > 0) {
-                        pixelsOffset = 0;
-                        holdTextSeconds = maxTextWidth / speed;
-                        needsRedraw = true;
-                    }
-                } else {
-                    pixelsOffset += dt * speed;
-                    needsRedraw = true;
-
-                    // Pause at end of text for holdTextSeconds length
-                    if (pixelsOffset >= maxOffset) {
-                        pixelsOffset = maxOffset;
-                        holdTextSeconds = maxTextWidth / speed;
-                    }
-                }
-
-                if (needsRedraw) {
-                    needsRedraw = false;
-                    this.sayBubbleSprite.image.fill(textBoxColor);
-                    // If maxOffset is negative it won't scroll
-                    if (maxOffset < 0) {
-                        this.sayBubbleSprite.image.print(textToDisplay, startX, startY, textColor, font);
-
-                    } else {
-                        this.sayBubbleSprite.image.print(textToDisplay, startX - pixelsOffset, startY, textColor, font);
-                    }
-
-                    // Left side padding
-                    this.sayBubbleSprite.image.fillRect(0, 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
-                    // Right side padding
-                    this.sayBubbleSprite.image.fillRect(bubbleWidth - (bubblePadding >> 1), 0, bubblePadding >> 1, font.charHeight + bubblePadding, textBoxColor);
-                    // Corners removed
-                    this.sayBubbleSprite.image.setPixel(0, 0, 0);
-                    this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, 0, 0);
-                    this.sayBubbleSprite.image.setPixel(0, font.charHeight + bubblePadding - 1, 0);
-                    this.sayBubbleSprite.image.setPixel(bubbleWidth - 1, font.charHeight + bubblePadding - 1, 0);
-                }
-            } else {
-                // If can't update because of timeOnScreen then destroy the sayBubbleSprite and reset updateSay
-                this.updateSay = undefined;
-                this.sayBubbleSprite.destroy();
-                this.sayBubbleSprite = undefined;
-            }
-        }
-        this.updateSay(0, currentScene.camera);
+        this.sayRenderer = new sprites.SpriteSayRenderer(text, textColor, textBoxColor, animated, timeOnScreen);
     }
 
     /**
@@ -647,6 +552,22 @@ class Sprite extends sprites.BaseSprite {
     }
 
     __drawCore(camera: scene.Camera) {
+        if (this.sayRenderer) {
+            if (this.sayEndTime !== undefined) {
+                if (control.millis() < this.sayEndTime) {
+                    this.sayRenderer.draw(screen, camera, this);
+                }
+                else {
+                    this.sayRenderer.destroy();
+                    this.sayRenderer = undefined;
+                    this.sayEndTime = undefined;
+                }
+            }
+            else {
+                this.sayRenderer.draw(screen, camera, this)
+            }
+        }
+
         if (this.isOutOfScreen(camera)) return;
 
         const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
@@ -721,10 +642,7 @@ class Sprite extends sprites.BaseSprite {
             }
         }
 
-        // Say text
-        if (this.updateSay) {
-            this.updateSay(dt, camera);
-        }
+        if (this.sayRenderer) this.sayRenderer.update(dt, camera, this);
     }
 
     /**
@@ -762,10 +680,6 @@ class Sprite extends sprites.BaseSprite {
     setFlag(flag: SpriteFlag, on: boolean) {
         if (on) this.flags |= flag
         else this.flags = ~(~this.flags | flag);
-
-        if (flag === SpriteFlag.RelativeToCamera && this.sayBubbleSprite) {
-            this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, on);
-        }
     }
 
     /**
@@ -900,10 +814,6 @@ class Sprite extends sprites.BaseSprite {
     _destroyCore() {
         this.flags |= sprites.Flag.Destroyed;
         const scene = game.currentScene();
-        // When current sprite is destroyed, destroys sayBubbleSprite if defined
-        if (this.sayBubbleSprite) {
-            this.sayBubbleSprite.destroy();
-        }
         scene.allSprites.removeElement(this);
         if (this.kind() >= 0 && scene.spritesByKind[this.kind()])
             scene.spritesByKind[this.kind()].remove(this);

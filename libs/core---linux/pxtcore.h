@@ -6,11 +6,12 @@
 #include <stdarg.h>
 
 namespace pxt {
-void dmesg(const char *fmt, ...);
-void vdmesg(const char *format, va_list arg);
-#define DMESG pxt::dmesg
 void *gcAllocBlock(size_t sz);
 }
+
+extern "C" void dmesg(const char *fmt, ...);
+extern "C" void vdmesg(const char *format, va_list arg);
+#define DMESG ::dmesg
 
 static inline void itoa(int v, char *dst) {
     snprintf(dst, 30, "%d", v);

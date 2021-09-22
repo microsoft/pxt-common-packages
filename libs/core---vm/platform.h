@@ -46,7 +46,7 @@ void soft_panic(int errorCode);
 #endif
 #endif
 
-#ifdef PXT64
+#if defined(PXT64) || defined(__MINGW32__)
 #define GC_BASE 0x2000000000
 #define GC_PAGE_SIZE (64 * 1024)
 

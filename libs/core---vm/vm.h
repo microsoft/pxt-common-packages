@@ -89,6 +89,8 @@ const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len);
 
 STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
+#define PXT_WAIT_SOURCE_PROMISE 0x1fff0
+
 struct OpcodeDesc {
     const char *name;
     OpFun fn;
@@ -154,6 +156,8 @@ struct StackFrame {
     uint32_t *fnbase;
 };
 
+typedef TValue (*fiber_resume_t)(void *);
+
 struct FiberContext {
     FiberContext *next;
 
@@ -179,12 +183,22 @@ struct FiberContext {
 
     // for sleep
     uint64_t wakeTime;
+
+    fiber_resume_t wakeFn;
+    void *wakeFnArg;
 };
 
 #define PXT_EXN_CTX() currentFiber
 
 void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx);
 #define pxt_restore_exception_state restoreVMExceptionState
+
+FiberContext *suspendFiber(); // returns currentFiber
+// this can be called from a different thread; fn(arg) will be called from user code thread
+// just before the VM resumes execution; the result value will be stored in ctx->r0
+void resumeFiberWithFn(FiberContext *ctx, fiber_resume_t fn, void *arg);
+// a simpler version
+void resumeFiber(FiberContext *ctx, TValue v);
 
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;
