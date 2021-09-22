@@ -16,7 +16,7 @@ The animation runs for the amount of time you set for it. When the animation fin
 
 * **sprite**: a sprite to attach the animation to.
 * **pathString**: an name of a movement path to apply to a sprite.
-* **duration**: the [number](/types/number) of milleseconds to run the animation for.
+* **duration**: the [number](/types/number) of milliseconds to run the animation for.
 * **loop**: a [boolean](/types/boolean) value that if ``true`` will cause the sprite to return to its original position and restart the animation. If ``false``, the animation runs only once and the sprite remains at the last location of the animation.
 
 ## Example #example

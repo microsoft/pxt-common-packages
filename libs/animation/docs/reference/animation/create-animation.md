@@ -23,7 +23,7 @@ Each frame in an animation is shown for some amount of time. This is set in the 
 ## Parameters
 
 * **action**: an action to relate the animation to. This could be an action like ``Walking`` or ``Jumping``.
-* **interval**: a [number](/types/number) that is the amount of time in milleseconds to show each frame in the animation.
+* **interval**: a [number](/types/number) that is the amount of time in milliseconds to show each frame in the animation.
 
 ## Returns
 
