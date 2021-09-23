@@ -12,7 +12,7 @@
 namespace codal {
 
 int ZFlash::pageSize(uintptr_t address) {
-  return FLASH_PAGE_SIZE;
+  return FLASH_SECTOR_SIZE;
 }
 
 int ZFlash::totalSize() {
@@ -34,6 +34,7 @@ int ZFlash::erasePage(uintptr_t address) {
 }
 
 int ZFlash::writeBytes(uintptr_t dst, const void *src, uint32_t len) {
+  if (len != FLASH_PAGE_SIZE || (dst & (FLASH_PAGE_SIZE - 1))) return -1;
   // should be aligned to 256
   target_disable_irq();
   flash_range_program(dst - XIP_BIAS, (const uint8_t*)src, FLASH_PAGE_SIZE);
