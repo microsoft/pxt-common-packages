@@ -18,6 +18,7 @@
 #include "Button.h"
 #include "CodalFiber.h"
 #include "MessageBus.h"
+#include "MultiButton.h"
 
 using namespace codal;
 
