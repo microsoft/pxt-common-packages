@@ -18,7 +18,12 @@ struct BlockedEntries {
 };
 
 #define RAFFS_FOLLOWING_MASK 0x8000
+
+#ifdef PICO_BOARD
+#define RAFFS_FLASH_BUFFER_SIZE 256
+#else
 #define RAFFS_FLASH_BUFFER_SIZE 64
+#endif
 
 struct MetaEntry {
     uint16_t fnhash;    // hash of file name

@@ -9,6 +9,7 @@
         "STM32Flash.cpp",
         "SAMDFlash.cpp",
         "NRF52Flash.cpp",
+        "RP2040Flash.cpp",
         "settings.cpp",
         "settings.ts",
         "shims.d.ts"
