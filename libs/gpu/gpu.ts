@@ -11,6 +11,7 @@ namespace gpu {
     export function drawQuad(
         dst: Image,
         tex: Image,
+        // Note these are Fx8 values
         p0x: number,
         p0y: number,
         p1x: number,
