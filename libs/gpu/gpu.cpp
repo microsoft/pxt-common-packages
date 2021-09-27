@@ -30,7 +30,7 @@ struct Vertex {
 };
 
 static inline int fx8FromInt(int v) {
-    return v * 256;
+    return (int)(v * 256);
 }
 static inline int fx8FromFloat(float v) {
     return (int)(v * 256.f);
@@ -54,7 +54,7 @@ static inline int edge(const Vec2 &a, const Vec2 &b, const Vec2 &c) {
     return fxMul((c.x - a.x), (b.y - a.y)) - fxMul((c.y - a.y), (b.x - a.x));
 }
 static inline int clamp(int v, int a, int b) {
-    return min(a, max(v, b));
+    return min(b, max(v, a));
 }
 static inline int min3(int a, int b, int c) {
     return min(min(a, b), c);
