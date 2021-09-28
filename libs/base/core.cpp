@@ -208,7 +208,10 @@ static void setupSkipList(String r, const char *data, int packed) {
     auto len = r->skip.size;
     if (data)
         memcpy(dst, data, len);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-overflow"
     dst[len] = 0;
+    #pragma GCC diagnostic pop
     const char *ptr = dst;
     auto skipEntries = PXT_NUM_SKIP_ENTRIES(r);
     auto lst = packed ? r->skip_pack.list : r->skip.list;
