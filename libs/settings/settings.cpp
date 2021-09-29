@@ -35,6 +35,9 @@ class WStorage {
                  ? NRF_BOOTLOADER_START - SETTINGS_SIZE
                  : flash.totalSize() - SETTINGS_SIZE,
              SETTINGS_SIZE),
+#elif defined(PICO_BOARD)
+          // XIP bias 0x10000000
+          fs(flash, 0x10000000 + flash.totalSize() - SETTINGS_SIZE, SETTINGS_SIZE),
 #else
           fs(flash),
 #endif

@@ -208,7 +208,10 @@ static void setupSkipList(String r, const char *data, int packed) {
     auto len = r->skip.size;
     if (data)
         memcpy(dst, data, len);
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-overflow"
     dst[len] = 0;
+    #pragma GCC diagnostic pop
     const char *ptr = dst;
     auto skipEntries = PXT_NUM_SKIP_ENTRIES(r);
     auto lst = packed ? r->skip_pack.list : r->skip.list;
@@ -615,8 +618,8 @@ String substr(String s, int start, int length) {
         return mkEmpty();
     auto slen = (int)s->getLength();
     if (start < 0)
-        start = max(slen + start, 0);
-    length = min(length, slen - start);
+        start = pxt::max(slen + start, 0);
+    length = pxt::min(length, slen - start);
     if (length <= 0)
         return mkEmpty();
     auto p = s->getUTF8DataAt(start);
@@ -1875,8 +1878,9 @@ STRING_VT(string_inline_utf8, NOOP, NOOP, 2 + p->utf8.size + 1, p->utf8.data, p-
           utf8Len(p->utf8.data, p->utf8.size), utf8Skip(p->utf8.data, p->utf8.size, idx))
 STRING_VT(string_skiplist16, NOOP, if (p->skip.list) gcMarkArray(p->skip.list), 2 * sizeof(void *),
           PXT_SKIP_DATA_IND(p), p->skip.size, p->skip.length, skipLookup(p, idx, 0))
-STRING_VT(string_skiplist16_packed, NOOP, NOOP, 2 + 2 + PXT_NUM_SKIP_ENTRIES(p) * 2 + p->skip.size + 1,
-          PXT_SKIP_DATA_PACK(p), p->skip.size, p->skip.length, skipLookup(p, idx, 1))
+STRING_VT(string_skiplist16_packed, NOOP, NOOP,
+          2 + 2 + PXT_NUM_SKIP_ENTRIES(p) * 2 + p->skip.size + 1, PXT_SKIP_DATA_PACK(p),
+          p->skip.size, p->skip.length, skipLookup(p, idx, 1))
 STRING_VT(string_cons, fixCons(p), (gcScan((TValue)p->cons.left), gcScan((TValue)p->cons.right)),
           2 * sizeof(void *), PXT_SKIP_DATA_IND(p), p->skip.size, p->skip.length,
           skipLookup(p, idx, 0))
