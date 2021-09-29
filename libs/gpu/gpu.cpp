@@ -3,7 +3,7 @@
 namespace ImageMethods {
 void setPixel(Image_ img, int x, int y, int c);
 int getPixel(Image_ img, int x, int y);
-}
+} // namespace ImageMethods
 
 namespace gpu {
 
@@ -74,11 +74,9 @@ static inline void divToRef(const Vec2 &a, const Vec2 &b, Vec2 &ref) {
     ref.x = fxDiv(a.x, b.x);
     ref.y = fxDiv(a.y, b.y);
 }
-static int shade(
-    const Vec2 &area,
-    const Vertex *v0, const Vertex *v1, const Vertex *v2,
-    int w0, int w1, int w2,
-    Image_ tex, int texWidth, int texHeight) {
+static int shadeTexturedPixel(const Vec2 &area, const Vertex *v0, const Vertex *v1,
+                              const Vertex *v2, int w0, int w1, int w2, Image_ tex, int texWidth,
+                              int texHeight) {
     Vec2 _uv0, _uv1, _uv2, _uv;
     // Calculate uv coords from given barycentric coords.
     // TODO: Support different texture wrapping modes.
@@ -97,7 +95,7 @@ const int fxZero = fx8FromInt(0);
 const int fxOne = fx8FromInt(1);
 const int fxOneHalf = fx8FromFloat(0.5);
 
-static void drawTri(const Vertex *verts[], const int indices[], Image_ dst, Image_ tex) {
+static void drawTexturedTri(const Vertex *verts[], const int indices[], Image_ dst, Image_ tex) {
     const Vertex *v0 = verts[indices[0]];
     const Vertex *v1 = verts[indices[1]];
     const Vertex *v2 = verts[indices[2]];
@@ -106,7 +104,8 @@ static void drawTri(const Vertex *verts[], const int indices[], Image_ dst, Imag
     const Vec2 &p2 = v2->pos;
 
     const int a = edge(p0, p1, p2);
-    if (a <= fxZero) return;
+    if (a <= fxZero)
+        return;
     Vec2 area(a, a);
 
     const int dstWidth = fx8FromInt(dst->width());
@@ -134,25 +133,19 @@ static void drawTri(const Vertex *verts[], const int indices[], Image_ dst, Imag
     int w1_row = edge(p2, p0, p);
     int w2_row = edge(p0, p1, p);
 
-    // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle.
-    // We should do some prefiltering. This can be done using a tiled rendering approach for larger triangles.
+    // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the
+    // triangle. We should do some prefiltering. This can be done using a tiled rendering approach
+    // for larger triangles.
     for (; p.y <= bottom; p.y += fxOne) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
         for (p.x = left; p.x <= right; p.x += fxOne) {
             if ((w0 | w1 | w2) >= 0) {
-                const int color = shade(
-                    area,
-                    v0, v1, v2,
-                    w0, w1, w2,
-                    tex, texWidth, texHeight);
+                const int color =
+                    shadeTexturedPixel(area, v0, v1, v2, w0, w1, w2, tex, texWidth, texHeight);
                 if (color) {
-                    ImageMethods::setPixel(
-                        dst,
-                        fxToInt(p.x),
-                        fxToInt(p.y),
-                        color);
+                    ImageMethods::setPixel(dst, fxToInt(p.x), fxToInt(p.y), color);
                 }
             }
             w0 += A12;
@@ -165,7 +158,7 @@ static void drawTri(const Vertex *verts[], const int indices[], Image_ dst, Imag
     }
 }
 
-static void drawQuad(Image_ dst, Image_ tex, RefCollection *args) {
+static void drawTexturedQuad(Image_ dst, Image_ tex, RefCollection *args) {
     Vertex v0, v1, v2, v3;
     const Vertex *verts[4] = {&v0, &v1, &v2, &v3};
 
@@ -179,12 +172,12 @@ static void drawQuad(Image_ dst, Image_ tex, RefCollection *args) {
     v2.uv.set(fxOne, fxOne);
     v3.uv.set(fxZero, fxOne);
 
-    drawTri(verts, TRI0_INDICES, dst, tex);
-    drawTri(verts, TRI1_INDICES, dst, tex);
+    drawTexturedTri(verts, TRI0_INDICES, dst, tex);
+    drawTexturedTri(verts, TRI1_INDICES, dst, tex);
 }
 
 //%
-void _drawQuad(Image_ dst, Image_ tex, RefCollection *args) {
-    drawQuad(dst, tex, args);
+void _drawTexturedQuad(Image_ dst, Image_ tex, RefCollection *args) {
+    drawTexturedQuad(dst, tex, args);
 }
 } // namespace gpu

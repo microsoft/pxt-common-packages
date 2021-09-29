@@ -72,7 +72,7 @@ namespace pxsim.gpu {
         return ref;
     }
 
-    function drawQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
+    function drawTexturedQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
         /**
          * Quad layout (wound clockwise)
          * (i:0,uv:0,0) (i:1,uv:1,0)
@@ -107,11 +107,11 @@ namespace pxsim.gpu {
         };
         const verts = [v0, v1, v2, v3];
 
-        drawTri({ verts, indices: TRI0_INDICES, dst, tex });
-        drawTri({ verts, indices: TRI1_INDICES, dst, tex });
+        drawTexturedTri({ verts, indices: TRI0_INDICES, dst, tex });
+        drawTexturedTri({ verts, indices: TRI1_INDICES, dst, tex });
     }
 
-    function drawTri(args: DrawTriArgs): void {
+    function drawTexturedTri(args: DrawTriArgs): void {
         const v0 = args.verts[args.indices[0]];
         const v1 = args.verts[args.indices[1]];
         const v2 = args.verts[args.indices[2]];
@@ -133,7 +133,7 @@ namespace pxsim.gpu {
         const _uv2: V2 = { x: fxZero, y: fxZero };
         const _uv: V2 = { x: fxZero, y: fxZero };
 
-        function shade(w0: number, w1: number, w2: number): number {
+        function shadeTexturedPixel(w0: number, w1: number, w2: number): number {
             // Calculate uv coords from given barycentric coords.
             // TODO: Support different texture wrapping modes.
             scaleToRef(v0.uv, w0, _uv0);
@@ -176,7 +176,7 @@ namespace pxsim.gpu {
             let w2 = w2_row;
             for (p.x = bounds.left; p.x <= bounds.right; p.x += fxOne) {
                 if ((w0 | w1 | w2) >= 0) {
-                    const color = shade(w0, w1, w2);
+                    const color = shadeTexturedPixel(w0, w1, w2);
                     if (color) {
                         ImageMethods.setPixel(
                             args.dst,
@@ -195,7 +195,7 @@ namespace pxsim.gpu {
         }
     }
 
-    export function _drawQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
-        drawQuad(dst, tex, args);
+    export function _drawTexturedQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
+        drawTexturedQuad(dst, tex, args);
     }
 }

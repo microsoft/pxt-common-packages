@@ -1,6 +1,6 @@
 
 namespace gpu {
-    //% shim=gpu::_drawQuad
+    //% shim=gpu::_drawTexturedQuad
     declare function _drawQuad(dst: Image, tex: Image, args: number[]): void;
 
     let _drawQuadArgs: number[];
@@ -8,7 +8,7 @@ namespace gpu {
     /**
      * Copy the texture to the provided quadrilateral. Provided coordinates must be in clockwise order.
      */
-    export function drawQuad(
+    export function drawTexturedQuad(
         dst: Image,
         tex: Image,
         // Note these are Fx8 values
