@@ -12,7 +12,7 @@ Returns a ``true`` value if the life count for the player is greater than zero.
 
 ## Example #Example
 
-Remove one life from the player every `100` milleseconds. When the player's lives reach 0, end the game early.
+Remove one life from the player every `100` milliseconds. When the player's lives reach 0, end the game early.
 
 ```blocks
 info.player2.setLife(20)
