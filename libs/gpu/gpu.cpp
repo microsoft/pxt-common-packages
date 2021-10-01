@@ -29,21 +29,64 @@ struct Vertex {
     Vec2 pos, uv;
 };
 
-static inline int fx8FromInt(int v) {
-    return (int)(v * 256);
-}
-static inline int fx8FromFloat(float v) {
-    return (int)(v * 256.f);
-}
-static inline int fxToInt(int v) {
+#define GPU_FIXED_POINT
+
+static inline int initFx(int v) {
+#ifndef GPU_FIXED_POINT
+    // Convert to int
     return (v + 128) >> 8;
+#else
+    // Already an int
+    return v;
+#endif
 }
+
+static inline int fx8FromInt(int v) {
+#ifndef GPU_FIXED_POINT
+    // Keep as int
+    return v;
+#else
+    // Convert to fixed
+    return (int)(v * 256);
+#endif
+}
+
+static inline int fx8FromFloat(float v) {
+#ifndef GPU_FIXED_POINT
+    // Keep as int
+    return (int)v;
+#else
+    // Convert to fixed
+    return (int)(v * 256.f);
+#endif
+}
+
+static inline int fxToInt(int v) {
+#ifndef GPU_FIXED_POINT
+    // Already an int
+    return v;
+#else
+    // Convert to int
+    return (v + 128) >> 8;
+#endif
+}
+
 static inline int fxMul(int a, int b) {
+#ifndef GPU_FIXED_POINT
+    return a * b;
+#else
     return a * (b >> 8);
+#endif
 }
+
 static inline int fxDiv(int a, int b) {
+#ifndef GPU_FIXED_POINT
+    return a / b;
+#else
     return (a << 8) / b;
+#endif
 }
+
 static inline int min(int a, int b) {
     return (a < b ? a : b);
 }
@@ -74,6 +117,7 @@ static inline void divToRef(const Vec2 &a, const Vec2 &b, Vec2 &ref) {
     ref.x = fxDiv(a.x, b.x);
     ref.y = fxDiv(a.y, b.y);
 }
+
 static int shadeTexturedPixel(const Vec2 &area, const Vertex *v0, const Vertex *v1,
                               const Vertex *v2, int w0, int w1, int w2, Image_ tex, int texWidth,
                               int texHeight) {
@@ -114,14 +158,14 @@ static void drawTexturedTri(const Vertex *verts[], const int indices[], Image_ d
     const int texHeight = fx8FromInt(tex->height());
 
     // Get clipped bounds of tri. 0.5 offset to ensure we're sampling pixel center.
-    const int left = fxOneHalf + clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth);
-    const int top = fxOneHalf + clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight);
-    const int right = fxOneHalf + clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth);
+    const int left   = fxOneHalf + clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth);
+    const int top    = fxOneHalf + clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight);
+    const int right  = fxOneHalf + clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth);
     const int bottom = fxOneHalf + clamp(max3(p0.y, p1.y, p2.y), 0, dstHeight);
 
     Vec2 p(left, top);
 
-    // Get the barycentric gradients
+    // Get the barycentric interpolants
     const int A01 = p1.y - p0.y;
     const int B01 = p0.x - p1.x;
     const int A12 = p2.y - p1.y;
@@ -133,15 +177,16 @@ static void drawTexturedTri(const Vertex *verts[], const int indices[], Image_ d
     int w1_row = edge(p2, p0, p);
     int w2_row = edge(p0, p1, p);
 
-    // TODO: This is a simplistic implementation that doesn't attempt to filter pixels outside the
-    // triangle. We should do some prefiltering. This can be done using a tiled rendering approach
-    // for larger triangles.
+    // This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle. This results
+    // in a lot of per-pixel evaluations outside the triangle. We should do some prefiltering.
     for (; p.y <= bottom; p.y += fxOne) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
         for (p.x = left; p.x <= right; p.x += fxOne) {
-            if ((w0 | w1 | w2) >= 0) {
+            // Fixed point math produces a seam at some rotations when this check is performed, so until that issue
+            // is resolved, let the test always pass. Consequence is some performance degradation.
+            if (true || (w0 | w1 | w2) >= 0) {
                 const int color =
                     shadeTexturedPixel(area, v0, v1, v2, w0, w1, w2, tex, texWidth, texHeight);
                 if (color) {
@@ -162,10 +207,10 @@ static void drawTexturedQuad(Image_ dst, Image_ tex, RefCollection *args) {
     Vertex v0, v1, v2, v3;
     const Vertex *verts[4] = {&v0, &v1, &v2, &v3};
 
-    v0.pos.set(pxt::toInt(args->getAt(0)), pxt::toInt(args->getAt(1)));
-    v1.pos.set(pxt::toInt(args->getAt(2)), pxt::toInt(args->getAt(3)));
-    v2.pos.set(pxt::toInt(args->getAt(4)), pxt::toInt(args->getAt(5)));
-    v3.pos.set(pxt::toInt(args->getAt(6)), pxt::toInt(args->getAt(7)));
+    v0.pos.set(initFx(pxt::toInt(args->getAt(0))), initFx(pxt::toInt(args->getAt(1))));
+    v1.pos.set(initFx(pxt::toInt(args->getAt(2))), initFx(pxt::toInt(args->getAt(3))));
+    v2.pos.set(initFx(pxt::toInt(args->getAt(4))), initFx(pxt::toInt(args->getAt(5))));
+    v3.pos.set(initFx(pxt::toInt(args->getAt(6))), initFx(pxt::toInt(args->getAt(7))));
 
     v0.uv.set(fxZero, fxZero);
     v1.uv.set(fxOne, fxZero);
