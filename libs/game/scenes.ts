@@ -18,7 +18,7 @@ enum CameraProperty {
 }
 
 //% weight=88 color="#4b6584" icon="\uf1bb"
-//% groups='["Screen", "Camera", "Tilemaps", "Operations", "Locations", "Effects"]'
+//% groups='["Screen", "Camera", "Effects", "Tilemaps", "Tilemap Operations", "Locations"]'
 //% blockGap=8
 namespace scene {
     /**

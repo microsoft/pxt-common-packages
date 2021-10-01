@@ -173,7 +173,7 @@ namespace tiles {
          * @param sprite
          */
         //% blockId=gameplaceontile block="on top of %tile(myTile) place %sprite=variables_get(mySprite)"
-        //% blockNamespace="scene" group="Operations"
+        //% blockNamespace="scene" group="Tilemap Operations"
         //% weight=25
         //% help=tiles/place
         //% deprecated=1
@@ -573,7 +573,7 @@ namespace tiles {
     //% blockId=mapsettileat block="set $tile at $loc=mapgettile"
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
-    //% blockNamespace="scene" group="Operations" blockGap=8
+    //% blockNamespace="scene" group="Tilemap Operations" blockGap=8
     //% help=tiles/set-tile-at
     //% weight=70
     export function setTileAt(loc: Location, tile: Image): void {
@@ -591,7 +591,7 @@ namespace tiles {
      */
     //% blockId=mapsetwallat block="set wall $on at $loc"
     //% on.shadow=toggleOnOff loc.shadow=mapgettile
-    //% blockNamespace="scene" group="Operations"
+    //% blockNamespace="scene" group="Tilemap Operations"
     //% help=tiles/set-wall-at
     //% weight=60
     export function setWallAt(loc: Location, on: boolean): void {
@@ -691,7 +691,7 @@ namespace tiles {
      */
     //% blockId=mapplaceontile block="place $sprite=variables_get(mySprite) on top of $loc"
     //% loc.shadow=mapgettile
-    //% blockNamespace="scene" group="Operations" blockGap=8
+    //% blockNamespace="scene" group="Tilemap Operations" blockGap=8
     //% help=tiles/place
     //% weight=100
     export function placeOnTile(sprite: Sprite, loc: Location): void {
@@ -707,7 +707,7 @@ namespace tiles {
     //% blockId=mapplaceonrandomtile block="place $sprite=variables_get(mySprite) on top of random $tile"
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
-    //% blockNamespace="scene" group="Operations"
+    //% blockNamespace="scene" group="Tilemap Operations"
     //% help=tiles/place-on-random-tile
     //% weight=90
     export function placeOnRandomTile(sprite: Sprite, tile: Image): void {
@@ -724,7 +724,7 @@ namespace tiles {
     //% blockId=mapgettilestype block="array of all $tile locations"
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
-    //% blockNamespace="scene" group="Operations" blockGap=8
+    //% blockNamespace="scene" group="Locations" blockGap=8
     //% help=tiles/get-tiles-by-type
     //% weight=10
     export function getTilesByType(tile: Image): Location[] {
