@@ -10,7 +10,7 @@ namespace pxsim.gpu {
         tex: RefImage
     };
 
-    type FxApi = {
+    type Ops = {
         initFx(v: number): number;
         toFixed(v: number): number;
         toInt(v: number): number;
@@ -18,7 +18,7 @@ namespace pxsim.gpu {
         div(a: number, b: number): number;
     };
 
-    const fx8Api: FxApi = {
+    const fxOps: Ops = {
         initFx(v: number): number {
             // Already an fx8
             return v;
@@ -39,7 +39,7 @@ namespace pxsim.gpu {
         },
     };
 
-    const floatApi: FxApi = {
+    const floatOps: Ops = {
         initFx(v: number): number {
             // Convert to number
             return v / 256;
@@ -60,18 +60,18 @@ namespace pxsim.gpu {
         },
     };
 
-    const fxApi = fx8Api;
-    //const fxApi = floatApi;
+    //const ops = fxOps;
+    const ops = floatOps;
 
     const fxZero = 0;
-    const fxOne = fxApi.toFixed(1);
+    const fxOne = ops.toFixed(1);
 
     // Workaround for the visible seam that sometimes appears on the shared diagonal edge between the
     // triangles when using fixed-point interpolants. It can also show up in floating point, but is less severe.
-    const w1Fudge = fxApi.toFixed(-60);
+    const w1Fudge = ops.toFixed(-60);
 
     function edge(a: V2, b: V2, c: V2): number {
-        return fxApi.mul((b.y - a.y), (c.x - a.x)) - fxApi.mul((b.x - a.x), (c.y - a.y));
+        return ops.mul((b.y - a.y), (c.x - a.x)) - ops.mul((b.x - a.x), (c.y - a.y));
     }
     function clamp(v: number, min: number, max: number): number {
         return Math.min(max, Math.max(v, min));
@@ -83,8 +83,8 @@ namespace pxsim.gpu {
         return Math.max(Math.max(a, b), c);
     }
     function scaleToRef(v: V2, s: number, ref: V2): V2 {
-        ref.x = fxApi.mul(v.x, s);
-        ref.y = fxApi.mul(v.y, s);
+        ref.x = ops.mul(v.x, s);
+        ref.y = ops.mul(v.y, s);
         return ref;
     }
     function add3ToRef(a: V2, b: V2, c: V2, ref: V2): V2 {
@@ -93,8 +93,8 @@ namespace pxsim.gpu {
         return ref;
     }
     function divToRef(a: V2, b: V2, ref: V2): V2 {
-        ref.x = fxApi.div(a.x, b.x);
-        ref.y = fxApi.div(a.y, b.y);
+        ref.x = ops.div(a.x, b.x);
+        ref.y = ops.div(a.y, b.y);
         return ref;
     }
 
@@ -116,20 +116,20 @@ namespace pxsim.gpu {
         const TRI1_INDICES = [2, 1, 0];
 
         const v0: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(0)), y: fxApi.initFx(args.getAt(1)) },
-            uv: { x: fxApi.initFx(args.getAt(2)), y: fxApi.initFx(args.getAt(3)) },
+            pos: { x: ops.initFx(args.getAt(0)), y: ops.initFx(args.getAt(1)) },
+            uv: { x: ops.initFx(args.getAt(2)), y: ops.initFx(args.getAt(3)) },
         };
         const v1: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(4)), y: fxApi.initFx(args.getAt(5)) },
-            uv: { x: fxApi.initFx(args.getAt(6)), y: fxApi.initFx(args.getAt(7)) },
+            pos: { x: ops.initFx(args.getAt(4)), y: ops.initFx(args.getAt(5)) },
+            uv: { x: ops.initFx(args.getAt(6)), y: ops.initFx(args.getAt(7)) },
         };
         const v2: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(8)), y: fxApi.initFx(args.getAt(9)) },
-            uv: { x: fxApi.initFx(args.getAt(10)), y: fxApi.initFx(args.getAt(11)) },
+            pos: { x: ops.initFx(args.getAt(8)), y: ops.initFx(args.getAt(9)) },
+            uv: { x: ops.initFx(args.getAt(10)), y: ops.initFx(args.getAt(11)) },
         }
         const v3: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(12)), y: fxApi.initFx(args.getAt(13)) },
-            uv: { x: fxApi.initFx(args.getAt(14)), y: fxApi.initFx(args.getAt(15)) },
+            pos: { x: ops.initFx(args.getAt(12)), y: ops.initFx(args.getAt(13)) },
+            uv: { x: ops.initFx(args.getAt(14)), y: ops.initFx(args.getAt(15)) },
         };
         const verts = [v0, v1, v2, v3];
 
@@ -148,10 +148,10 @@ namespace pxsim.gpu {
         const area = edge(p0, p1, p2);
         if (area <= 0) return;
 
-        const dstWidth = fxApi.toFixed(args.dst._width);
-        const dstHeight = fxApi.toFixed(args.dst._height);
-        const texWidth = fxApi.toFixed(args.tex._width);
-        const texHeight = fxApi.toFixed(args.tex._height);
+        const dstWidth = ops.toFixed(args.dst._width);
+        const dstHeight = ops.toFixed(args.dst._height);
+        const texWidth = ops.toFixed(args.tex._width);
+        const texHeight = ops.toFixed(args.tex._height);
 
         // Temp vars
         const _uv0: V2 = { x: fxZero, y: fxZero };
@@ -173,8 +173,8 @@ namespace pxsim.gpu {
             if (v < fxZero) v += fxOne;
             if (u === fxZero && _uv.x > 0) u = fxOne;
             if (v === fxZero && _uv.y > 0) v = fxOne;
-            const x = fxApi.toInt(fxApi.mul(u, texWidth));
-            const y = fxApi.toInt(fxApi.mul(v, texHeight));
+            const x = ops.toInt(ops.mul(u, texWidth));
+            const y = ops.toInt(ops.mul(v, texHeight));
             return ImageMethods.getPixel(args.tex, x, y);
         }
 
@@ -210,8 +210,8 @@ namespace pxsim.gpu {
                     if (color) {
                         ImageMethods.setPixel(
                             args.dst,
-                            fxApi.toInt(p.x),
-                            fxApi.toInt(p.y),
+                            ops.toInt(p.x),
+                            ops.toInt(p.y),
                             color);
                     }
                 }
