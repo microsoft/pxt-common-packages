@@ -179,9 +179,9 @@ namespace pxsim.gpu {
         }
 
         const bounds: Bounds = {
-            left  : clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth),
-            top   : clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight),
-            right : clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth),
+            left: clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth),
+            top: clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight),
+            right: clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth),
             bottom: clamp(max3(p0.y, p1.y, p2.y), 0, dstHeight),
         };
         const p: V2 = { x: bounds.left, y: bounds.top };
