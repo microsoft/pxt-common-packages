@@ -55,7 +55,6 @@
         "settings": "file:../settings",
         "screen": "file:../screen",
         "mixer": "file:../mixer",
-        "power": "file:../power",
-        "gpu": "file:../gpu"
+        "power": "file:../power"
     }
 }
