@@ -12,58 +12,66 @@ namespace pxsim.gpu {
 
     type FxApi = {
         initFx(v: number): number;
-        fx8(v: number): number;
-        fxToInt(v: number): number;
-        fxMul(a: number, b: number): number;
-        fxDiv(a: number, b: number): number;
+        toFixed(v: number): number;
+        toInt(v: number): number;
+        mul(a: number, b: number): number;
+        div(a: number, b: number): number;
     };
 
-    const fixedPointApi: FxApi = {
+    const fx8Api: FxApi = {
         initFx(v: number): number {
+            // Already an fx8
             return v;
         },
-        fx8(v: number): number {
+        toFixed(v: number): number {
+            // Convert to fx8
             return (v * 256) | 0;
         },
-        fxToInt(v: number): number {
-            return (v + 128) >> 8;
+        toInt(v: number): number {
+            // Convert to number
+            return v >> 8;
         },
-        fxMul(a: number, b: number): number {
-            return ((a | 0) * ((b | 0) >> 8)) | 0;
+        mul(a: number, b: number): number {
+            return ((a * b) | 0) >> 8;
         },
-        fxDiv(a: number, b: number): number {
-            return (((a | 0) << 8) / (b | 0)) | 0;
-        }
+        div(a: number, b: number): number {
+            return ((a | 0) << 8) / (b | 0);
+        },
     };
 
-    const floatingPointApi: FxApi = {
+    const floatApi: FxApi = {
         initFx(v: number): number {
-            return (v + 128) >> 8;
+            // Convert to number
+            return v / 256;
         },
-        fx8(v: number): number {
-            return v;
-        },
-        fxToInt(v: number): number {
+        toFixed(v: number): number {
+            // Keep as number
             return v | 0;
         },
-        fxMul(a: number, b: number): number {
+        toInt(v: number): number {
+            // Already a number
+            return v | 0;
+        },
+        mul(a: number, b: number): number {
             return a * b;
         },
-        fxDiv(a: number, b: number): number {
+        div(a: number, b: number): number {
             return a / b;
-        }
+        },
     };
 
-    //const fxApi = fixedPointApi;
-    const fxApi = floatingPointApi;
+    const fxApi = fx8Api;
+    //const fxApi = floatApi;
 
+    const fxZero = 0;
+    const fxOne = fxApi.toFixed(1);
 
-    const fxZero = fxApi.fx8(0);
-    const fxOne = fxApi.fx8(1);
-    const fxOneHalf = fxApi.fx8(0.5);
+    // Workaround for the visible seam that sometimes appears on the shared diagonal edge between the
+    // triangles when using fixed-point interpolants. It can also show up in floating point, but is less severe.
+    const w1Fudge = fxApi.toFixed(-60);
 
     function edge(a: V2, b: V2, c: V2): number {
-        return fxApi.fxMul((b.y - a.y), (c.x - a.x)) - fxApi.fxMul((b.x - a.x), (c.y - a.y));
+        return fxApi.mul((b.y - a.y), (c.x - a.x)) - fxApi.mul((b.x - a.x), (c.y - a.y));
     }
     function clamp(v: number, min: number, max: number): number {
         return Math.min(max, Math.max(v, min));
@@ -75,8 +83,8 @@ namespace pxsim.gpu {
         return Math.max(Math.max(a, b), c);
     }
     function scaleToRef(v: V2, s: number, ref: V2): V2 {
-        ref.x = fxApi.fxMul(v.x, s);
-        ref.y = fxApi.fxMul(v.y, s);
+        ref.x = fxApi.mul(v.x, s);
+        ref.y = fxApi.mul(v.y, s);
         return ref;
     }
     function add3ToRef(a: V2, b: V2, c: V2, ref: V2): V2 {
@@ -85,8 +93,8 @@ namespace pxsim.gpu {
         return ref;
     }
     function divToRef(a: V2, b: V2, ref: V2): V2 {
-        ref.x = fxApi.fxDiv(a.x, b.x);
-        ref.y = fxApi.fxDiv(a.y, b.y);
+        ref.x = fxApi.div(a.x, b.x);
+        ref.y = fxApi.div(a.y, b.y);
         return ref;
     }
 
@@ -108,20 +116,20 @@ namespace pxsim.gpu {
         const TRI1_INDICES = [2, 1, 0];
 
         const v0: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(0)) | 0, y: fxApi.initFx(args.getAt(1)) | 0 },
-            uv: { x: fxZero, y: fxZero }
+            pos: { x: fxApi.initFx(args.getAt(0)), y: fxApi.initFx(args.getAt(1)) },
+            uv: { x: fxApi.initFx(args.getAt(2)), y: fxApi.initFx(args.getAt(3)) },
         };
         const v1: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(2)) | 0, y: fxApi.initFx(args.getAt(3)) | 0 },
-            uv: { x: fxOne, y: fxZero }
+            pos: { x: fxApi.initFx(args.getAt(4)), y: fxApi.initFx(args.getAt(5)) },
+            uv: { x: fxApi.initFx(args.getAt(6)), y: fxApi.initFx(args.getAt(7)) },
         };
         const v2: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(4)) | 0, y: fxApi.initFx(args.getAt(5)) | 0 },
-            uv: { x: fxOne, y: fxOne }
+            pos: { x: fxApi.initFx(args.getAt(8)), y: fxApi.initFx(args.getAt(9)) },
+            uv: { x: fxApi.initFx(args.getAt(10)), y: fxApi.initFx(args.getAt(11)) },
         }
         const v3: Vertex = {
-            pos: { x: fxApi.initFx(args.getAt(6)) | 0, y: fxApi.initFx(args.getAt(7)) | 0 },
-            uv: { x: fxZero, y: fxOne }
+            pos: { x: fxApi.initFx(args.getAt(12)), y: fxApi.initFx(args.getAt(13)) },
+            uv: { x: fxApi.initFx(args.getAt(14)), y: fxApi.initFx(args.getAt(15)) },
         };
         const verts = [v0, v1, v2, v3];
 
@@ -138,12 +146,12 @@ namespace pxsim.gpu {
         const p2 = v2.pos;
 
         const area = edge(p0, p1, p2);
-        if (area <= fxZero) return;
+        if (area <= 0) return;
 
-        const dstWidth = fxApi.fx8(args.dst._width);
-        const dstHeight = fxApi.fx8(args.dst._height);
-        const texWidth = fxApi.fx8(args.tex._width);
-        const texHeight = fxApi.fx8(args.tex._height);
+        const dstWidth = fxApi.toFixed(args.dst._width);
+        const dstHeight = fxApi.toFixed(args.dst._height);
+        const texWidth = fxApi.toFixed(args.tex._width);
+        const texHeight = fxApi.toFixed(args.tex._height);
 
         // Temp vars
         const _uv0: V2 = { x: fxZero, y: fxZero };
@@ -153,24 +161,28 @@ namespace pxsim.gpu {
 
         function shadeTexturedPixel(w0: number, w1: number, w2: number): number {
             // Calculate uv coords from given barycentric coords.
-            // TODO: Support different texture wrapping modes.
             scaleToRef(v0.uv, w0, _uv0);
             scaleToRef(v1.uv, w1, _uv1);
             scaleToRef(v2.uv, w2, _uv2);
             add3ToRef(_uv0, _uv1, _uv2, _uv);
             divToRef(_uv, { x: area, y: area }, _uv);
-            // Sample texture at uv coords.
-            const x = fxApi.fxToInt(fxApi.fxMul(_uv.x, texWidth));
-            const y = fxApi.fxToInt(fxApi.fxMul(_uv.y, texHeight));
+            // Sample texture at uv coords, repeating the texture.
+            let u = _uv.x % fxOne;
+            let v = _uv.y % fxOne;
+            if (u < fxZero) u += fxOne;
+            if (v < fxZero) v += fxOne;
+            if (u === fxZero && _uv.x > 0) u = fxOne;
+            if (v === fxZero && _uv.y > 0) v = fxOne;
+            const x = fxApi.toInt(fxApi.mul(u, texWidth));
+            const y = fxApi.toInt(fxApi.mul(v, texHeight));
             return ImageMethods.getPixel(args.tex, x, y);
         }
 
-    // Get clipped bounds of tri. 0.5 offset to ensure we're sampling pixel center.
-    const bounds: Bounds = {
-            left  : fxOneHalf + clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth),
-            top   : fxOneHalf + clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight),
-            right : fxOneHalf + clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth),
-            bottom: fxOneHalf + clamp(max3(p0.y, p1.y, p2.y), 0, dstHeight),
+        const bounds: Bounds = {
+            left  : clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth),
+            top   : clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight),
+            right : clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth),
+            bottom: clamp(max3(p0.y, p1.y, p2.y), 0, dstHeight),
         };
         const p: V2 = { x: bounds.left, y: bounds.top };
 
@@ -186,22 +198,20 @@ namespace pxsim.gpu {
         let w1_row = edge(p2, p0, p);
         let w2_row = edge(p0, p1, p);
 
-        // This is a simplistic implementation that doesn't attempt to filter pixels outside the triangle. This results
-        // in a lot of per-pixel evaluations outside the triangle. We should do some prefiltering.
+        // This loop doesn't attempt to filter pixels outside the triangle, and this results in a lot of
+        // extra evaluations. We should do some prefiltering.
         for (; p.y <= bounds.bottom; p.y += fxOne) {
             let w0 = w0_row;
             let w1 = w1_row;
             let w2 = w2_row;
             for (p.x = bounds.left; p.x <= bounds.right; p.x += fxOne) {
-                // Fixed point math produces a seam at some rotations when this check is performed, so until that issue
-                // is resolved, let the test always pass. Consequence is some performance degradation.
-                if (true || (w0 | w1 | w2) >= 0) {
+                if (w0 >= 0 && w1 >= w1Fudge && w2 >= 0) {
                     const color = shadeTexturedPixel(w0, w1, w2);
                     if (color) {
                         ImageMethods.setPixel(
                             args.dst,
-                            fxApi.fxToInt(p.x),
-                            fxApi.fxToInt(p.y),
+                            fxApi.toInt(p.x),
+                            fxApi.toInt(p.y),
                             color);
                     }
                 }
