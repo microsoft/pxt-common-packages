@@ -47,7 +47,9 @@ uint8_t *gcBase;
 
 namespace pxt {
 
+#ifndef PXT_ESP32
 static uint64_t startTime;
+#endif
 
 FiberContext *allFibers;
 FiberContext *currentFiber;
