@@ -87,9 +87,6 @@ namespace esp32 {
         get isConnected(): boolean {
             return false;
         }
-        connect(): void { 
-
-        }
 
         ping(dest: string, ttl: number = 250): number {
             // https://github.com/espressif/esp-at/blob/master/docs/ESP_AT_Commands_Set.md#425-atping-ping-packets
