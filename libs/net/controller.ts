@@ -1,11 +1,35 @@
 namespace net {
+    export enum ControllerEvent {
+        NewScan = 1,
+        GotIP = 2,
+        LostIP = 3,
+    }
     export class Controller {
-        constructor() { }
+        eventID: number
+        private _isConnected = false
+
+        constructor() {
+            this.eventID = control.allocateEventSource()
+        }
+
+        protected setConnected(isConnected: boolean) {
+            if (this._isConnected != isConnected) {
+                this._isConnected = isConnected
+                this.emitEvent(isConnected ? ControllerEvent.GotIP : ControllerEvent.LostIP)
+            }
+        }
+
+        protected emitEvent(ev: ControllerEvent) {
+            control.raiseEvent(this.eventID, ev)
+        }
+
+        onEvent(ev: ControllerEvent, h: () => void) {
+            control.onEvent(this.eventID, ev, h)
+        }
 
         public scanNetworks(): net.AccessPoint[] {
             this.lastScanResults = this.scanNetworksCore()
-            if (this.onNewScan)
-                this.onNewScan(this.lastScanResults)
+            this.emitEvent(ControllerEvent.NewScan)
             return this.lastScanResults
         }
 
@@ -39,15 +63,14 @@ namespace net {
             return undefined;
         }
         get isIdle(): boolean { return false; }
-        get isConnected(): boolean { return false; }
+        get isConnected(): boolean { return this._isConnected; }
         connectAP(bssid: string, password: string) { return false }
         disconnectAP() { }
 
         lastScanResults: net.AccessPoint[]
-        onNewScan: (res: net.AccessPoint[]) => void
         protected reconnectRunning: {}
 
-        reconnectLoop() {
+        autoconnect() {
             if (this.reconnectRunning)
                 return
             const myReconn = {}
@@ -117,7 +140,7 @@ namespace net {
         }
 
         connect(timeout_ms?: number): boolean {
-            this.reconnectLoop()
+            this.autoconnect()
             pauseUntil(() => this.isConnected, timeout_ms)
             return this.isConnected
         }

@@ -4,17 +4,16 @@ namespace net {
     export class WifiController extends net.Controller {
         private networks: net.AccessPoint[]
         private inScan: boolean
-        private _isConnected: boolean
         private _ssid: string
 
         constructor() {
             super()
             control.internalOnEvent(_wifi.eventID(), WifiEvent.ScanDone, () => this.scanDone())
             control.internalOnEvent(_wifi.eventID(), WifiEvent.Disconnected, () => {
-                this._isConnected = false
+                this.setConnected(false)
             })
             control.internalOnEvent(_wifi.eventID(), WifiEvent.GotIP, () => {
-                this._isConnected = true
+                this.setConnected(true)
             })
         }
 
@@ -104,8 +103,6 @@ namespace net {
             return undefined;
         }
         get isIdle(): boolean { return true; }
-        get isConnected(): boolean { return this._isConnected; }
-        get ssid(): string { return this._ssid; }
         get MACaddress(): Buffer { return control.deviceLongSerialNumber().slice(1, 6); }
         get IPaddress(): Buffer { return this.isConnected ? _wifi.ipInfo().slice(0, 4) : undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
