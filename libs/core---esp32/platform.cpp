@@ -6,15 +6,6 @@
 #include "driver/ledc.h"
 #include "esp_private/system_internal.h"
 
-#define CHK(call)                                                                                  \
-    {                                                                                              \
-        int __r = call;                                                                            \
-        if (__r != 0) {                                                                            \
-            DMESG("fail: %d at %d", __r, __LINE__);                                                \
-            abort();                                                                               \
-        }                                                                                          \
-    }
-
 static void reset_pin(PinName p) {
     if (p != -1)
         gpio_set_direction((gpio_num_t)p, GPIO_MODE_DISABLE);
