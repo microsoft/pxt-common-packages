@@ -148,6 +148,7 @@ namespace net {
     }
 
     const AP_SECRETS_KEY = "wifi";
+    const AP_PRI_KEY = "#wifipriority";
     /**
      * Gets the map of SSID -> password pairs
      */
@@ -155,10 +156,30 @@ namespace net {
         return settings.deviceSecrets.readSecret(AP_SECRETS_KEY) || {};
     }
 
+    export function clearAccessPoint(ssid: string) {
+        const ap = knownAccessPoints()
+        if (ap[ssid] !== undefined) {
+            delete ap[ssid]
+            settings.deviceSecrets.setSecret(AP_SECRETS_KEY, ap)
+        }
+    }
+
     export function updateAccessPoint(ssid: string, password: string) {
         const k: StringMap = {};
         k[ssid] = password;
         settings.deviceSecrets.updateSecret(AP_SECRETS_KEY, k);
+    }
+
+    export function setAccessPointPriority(ssid: string, pri: number) {
+        const s = accessPointPriorities()
+        if (s[ssid] != pri) {
+            s[ssid] = pri
+            settings.writeJSON(AP_PRI_KEY, s)
+        }
+    }
+
+    export function accessPointPriorities() {
+        return settings.readJSON(AP_PRI_KEY) || {}
     }
 
     export function clearAccessPoints() {

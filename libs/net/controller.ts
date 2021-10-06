@@ -43,11 +43,17 @@ namespace net {
             }
 
             const wifis = net.knownAccessPoints();
+            const priorities = net.accessPointPriorities()
             const ssids = Object.keys(wifis);
 
             for (let i = 0; i < maxTries; ++i) {
                 const networks = this.scanNetworks()
                     .filter(network => ssids.indexOf(network.ssid) > -1);
+                networks.sort((a, b) => {
+                    const pa = priorities[a.ssid] || 0
+                    const pb = priorities[b.ssid] || 0
+                    return pb - pa || b.rssi - a.rssi
+                })
                 // try connecting to known networks
                 for (const network of networks) {
                     if (this.connectAP(network.ssid, wifis[network.ssid]))
