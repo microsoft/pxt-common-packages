@@ -336,7 +336,7 @@ namespace esp32 {
      Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
      one for each AP found
     */
-        public scanNetworks(): net.AccessPoint[] {
+        protected scanNetworksCore(): net.AccessPoint[] {
             this.startScanNetworks()
             // attempts
             for (let _ = 0; _ < 10; ++_) {

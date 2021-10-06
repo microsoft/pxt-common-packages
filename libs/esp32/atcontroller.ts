@@ -94,7 +94,7 @@ namespace esp32 {
             return this.parseNumber(r);
         }
 
-        public scanNetworks(): net.AccessPoint[] {
+        public scanNetworksCore(): net.AccessPoint[] {
             return [];
         }
 
