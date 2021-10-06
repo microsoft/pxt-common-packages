@@ -103,6 +103,27 @@ void scanStart() {
     LOG("scan start: %d", err);
 }
 
+#define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1
+#define JD_WIFI_APFLAGS_WPS 0x2
+#define JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_ABOVE 0x4
+#define JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_BELOW 0x8
+#define JD_WIFI_APFLAGS_IEEE_802_11B 0x100
+#define JD_WIFI_APFLAGS_IEEE_802_11A 0x200
+#define JD_WIFI_APFLAGS_IEEE_802_11G 0x400
+#define JD_WIFI_APFLAGS_IEEE_802_11N 0x800
+#define JD_WIFI_APFLAGS_IEEE_802_11AC 0x1000
+#define JD_WIFI_APFLAGS_IEEE_802_11AX 0x2000
+#define JD_WIFI_APFLAGS_IEEE_802_LONG_RANGE 0x8000
+
+typedef struct jd_wifi_results {
+    uint32_t flags; // APFlags
+    uint32_t reserved;
+    int8_t rssi;
+    uint8_t channel;
+    uint8_t bssid[6]; // u8[6]
+    char ssid[32];    // string
+} jd_wifi_results_t;
+
 /** Get the results of the scan if any. */
 //%
 Buffer scanResults() {
@@ -126,31 +147,46 @@ Buffer scanResults() {
     esp_err_t err = esp_wifi_scan_get_ap_records(&sta_number, ap_list_buffer);
 
     if (err == ESP_OK || sta_number == 0) {
-        int buffer_size = 0;
-        for (i = 0; i < sta_number; i++) {
-            wifi_ap_record_t *src = &ap_list_buffer[i];
 
-            LOG("[%s][rssi=%d]", src->ssid, src->rssi);
-
-            buffer_size += strlen((const char *)src->ssid) + 3;
-        }
-
+        int buffer_size = sizeof(jd_wifi_results_t) * sta_number;
         res = mkBuffer(NULL, buffer_size);
         auto dst = res->data;
 
         for (i = 0; i < sta_number; i++) {
+            jd_wifi_results_t ent;
             wifi_ap_record_t *src = &ap_list_buffer[i];
 
-            *dst++ = src->rssi;
-            *dst++ = src->authmode;
-            int len = strlen((const char *)src->ssid);
-            memcpy(dst, src->ssid, len);
-            dst += len;
-            *dst++ = 0;
-        }
+            ent.reserved = 0;
+            ent.flags = 0;
 
-        if (dst - res->data != buffer_size)
-            abort();
+            if (src->phy_11b)
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11B;
+            if (src->phy_11g)
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11G;
+            if (src->phy_11n)
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_11N;
+            if (src->phy_lr)
+                ent.flags |= JD_WIFI_APFLAGS_IEEE_802_LONG_RANGE;
+            if (src->wps)
+                ent.flags |= JD_WIFI_APFLAGS_WPS;
+            if (src->second == WIFI_SECOND_CHAN_ABOVE)
+                ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_ABOVE;
+            if (src->second == WIFI_SECOND_CHAN_BELOW)
+                ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_BELOW;
+            if (src->authmode != WIFI_AUTH_OPEN)
+                ent.flags |= JD_WIFI_APFLAGS_HAS_PASSWORD;
+            ent.channel = src->primary;
+            ent.rssi = src->rssi;
+            memcpy(ent.bssid, src->bssid, 6);
+            memset(ent.ssid, 0, sizeof(ent.ssid));
+            int len = strlen(src->ssid);
+            if (len > 32)
+                len = 32;
+            memcpy(ent.ssid, src->ssid, len);
+
+            memcpy(dst, &ent, sizeof(ent));
+            dst += sizeof(ent);
+        }
     } else {
         DMESG("failed to read scan results: %d", err);
     }
@@ -164,7 +200,7 @@ Buffer scanResults() {
 //%
 int connect(String ssid, String pass) {
     wifi_config_t cfg;
-    memset(&cfg,0,sizeof(cfg));
+    memset(&cfg, 0, sizeof(cfg));
     strlcpy((char *)cfg.sta.ssid, ssid->getUTF8Data(), sizeof(cfg.sta.ssid));
     strlcpy((char *)cfg.sta.password, pass->getUTF8Data(), sizeof(cfg.sta.password));
 
@@ -194,6 +230,5 @@ int disconnect() {
 bool isConnected() {
     return is_connected;
 }
-
 
 } // namespace _wifi

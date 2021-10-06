@@ -25,24 +25,11 @@ namespace net {
             if (!buf)
                 return
             let i = 0
+            const entrySize = 48
             while (i < buf.length) {
-                const rssi = buf.getNumber(NumberFormat.Int8LE, i++)
-                const authmode = buf[i++]
-                let ep = i
-                while (ep < buf.length) {
-                    if (!buf[ep])
-                        break
-                    ep++
-                }
-                if (ep == buf.length)
-                    break
-                const ap = new net.AccessPoint(buf.slice(i, ep - i).toString())
-                ap.rssi = rssi
-                ap.encryption = authmode
-                i = ep + 1
-                this.networks.push(ap)
+                this.networks.push(net.AccessPoint.fromBuffer(buf.slice(i, entrySize)))
+                i += entrySize
             }
-
             control.raiseEvent(_wifi.eventID(), EV_ScanCompleted)
         }
 
@@ -114,32 +101,6 @@ namespace net {
         }
         get isIdle(): boolean { return true; }
         get isConnected(): boolean { return this._isConnected; }
-        connect(): boolean {
-            if (this.isConnected) return true;
-
-            if (control.deviceDalVersion() == "sim") {
-                this.connectAP("", "")
-                return true
-            }
-
-            const wifis = net.knownAccessPoints();
-            const ssids = Object.keys(wifis);
-
-            for (let i = 0; i < 100; ++i) {
-                const networks = this.scanNetworks()
-                    .filter(network => ssids.indexOf(network.ssid) > -1);
-                // try connecting to known networks
-                for (const network of networks) {
-                    if (this.connectAP(network.ssid, wifis[network.ssid]))
-                        return true;
-                }
-                net.log(`re-trying scan, attempt ${i}...`)
-            }
-
-            // no compatible SSID
-            net.log(`connection failed`)
-            return false;
-        }
         get ssid(): string { return this._ssid; }
         get MACaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }
