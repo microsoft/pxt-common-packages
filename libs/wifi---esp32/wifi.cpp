@@ -27,7 +27,8 @@ int eventID() {
     return WIFI_ID;
 }
 
-static bool scan_done, reconnect, is_connected;
+static bool scan_done, is_connected;
+static esp_netif_ip_info_t ip_info;
 
 static void raiseWifiEvent(WifiEvent e) {
     raiseEvent(eventID(), (int)e);
@@ -42,18 +43,15 @@ static void scan_done_handler(void *arg, esp_event_base_t event_base, int32_t ev
 static void disconnect_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                                void *event_data) {
     is_connected = false;
-    if (reconnect) {
-        LOG("sta disconnect, reconnect...");
-        esp_wifi_connect();
-    } else {
-        LOG("sta disconnect");
-    }
+    LOG("sta disconnect");
     raiseWifiEvent(WifiEvent::Disconnected);
 }
 
 static void got_ip_handler(void *arg, esp_event_base_t event_base, int32_t event_id,
                            void *event_data) {
     is_connected = true;
+    auto ev = (ip_event_got_ip_t *)event_data;
+    ip_info = ev->ip_info;
     raiseWifiEvent(WifiEvent::GotIP);
 }
 
@@ -230,5 +228,12 @@ int disconnect() {
 bool isConnected() {
     return is_connected;
 }
+
+/** Return ipv4 address, netmask, and gateway. */
+//%
+Buffer ipInfo() {
+    return mkBuffer(&ip_info, sizeof(ip_info));
+}
+
 
 } // namespace _wifi
