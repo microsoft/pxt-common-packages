@@ -177,7 +177,7 @@ Buffer scanResults() {
             ent.rssi = src->rssi;
             memcpy(ent.bssid, src->bssid, 6);
             memset(ent.ssid, 0, sizeof(ent.ssid));
-            int len = strlen(src->ssid);
+            int len = strlen((char *)src->ssid);
             if (len > 32)
                 len = 32;
             memcpy(ent.ssid, src->ssid, len);
@@ -205,7 +205,6 @@ int connect(String ssid, String pass) {
     if (is_connected)
         return -1;
 
-    reconnect = true;
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
     ESP_ERROR_CHECK(esp_wifi_connect());
@@ -216,7 +215,6 @@ int connect(String ssid, String pass) {
 /** Initiate disconnection. */
 //%
 int disconnect() {
-    reconnect = false;
     if (!is_connected)
         return -1;
     ESP_ERROR_CHECK(esp_wifi_disconnect());
@@ -234,6 +232,5 @@ bool isConnected() {
 Buffer ipInfo() {
     return mkBuffer(&ip_info, sizeof(ip_info));
 }
-
 
 } // namespace _wifi
