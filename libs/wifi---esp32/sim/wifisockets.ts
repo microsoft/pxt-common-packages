@@ -265,6 +265,7 @@ namespace pxsim._wifi {
     }
     export function isConnected(): boolean { return true }
     export function ipInfo(): RefBuffer { return new RefBuffer(new Uint8Array(4 * 3)) }
+    export function rssi(): number { return -24 }
 
     declare const enum WifiEvent {
         ScanDone = 1,

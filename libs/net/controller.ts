@@ -146,6 +146,7 @@ namespace net {
         }
 
         get ssid(): string { return undefined; }
+        get rssi(): number { return undefined; }
         get MACaddress(): Buffer { return undefined; }
         get IPaddress(): Buffer { return undefined; }
         public ping(dest: string, ttl: number = 250): number { return -1; }

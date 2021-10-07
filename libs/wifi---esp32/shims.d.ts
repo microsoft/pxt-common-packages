@@ -54,6 +54,10 @@ declare namespace _wifi {
     /** Return ipv4 address, netmask, and gateway. */
     //% shim=_wifi::ipInfo
     function ipInfo(): Buffer;
+
+    /** Get RSSI of current connection or -128 when not connected. */
+    //% shim=_wifi::rssi
+    function rssi(): int32;
 }
 
 // Auto-generated. Do not edit. Really.
