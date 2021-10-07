@@ -171,7 +171,7 @@ Buffer scanResults() {
                 ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_ABOVE;
             if (src->second == WIFI_SECOND_CHAN_BELOW)
                 ent.flags |= JD_WIFI_APFLAGS_HAS_SECONDARY_CHANNEL_BELOW;
-            if (src->authmode != WIFI_AUTH_OPEN)
+            if (src->authmode != WIFI_AUTH_OPEN && src->authmode != WIFI_AUTH_WPA2_ENTERPRISE)
                 ent.flags |= JD_WIFI_APFLAGS_HAS_PASSWORD;
             ent.channel = src->primary;
             ent.rssi = src->rssi;
