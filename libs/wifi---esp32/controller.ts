@@ -108,6 +108,7 @@ namespace net {
         get isIdle(): boolean { return true; }
         get MACaddress(): Buffer { return control.deviceLongSerialNumber().slice(1, 6); }
         get IPaddress(): Buffer { return this.isConnected ? _wifi.ipInfo().slice(0, 4) : undefined; }
+        get ssid(): string { return this._ssid }
         public ping(dest: string, ttl: number = 250): number { return -1; }
 
         public dataAvailableSrc(socket_num: number): number { return _wifi.eventID(); }
