@@ -186,6 +186,7 @@ struct FiberContext {
 
     fiber_resume_t wakeFn;
     void *wakeFnArg;
+    HandlerBinding *handlerBinding;
 };
 
 #define PXT_EXN_CTX() currentFiber

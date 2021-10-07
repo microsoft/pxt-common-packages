@@ -4,17 +4,16 @@ namespace net {
     export class WifiController extends net.Controller {
         private networks: net.AccessPoint[]
         private inScan: boolean
-        private _isConnected: boolean
         private _ssid: string
 
         constructor() {
             super()
             control.internalOnEvent(_wifi.eventID(), WifiEvent.ScanDone, () => this.scanDone())
             control.internalOnEvent(_wifi.eventID(), WifiEvent.Disconnected, () => {
-                this._isConnected = false
+                this.setConnected(false)
             })
             control.internalOnEvent(_wifi.eventID(), WifiEvent.GotIP, () => {
-                this._isConnected = true
+                this.setConnected(true)
             })
         }
 
@@ -25,34 +24,28 @@ namespace net {
             if (!buf)
                 return
             let i = 0
+            const entrySize = 48
             while (i < buf.length) {
-                const rssi = buf.getNumber(NumberFormat.Int8LE, i++)
-                const authmode = buf[i++]
-                let ep = i
-                while (ep < buf.length) {
-                    if (!buf[ep])
-                        break
-                    ep++
-                }
-                if (ep == buf.length)
-                    break
-                const ap = new net.AccessPoint(buf.slice(i, ep - i).toString())
-                ap.rssi = rssi
-                ap.encryption = authmode
-                i = ep + 1
+                const ap = net.AccessPoint.fromBuffer(buf.slice(i, entrySize))
+                control.dmesg(`${ap.ssid} [${ap.rssi}dB]`)
                 this.networks.push(ap)
+                i += entrySize
             }
-
+            control.dmesg(`scan completed`)
             control.raiseEvent(_wifi.eventID(), EV_ScanCompleted)
         }
 
-        public scanNetworks(): net.AccessPoint[] {
+        public scanNetworksCore(): net.AccessPoint[] {
             if (!this.inScan) {
                 this.inScan = true
                 _wifi.scanStart()
             }
             control.waitForEvent(_wifi.eventID(), EV_ScanCompleted)
             return this.networks
+        }
+
+        public disconnectAP() {
+            _wifi.disconnect()
         }
 
         public connectAP(ssid: string, pass: string) {
@@ -113,35 +106,9 @@ namespace net {
             return undefined;
         }
         get isIdle(): boolean { return true; }
-        get isConnected(): boolean { return this._isConnected; }
-        connect(): boolean {
-            if (this.isConnected) return true;
-
-            if (control.deviceDalVersion() == "sim") {
-                this.connectAP("", "")
-                return true
-            }
-
-            const wifis = net.knownAccessPoints();
-            const ssids = Object.keys(wifis);
-
-            for (let i = 0; i < 100; ++i) {
-                const networks = this.scanNetworks()
-                    .filter(network => ssids.indexOf(network.ssid) > -1);
-                // try connecting to known networks
-                for (const network of networks) {
-                    if (this.connectAP(network.ssid, wifis[network.ssid]))
-                        return true;
-                }
-                net.log(`re-trying scan, attempt ${i}...`)
-            }
-
-            // no compatible SSID
-            net.log(`connection failed`)
-            return false;
-        }
-        get ssid(): string { return this._ssid; }
-        get MACaddress(): Buffer { return undefined; }
+        get MACaddress(): Buffer { return control.deviceLongSerialNumber().slice(1, 6); }
+        get IPaddress(): Buffer { return this.isConnected ? _wifi.ipInfo().slice(0, 4) : undefined; }
+        get ssid(): string { return this._ssid }
         public ping(dest: string, ttl: number = 250): number { return -1; }
 
         public dataAvailableSrc(socket_num: number): number { return _wifi.eventID(); }

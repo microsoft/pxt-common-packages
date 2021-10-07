@@ -18,14 +18,18 @@
 #endif
 #endif
 
+#define HANDLER_RUNNING 0x0001
+
 // should this be something like CXX11 or whatever?
 #define THROW throw()
 #define THREAD_DBG(...)
 
 void *xmalloc(size_t sz) {
     auto r = malloc(sz);
-    if (r == NULL)
+    if (r == NULL) {
+        DMESG("failed to allocate %d bytes", sz);
         oops(50); // shouldn't happen
+    }
     return r;
 }
 
@@ -47,7 +51,9 @@ uint8_t *gcBase;
 
 namespace pxt {
 
+#ifndef PXT_ESP32
 static uint64_t startTime;
+#endif
 
 FiberContext *allFibers;
 FiberContext *currentFiber;
@@ -194,13 +200,14 @@ void disposeFiber(FiberContext *t) {
     xfree(t);
 }
 
-FiberContext *setupThread(Action a, TValue arg = 0) {
+FiberContext *setupThread(Action a, TValue arg = 0, HandlerBinding *hb = NULL) {
     // DMESG("setup thread: %p", a);
     auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
     memset(t, 0, sizeof(*t));
     t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
     t->stackLimit = t->stackBase + VM_MAX_FUNCTION_STACK + 5;
     t->sp = t->stackBase + VM_STACK_SIZE;
+    t->handlerBinding = hb;
     *--t->sp = (TValue)0xf00df00df00df00d;
     *--t->sp = 0;
     *--t->sp = 0;
@@ -268,16 +275,34 @@ void resumeFiber(FiberContext *ctx, TValue v) {
     ctx->r0 = v;
 }
 
+static void startHandler(HandlerBinding *hb, Event &e) {
+    if (!hb)
+        return;
+    lastEvent = e; // this is quite racy
+    if (hb->flags & HANDLER_RUNNING) {
+        auto tmp = mkEvent(e.source, e.value);
+        if (hb->pending == NULL) {
+            hb->pending = tmp;
+        } else {
+            int numev = 0;
+            auto p = hb->pending;
+            for (; p->next; p = p->next)
+                numev++;
+            if (numev >= 10) {
+                xfree(tmp);
+                return;
+            }
+            p->next = tmp;
+        }
+    } else {
+        hb->flags |= HANDLER_RUNNING;
+        setupThread(hb->action, fromInt(e.value), hb);
+    }
+}
+
 static void dispatchEvent(Event &e) {
-    lastEvent = e;
-
-    auto curr = findBinding(e.source, e.value);
-    if (curr)
-        setupThread(curr->action, fromInt(e.value));
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        setupThread(curr->action, fromInt(e.value));
+    startHandler(findBinding(e.source, e.value), e);
+    startHandler(findBinding(e.source, DEVICE_EVT_ANY), e);
 }
 
 static void wakeFibers() {
@@ -357,6 +382,17 @@ static void mainRunLoop() {
                     if (*f->sp != TAG_STACK_BOTTOM)
                         target_panic(PANIC_INVALID_IMAGE);
                 } else {
+                    auto hb = f->handlerBinding;
+                    if (hb) {
+                        auto pev = hb->pending;
+                        if (pev) {
+                            hb->pending = pev->next;
+                            setupThread(hb->action, fromInt(pev->value), hb);
+                            xfree(pev);
+                        } else {
+                            f->handlerBinding->flags &= ~HANDLER_RUNNING;
+                        }
+                    }
                     disposeFiber(f);
                 }
             }

@@ -6,15 +6,6 @@
 #include "driver/ledc.h"
 #include "esp_private/system_internal.h"
 
-#define CHK(call)                                                                                  \
-    {                                                                                              \
-        int __r = call;                                                                            \
-        if (__r != 0) {                                                                            \
-            DMESG("fail: %d at %d", __r, __LINE__);                                                \
-            abort();                                                                               \
-        }                                                                                          \
-    }
-
 static void reset_pin(PinName p) {
     if (p != -1)
         gpio_set_direction((gpio_num_t)p, GPIO_MODE_DISABLE);
@@ -90,53 +81,3 @@ void (*logJDFrame)(const uint8_t *data);
 void (*sendJDFrame)(const uint8_t *data);
 
 } // namespace pxt
-
-#include "driver/ledc.h"
-
-namespace _light {
-
-static void config_channel(ledc_channel_t ch, int pin) {
-    ledc_channel_config_t cfg;
-    memset(&cfg, 0, sizeof(cfg));
-    cfg.channel = ch;
-    cfg.gpio_num = pin;
-    cfg.timer_sel = LEDC_TIMER_1;
-    cfg.speed_mode = LEDC_LOW_SPEED_MODE;
-    cfg.duty = 1024;
-    CHK(ledc_channel_config(&cfg));
-}
-
-// do not expose for now - this will probably conflict with regular Pin APIs
-/**
- * Set the color of the built-in status LED
- */
-void setStatusLed(uint32_t color) {
-    static bool inited;
-    if (PIN(LED_R) == -1)
-        return;
-
-    if (!inited) {
-        inited = true;
-        ledc_fade_func_install(0);
-
-        ledc_timer_config_t ledc_timer;
-        memset(&ledc_timer, 0, sizeof(ledc_timer));
-        ledc_timer.duty_resolution = LEDC_TIMER_10_BIT;
-        ledc_timer.freq_hz = 50;
-        ledc_timer.speed_mode = LEDC_LOW_SPEED_MODE;
-        ledc_timer.timer_num = LEDC_TIMER_1;
-        ledc_timer.clk_cfg = LEDC_AUTO_CLK;
-        CHK(ledc_timer_config(&ledc_timer));
-
-        config_channel(LEDC_CHANNEL_0, PIN(LED_R));
-        config_channel(LEDC_CHANNEL_1, PIN(LED_G));
-        config_channel(LEDC_CHANNEL_2, PIN(LED_B));
-    };
-
-    for (int i = 0; i < 3; ++i) {
-        CHK(ledc_set_duty_with_hpoint(LEDC_LOW_SPEED_MODE, (ledc_channel_t)(LEDC_CHANNEL_0 + i),
-                                      1024 - (((color >> (16 - i * 8)) & 0xff) << 2), 0));
-        CHK(ledc_update_duty(LEDC_LOW_SPEED_MODE, (ledc_channel_t)(LEDC_CHANNEL_0 + i)));
-    }
-}
-} // namespace _light

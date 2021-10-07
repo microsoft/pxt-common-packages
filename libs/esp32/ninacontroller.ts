@@ -324,7 +324,8 @@ namespace esp32 {
                 let rssi = this.sendCommandGetResponse(_GET_IDX_RSSI_CMD, [buffer1(i)])[0]
                 a_p.rssi = pins.unpackBuffer("<i", rssi)[0]
                 let encr = this.sendCommandGetResponse(_GET_IDX_ENCT_CMD, [buffer1(1)])[0]
-                a_p.encryption = encr[0]
+                if (encr[0])
+                    a_p.flags |= net.WifiAPFlags.HasPassword
                 APs.push(a_p)
                 i++
             }
@@ -335,7 +336,7 @@ namespace esp32 {
      Returns a list of dictionaries with 'ssid', 'rssi' and 'encryption' entries,
      one for each AP found
     */
-        public scanNetworks(): net.AccessPoint[] {
+        protected scanNetworksCore(): net.AccessPoint[] {
             this.startScanNetworks()
             // attempts
             for (let _ = 0; _ < 10; ++_) {
@@ -443,32 +444,11 @@ namespace esp32 {
             return this.status == WL_IDLE_STATUS;
         }
 
-        /**
-         * Uses RSSID and password in settings to connect to a compatible AP
-         */
-        public connect(): boolean {
-            if (this.isConnected) return true;
-
-            const wifis = net.knownAccessPoints();
-            const ssids = Object.keys(wifis);
-            const networks = this.scanNetworks()
-                .filter(network => ssids.indexOf(network.ssid) > -1);
-            // try connecting to known networks
-            for(const network of networks) {
-                if(this.connectAP(network.ssid, wifis[network.ssid]) == WL_CONNECTED)
-                    return true;
-            }
-
-            // no compatible SSID
-            net.log(`connection failed`)
-            return false;
-        }
-
         /** 
          * Connect to an access point with given name and password.
          * Will retry up to 10 times and return on success
         */
-        private connectAP(ssid: string, password: string): number {
+        connectAP(ssid: string, password: string): boolean {
             net.log(`connect to ${ssid}`)
             if (password) {
                 this.wifiSetPassphrase(ssid, password)
@@ -483,7 +463,7 @@ namespace esp32 {
                 if (stat == WL_CONNECTED) {
                     this.wasConnected = true;
                     net.log("connected")
-                    return stat;
+                    return true;
                 }
                 pause(1000)
             }
@@ -495,7 +475,7 @@ namespace esp32 {
                 net.log(`no such ssid: "${ssid}"`)
             }
 
-            return stat;
+            return false;
         }
 
         /** 
