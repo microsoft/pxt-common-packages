@@ -378,6 +378,10 @@ struct HandlerBinding {
     int source;
     int value;
     Action action;
+#ifndef PXT_CODAL
+    uint32_t flags;
+    struct Event *pending;
+#endif
 };
 HandlerBinding *findBinding(int source, int value);
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value);

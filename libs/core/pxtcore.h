@@ -4,6 +4,8 @@
 #include "CodalDmesg.h"
 #include "CodalHeapAllocator.h"
 
+#define PXT_CODAL 1
+
 #define itoa(a, b) codal::itoa(a, b)
 
 #define GC_GET_HEAP_SIZE() device_heap_size(0)
