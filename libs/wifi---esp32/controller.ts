@@ -26,9 +26,12 @@ namespace net {
             let i = 0
             const entrySize = 48
             while (i < buf.length) {
-                this.networks.push(net.AccessPoint.fromBuffer(buf.slice(i, entrySize)))
+                const ap = net.AccessPoint.fromBuffer(buf.slice(i, entrySize))
+                control.dmesg(`${ap.ssid} [${ap.rssi}dB]`)
+                this.networks.push(ap)
                 i += entrySize
             }
+            control.dmesg(`scan completed`)
             control.raiseEvent(_wifi.eventID(), EV_ScanCompleted)
         }
 
