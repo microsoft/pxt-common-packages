@@ -438,7 +438,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     } else if (s._vx === movingSprite.cachedVx) {
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
-                        if (s.flags & sprites.Flag.BounceOnWall) {
+                        if (s.flags & sprites.Flag.BounceOnWall) { // TODO(aznhassan) Add coefficient of restitution to get varying levels of bounce
                             if ((!right && s.vx < 0) || (right && s.vx > 0)) {
                                 s._vx = Fx.neg(s._vx);
                                 movingSprite.xStep = Fx.neg(movingSprite.xStep);
