@@ -138,7 +138,7 @@ static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
 }
 
 static inline void runAction(FiberContext *ctx, RefAction *ra) {
-    if (ctx->sp < ctx->stackLimit)
+    if (ctx->sp < ctx->img->stackLimit)
         error(PANIC_STACK_OVERFLOW);
 
     PUSH((TValue)ctx->currAction);
@@ -261,14 +261,14 @@ void op_try(FiberContext *ctx, unsigned arg) {
     auto f = pxt::beginTry();
     f->registers[0] = (uintptr_t)ctx->currAction;
     f->registers[1] = (uintptr_t)(ctx->pc + (int)arg);
-    f->registers[2] = (uintptr_t)ctx->sp;
+    f->registers[2] = (uint8_t *)ctx->sp - (uint8_t *)vmImg->stackBase;
 }
 
 void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx) {
     // TODO verification
     ctx->currAction = (RefAction *)tf->registers[0];
     ctx->pc = (uint16_t *)tf->registers[1];
-    ctx->sp = (TValue *)tf->registers[2];
+    ctx->sp = (TValue *)((uint8_t *)vmImg->stackBase + tf->registers[2]);
     longjmp(ctx->loopjmp, 1);
 }
 
@@ -513,7 +513,7 @@ void exec_loop(FiberContext *ctx) {
             break;
         uint16_t opcode = *ctx->pc++;
         TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode,
-              (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));
+              (int)(vmImg->stackTop - ctx->sp));
         if (opcode >> 15 == 0) {
             opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_ARG_POS);
             if (opcode & VM_OPCODE_PUSH_MASK)

@@ -196,25 +196,50 @@ void disposeFiber(FiberContext *t) {
         }
     }
 
-    xfree(t->stackBase);
+    // DMESG("free: %p %p", t, t->stackCopy);
+
+    xfree(t->stackCopy);
     xfree(t);
+
+    if (currentFiber == t)
+        currentFiber = NULL;
 }
 
+#define INITIAL_STACK_COPY_SIZE 16
+
 FiberContext *setupThread(Action a, TValue arg = 0, HandlerBinding *hb = NULL) {
-    // DMESG("setup thread: %p", a);
+#if 0
+    int numThreads = 0;
+    for (auto p = allFibers; p; p = p->next)
+        numThreads++;
+    DMESG("setup thread: %p #%d", a, numThreads);
+    //if (numThreads > 10)
+    //    abort();
+#endif
     auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
     memset(t, 0, sizeof(*t));
-    t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
-    t->stackLimit = t->stackBase + VM_MAX_FUNCTION_STACK + 5;
-    t->sp = t->stackBase + VM_STACK_SIZE;
+    if (!vmImg->stackBase) {
+        vmImg->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
+        vmImg->stackTop = vmImg->stackBase + VM_STACK_SIZE;
+        vmImg->stackLimit = vmImg->stackBase + VM_MAX_FUNCTION_STACK + 5;
+    }
+    t->stackCopy = (TValue *)xmalloc(sizeof(TValue) * INITIAL_STACK_COPY_SIZE);
+    t->stackCopySize = INITIAL_STACK_COPY_SIZE;
+    t->sp = vmImg->stackTop - 8;
+
+    // DMESG("thr: %p %p", t, t->stackCopy);
+
+    auto ptr = t->stackCopy;
+    *ptr++ = TAG_STACK_BOTTOM;
+    *ptr++ = 0;
+    *ptr++ = arg;
+    *ptr++ = 0;
+    *ptr++ = 0;
+    *ptr++ = 0;
+    *ptr++ = 0;
+    *ptr++ = (TValue)0xf00df00df00df00d;
+
     t->handlerBinding = hb;
-    *--t->sp = (TValue)0xf00df00df00df00d;
-    *--t->sp = 0;
-    *--t->sp = 0;
-    *--t->sp = 0;
-    *--t->sp = arg;
-    *--t->sp = 0;
-    *--t->sp = TAG_STACK_BOTTOM;
     auto ra = (RefAction *)a;
     // we only pass 1 argument, but can in fact handle up to 4
     if (ra->numArgs > 2)
@@ -336,6 +361,26 @@ static void wakeFibers() {
     }
 }
 
+static void saveStack() {
+    auto f = currentFiber;
+    if (!f)
+        return;
+    int sizeNeeded = vmImg->stackTop - f->sp;
+    // DMESG("save %d %p", sizeNeeded, f);
+    if (!f->stackCopy || sizeNeeded > f->stackCopySize) {
+        xfree(f->stackCopy);
+        f->stackCopySize = sizeNeeded + 10;
+        f->stackCopy = (TValue *)xmalloc(f->stackCopySize * sizeof(TValue));
+        // DMESG(" -> %p", f->stackCopy);
+    }
+    memcpy(f->stackCopy, f->sp, sizeNeeded * sizeof(TValue));
+}
+
+static void restoreStack() {
+    auto f = currentFiber;
+    memcpy(f->sp, f->stackCopy, (uint8_t *)vmImg->stackTop - (uint8_t *)f->sp);
+}
+
 static void mainRunLoop() {
     FiberContext *f = NULL;
     for (;;) {
@@ -356,7 +401,11 @@ static void mainRunLoop() {
             f = f->next;
         }
         if (f) {
-            currentFiber = f;
+            if (currentFiber != f) {
+                saveStack();
+                currentFiber = f;
+                restoreStack();
+            }
             f->pc = f->resumePC;
             f->resumePC = NULL;
             if (f->wakeFn) {
@@ -492,14 +541,20 @@ void *gcAllocBlock(size_t sz) {
 void gcProcessStacks(int flags) {
     int cnt = 0;
     for (auto f = allFibers; f; f = f->next) {
-        auto end = f->stackBase + VM_STACK_SIZE - 1;
-        auto ptr = f->sp;
+        TValue *end, *ptr;
+        if (f == currentFiber) {
+            end = vmImg->stackTop;
+            ptr = f->sp;
+        } else {
+            end = f->stackCopy + (vmImg->stackTop - f->sp);
+            ptr = f->stackCopy;
+        }
         gcProcess((TValue)f->currAction);
         gcProcess((TValue)f->r0);
         if (flags & 2)
             DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
         // VLOG("mark: %p - %p", ptr, end);
-        while (ptr <= end) {
+        while (ptr < end) {
             gcProcess(*ptr++);
         }
     }
