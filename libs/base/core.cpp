@@ -1962,6 +1962,10 @@ void stopPerfCounter(PerfCounters n) {
 #define PXT_EXN_CTX() getThreadContext()
 #endif
 
+#ifndef PXT_PRINT_STACK_TRACE
+#define PXT_PRINT_STACK_TRACE() ((void)0)
+#endif
+
 typedef void (*RestoreStateType)(TryFrame *, ThreadContext *);
 #ifndef pxt_restore_exception_state
 #define pxt_restore_exception_state ((RestoreStateType)(((uintptr_t *)bytecode)[14]))
@@ -1993,6 +1997,7 @@ void throwValue(TValue v) {
     if (!f) {
         DMESG("unhandled exception, value:");
         anyPrint(v);
+        PXT_PRINT_STACK_TRACE();
         target_panic(PANIC_UNHANDLED_EXCEPTION);
     }
     ctx->tryFrame = f->parent;

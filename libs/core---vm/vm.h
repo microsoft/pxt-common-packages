@@ -28,7 +28,8 @@
 #define VM_STACK_SIZE 1000
 
 #define VM_ENCODE_PC(pc) ((TValue)(((pc) << 9) | 2))
-#define VM_DECODE_PC(pc) (((uintptr_t)pc) >> 9)
+#define VM_DECODE_PC(pc) (((uintptr_t)(pc)) >> 9)
+#define VM_IS_ENCODED_PC(v) ((((uintptr_t)(v)) & ((1 << 9) - 1)) == 2)
 #define TAG_STACK_BOTTOM VM_ENCODE_PC(1)
 
 #define PXTEXT extern
