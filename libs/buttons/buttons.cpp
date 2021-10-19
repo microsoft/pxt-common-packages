@@ -58,7 +58,7 @@ Button *getButtonByPin(int pin, int flags) {
 Button *getButtonByPinCfg(int key, int flags) {
     int pin = getConfig(key);
     if (pin == -1)
-        target_panic(PANIC_NO_SUCH_CONFIG);
+        soft_panic(PANIC_NO_SUCH_CONFIG);
     return getButtonByPin(pin, flags);
 }
 
@@ -97,7 +97,7 @@ AbstractButton *getButton(int id) {
     else if (id == 2)
         return getMultiButton(DEVICE_ID_BUTTON_AB, pa, pb, flags);
     else {
-        target_panic(PANIC_INVALID_ARGUMENT);
+        soft_panic(PANIC_INVALID_ARGUMENT);
         return NULL;
     }
 }

@@ -114,7 +114,7 @@ LowLevelTimer *allocateTimer() {
         return res;
     }
 
-    target_panic(PANIC_OUT_OF_TIMERS);
+    soft_panic(PANIC_OUT_OF_TIMERS);
     return NULL;
 }
 

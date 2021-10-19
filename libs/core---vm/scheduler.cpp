@@ -525,7 +525,7 @@ void *gcAllocBlock(size_t sz) {
     }
     void *r = currPtr;
     if ((uint8_t *)currPtr - gcBase > (1 << PXT_VM_HEAP_ALLOC_BITS) - (int)sz)
-        target_panic(20);
+        soft_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {

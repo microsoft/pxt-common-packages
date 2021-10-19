@@ -122,6 +122,7 @@ static void check_error(socket_t *sock, int r) {
             esp_tls_get_and_clear_last_error(sock->ssl->error_handle, &err_code, &flags);
 
         DMESG("ESP TLS error: err=%x (%d/%d) res=%d", err, err_code, flags, r);
+        vm_stack_trace();
 
 #if 0
         // can't really throw from here

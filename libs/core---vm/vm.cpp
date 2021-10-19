@@ -130,7 +130,7 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
 
 static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
     if (ra->initialLen != 0)
-        error(PANIC_INVALID_VTABLE);
+        target_panic(PANIC_INVALID_VTABLE);
     auto act = (RefAction *)mkAction(1, ra);
     act->flags = BOUND_ACTION;
     act->fields[0] = obj;
@@ -139,7 +139,7 @@ static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
 
 static inline void runAction(FiberContext *ctx, RefAction *ra) {
     if (ctx->sp < ctx->img->stackLimit)
-        error(PANIC_STACK_OVERFLOW);
+        soft_panic(PANIC_STACK_OVERFLOW);
 
     PUSH((TValue)ctx->currAction);
     PUSH(VM_ENCODE_PC(ctx->pc - ctx->imgbase));
@@ -193,7 +193,7 @@ static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
 
     if (ra->initialLen > ra->len)
         // trying to call function template
-        error(PANIC_INVALID_VTABLE);
+        target_panic(PANIC_INVALID_VTABLE);
 
     runAction(ctx, ra);
 }

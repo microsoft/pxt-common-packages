@@ -506,7 +506,7 @@ RefCollection *keysOf(TValue v) {
 //% expose
 TValue mapDeleteByString(RefMap *map, String key) {
     if (getAnyVTable((TValue)map) != &RefMap_vtable)
-        target_panic(PANIC_DELETE_ON_CLASS);
+        soft_panic(PANIC_DELETE_ON_CLASS);
     int i = map->findIdx(key);
     if (i >= 0) {
         map->keys.remove(i);
