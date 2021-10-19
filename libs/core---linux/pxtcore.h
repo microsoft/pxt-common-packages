@@ -30,8 +30,4 @@ extern "C" void *xmalloc(size_t sz);
 
 #define PXT_HARD_FLOAT 1
 
-#ifdef PXT_VM
-#define PXT_PRINT_STACK_TRACE() pxt::vm_stack_trace()
-#endif
-
 #endif

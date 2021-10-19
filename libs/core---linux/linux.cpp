@@ -37,7 +37,7 @@ void *xmalloc(size_t sz) {
         auto info = mallinfo();
         // DMESG("malloc used: %d kb", info.uordblks / 1024);
         if (info.uordblks > MALLOC_LIMIT) {
-            target_panic(PANIC_MEMORY_LIMIT_EXCEEDED);
+            soft_panic(PANIC_MEMORY_LIMIT_EXCEEDED);
         }
     }
 #endif

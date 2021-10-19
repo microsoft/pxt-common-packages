@@ -122,14 +122,17 @@ DLLEXPORT int pxt_get_panic_code() {
     return panicCode;
 }
 
+void ets_log_dmesg();
 void soft_panic(int errorCode) {
     if (errorCode >= 999)
         errorCode = 999;
     if (errorCode <= 0)
         errorCode = 1;
+    vm_stack_trace();
     panic_core(1000 + errorCode);
 #if defined(PXT_ESP32)
-    vm_stack_trace();
+    ets_log_dmesg();
+    sleep_core_us(4000000);
     abort();
 #else
     systemReset();
@@ -525,7 +528,7 @@ void *gcAllocBlock(size_t sz) {
     }
     void *r = currPtr;
     if ((uint8_t *)currPtr - gcBase > (1 << PXT_VM_HEAP_ALLOC_BITS) - (int)sz)
-        target_panic(20);
+        soft_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {
