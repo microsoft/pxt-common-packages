@@ -390,11 +390,11 @@ void checkStr(bool cond, const char *msg) {
 
 #ifdef PXT_VM
 int templateHash() {
-    return (int)vmImg->infoHeader->hexHash;
+    return *(int*)&vmImg->infoHeader->hexHash;
 }
 
 int programHash() {
-    return (int)vmImg->infoHeader->programHash;
+    return *(int*)&vmImg->infoHeader->programHash;
 }
 
 int getNumGlobals() {
