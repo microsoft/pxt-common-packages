@@ -151,7 +151,7 @@ void vm_stack_trace() {
     auto ctx = currentFiber;
     if (!ctx)
         return;
-    DMESG("stack trace:");
+    DMESG("stack trace (programHash:%d):", programHash());
     auto end = vmImg->stackTop;
     auto ptr = ctx->sp;
     DMESG(" PC:%x", (ctx->pc - ctx->imgbase) << 1);
