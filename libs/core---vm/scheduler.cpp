@@ -128,7 +128,12 @@ void soft_panic(int errorCode) {
     if (errorCode <= 0)
         errorCode = 1;
     panic_core(1000 + errorCode);
+#if defined(PXT_ESP32)
+    vm_stack_trace();
+    abort();
+#else
     systemReset();
+#endif
 }
 
 void sleep_core_us(uint64_t us) {
