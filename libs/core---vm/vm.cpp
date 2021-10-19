@@ -154,11 +154,11 @@ void vm_stack_trace() {
     DMESG("stack trace:");
     auto end = vmImg->stackTop;
     auto ptr = ctx->sp;
-    DMESG("  %x", (ctx->pc - ctx->imgbase) << 1);
+    DMESG(" PC:%x", (ctx->pc - ctx->imgbase) << 1);
     while (ptr < end) {
         auto v = (uintptr_t)*ptr++;
         if (VM_IS_ENCODED_PC(v)) {
-            DMESG("  %x", VM_DECODE_PC(v) << 1);
+            DMESG(" PC:%x", VM_DECODE_PC(v) << 1);
         }
     }
 }
