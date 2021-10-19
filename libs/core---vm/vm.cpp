@@ -147,6 +147,22 @@ static inline void runAction(FiberContext *ctx, RefAction *ra) {
     ctx->pc = actionPC(ra);
 }
 
+void vm_stack_trace() {
+    auto ctx = currentFiber;
+    if (!ctx)
+        return;
+    DMESG("stack trace:");
+    auto end = vmImg->stackTop;
+    auto ptr = ctx->sp;
+    DMESG("  %x", (ctx->pc - ctx->imgbase) << 1);
+    while (ptr < end) {
+        auto v = (uintptr_t)*ptr++;
+        if (VM_IS_ENCODED_PC(v)) {
+            DMESG("  %x", VM_DECODE_PC(v) << 1);
+        }
+    }
+}
+
 //%
 void op_callproc(FiberContext *ctx, unsigned arg) {
     runAction(ctx, (RefAction *)ctx->img->pointerLiterals[arg]);

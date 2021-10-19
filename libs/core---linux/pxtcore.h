@@ -7,6 +7,7 @@
 
 namespace pxt {
 void *gcAllocBlock(size_t sz);
+void vm_stack_trace();
 }
 
 extern "C" void dmesg(const char *fmt, ...);
@@ -28,5 +29,9 @@ extern "C" void *xmalloc(size_t sz);
 #endif
 
 #define PXT_HARD_FLOAT 1
+
+#ifdef PXT_VM
+#define PXT_PRINT_STACK_TRACE() pxt::vm_stack_trace()
+#endif
 
 #endif
