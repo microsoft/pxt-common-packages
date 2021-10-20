@@ -24,11 +24,18 @@
 #define THROW throw()
 #define THREAD_DBG(...)
 
+static uint8_t in_xmalloc_panic;
+
 void *xmalloc(size_t sz) {
     auto r = malloc(sz);
     if (r == NULL) {
         DMESG("failed to allocate %d bytes", sz);
-        oops(50); // shouldn't happen
+        if (in_xmalloc_panic) {
+            target_panic(PANIC_GC_OOM);
+        } else {
+            in_xmalloc_panic = 1;
+            soft_panic(PANIC_GC_OOM); // this can happen on esp32 etc; shouldn't on linux/ios etc
+        }
     }
     return r;
 }
