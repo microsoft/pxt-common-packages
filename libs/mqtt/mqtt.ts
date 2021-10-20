@@ -155,13 +155,20 @@ namespace mqtt {
          * Structure of an MQTT Control Packet
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800392
          */
-        function createPacket(byte1: number, variable: Buffer, payload?: Buffer): Buffer {
-            if (payload == null) payload = control.createBuffer(0);
-            const byte2: number[] = encodeRemainingLength(variable.length + payload.length);
+        function createPacketHeader(byte1: number, variable: Buffer, payloadSize: number): Buffer {
+            const byte2: number[] = encodeRemainingLength(variable.length + payloadSize);
             return strChr([byte1])
                 .concat(strChr(byte2))
                 .concat(variable)
-                .concat(payload)
+        }
+
+        /**
+         * Structure of an MQTT Control Packet
+         * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800392
+         */
+         function createPacket(byte1: number, variable: Buffer, payload?: Buffer): Buffer {
+            if (payload == null) payload = control.createBuffer(0);
+            return createPacketHeader(byte1, variable, payload.length).concat(payload)
         }
 
         /**
@@ -208,17 +215,17 @@ namespace mqtt {
         }
 
         /**
-         * PUBLISH - Publish message
+         * PUBLISH - Publish message header - doesn't include "payload"
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800410
          */
-        export function createPublish(topic: string, message: Buffer, qos: number, retained: boolean) {
+        export function createPublishHeader(topic: string, payloadSize: number, qos: number, retained: boolean) {
             let byte1: number = ControlPacketType.Publish << 4 | (qos << 1);
             byte1 |= (retained) ? 1 : 0;
 
             const pid = strChr(getBytes(Constants.FixedPackedId));
             const variable = (qos === 0) ? pack(topic) : pack(topic).concat(pid);
 
-            return createPacket(byte1, variable, message);
+            return createPacketHeader(byte1, variable, payloadSize);
         }
 
         export function parsePublish(cmd: number, payload: Buffer): IMessage {
@@ -431,8 +438,11 @@ namespace mqtt {
         // Publish a message
         public publish(topic: string, message?: string | Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             const buf = typeof message == "string" ? control.createBufferFromUTF8(message) : message
+            message = null
             this.log(`publish: ${topic}`)
-            this.send(Protocol.createPublish(topic, buf, qos, retained));
+            this.send(Protocol.createPublishHeader(topic, buf.length, qos, retained));
+            if (buf)
+                this.send(buf);
         }
 
         private subscribeCore(topic: string, handler: (msg: IMessage) => void, qos: number = Constants.DefaultQos): MQTTHandler {
@@ -474,8 +484,8 @@ namespace mqtt {
 
         private send(data: Buffer): void {
             if (this.sct) {
-                //this.log("send: " + data[0] + " / " + data.length + " bytes")
-                this.log("send: " + data[0] + " / " + data.length + " bytes: " + data.toHex())
+                this.log("send: " + data[0] + " / " + data.length + " bytes")
+                // this.log("send: " + data[0] + " / " + data.length + " bytes: " + data.toHex())
                 this.sct.send(data);
             }
         }

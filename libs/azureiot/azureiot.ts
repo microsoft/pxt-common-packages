@@ -154,7 +154,8 @@ namespace azureiot {
             try {
                 c.disconnect()
             }
-            finally {
+            catch {
+                // just ignore errors disconnecting
                 _mqttClient = undefined
             }
         }
@@ -216,8 +217,24 @@ namespace azureiot {
         let topic = `devices/${c.opt.clientId}/messages/events/`;
         if (sysProps)
             topic += encodeQuery(sysProps);
+        const m = JSON.stringify(msg)
+        msg = null
         // qos, retained are not supported
-        c.publish(topic, JSON.stringify(msg));
+        c.publish(topic, m);
+    }
+
+    /**
+     * Send a message via mqtt
+     * @param msg 
+     */
+    //%
+    export function publishMessageBuffer(msg: Buffer, sysProps?: SMap<string>) {
+        const c = mqttClient();
+        let topic = `devices/${c.opt.clientId}/messages/events/`;
+        if (sysProps)
+            topic += encodeQuery(sysProps);
+        // qos, retained are not supported
+        c.publish(topic, msg);
     }
 
     /**

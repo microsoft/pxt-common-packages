@@ -473,7 +473,7 @@ String concat(String s, String other) {
         if (IS_CONS(other) || IS_CONS(s->cons.right))
             goto mkCons;
         auto lenAR = s->cons.right->getUTF8Size();
-        lenB = other->getUTF8Size();
+        lenB = other->getUTF8Size(); // de-consify other
         if (lenAR + lenB > SHORT_CONCAT_STRING)
             goto mkCons;
         // if (s->cons.right + other) is short enough, use associativity
