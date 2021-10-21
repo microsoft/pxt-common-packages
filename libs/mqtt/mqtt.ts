@@ -439,10 +439,18 @@ namespace mqtt {
         public publish(topic: string, message?: string | Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             const buf = typeof message == "string" ? control.createBufferFromUTF8(message) : message
             message = null
-            this.log(`publish: ${topic}`)
-            this.send(Protocol.createPublishHeader(topic, buf.length, qos, retained));
+            this.startPublish(topic, buf ? buf.length : 0, qos, retained)
             if (buf)
                 this.send(buf);
+        }
+
+        public startPublish(topic: string, messageLen: number, qos: number = Constants.DefaultQos, retained: boolean = false): void {
+            this.log(`publish: ${topic}`)
+            this.send(Protocol.createPublishHeader(topic, messageLen, qos, retained));
+        }
+
+        public continuePublish(data: Buffer) {
+            this.send(data)
         }
 
         private subscribeCore(topic: string, handler: (msg: IMessage) => void, qos: number = Constants.DefaultQos): MQTTHandler {

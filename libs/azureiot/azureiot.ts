@@ -238,6 +238,25 @@ namespace azureiot {
     }
 
     /**
+     * Send a message via mqtt
+     * @param msg 
+     */
+    //%
+    export function publishMessageHex(msg: Buffer, len?: number, sysProps?: SMap<string>) {
+        const c = mqttClient();
+        let topic = `devices/${c.opt.clientId}/messages/events/`;
+        if (sysProps)
+            topic += encodeQuery(sysProps);
+        if (len == null)
+            len = msg.length
+        // qos, retained are not supported
+        c.startPublish(topic, len * 2)
+        const chunk = 128
+        for (let ptr = 0; ptr < len; ptr += chunk)
+            c.continuePublish(Buffer.fromUTF8(msg.slice(ptr, Math.min(chunk, len - ptr)).toHex()))
+    }
+
+    /**
      * Registers code to run when a message is received
      * @param handler 
      */
