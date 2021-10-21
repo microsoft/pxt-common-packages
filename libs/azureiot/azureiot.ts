@@ -167,6 +167,7 @@ namespace azureiot {
     export function connect() {
         const c = mqttClient();
         if (!c.connected) {
+            c.connect() // start connect if not started yet
             // busy wait for connection
             const start = control.millis()
             const timeout = 30000
@@ -249,11 +250,17 @@ namespace azureiot {
             topic += encodeQuery(sysProps);
         if (len == null)
             len = msg.length
+        if (len > msg.length) {
+            log(`len too long: ${len}/${msg.length}`)
+            len = msg.length
+        }
         // qos, retained are not supported
-        c.startPublish(topic, len * 2)
-        const chunk = 128
-        for (let ptr = 0; ptr < len; ptr += chunk)
-            c.continuePublish(Buffer.fromUTF8(msg.slice(ptr, Math.min(chunk, len - ptr)).toHex()))
+        if (c.startPublish(topic, len * 2)) {
+            const chunk = 128
+            for (let ptr = 0; ptr < len; ptr += chunk)
+                c.continuePublish(Buffer.fromUTF8(msg.slice(ptr, Math.min(chunk, len - ptr)).toHex()))
+            c.finishPublish()
+        }
     }
 
     /**
