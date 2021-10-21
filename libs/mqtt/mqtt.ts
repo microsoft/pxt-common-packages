@@ -473,7 +473,7 @@ namespace mqtt {
         }
 
         private doneSending() {
-            this.log("done send")
+            this.trace("done send")
             if (this.status == Status.Sending)
                 this.status = Status.Connected
         }
@@ -491,7 +491,7 @@ namespace mqtt {
 
         public startPublish(topic: string, messageLen: number, qos: number = Constants.DefaultQos, retained: boolean = false) {
             if (!this.canSend()) return false
-            this.trace(`publish: ${topic}`)
+            this.trace(`publish: ${topic} ${messageLen}b`)
             this.send(Protocol.createPublishHeader(topic, messageLen, qos, retained));
             return true
         }

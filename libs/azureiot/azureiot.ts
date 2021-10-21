@@ -250,6 +250,10 @@ namespace azureiot {
             topic += encodeQuery(sysProps);
         if (len == null)
             len = msg.length
+        if (len > msg.length) {
+            log(`len too long: ${len}/${msg.length}`)
+            len = msg.length
+        }
         // qos, retained are not supported
         if (c.startPublish(topic, len * 2)) {
             const chunk = 128
