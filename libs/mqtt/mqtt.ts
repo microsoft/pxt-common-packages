@@ -166,7 +166,7 @@ namespace mqtt {
          * Structure of an MQTT Control Packet
          * http://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html#_Toc384800392
          */
-         function createPacket(byte1: number, variable: Buffer, payload?: Buffer): Buffer {
+        function createPacket(byte1: number, variable: Buffer, payload?: Buffer): Buffer {
             if (payload == null) payload = control.createBuffer(0);
             return createPacketHeader(byte1, variable, payload.length).concat(payload)
         }
@@ -316,10 +316,23 @@ namespace mqtt {
         }
     }
 
+    export enum Status {
+        Disconnected = 0,
+        Connecting = 1,
+        Connected = 2,
+        Sending = 3,
+    }
+
     export class Client extends EventEmitter {
-        public logPriority: ConsolePriority;
+        public logPriority = ConsolePriority.Debug
+        public tracePriority = -1 as ConsolePriority;
+
         private log(msg: string) {
             console.add(this.logPriority, `mqtt: ${msg}`);
+        }
+
+        private trace(msg: string) {
+            console.add(this.tracePriority, `mqtt: ${msg}`);
         }
 
         public opt: IConnectionOptions;
@@ -332,7 +345,11 @@ namespace mqtt {
 
         private buf: Buffer;
 
-        public connected: boolean;
+        public status = Status.Disconnected
+
+        get connected() {
+            return this.status >= Status.Connected
+        }
 
         private mqttHandlers: MQTTHandler[];
 
@@ -341,8 +358,6 @@ namespace mqtt {
 
             this.wdId = Constants.Uninitialized;
             this.piId = Constants.Uninitialized;
-            this.logPriority = ConsolePriority.Debug;
-            this.connected = false;
             opt.port = opt.port || 8883;
             opt.clientId = opt.clientId;
 
@@ -392,15 +407,19 @@ namespace mqtt {
                 this.piId = Constants.Uninitialized;
             }
 
-            if (this.sct) {
-                //this.sct.removeAllListeners('connect');
-                //this.sct.removeAllListeners('data');
-                //this.sct.removeAllListeners('close');
-                this.sct.close();
+            const s = this.sct
+            if (s) {
+                this.sct = null
+                s.close()
             }
+
+            this.status = Status.Disconnected
         }
 
         public connect(): void {
+            if (this.status != Status.Disconnected)
+                return
+            this.status = Status.Connecting
             this.log(`Connecting to ${this.opt.host}:${this.opt.port}`);
             if (this.wdId === Constants.Uninitialized) {
                 this.wdId = setInterval(() => {
@@ -420,7 +439,7 @@ namespace mqtt {
                 this.send(Protocol.createConnect(this.opt));
             });
             this.sct.onMessage((msg: Buffer) => {
-                this.log("incoming " + msg.length + " bytes")
+                this.trace("incoming " + msg.length + " bytes")
                 this.handleMessage(msg);
             });
             this.sct.onError(() => {
@@ -430,32 +449,64 @@ namespace mqtt {
             this.sct.onClose(() => {
                 this.log('Close.');
                 this.emit('disconnected');
-                this.connected = false;
+                this.status = Status.Disconnected
+                this.sct = null;
             });
             this.sct.connect();
+        }
+
+        private canSend() {
+            let cnt = 0
+            while (true) {
+                if (this.status == Status.Connected) {
+                    this.status = Status.Sending
+                    return true
+                }
+                if (cnt++ < 100 && this.status == Status.Sending)
+                    pause(20)
+                else {
+                    throw "drop pkt"
+                    //this.log("drop pkt")
+                    return false
+                }
+            }
+        }
+
+        private doneSending() {
+            this.log("done send")
+            if (this.status == Status.Sending)
+                this.status = Status.Connected
         }
 
         // Publish a message
         public publish(topic: string, message?: string | Buffer, qos: number = Constants.DefaultQos, retained: boolean = false): void {
             const buf = typeof message == "string" ? control.createBufferFromUTF8(message) : message
             message = null
-            this.startPublish(topic, buf ? buf.length : 0, qos, retained)
-            if (buf)
-                this.send(buf);
+            if (this.startPublish(topic, buf ? buf.length : 0, qos, retained)) {
+                if (buf)
+                    this.send(buf);
+                this.doneSending()
+            }
         }
 
-        public startPublish(topic: string, messageLen: number, qos: number = Constants.DefaultQos, retained: boolean = false): void {
-            this.log(`publish: ${topic}`)
+        public startPublish(topic: string, messageLen: number, qos: number = Constants.DefaultQos, retained: boolean = false) {
+            if (!this.canSend()) return false
+            this.trace(`publish: ${topic}`)
             this.send(Protocol.createPublishHeader(topic, messageLen, qos, retained));
+            return true
         }
 
         public continuePublish(data: Buffer) {
             this.send(data)
         }
 
+        public finishPublish() {
+            this.doneSending()
+        }
+
         private subscribeCore(topic: string, handler: (msg: IMessage) => void, qos: number = Constants.DefaultQos): MQTTHandler {
             this.log(`subscribe: ${topic}`)
-            this.send(Protocol.createSubscribe(topic, qos));
+            this.send1(Protocol.createSubscribe(topic, qos));
             if (handler) {
                 if (topic[topic.length - 1] == "#")
                     topic = topic.slice(0, topic.length - 1)
@@ -492,7 +543,7 @@ namespace mqtt {
 
         private send(data: Buffer): void {
             if (this.sct) {
-                this.log("send: " + data[0] + " / " + data.length + " bytes")
+                this.trace("send: " + data[0] + " / " + data.length + " bytes")
                 // this.log("send: " + data[0] + " / " + data.length + " bytes: " + data.toHex())
                 this.sct.send(data);
             }
@@ -536,17 +587,18 @@ namespace mqtt {
                     if (returnCode === ConnectReturnCode.Accepted) {
                         this.log('MQTT connection accepted.');
                         this.emit('connected');
-                        this.connected = true;
+                        this.status = Status.Connected;
                         this.piId = setInterval(() => this.ping(), Constants.PingInterval * 1000);
                     } else {
                         const connectionError: string = Client.describe(returnCode);
                         this.log('MQTT connection error: ' + connectionError);
                         this.emit('error', connectionError);
+                        this.disconnect()
                     }
                     break;
                 case ControlPacketType.Publish:
                     const message: IMessage = Protocol.parsePublish(cmd, payload);
-                    this.log(`incoming: ${message.topic}`)
+                    this.trace(`incoming: ${message.topic}`)
                     let handled = false
                     let cleanup = false
                     if (this.mqttHandlers) {
@@ -566,7 +618,7 @@ namespace mqtt {
                         this.emit('receive', message);
                     if (message.qos > 0) {
                         setTimeout(() => {
-                            this.send(Protocol.createPubAck(message.pid || 0));
+                            this.send1(Protocol.createPubAck(message.pid || 0));
                         }, 0);
                     }
                     break;
@@ -582,8 +634,15 @@ namespace mqtt {
                 this.handleMessage(data.slice(payloadEnd))
         }
 
+        private send1(msg: Buffer) {
+            if (this.canSend()) {
+                this.send(msg)
+                this.doneSending()
+            }
+        }
+
         private ping() {
-            this.send(Protocol.createPingReq());
+            this.send1(Protocol.createPingReq());
             this.emit('debug', 'Sent: Ping request.');
         }
     }
