@@ -218,17 +218,20 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 void op_ret(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(retNumArgs, numTmps);
 
-    // check if we're leaving a function that still has open try blocks
-    // (this results from invalid code generation)
-    if (ctx->tryFrame && ctx->tryFrame->registers[0] == (uintptr_t)ctx->currAction) {
-        DMESG("try frame %p left on return", ctx->tryFrame);
-        target_panic(PANIC_VM_ERROR);
-    }
-
     POP(numTmps);
     auto retaddr = (intptr_t)POPVAL();
     ctx->currAction = (RefAction *)POPVAL();
     POP(retNumArgs);
+
+    // check if we're leaving a function that still has open try blocks
+    // (this results from invalid code generation)
+    if (ctx->tryFrame &&
+        ctx->tryFrame->registers[2] < (uint8_t *)ctx->sp - (uint8_t *)vmImg->stackBase) {
+        DMESG("try frame %p left on return %d/%d", ctx->tryFrame, ctx->tryFrame->registers[2],
+              (uint8_t *)ctx->sp - (uint8_t *)vmImg->stackBase);
+        vm_stack_trace();
+        target_panic(PANIC_VM_ERROR);
+    }
 
     if (retaddr == (intptr_t)TAG_STACK_BOTTOM) {
         ctx->pc = NULL;
