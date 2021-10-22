@@ -465,8 +465,7 @@ namespace mqtt {
                 if (cnt++ < 100 && this.status == Status.Sending)
                     pause(20)
                 else {
-                    throw "drop pkt"
-                    //this.log("drop pkt")
+                    this.log("drop pkt")
                     return false
                 }
             }

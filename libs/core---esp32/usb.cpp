@@ -272,7 +272,12 @@ void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t pre
         data = (const uint8_t *)data + s;
         size -= s;
 
-        tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)buf, sizeof(buf));
+        int retries = 1000;
+        while (retries--)
+            if (tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)buf, sizeof(buf)) > 0)
+                break;
+        if (retries <= 950)
+            DMESG("CDC write fail; %d tries", 1000 - retries);
         // tinyusb_cdcacm_write_flush(TINYUSB_CDC_ACM_0, 0); - prints warnings
     }
 }
