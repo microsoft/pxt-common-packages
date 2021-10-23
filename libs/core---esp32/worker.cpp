@@ -48,4 +48,12 @@ int worker_run(worker_t w, TaskFunction_t fn, void *arg) {
     return -1;
 }
 
+int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg) {
+    qitem_t evt = {fn, arg};
+    if (xQueueSend(w->queue, &evt, 100) == pdPASS)
+        return 0;
+    return -1;
+}
+
+
 }
