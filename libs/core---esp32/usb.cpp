@@ -240,46 +240,66 @@ int HF2::handlePkt(int sz) {
     return sendResponse(0);
 }
 
-void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t prepend) {
-    if (!connected)
-        return;
+struct BufferEntry {
+    unsigned size;
+    uint8_t flag;
+    uint8_t data[0];
+};
+
+static void send_buffer_core(void *ent_) {
+    auto ent = (BufferEntry *)ent_;
 
     uint32_t buf[64 / 4]; // aligned
+    auto size = ent->size;
+    auto data = ent->data;
 
-    if (prepend + 1)
-        size += 4;
-
-    while (connected && size > 0) {
+    while (hf2.connected && size > 0) {
         memset(buf + 1, 0, 60);
         int s = 63;
         if (size <= 63) {
             s = size;
-            buf[0] = flag;
+            buf[0] = ent->flag;
         } else {
-            buf[0] = flag == HF2_FLAG_CMDPKT_LAST ? HF2_FLAG_CMDPKT_BODY : flag;
+            buf[0] = ent->flag == HF2_FLAG_CMDPKT_LAST ? HF2_FLAG_CMDPKT_BODY : ent->flag;
         }
         buf[0] |= s;
         uint8_t *dst = (uint8_t *)buf;
         dst++;
-        if (prepend + 1) {
-            memcpy(dst, &prepend, 4);
-            prepend = -1;
-            dst += 4;
-            s -= 4;
-            size -= 4;
-        }
         memcpy(dst, data, s);
-        data = (const uint8_t *)data + s;
+        data = data + s;
         size -= s;
 
-        int retries = 1000;
-        while (retries--)
-            if (tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)buf, sizeof(buf)) > 0)
-                break;
-        if (retries <= 950)
-            DMESG("CDC write fail; %d tries", 1000 - retries);
+        if (tinyusb_cdcacm_write_queue(TINYUSB_CDC_ACM_0, (uint8_t *)buf, sizeof(buf)) <
+            sizeof(buf))
+            DMESG("CDC write fail");
         // tinyusb_cdcacm_write_flush(TINYUSB_CDC_ACM_0, 0); - prints warnings
     }
+
+    xfree(ent);
+}
+
+void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t prepend) {
+    if (!connected)
+        return;
+
+    if (prepend + 1)
+        size += 4;
+
+    auto ent = (BufferEntry *)xmalloc(sizeof(BufferEntry) + size);
+    ent->size = size;
+    ent->flag = flag;
+    auto dst = ent->data;
+
+    if (prepend + 1) {
+        memcpy(dst, &prepend, 4);
+        dst += 4;
+        size -= 4;
+    }
+
+    memcpy(dst, data, size);
+
+    if (worker_run_wait(fg_worker, send_buffer_core, ent))
+        DMESG("HF2 queue full");
 }
 
 int HF2::sendEvent(uint32_t evId, const void *data, int size) {
