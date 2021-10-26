@@ -50,13 +50,12 @@ namespace net {
 
         public connectAP(ssid: string, pass: string) {
             control.dmesg(`connecting to [${ssid}]...`)
+            this._ssid = ssid
             const res = _wifi.connect(ssid, pass)
             if (res != 0)
                 return false
             pauseUntil(() => this.isConnected, 15000)
             control.dmesg(`${this.isConnected ? "" : "not "}connected to [${ssid}]`)
-            if (this.isConnected)
-                this._ssid = ssid
             return this.isConnected
         }
 
@@ -108,7 +107,7 @@ namespace net {
         get isIdle(): boolean { return true; }
         get MACaddress(): Buffer { return control.deviceLongSerialNumber().slice(1, 6); }
         get IPaddress(): Buffer { return this.isConnected ? _wifi.ipInfo().slice(0, 4) : undefined; }
-        get ssid(): string { return this._ssid }
+        get ssid(): string { return this.isConnected ? this._ssid : "" }
         get rssi(): number { return _wifi.rssi() }
         public ping(dest: string, ttl: number = 250): number { return -1; }
 
