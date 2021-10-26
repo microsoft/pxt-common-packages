@@ -83,9 +83,11 @@ void onPulsed(DigitalInOutPin pin, PulseValue pulse, Action body) {
 //% help=pins/on-event weight=20 blockGap=8
 //% blockId=pinsonevent block="on|pin %pin|%event"
 //% blockNamespace=pins
+//% parts="slideswitch"
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
+//% trackArgs=0
 void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
     switch(event) {
         case PinEvent::PulseHigh:
