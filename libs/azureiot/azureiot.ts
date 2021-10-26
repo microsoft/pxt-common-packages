@@ -17,6 +17,7 @@ namespace azureiot {
     let _messageBusId: number;
     let _receiveHandler: (msg: Json, sysProps: SMap<string>) => void;
     let _methodHandlers: SMap<(msg: Json) => Json>;
+    let twinRespHandlers: SMap<(status: number, body: any) => void>
 
     function log(msg: string) {
         console.add(logPriority, "azureiot: " + msg);
@@ -156,7 +157,6 @@ namespace azureiot {
             }
             catch {
                 // just ignore errors disconnecting
-                _mqttClient = undefined
             }
         }
     }
@@ -320,16 +320,16 @@ namespace azureiot {
         c.publish('$iothub/methods/res/' + status + "/?$rid=" + props["$rid"], JSON.stringify(resp))
     }
 
-    let twinRespHandlers: SMap<(status: number, body: any) => void>
-
     // $iothub/twin/res/{status}/?$rid={request id}
     function twinResponse(msg: mqtt.IMessage) {
         const args = parseTopicArgs(msg.topic)
         const h = twinRespHandlers[args["$rid"]]
         const status = parseInt(msg.topic.slice(17))
         // log(`twin resp: ${status} ${msg.content.toHex()} ${msg.content.toString()}`)
-        if (h)
+        if (h) {
+            delete twinRespHandlers[args["$rid"]]
             h(status, JSON.parse(msg.content.toString() || "{}"))
+        }
     }
 
     export class ValueAwaiter {
