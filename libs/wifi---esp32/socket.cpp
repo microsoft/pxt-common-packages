@@ -273,7 +273,6 @@ static void worker_close(socket_t *sock) {
         esp_tls_conn_destroy(sock->ssl);
         sock->ssl = NULL;
     }
-    free(sock);
 }
 
 /** Close the socket if open */
@@ -282,7 +281,10 @@ int socketClose(int fd) {
     GET_SOCK();
     sockets[fd] = NULL;
     worker_run(worker, (TaskFunction_t)worker_close, sock);
-    // don't wait for the actual close
+    // wait for the actual close - we only really have memory for one open SSL socket...
+    while (sock->ssl)
+        vTaskDelay(5);
+    free(sock);
     return 0;
 }
 
