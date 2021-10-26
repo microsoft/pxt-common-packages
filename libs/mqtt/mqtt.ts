@@ -344,6 +344,8 @@ namespace mqtt {
         private piId: number;
 
         private buf: Buffer;
+        // we re-send subscriptions on re-connect
+        private subs: Buffer[] = [];
 
         public status = Status.Disconnected
 
@@ -484,7 +486,7 @@ namespace mqtt {
             if (this.startPublish(topic, buf ? buf.length : 0, qos, retained)) {
                 if (buf)
                     this.send(buf);
-                this.doneSending()
+                this.finishPublish()
             }
         }
 
@@ -501,11 +503,14 @@ namespace mqtt {
 
         public finishPublish() {
             this.doneSending()
+            this.emit("published")
         }
 
         private subscribeCore(topic: string, handler: (msg: IMessage) => void, qos: number = Constants.DefaultQos): MQTTHandler {
             this.log(`subscribe: ${topic}`)
-            this.send1(Protocol.createSubscribe(topic, qos));
+            const sub = Protocol.createSubscribe(topic, qos)
+            this.subs.push(sub)
+            this.send1(sub);
             if (handler) {
                 if (topic[topic.length - 1] == "#")
                     topic = topic.slice(0, topic.length - 1)
@@ -588,6 +593,8 @@ namespace mqtt {
                         this.emit('connected');
                         this.status = Status.Connected;
                         this.piId = setInterval(() => this.ping(), Constants.PingInterval * 1000);
+                        for (const sub of this.subs)
+                            this.send1(sub);
                     } else {
                         const connectionError: string = Client.describe(returnCode);
                         this.log('MQTT connection error: ' + connectionError);
