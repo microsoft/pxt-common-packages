@@ -35,9 +35,11 @@ namespace DigitalInOutPinMethods {
 //% help=pins/digital-read weight=61
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
 //% blockNamespace=pins
+//% parts="slideswitch"
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% trackArgs=0
 bool digitalRead(DigitalInOutPin name) {
     return PINOP(getDigitalValue()) != 0;
 }
@@ -50,9 +52,11 @@ bool digitalRead(DigitalInOutPin name) {
 //% help=pins/digital-write weight=60
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value=toggleHighLow"
 //% blockNamespace=pins
+//% parts="led"
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% trackArgs=0
 void digitalWrite(DigitalInOutPin name, bool value) {
     PINOP(setDigitalValue(value));
 }
