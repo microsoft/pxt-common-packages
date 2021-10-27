@@ -147,6 +147,78 @@ static inline void runAction(FiberContext *ctx, RefAction *ra) {
     ctx->pc = actionPC(ra);
 }
 
+static const uint8_t *find_src_map() {
+    const uint32_t *p = (const uint32_t *)((uint32_t)vmImg->dataEnd & ~0xf);
+    const uint32_t *endP = p + 128;
+    while (p < endP) {
+        if (p[0] == 0x4d435253 && p[1] == 0x2d4e1588 && p[2] == 0x719986aa)
+            return (const uint8_t *)p;
+        p += 4;
+    }
+    DMESG("source map not found; dataEnd=%p", vmImg->dataEnd);
+    return NULL;
+}
+
+static const uint8_t *decode_num(const uint8_t *p, int *dst) {
+    auto v = *p++;
+    if (v < 0xf0) {
+        *dst = v;
+        return p;
+    }
+    auto sz = v & 0x07;
+    int r = 0;
+    for (int i = 0; i < sz; ++i) {
+        r |= *p++ << (i * 8);
+    }
+    if (v & 0x08)
+        r = -r;
+    *dst = r;
+    return p;
+}
+
+static const uint8_t *dump_pc_one(int addr, int off, const uint8_t *fn) {
+    if (!fn)
+        return NULL;
+    auto p = fn;
+    while (*p)
+        p++;
+    p++;
+    int prevLn = 0, prevOff = 0;
+    while (*p != 0xff) {
+        int a, b, c;
+        p = decode_num(p, &a);
+        p = decode_num(p, &b);
+        p = decode_num(p, &c);
+        prevLn += a;
+        b <<= 1;
+        prevOff += b;
+        c <<= 1;
+
+        int startA = prevOff;
+        int endA = startA + c;
+        if (startA <= addr + off && addr + off <= endA) {
+            DMESG(" PC:%x %s(%d)", addr, fn, prevLn);
+            return NULL;
+        }
+    }
+    return p + 1;
+}
+
+static void dump_pc(int addr, const uint8_t *srcmap) {
+    if (srcmap) {
+        auto p = srcmap + 16;
+        for (;;) {
+            auto a = dump_pc_one(addr, -2, p);
+            if (!a || !dump_pc_one(addr, -4, p) || !dump_pc_one(addr, 0, p))
+                return;
+            p = a;
+            if (*p == 0)
+                break;
+        }
+    }
+    DMESG(" PC:%x", addr);
+}
+
 void vm_stack_trace() {
     auto ctx = currentFiber;
     if (!ctx)
@@ -154,12 +226,13 @@ void vm_stack_trace() {
     DMESG("stack trace (programHash:%d):", programHash());
     auto end = vmImg->stackTop;
     auto ptr = ctx->sp;
-    DMESG(" PC:%x", (ctx->pc - ctx->imgbase) << 1);
+    auto srcmap = find_src_map();
+    dump_pc((ctx->pc - ctx->imgbase) << 1, srcmap);
     int max = 30;
     while (ptr < end && max) {
         auto v = (uintptr_t)*ptr++;
         if (VM_IS_ENCODED_PC(v)) {
-            DMESG(" PC:%x", VM_DECODE_PC(v) << 1);
+            dump_pc(VM_DECODE_PC(v) << 1, srcmap);
             max--;
         }
     }
