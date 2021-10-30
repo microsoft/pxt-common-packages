@@ -1093,6 +1093,8 @@ void blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
         return;
     }
 
+    dst->makeWritable();
+
     int xSrcStep = (wSrc << 16) / wDst;
     int ySrcStep = (hSrc << 16) / hDst;
 
@@ -1100,9 +1102,9 @@ void blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
     for (int yDstCur = yDst; yDstCur < yDst + hDst; ++yDstCur) {
         int ySrcCurI = ySrcCur >> 16;
         for (int xDstCur = xDst, xSrcCur = xSrc << 16; xDstCur < xDst + wDst; ++xDstCur, xSrcCur += xSrcStep) {
-            int c = getPixel(src, xSrcCur >> 16, ySrcCurI);
+            int c = getCore(src, xSrcCur >> 16, ySrcCurI);
             if (!transparent || c) {
-                setPixel(dst, xDstCur, yDstCur, c);
+                setCore(dst, xDstCur, yDstCur, c);
             }
         }
         ySrcCur += ySrcStep;
