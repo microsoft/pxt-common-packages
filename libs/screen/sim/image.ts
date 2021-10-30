@@ -634,24 +634,20 @@ namespace pxsim.ImageMethods {
         }
     }
 
-    export function _blit(img: RefImage, src: RefImage, args: any[]) {
+    export function _blit(img: RefImage, src: RefImage, args: RefCollection) {
         blit(img, src, args);
     }
 
-    export function blit(dst: RefImage, src: RefImage, args: any[]) {
-        let xDst = args[0] as number;
-        let yDst = args[1] as number;
-        let wDst = args[2] as number;
-        let hDst = args[3] as number;
-        let xSrc = args[4] as number;
-        let ySrc = args[5] as number;
-        let wSrc = args[6] as number;
-        let hSrc = args[7] as number;
-        let transparent = args[8] as boolean;
-
-        // Coerse to integers
-        xSrc |= 0; ySrc |= 0; wSrc |= 0; hSrc |= 0;
-        xDst |= 0; yDst |= 0; wDst |= 0; hDst |= 0;
+    export function blit(dst: RefImage, src: RefImage, args: RefCollection) {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        const wDst = args.getAt(2) as number;
+        const hDst = args.getAt(3) as number;
+        const xSrc = args.getAt(4) as number;
+        const ySrc = args.getAt(5) as number;
+        const wSrc = args.getAt(6) as number;
+        const hSrc = args.getAt(7) as number;
+        const transparent = args.getAt(8) as number;
 
         if (xSrc < 0 || ySrc < 0 || wSrc <= 0 || hSrc <= 0 ||
             xSrc > src._width || ySrc > src._height ||

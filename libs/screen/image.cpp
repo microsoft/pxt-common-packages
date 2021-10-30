@@ -1068,22 +1068,50 @@ void _blitRow(Image_ img, int xy, Image_ from, int xh) {
     blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh));
 }
 
-void blit(Image_ dst, int xDst, int yDst, int wDst, int hDst, Image_ src, int xSrc, int ySrc, int wSrc, int hSrc, bool transparent) {
-    // TODO
+void blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
+    int xDst = pxt::toInt(args->getAt(0));
+    int yDst = pxt::toInt(args->getAt(1));
+    int wDst = pxt::toInt(args->getAt(2));
+    int hDst = pxt::toInt(args->getAt(3));
+    int xSrc = pxt::toInt(args->getAt(4));
+    int ySrc = pxt::toInt(args->getAt(5));
+    int wSrc = pxt::toInt(args->getAt(6));
+    int hSrc = pxt::toInt(args->getAt(7));
+    bool transparent = pxt::toBoolQuick(args->getAt(8));
+
+    if (xSrc < 0 || ySrc < 0 || wSrc <= 0 || hSrc <= 0 ||
+        xSrc > src->width() || ySrc > src->height() ||
+        xSrc + wSrc > src->width() || ySrc + hSrc > src->height()) {
+        // Would read outside src image
+        return;
+    }
+
+    if (xDst < 0 || yDst < 0 || wDst <= 0 || hDst <= 0 ||
+        xDst > dst->width() || yDst > dst->height() ||
+        xDst + wDst > dst->width() || yDst + hDst > dst->height()) {
+        // Would write outside dst image, or div by zero in step calculation (below)
+        return;
+    }
+
+    int xSrcStep = (wSrc << 16) / wDst;
+    int ySrcStep = (hSrc << 16) / hDst;
+
+    int ySrcCur = ySrc << 16;
+    for (int yDstCur = yDst; yDstCur < yDst + hDst; ++yDstCur) {
+        int ySrcCurI = ySrcCur >> 16;
+        for (int xDstCur = xDst, xSrcCur = xSrc << 16; xDstCur < xDst + wDst; ++xDstCur, xSrcCur += xSrcStep) {
+            int c = getPixel(src, xSrcCur >> 16, ySrcCurI);
+            if (!transparent || c) {
+                setPixel(dst, xDstCur, yDstCur, c);
+            }
+        }
+        ySrcCur += ySrcStep;
+    }
 }
 
 //%
-void _blit(Image_ dst, Image_ src, RefCollection args) {
-    int xDst = toInt(args.getAt(0));
-    int yDst = toInt(args.getAt(1));
-    int wDst = toInt(args.getAt(2));
-    int hDst = toInt(args.getAt(3));
-    int xSrc = toInt(args.getAt(4));
-    int ySrc = toInt(args.getAt(5));
-    int wSrc = toInt(args.getAt(6));
-    int hSrc = toInt(args.getAt(7));
-    auto transparent = toBoolQuick(args.getAt(8));
-    blit(dst, xDst, yDst, wDst, hDst, src, xSrc, ySrc, wSrc, hSrc, transparent);
+void _blit(Image_ img, Image_ src, pxt::RefCollection *args) {
+    blit(img, src, args);
 }
 
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {
