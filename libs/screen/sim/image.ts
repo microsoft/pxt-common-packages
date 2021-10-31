@@ -649,30 +649,26 @@ namespace pxsim.ImageMethods {
         const hSrc = args.getAt(7) as number;
         const transparent = args.getAt(8) as number;
 
-        if (xSrc < 0 || ySrc < 0 || wSrc <= 0 || hSrc <= 0 ||
-            xSrc > src._width || ySrc > src._height ||
-            xSrc + wSrc > src._width || ySrc + hSrc > src._height) {
-            // Would read outside src image
-            return;
-        }
+        const xDstStart = Math.max(0, xDst);
+        const yDstStart = Math.max(0, yDst);
+        const xDstEnd = Math.min(dst._width, xDst + wDst);
+        const yDstEnd = Math.min(dst._height, yDst + hDst);
 
-        if (xDst < 0 || yDst < 0 || wDst <= 0 || hDst <= 0 ||
-            xDst > dst._width || yDst > dst._height ||
-            xDst + wDst > dst._width || yDst + hDst > dst._height) {
-            // Would write outside dst image, or div by zero in step calculation (below)
-            return;
-        }
+        const xSrcStart = Math.max(0, xSrc) << 16;
+        const ySrcStart = Math.max(0, ySrc) << 16;
+        const xSrcEnd = Math.min(src._width, xSrc + wSrc) << 16;
+        const ySrcEnd = Math.min(src._height, ySrc + hSrc) << 16;
 
         const xSrcStep = ((wSrc << 16) / wDst) | 0;
         const ySrcStep = ((hSrc << 16) / hDst) | 0;
 
-        let ySrcCur = ySrc << 16;
-        for (let yDstCur = yDst; yDstCur < yDst + hDst; ++yDstCur) {
+        for (let yDstCur = yDstStart, ySrcCur = ySrcStart; yDstCur < yDstEnd && ySrcCur < ySrcEnd; ++yDstCur, ySrcCur += ySrcStep) {
             const ySrcCurI = ySrcCur >> 16;
-            for (let xDstCur = xDst, xSrcCur = xSrc << 16; xDstCur < xDst + wDst; ++xDstCur, xSrcCur += xSrcStep) {
-                const cSrc = src.data[src.pix(xSrcCur >> 16, ySrcCurI)];
+            for (let xDstCur = xDstStart, xSrcCur = xSrcStart; xDstCur < xDstEnd && xSrcCur < xSrcEnd; ++xDstCur, xSrcCur += xSrcStep) {
+                const xSrcCurI = xSrcCur >> 16;
+                const cSrc = getPixel(src, xSrcCurI, ySrcCurI);
                 if (!transparent || cSrc) {
-                    dst.data[dst.pix(xDstCur, yDstCur)] = cSrc;
+                    setPixel(dst, xDstCur, yDstCur, cSrc);
                 }
             }
             ySrcCur += ySrcStep;

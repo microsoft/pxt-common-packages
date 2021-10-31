@@ -1079,32 +1079,28 @@ void blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
     int hSrc = pxt::toInt(args->getAt(7));
     bool transparent = pxt::toBoolQuick(args->getAt(8));
 
-    if (xSrc < 0 || ySrc < 0 || wSrc <= 0 || hSrc <= 0 ||
-        xSrc > src->width() || ySrc > src->height() ||
-        xSrc + wSrc > src->width() || ySrc + hSrc > src->height()) {
-        // Would read outside src image
-        return;
-    }
+    int xDstStart = max(0, xDst);
+    int yDstStart = max(0, yDst);
+    int xDstEnd = min(dst->width(), xDst + wDst);
+    int yDstEnd = min(dst->height(), yDst + hDst);
 
-    if (xDst < 0 || yDst < 0 || wDst <= 0 || hDst <= 0 ||
-        xDst > dst->width() || yDst > dst->height() ||
-        xDst + wDst > dst->width() || yDst + hDst > dst->height()) {
-        // Would write outside dst image, or div by zero in step calculation (below)
-        return;
-    }
-
-    dst->makeWritable();
+    int xSrcStart = max(0, xSrc) << 16;
+    int ySrcStart = max(0, ySrc) << 16;
+    int xSrcEnd = min(src->width(), xSrc + wSrc) << 16;
+    int ySrcEnd = min(src->height(), ySrc + hSrc) << 16;
 
     int xSrcStep = (wSrc << 16) / wDst;
     int ySrcStep = (hSrc << 16) / hDst;
 
-    int ySrcCur = ySrc << 16;
-    for (int yDstCur = yDst; yDstCur < yDst + hDst; ++yDstCur) {
+    dst->makeWritable();
+
+    for (int yDstCur = yDstStart, ySrcCur = ySrcStart; yDstCur < yDstEnd && ySrcCur < ySrcEnd; ++yDstCur, ySrcCur += ySrcStep) {
         int ySrcCurI = ySrcCur >> 16;
-        for (int xDstCur = xDst, xSrcCur = xSrc << 16; xDstCur < xDst + wDst; ++xDstCur, xSrcCur += xSrcStep) {
-            int c = getCore(src, xSrcCur >> 16, ySrcCurI);
-            if (!transparent || c) {
-                setCore(dst, xDstCur, yDstCur, c);
+        for (int xDstCur = xDstStart, xSrcCur = xSrcStart; xDstCur < xDstEnd && xSrcCur < xSrcEnd; ++xDstCur, xSrcCur += xSrcStep) {
+            int xSrcCurI = xSrcCur >> 16;
+            int cSrc = getCore(src, xSrcCurI, ySrcCurI);
+            if (!transparent || cSrc) {
+                setCore(dst, xDstCur, yDstCur, cSrc);
             }
         }
         ySrcCur += ySrcStep;
