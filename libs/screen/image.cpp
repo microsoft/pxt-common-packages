@@ -1110,7 +1110,6 @@ void blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
                 setCore(dst, xDstCur, yDstCur, cSrc);
             }
         }
-        ySrcCur += ySrcStep;
     }
 }
 

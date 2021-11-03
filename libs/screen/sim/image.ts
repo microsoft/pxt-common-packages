@@ -676,7 +676,6 @@ namespace pxsim.ImageMethods {
                     setPixel(dst, xDstCur, yDstCur, cSrc);
                 }
             }
-            ySrcCur += ySrcStep;
         }
     }
 }
