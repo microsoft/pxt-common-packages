@@ -654,18 +654,20 @@ namespace pxsim.ImageMethods {
         const hSrc = args.getAt(7) as number;
         const transparent = args.getAt(8) as number;
 
-        const xDstStart = Math.max(0, xDst);
-        const yDstStart = Math.max(0, yDst);
+        const xSrcStep = ((wSrc << 16) / wDst) | 0;
+        const ySrcStep = ((hSrc << 16) / hDst) | 0;
+
+        const xDstClip = Math.abs(Math.min(0, xDst));
+        const yDstClip = Math.abs(Math.min(0, yDst));
+        const xDstStart = xDst + xDstClip;
+        const yDstStart = yDst + yDstClip;
         const xDstEnd = Math.min(dst._width, xDst + wDst);
         const yDstEnd = Math.min(dst._height, yDst + hDst);
 
-        const xSrcStart = Math.max(0, xSrc) << 16;
-        const ySrcStart = Math.max(0, ySrc) << 16;
+        const xSrcStart = Math.max(0, (xSrc << 16) + xDstClip * xSrcStep);
+        const ySrcStart = Math.max(0, (ySrc << 16) + yDstClip * ySrcStep);
         const xSrcEnd = Math.min(src._width, xSrc + wSrc) << 16;
         const ySrcEnd = Math.min(src._height, ySrc + hSrc) << 16;
-
-        const xSrcStep = ((wSrc << 16) / wDst) | 0;
-        const ySrcStep = ((hSrc << 16) / hDst) | 0;
 
         for (let yDstCur = yDstStart, ySrcCur = ySrcStart; yDstCur < yDstEnd && ySrcCur < ySrcEnd; ++yDstCur, ySrcCur += ySrcStep) {
             const ySrcCurI = ySrcCur >> 16;

@@ -1086,18 +1086,20 @@ void blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
     int hSrc = pxt::toInt(args->getAt(7));
     bool transparent = pxt::toBoolQuick(args->getAt(8));
 
-    int xDstStart = max(0, xDst);
-    int yDstStart = max(0, yDst);
+    int xSrcStep = (wSrc << 16) / wDst;
+    int ySrcStep = (hSrc << 16) / hDst;
+
+    int xDstClip = abs(min(0, xDst));
+    int yDstClip = abs(min(0, yDst));
+    int xDstStart = xDst + xDstClip;
+    int yDstStart = yDst + yDstClip;
     int xDstEnd = min(dst->width(), xDst + wDst);
     int yDstEnd = min(dst->height(), yDst + hDst);
 
-    int xSrcStart = max(0, xSrc) << 16;
-    int ySrcStart = max(0, ySrc) << 16;
+    int xSrcStart = max(0, (xSrc << 16) + xDstClip * xSrcStep);
+    int ySrcStart = max(0, (ySrc << 16) + yDstClip * ySrcStep);
     int xSrcEnd = min(src->width(), xSrc + wSrc) << 16;
     int ySrcEnd = min(src->height(), ySrc + hSrc) << 16;
-
-    int xSrcStep = (wSrc << 16) / wDst;
-    int ySrcStep = (hSrc << 16) / hDst;
 
     dst->makeWritable();
 
