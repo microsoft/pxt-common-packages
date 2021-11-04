@@ -3,10 +3,16 @@ namespace net {
         NewScan = 1,
         GotIP = 2,
         LostIP = 3,
+        NoScannedNetworks = 4,
+        NoKnownNetworks = 5,
+        Connecting = 6,
+        ConnectionFailed = 7
     }
     export class Controller {
         eventID: number
         private _isConnected = false
+
+        onConnectSSIDFailed: (ssid: string) => void;
 
         constructor() {
             this.eventID = control.allocateEventSource()
@@ -75,6 +81,7 @@ namespace net {
                 return
             const myReconn = {}
             this.reconnectRunning = myReconn
+            this.emitEvent(ControllerEvent.Connecting)
             control.runInParallel(() => {
                 while (this.reconnectRunning == myReconn) {
                     if (this.isConnected) {
@@ -101,6 +108,7 @@ namespace net {
             this.scanNetworks()
             if (!this.lastScanResults || this.lastScanResults.length == 0) {
                 net.log(`no networks detected`)
+                this.emitEvent(ControllerEvent.NoScannedNetworks)
                 return false
             }
 
@@ -114,6 +122,7 @@ namespace net {
 
             if (!networks.length) {
                 net.log(`no known networks`)
+                this.emitEvent(ControllerEvent.NoKnownNetworks)
                 return false
             }
 
@@ -127,15 +136,20 @@ namespace net {
             // try connecting to known networks
             for (const network of networks) {
                 net.log(`connecting to ${network.ssid}...`)
-                if (this.connectAP(network.ssid, wifis[network.ssid])) {
+                const pwd = wifis[network.ssid]
+                if (this.connectAP(network.ssid, pwd)) {
                     net.log(`connected to ${network.ssid}`)
                     return true
                 }
                 if (!this.reconnectRunning)
                     return false
+
+                if (this.onConnectSSIDFailed)
+                    this.onConnectSSIDFailed(network.ssid)
             }
 
             net.log(`connection failed`)
+            this.emitEvent(ControllerEvent.ConnectionFailed)
             return false
         }
 
