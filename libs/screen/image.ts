@@ -84,7 +84,7 @@ interface Image {
      * compressing to fit the dimensions of the destination rectangle, if necessary.
      */
     //% helper=imageBlit
-    blit(xDst: number, yDst: number, wDst: number, hDst: number, src: Image, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean): void;
+    blit(xDst: number, yDst: number, wDst: number, hDst: number, src: Image, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean, check: boolean): boolean;
 }
 
 interface ScreenImage extends Image {
@@ -126,7 +126,7 @@ namespace helpers {
     declare function _blitRow(img: Image, xy: number, from: Image, xh: number): void;
 
     //% shim=ImageMethods::_blit
-    declare function _blit(img: Image, src: Image, args: number[]): void;
+    declare function _blit(img: Image, src: Image, args: number[]): boolean;
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
@@ -134,7 +134,7 @@ namespace helpers {
 
     let _blitArgs: number[];
 
-    export function imageBlit(img: Image, xDst: number, yDst: number, wDst: number, hDst: number, src: Image, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean) {
+    export function imageBlit(img: Image, xDst: number, yDst: number, wDst: number, hDst: number, src: Image, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean, check: boolean): boolean {
         _blitArgs = _blitArgs || [];
         _blitArgs[0] = xDst | 0;
         _blitArgs[1] = yDst | 0;
@@ -145,7 +145,8 @@ namespace helpers {
         _blitArgs[6] = wSrc | 0;
         _blitArgs[7] = hSrc | 0;
         _blitArgs[8] = transparent ? 1 : 0;
-        _blit(img, src, _blitArgs);
+        _blitArgs[9] = check ? 1 : 0;
+        return _blit(img, src, _blitArgs);
     }
 
     export function imageBlitRow(img: Image, dstX: number, dstY: number, from: Image, fromX: number, fromH: number): void {

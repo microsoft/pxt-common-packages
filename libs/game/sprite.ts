@@ -71,27 +71,31 @@ class Sprite extends sprites.BaseSprite {
     _ay: Fx8
     _fx: Fx8 // friction
     _fy: Fx8 // friction
+    _sx: Fx8 // scale
+    _sy: Fx8 // scale
+    _width: Fx8
+    _height: Fx8
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toFloat(this._x) + (this._image.width / 2)
+        return Fx.toFloat(this._x) + (this.width / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
-        this.left = v - (this._image.width / 2)
+        this.left = v - (this.width / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toFloat(this._y) + (this._image.height / 2)
+        return Fx.toFloat(this._y) + (this.height / 2)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
-        this.top = v - (this._image.height / 2)
+        this.top = v - (this.height / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -158,6 +162,32 @@ class Sprite extends sprites.BaseSprite {
     set fy(v: number) {
         this._fy = Fx8(Math.max(0, v))
     }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sx (scale x)" callInDebugger
+    get sx(): number {
+        return Fx.toFloat(this._sx);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sx (scale x)"
+    set sx(v: number) {
+        const x = this.x;
+        this._sx = Fx8(Math.max(0, v));
+        this.recalcSize();
+        this.left = x - this.width / 2;
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sy (scale y)" callInDebugger
+    get sy(): number {
+        return Fx.toFloat(this._sy);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sy (scale y)"
+    set sy(v: number) {
+        const y = this.y;
+        this._sy = Fx8(Math.max(0, v));
+        this.recalcSize();
+        this.top = y - this.height / 2;
+    }
 
     private _data: any;
     /**
@@ -219,6 +249,8 @@ class Sprite extends sprites.BaseSprite {
         this.ay = 0
         this.fx = 0
         this.fy = 0
+        this._sx = Fx.oneFx8;
+        this._sy = Fx.oneFx8;
         this.flags = 0
         this.setImage(img);
         this.setKind(-1); // not a member of any type by default
@@ -237,6 +269,8 @@ class Sprite extends sprites.BaseSprite {
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vy)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ax)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ay)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._sx)); k += 2;
+        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._sy)); k += 2;
         return buf;
     }
 
@@ -259,6 +293,15 @@ class Sprite extends sprites.BaseSprite {
     setImage(img: Image) {
         if (!img) return; // don't break the sprite
         this._image = img;
+        this.recalcSize();
+    }
+
+    calcDimensionalHash() {
+        return Fx.mul(Fx.mul(this._width, this._height), Fx8(this._image.revision()));
+    }
+
+    resetHitbox() {
+        this._hitbox = null;
         this.setHitbox();
     }
 
@@ -311,19 +354,29 @@ class Sprite extends sprites.BaseSprite {
         return !(this.flags & SpriteFlag.Invisible);
     }
 
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="width"
-    get width() {
-        return this._image.width
+    private recalcSize(): void {
+        this._width = Fx8(this._image.width * this.sx);
+        this._height = Fx8(this._image.height * this.sy);
+        this.resetHitbox();
     }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="height"
-    get height() {
-        return this._image.height
+
+    private isScaled(): boolean {
+        return !(this._sx === Fx.oneFx8 || this._sy === Fx.oneFx8);
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="left"
+    //% blockCombine block="width" callInDebugger
+    get width() {
+        return Fx.toInt(this._width);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="height" callInDebugger
+    get height() {
+        return Fx.toInt(this._height);
+    }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="left" callInDebugger
     get left() {
         return Fx.toFloat(this._x)
     }
@@ -342,7 +395,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="right"
+    //% blockCombine block="right" callInDebugger
     get right() {
         return this.left + this.width
     }
@@ -353,7 +406,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="top"
+    //% blockCombine block="top" callInDebugger
     get top() {
         return Fx.toFloat(this._y);
     }
@@ -372,7 +425,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="bottom"
+    //% blockCombine block="bottom" callInDebugger
     get bottom() {
         return this.top + this.height;
     }
@@ -576,7 +629,10 @@ class Sprite extends sprites.BaseSprite {
         const l = Math.floor(this.left - ox);
         const t = Math.floor(this.top - oy);
 
-        screen.drawTransparentImage(this._image, l, t)
+        if (!this.isScaled())
+            screen.drawTransparentImage(this._image, l, t);
+        else
+            screen.blit(l, t, this.width, this.height, this._image, 0, 0, this._image.width, this._image.height, true, false);
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
@@ -697,7 +753,29 @@ class Sprite extends sprites.BaseSprite {
             return false
         if (other.flags & SPRITE_NO_SPRITE_OVERLAPS)
             return false
-        return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
+        if (!other._hitbox.overlapsWith(this._hitbox))
+            return false;
+        if (!this.isScaled() && !other.isScaled()) {
+            return other._image.overlapsWith(
+                this._image,
+                this.left - other.left,
+                this.top - other.top)
+        } else {
+            if (this.sx == 0 || this.sy == 0 || other.sx == 0 || other.sy == 0) return false;
+            const scaleFactorX = this.sx / other.sx;
+            const scaleFactorY = this.sy / other.sy;
+            return helpers.imageBlit(
+                this.image,
+                other.left * this.sx - this.left,
+                other.top * this.sy - this.top,
+                other.width * this.sx,
+                other.height * this.sy,
+                other.image,
+                0, 0,
+                other.image.width,
+                other.image.height,
+                true, true);
+        }
     }
 
     /**
