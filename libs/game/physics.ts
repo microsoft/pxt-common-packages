@@ -597,7 +597,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const alreadyHandled: tiles.Location[] = [];
 
         for (const tile of overlappedTiles) {
-            if (alreadyHandled.some(l => l.col === tile.col && l.row === tile.row)) {
+            if (alreadyHandled.some(l => l.column === tile.column && l.row === tile.row)) {
                 continue;
             }
             alreadyHandled.push(tile);
