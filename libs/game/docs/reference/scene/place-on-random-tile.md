@@ -11,7 +11,7 @@ You can make a sprite locate itself right on top of a random tile in the tile ma
 ## Parameters
 
 * **sprite**: the sprite to move onto the tile.
-* **tile**: the tile type in the tilemap to randomly select.
+* **tile**: the tile type to randomly select in the tilemap.
 
 ## Example #example
 
