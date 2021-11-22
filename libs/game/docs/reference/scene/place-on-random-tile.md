@@ -6,7 +6,7 @@ Move a sprite's position to the center of a random tile in the scene.
 scene.placeOnRandomTile(null, 0)
 ```
 
-You can make a sprite locate itself right on top of a random tile in the tile map. Use the color number of type of tile to select for the sprite to locate on one of them.
+You can make a sprite locate itself right on top of a random tile in the tilemap. Choose a tile in the tilemap to indicate which type of tile to have the sprite randomly placed on. If there is only one tile of that type, the sprite will always go to that tile. If multiple tiles of the same type are in the tilemap, then the sprite will randomly locate on any one of them.
 
 ## Parameters
 
