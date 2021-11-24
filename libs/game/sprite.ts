@@ -73,8 +73,8 @@ class Sprite extends sprites.BaseSprite {
     _fy: Fx8 // friction
     _sx: Fx8 // scale
     _sy: Fx8 // scale
-    _width: Fx8
-    _height: Fx8
+    _width: Fx8 // scaled width
+    _height: Fx8 // scaled height
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
@@ -632,7 +632,16 @@ class Sprite extends sprites.BaseSprite {
         if (!this.isScaled())
             screen.drawTransparentImage(this._image, l, t);
         else
-            screen.blit(l, t, this.width, this.height, this._image, 0, 0, this._image.width, this._image.height, true, false);
+            screen.blit(
+                // dst rect in screen
+                l, t,
+                this.width,
+                this.height,
+                // src rect in sprite image
+                this._image,
+                0, 0,
+                this._image.width, this._image.height,
+                true, false);
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
