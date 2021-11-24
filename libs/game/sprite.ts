@@ -762,18 +762,35 @@ class Sprite extends sprites.BaseSprite {
                 this.top - other.top)
         } else {
             if (this.sx == 0 || this.sy == 0 || other.sx == 0 || other.sy == 0) return false;
-            const scaleFactorX = this.sx / other.sx;
-            const scaleFactorY = this.sy / other.sy;
+
+            let A: Sprite;
+            let B: Sprite;
+
+            // Render larger-scaled sprite onto smaller-scaled one so that we don't
+            // skip over source pixels in the check.
+
+            // A is the smaller-scaled sprite
+            if (this.sx * this.sy < other.sx * other.sy) {
+                A = this;
+                B = other;
+            } else {
+                A = other;
+                B = this;
+            }
+
+            // Render B onto A
             return helpers.imageBlit(
-                this.image,
-                other.left * this.sx - this.left,
-                other.top * this.sy - this.top,
-                other.width * this.sx,
-                other.height * this.sy,
-                other.image,
+                A.image,
+                // Dst rect in A
+                (B.left - A.left) / A.sx,
+                (B.top - A.top) / A.sy,
+                B.width / A.sx,
+                B.height / A.sy,
+                B.image,
+                // Src rect in B
                 0, 0,
-                other.image.width,
-                other.image.height,
+                B.image.width,
+                B.image.height,
                 true, true);
         }
     }

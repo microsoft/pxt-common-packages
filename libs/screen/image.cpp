@@ -1110,10 +1110,14 @@ bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
         for (int xDstCur = xDstStart, xSrcCur = xSrcStart; xDstCur < xDstEnd && xSrcCur < xSrcEnd; ++xDstCur, xSrcCur += xSrcStep) {
             int xSrcCurI = xSrcCur >> 16;
             int cSrc = getCore(src, xSrcCurI, ySrcCurI);
-            if (check) {
-                if (cSrc && getCore(dst, xDstCur, yDstCur))
+            if (check && cSrc) {
+                int cDst = getCore(dst, xDstCur, yDstCur);
+                if (cDst) {
                     return true;
-            } else if (!transparent || cSrc) {
+                }
+                continue;
+            }
+            if (!transparent || cSrc) {
                 setCore(dst, xDstCur, yDstCur, cSrc);
             }
         }

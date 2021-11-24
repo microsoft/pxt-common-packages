@@ -683,7 +683,7 @@ namespace pxsim.ImageMethods {
                     if (cDst) {
                         return true;
                     }
-                    break;
+                    continue;
                 }
                 if (!transparent || cSrc) {
                     setPixel(dst, xDstCur, yDstCur, cSrc);
