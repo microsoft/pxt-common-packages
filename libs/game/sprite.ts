@@ -361,7 +361,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     private isScaled(): boolean {
-        return !(this._sx === Fx.oneFx8 || this._sy === Fx.oneFx8);
+        return this._sx !== Fx.oneFx8 || this._sy !== Fx.oneFx8;
     }
 
     //% group="Physics" blockSetVariable="mySprite"
