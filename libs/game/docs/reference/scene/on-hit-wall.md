@@ -1,25 +1,32 @@
-# get Tiles By Type
+# on Hit Wall
 
-Return an array of tile locations from the tilemap that contain the specified tile.
+Run code when a sprite contacts a wall tile.
 
 ```sig
-tiles.getTilesByType(null)
+scene.onHitWall(SpriteKind.Player, function (sprite, location) { })
 ```
+
+You can detect when a moving sprite contacts a wall tile in the tilemap. If your sprite touches a tile that is set as a wall, you can have some code that runs when that happens. You pick the sprite **kind** to check for.
+
+When a wall hit is detected by the sprite of the kind you asked for, it is given to you in the **sprite** parameter of **handler** along with contacted tile's **location**.
+
+A sprite hitting a wall is dectected when the outside edges of its image makes contact with the tile. If a sprite has it's ``ghost`` flag set, any contact with the wall tile isn't noticed.
 
 ## Parameters
 
-* **tile**: a tile [image](/types/image) to search the tilemap for.
-
-## Returns
-
-* an [array](/types/array) of tile locations from the tilemap that have the tile specified in **tile**.
+* **kind**: the type of sprite to check for a wall hit.
+* **handler**: the code to run when the sprite makes contact. The handler has these parameters passed to it:
+>* **sprite**: the sprite that hit the wall tile.
+>* **location**: the location of the wall the sprite contacted in the tilemap.
 
 ## Example #example
 
-Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, find the column tiles in the tilemap and set them as either wall tiles or regular tiles.
+Create a tilemap with wall tiles surrounding the sides of the scene. Set a sprite in motion and cause it to bounce on wall tiles. When the sprite contacts the wall tiles, make a short fire effect on the sprite.
 
 ```blocks
-let isWall = false
+scene.onHitWall(SpriteKind.Player, function (sprite, location) {
+    sprite.startEffect(effects.fire, 200)
+})
 tiles.setTilemap(tilemap`level1`)
 let mySprite = sprites.create(img`
     . . . . . . . . . . . . . . . . 
@@ -42,17 +49,12 @@ let mySprite = sprites.create(img`
 mySprite.setBounceOnWall(true)
 mySprite.vx = 80
 mySprite.vy = 70
-game.onUpdateInterval(5000, function () {
-    isWall = !(isWall)
-    for (let wallTile of tiles.getTilesByType(assets.tile`myTile`)) {
-        tiles.setWallAt(wallTile, isWall)
-    }
-})
 ```
 
 ## See also #seealso
 
-[get tile location](/reference/scene/get-tile-location)
+[get tile location](/reference/scene/get-tile-location),
+[set wall at](/reference/scene/set-wall-at)
 
 ```jres
 {
@@ -70,7 +72,7 @@ game.onUpdateInterval(5000, function () {
     "level1": {
         "id": "level1",
         "mimeType": "application/mkcd-tilemap",
-        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "data": "MTAwYTAwMDgwMDAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMDAwMDAwMDAwMDAwMDAwMDEwMTAwMDAwMDAwMDAwMDAwMDAwMTAxMDAwMDAwMDAwMDAwMDAwMDAxMDEwMDAwMDAwMDAwMDAwMDAwMDEwMTAwMDAwMDAwMDAwMDAwMDAwMTAxMDAwMDAwMDAwMDAwMDAwMDAxMDEwMTAxMDEwMTAxMDEwMTAxMDEyMjIyMjIyMjIyMDIwMDAwMDAyMDAyMDAwMDAwMjAwMjAwMDAwMDIwMDIwMDAwMDAyMDAyMDAwMDAwMjAwMjAwMDAwMDIwMjIyMjIyMjIyMg==",
         "tileset": [
             "myTiles.transparency16",
             "myTiles.tile1"
