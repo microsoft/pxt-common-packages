@@ -1057,22 +1057,11 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% blockId=sprite_get_scale
-    //% block="get %sprite(mySprite) scale || $direction"
-    //% expandableArgumentMode=enabled
-    //% direction.defl=ScaleDirection.Uniformly
+    //% block="%sprite(mySprite) scale"
     //% help=sprites/sprite/get-scale
     //% group="Scale" weight=100
-    getScale(direction?: ScaleDirection): number {
-        direction = direction || ScaleDirection.Uniformly;
-        if (direction === ScaleDirection.Uniformly) {
-            return Math.max(this.sx, this.sy); // best effort: return the larger scale
-        }
-        if (direction & ScaleDirection.Vertically) {
-            return this.sy;
-        }
-        else {
-            return this.sx;
-        }
+    getScale(): number {
+        return Math.max(this.sx, this.sy);
     }
 
     //% blockId=sprite_set_scale
