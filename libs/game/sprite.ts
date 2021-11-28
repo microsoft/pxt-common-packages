@@ -58,6 +58,36 @@ enum FlipOption {
     FlipXY
 }
 
+enum ScaleDirection {
+    //% block="vertically"
+    Vertically = 0x01,
+    //% block="horizontally"
+    Horizontally = 0x02,
+    //% block="uniformly"
+    Uniformly = Vertically | Horizontally,
+}
+
+enum ScaleAnchor {
+    //% block="middle"
+    Middle = 0,
+    //% block="top"
+    Top = 0x01,
+    //% block="left"
+    Left = 0x02,
+    //% block="right"
+    Right = 0x04,
+    //% block="bottom"
+    Bottom = 0x08,
+    //% block="top left"
+    TopLeft = Top | Left,
+    //% block="top right"
+    TopRight = Top | Right,
+    //% block="bottom left"
+    BottomLeft = Bottom | Left,
+    //% block="bottom right"
+    BottomRight = Bottom | Right,
+}
+
 /**
  * A sprite on the screen
  **/
@@ -1024,6 +1054,95 @@ class Sprite extends sprites.BaseSprite {
             fs.rate = speed;
             fs.turnRate = turnRate;
         }
+    }
+
+    //% blockId=sprite_get_scale
+    //% block="get %sprite(mySprite) scale || $direction"
+    //% expandableArgumentMode=enabled
+    //% direction.defl=ScaleDirection.Uniformly
+    //% help=sprites/sprite/get-scale
+    //% group="Scale" weight=100
+    getScale(direction?: ScaleDirection): number {
+        direction = direction || ScaleDirection.Uniformly;
+        if (direction === ScaleDirection.Uniformly) {
+            return Math.max(this.sx, this.sy); // best effort: return the larger scale
+        }
+        if (direction & ScaleDirection.Vertically) {
+            return this.sy;
+        }
+        else {
+            return this.sx;
+        }
+    }
+
+    //% blockId=sprite_set_scale
+    //% block="set %sprite(mySprite) scale to $value || $direction anchor $anchor"
+    //% expandableArgumentMode=enabled
+    //% value.defl=1
+    //% direction.defl=ScaleDirection.Uniformly
+    //% anchor.defl=ScaleAnchor.Middle
+    //% help=sprites/sprite/set-scale
+    //% group="Scale" weight=90
+    setScale(value: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
+        direction = direction || ScaleDirection.Uniformly;
+        anchor = anchor || ScaleAnchor.Middle;
+        if (direction & ScaleDirection.Horizontally) {
+            const oldW = this.width;
+            this.sx = value;
+            if (anchor & (ScaleAnchor.Left | ScaleAnchor.Right)) {
+                const newW = this.width;
+                const diff = newW - oldW;
+                const diffOver2 = (diff / 2) | 0;
+                if (anchor & ScaleAnchor.Left) { this.x += diffOver2; }
+                if (anchor & ScaleAnchor.Right) { this.x -= diffOver2; }
+            }
+        }
+        if (direction & ScaleDirection.Vertically) {
+            const oldH = this.height;
+            this.sy = value;
+            if (anchor & (ScaleAnchor.Top | ScaleAnchor.Bottom)) {
+                const newH = this.height;
+                const diff = newH - oldH;
+                const diffOver2 = (diff / 2) | 0;
+                if (anchor & ScaleAnchor.Top) { this.y += diffOver2; }
+                if (anchor & ScaleAnchor.Bottom) { this.y -= diffOver2; }
+            }
+        }
+    }
+
+    //% blockId=sprite_grow_by
+    //% block="grow %sprite(mySprite) by $amount pixels || $direction anchor $anchor"
+    //% expandableArgumentMode=enabled
+    //% amount.defl=10
+    //% direction.defl=ScaleDirection.Uniformly
+    //% anchor.defl=ScaleAnchor.Middle
+    //% help=sprites/sprite/grow-by
+    //% group="Scale" weight=80
+    growBy(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
+        direction = direction || ScaleDirection.Uniformly;
+        anchor = anchor || ScaleAnchor.Middle;
+        if (direction & ScaleDirection.Horizontally) {
+            const imgW = this._image.width;
+            const newW = this.width + amount;
+            this.setScale(newW / imgW, ScaleDirection.Horizontally, anchor);
+        }
+        if (direction & ScaleDirection.Vertically) {
+            const imgH = this._image.height;
+            const newH = this.height + amount;
+            this.setScale(newH / imgH, ScaleDirection.Vertically, anchor);
+        }
+    }
+
+    //% blockId=sprite_shrink_by
+    //% block="shrink %sprite(mySprite) by $amount pixels || $direction anchor $anchor"
+    //% expandableArgumentMode=enabled
+    //% amount.defl=10
+    //% direction.defl=ScaleDirection.Uniformly
+    //% anchor.defl=ScaleAnchor.Middle
+    //% help=sprites/sprite/shrink-by
+    //% group="Scale" weight=70
+    shrinkBy(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
+        this.growBy(-amount, direction, anchor);
     }
 
     toString() {
