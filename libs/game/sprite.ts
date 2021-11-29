@@ -1056,6 +1056,48 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
+    private setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
+        anchor = anchor || ScaleAnchor.Middle;
+
+        const hasSx = typeof sx !== 'undefined';
+        const hasSy = typeof sy !== 'undefined';
+
+        const oldW = this.width;
+        const oldH = this.height;
+        const oldSx = this.sx;
+        const oldSy = this.sy;
+
+        if (hasSx) {
+            this.sx = sx;
+            if (!hasSy && proportional) {
+                const ratio = sx / oldSx;
+                this.sy *= ratio;
+            }
+        }
+        if (hasSy) {
+            this.sy = sy;
+            if (!hasSx && proportional) {
+                const ratio = sy / oldSy;
+                this.sx *= ratio;
+            }
+        }
+
+        if (anchor & (ScaleAnchor.Left | ScaleAnchor.Right)) {
+            const newW = this.width;
+            const diff = newW - oldW;
+            const diffOver2 = (diff / 2) | 0;
+            if (anchor & ScaleAnchor.Left) { this.x += diffOver2; }
+            if (anchor & ScaleAnchor.Right) { this.x -= diffOver2; }
+        }
+        if (anchor & (ScaleAnchor.Top | ScaleAnchor.Bottom)) {
+            const newH = this.height;
+            const diff = newH - oldH;
+            const diffOver2 = (diff / 2) | 0;
+            if (anchor & ScaleAnchor.Top) { this.y += diffOver2; }
+            if (anchor & ScaleAnchor.Bottom) { this.y -= diffOver2; }
+        }
+    }
+
     //% blockId=sprite_get_scale
     //% block="%sprite(mySprite) scale"
     //% help=sprites/sprite/get-scale
@@ -1067,6 +1109,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=sprite_set_scale
     //% block="set %sprite(mySprite) scale to $value || $direction anchor $anchor"
     //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
     //% value.defl=1
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
@@ -1075,63 +1118,97 @@ class Sprite extends sprites.BaseSprite {
     setScale(value: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
         direction = direction || ScaleDirection.Uniformly;
         anchor = anchor || ScaleAnchor.Middle;
-        if (direction & ScaleDirection.Horizontally) {
-            const oldW = this.width;
-            this.sx = value;
-            if (anchor & (ScaleAnchor.Left | ScaleAnchor.Right)) {
-                const newW = this.width;
-                const diff = newW - oldW;
-                const diffOver2 = (diff / 2) | 0;
-                if (anchor & ScaleAnchor.Left) { this.x += diffOver2; }
-                if (anchor & ScaleAnchor.Right) { this.x -= diffOver2; }
-            }
-        }
-        if (direction & ScaleDirection.Vertically) {
-            const oldH = this.height;
-            this.sy = value;
-            if (anchor & (ScaleAnchor.Top | ScaleAnchor.Bottom)) {
-                const newH = this.height;
-                const diff = newH - oldH;
-                const diffOver2 = (diff / 2) | 0;
-                if (anchor & ScaleAnchor.Top) { this.y += diffOver2; }
-                if (anchor & ScaleAnchor.Bottom) { this.y -= diffOver2; }
-            }
-        }
+
+        let sx: number;
+        let sy: number;
+
+        if (direction & ScaleDirection.Horizontally) sx = value;
+        if (direction & ScaleDirection.Vertically) sy = value;
+
+        this.setScaleCore(sx, sy, anchor, undefined);
     }
 
-    //% blockId=sprite_grow_by
-    //% block="grow %sprite(mySprite) by $amount pixels || $direction anchor $anchor"
+    //% blockId=sprite_grow_by_percent
+    //% block="grow %sprite(mySprite) by $amount percent || $direction anchor $anchor"
     //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
     //% amount.defl=10
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/grow-by
+    //% help=sprites/sprite/grow-by-amount
     //% group="Scale" weight=80
-    growBy(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
+    growByPercent(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
+        amount /= 100;
         direction = direction || ScaleDirection.Uniformly;
         anchor = anchor || ScaleAnchor.Middle;
+
+        let sx: number;
+        let sy: number;
+
+        if (direction & ScaleDirection.Horizontally) sx = this.sx + amount;
+        if (direction & ScaleDirection.Vertically) sy = this.sy + amount;
+
+        this.setScaleCore(sx, sy, anchor, undefined);
+    }
+
+    //% blockId=sprite_shrink_by_percent
+    //% block="shrink %sprite(mySprite) by $amount percent || $direction anchor $anchor"
+    //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
+    //% amount.defl=10
+    //% direction.defl=ScaleDirection.Uniformly
+    //% anchor.defl=ScaleAnchor.Middle
+    //% help=sprites/sprite/shrink-by-percent
+    //% group="Scale" weight=70
+    shrinkByPercent(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
+        this.growByPercent(-amount, direction, anchor);
+    }
+
+    //% blockId=sprite_grow_by_pixels
+    //% block="grow %sprite(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
+    //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
+    //% amount.defl=10
+    //% direction.defl=ScaleDirection.Horizontally
+    //% anchor.defl=ScaleAnchor.Middle
+    //% proportional.defl=false
+    //% help=sprites/sprite/grow-by-pixels
+    //% group="Scale" weight=60
+    growByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
+        direction = direction || ScaleDirection.Uniformly;
+        anchor = anchor || ScaleAnchor.Middle;
+        if (typeof proportional !== 'boolean') proportional = direction === ScaleDirection.Uniformly;
+
+        let sx: number;
+        let sy: number;
+
         if (direction & ScaleDirection.Horizontally) {
             const imgW = this._image.width;
             const newW = this.width + amount;
-            this.setScale(newW / imgW, ScaleDirection.Horizontally, anchor);
+            sx = newW / imgW;
         }
+
         if (direction & ScaleDirection.Vertically) {
             const imgH = this._image.height;
             const newH = this.height + amount;
-            this.setScale(newH / imgH, ScaleDirection.Vertically, anchor);
+            sy = newH / imgH;
         }
+
+        this.setScaleCore(sx, sy, anchor, proportional);
     }
 
-    //% blockId=sprite_shrink_by
-    //% block="shrink %sprite(mySprite) by $amount pixels || $direction anchor $anchor"
+    //% blockId=sprite_shrink_by_pixels
+    //% block="shrink %sprite(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
     //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
     //% amount.defl=10
-    //% direction.defl=ScaleDirection.Uniformly
+    //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/shrink-by
-    //% group="Scale" weight=70
-    shrinkBy(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
-        this.growBy(-amount, direction, anchor);
+    //% proportional.defl=false
+    //% help=sprites/sprite/grow-by-pixels
+    //% group="Scale" weight=50
+    shrinkByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
+        this.growByPixels(-amount, direction, anchor, proportional);
     }
 
     toString() {
