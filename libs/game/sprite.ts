@@ -1064,10 +1064,9 @@ class Sprite extends sprites.BaseSprite {
 
         const oldW = this.width;
         const oldH = this.height;
-        const oldSx = this.sx;
-        const oldSy = this.sy;
 
         if (hasSx) {
+            const oldSx = this.sx;
             this.sx = sx;
             if (!hasSy && proportional) {
                 const ratio = sx / oldSx;
@@ -1075,6 +1074,7 @@ class Sprite extends sprites.BaseSprite {
             }
         }
         if (hasSy) {
+            const oldSy = this.sy;
             this.sy = sy;
             if (!hasSx && proportional) {
                 const ratio = sy / oldSy;
