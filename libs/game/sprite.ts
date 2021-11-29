@@ -1175,7 +1175,7 @@ class Sprite extends sprites.BaseSprite {
     //% help=sprites/sprite/grow-by-pixels
     //% group="Scale" weight=60
     growByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
-        direction = direction || ScaleDirection.Uniformly;
+        direction = direction || ScaleDirection.Horizontally;
         anchor = anchor || ScaleAnchor.Middle;
         if (typeof proportional !== 'boolean') proportional = direction === ScaleDirection.Uniformly;
 
