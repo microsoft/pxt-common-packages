@@ -1059,8 +1059,8 @@ class Sprite extends sprites.BaseSprite {
     private setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
         anchor = anchor || ScaleAnchor.Middle;
 
-        const hasSx = typeof sx !== 'undefined';
-        const hasSy = typeof sy !== 'undefined';
+        const hasSx = typeof sx === 'number';
+        const hasSy = typeof sy === 'number';
 
         const oldW = this.width;
         const oldH = this.height;
