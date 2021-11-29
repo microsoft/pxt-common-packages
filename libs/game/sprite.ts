@@ -1171,7 +1171,7 @@ class Sprite extends sprites.BaseSprite {
     //% amount.defl=10
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
-    //% proportional.defl=false
+    //% proportional.defl=0
     //% help=sprites/sprite/grow-by-pixels
     //% group="Scale" weight=60
     growByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
@@ -1204,7 +1204,7 @@ class Sprite extends sprites.BaseSprite {
     //% amount.defl=10
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
-    //% proportional.defl=false
+    //% proportional.defl=0
     //% help=sprites/sprite/grow-by-pixels
     //% group="Scale" weight=50
     shrinkByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
