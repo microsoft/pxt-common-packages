@@ -1125,7 +1125,7 @@ class Sprite extends sprites.BaseSprite {
         if (direction & ScaleDirection.Horizontally) sx = value;
         if (direction & ScaleDirection.Vertically) sy = value;
 
-        this.setScaleCore(sx, sy, anchor, undefined);
+        this.setScaleCore(sx, sy, anchor);
     }
 
     //% blockId=sprite_grow_by_percent
@@ -1148,7 +1148,7 @@ class Sprite extends sprites.BaseSprite {
         if (direction & ScaleDirection.Horizontally) sx = this.sx + amount;
         if (direction & ScaleDirection.Vertically) sy = this.sy + amount;
 
-        this.setScaleCore(sx, sy, anchor, undefined);
+        this.setScaleCore(sx, sy, anchor);
     }
 
     //% blockId=sprite_shrink_by_percent
