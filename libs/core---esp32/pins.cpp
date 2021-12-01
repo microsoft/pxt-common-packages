@@ -1,5 +1,7 @@
 #include "pxt.h"
 
+#include "esp_task_wdt.h"
+
 namespace pxt {
 static DevicePin **pinPtrs;
 static uint8_t numPinPtrs;
@@ -17,8 +19,7 @@ DevicePin *getPin(int id) {
     if (ptr == 0) {
         pinPtrs = (DevicePin **)realloc(pinPtrs, (numPinPtrs + 1) * sizeof(void *));
         // GCTODO
-        pinPtrs[numPinPtrs++] =
-            new DevicePin(id);
+        pinPtrs[numPinPtrs++] = new DevicePin(id);
         ptr = numPinPtrs;
         pinPos[id] = ptr;
     }
@@ -57,8 +58,8 @@ DevicePin *lookupPinCfg(int key) {
 
 namespace pins {
 /**
-* Get a pin by configuration id (DAL.CFG_PIN...)
-*/
+ * Get a pin by configuration id (DAL.CFG_PIN...)
+ */
 //%
 DigitalInOutPin pinByCfg(int key) {
     return pxt::lookupPinCfg(key);
@@ -74,3 +75,28 @@ Buffer createBuffer(int size) {
 }
 
 } // namespace pins
+
+namespace control {
+/**
+ * Enable a watchdog timer that need to be fed or it will reset the device.
+ * If timeout is not positive, the watchdog is disabled.
+ */
+//%
+void setWatchdog(int timeout_s) {
+    if (timeout_s > 0) {
+        esp_task_wdt_init(timeout_s, true);
+        esp_task_wdt_add(NULL);
+    } else {
+        esp_task_wdt_delete(NULL);
+    }
+}
+
+/**
+ * Reset timeout on previously enabled watchdog.
+ */
+//%
+void feedWatchdog() {
+    esp_task_wdt_reset();
+}
+
+} // namespace control
