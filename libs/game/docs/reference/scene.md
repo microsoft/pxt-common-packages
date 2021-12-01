@@ -16,16 +16,17 @@ scene.backgroundImage()
 ## Tiles and Tilemaps
 
 ```cards
-scene.setTile(0, null)
-scene.setTileMap(null)
-scene.setTileAt(null, 0)
-scene.getTile(0, 0)
-scene.getTilesByType(0)
-scene.getTile(0, 0).place(null)
-scene.placeOnRandomTile(null, 0)
-scene.onHitTile(0, 0, function (sprite) {})
-sprites.create(null).isHittingTile(CollisionDirection.Left)
-sprites.create(null).tileHitFrom(CollisionDirection.Left)
+tiles.setTileAt(null, tiles.getTileLocation(0, 0))
+tiles.setWallAt(tiles.getTileLocation(0, 0), false)
+tiles.getTileLocation(0, 0)
+tiles.getTilesByType(null)
+tiles.placeOnTile(null, tiles.getTileLocation(0, 0))
+tiles.placeOnRandomTile(null, null)
+scene.onOverlapTile(SpriteKind.Player, null, function (sprite, location) {})
+scene.onHitWall(SpriteKind.Player, function (sprite, location) { })
+tiles.tileAtLocationEquals(location, null)
+sprites.create(null).isHittingTile(CollisionDirection.Right)
+sprites.create(null).tileKindAt(TileDirection.Right, null)
 ```
 
 ## Screen Effects
@@ -51,16 +52,17 @@ scene.cameraShake(4,500)
 [set background image](/reference/scene/set-background-image),
 [background color](/reference/scene/background-color),
 [background image](/reference/scene/background-image),
-[set tile](/reference/scene/set-tile),
-[set tile map](/reference/scene/set-tile-map),
 [set tile at](/reference/scene/set-tile-at),
-[get tile](/reference/scene/get-tile),
+[set wall at](/reference/scene/set-wall-at),
+[get tile location](/reference/scene/get-tile-location),
 [get tiles by type](/reference/scene/get-tiles-by-type),
-[place](/reference/scene/place),
+[place on tile](/reference/scene/place-on-tile,)
 [place on random tile](/reference/scene/place-on-random-tile),
-[on hit tile](/reference/scene/on-hit-tile),
+[on overlap tile](/reference/scene/on-overlap-tile),
+[on hit wall](/reference/scene/on-hit-wall),
+[tile at location equals](/reference/scene/tile-at-location-equals),
 [is hitting tile](/reference/sprites/sprite-is-hittint-tile),
-[tile hit from](/reference/sprites/sprite/tile-hit-from),
+[tile kind at](/reference/sprites/sprite/tile-kind-at),
 [start screen effect](/reference/scene/start-screen-effect),
 [end screen effect](/reference/scene/end-screen-effect),
 [camera follow sprite](/reference/scene/camera-follow-sprite),

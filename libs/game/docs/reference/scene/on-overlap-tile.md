@@ -1,25 +1,32 @@
-# get Tiles By Type
+# on Overlap Tile
 
-Return an array of tile locations from the tilemap that contain the specified tile.
+Run code when a sprite overlaps a tile.
 
 ```sig
-tiles.getTilesByType(null)
+scene.onOverlapTile(SpriteKind.Player, null, function (sprite, location) {})
 ```
+
+You can detect when a moving sprite overlaps a tile in the tilemap. If your sprite moves across a tile, you can have some code that runs when that happens. You pick the sprite **kind** to check for.
+
+When an overlap is detected by the sprite of the kind you asked for, it is given to you in the **sprite** parameter of **handler** along with overlapped tile's **location**.
+
+A sprite hitting a wall is dectected when the outside edges of its image makes starts to overlap the tile.
 
 ## Parameters
 
-* **tile**: a tile [image](/types/image) to search the tilemap for.
-
-## Returns
-
-* an [array](/types/array) of tile locations from the tilemap that have the tile specified in **tile**.
+* **kind**: the type of sprite to check for a overlap.
+* **handler**: the code to run when the sprite overlaps a tile. The handler has these parameters passed to it:
+>* **sprite**: the sprite that overlapped the tile.
+>* **location**: the location of the tile that the sprite overlapped in the tilemap.
 
 ## Example #example
 
-Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, find the column tiles in the tilemap and set them as either wall tiles or regular tiles.
+Create a tilemap with a section of tiles in the center of the scene. Set a sprite in motion and cause it to bounce on walls. When the sprite overlaps the tiles, make it trace a trail across the tiles.
 
 ```blocks
-let isWall = false
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile`, function (sprite, location) {
+    sprite.startEffect(effects.trail, 100)
+})
 tiles.setTilemap(tilemap`level1`)
 let mySprite = sprites.create(img`
     . . . . . . . . . . . . . . . . 
@@ -42,17 +49,12 @@ let mySprite = sprites.create(img`
 mySprite.setBounceOnWall(true)
 mySprite.vx = 80
 mySprite.vy = 70
-game.onUpdateInterval(5000, function () {
-    isWall = !(isWall)
-    for (let wallTile of tiles.getTilesByType(assets.tile`myTile`)) {
-        tiles.setWallAt(wallTile, isWall)
-    }
-})
 ```
 
 ## See also #seealso
 
-[get tile location](/reference/scene/get-tile-location)
+[get tile location](/reference/scene/get-tile-location),
+[on hit wall](/reference/scene/on-hit-wall)
 
 ```jres
 {
@@ -70,7 +72,7 @@ game.onUpdateInterval(5000, function () {
     "level1": {
         "id": "level1",
         "mimeType": "application/mkcd-tilemap",
-        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMTAwMDAwMDAwMDAwMDAwMDAwMTAxMDAwMDAwMDAwMDAwMDAwMDAxMDEwMDAwMDAwMDAwMDAwMDAwMDEwMTAwMDAwMDAwMDAwMDAwMDAwMTAxMDAwMDAwMDAwMDAwMDAwMDAxMDEwMDAwMDAwMDAwMDAwMDAwMDEwMTAwMDAwMDAwMDAwMDAwMDAwMTAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
         "tileset": [
             "myTiles.transparency16",
             "myTiles.tile1"
