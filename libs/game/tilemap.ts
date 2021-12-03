@@ -545,7 +545,7 @@ namespace tiles {
     //% tilemap.fieldOptions.filter="tile"
     //% tilemap.fieldOptions.taggedTemplate="tilemap"
     //% blockNamespace="scene" duplicateShadowOnDrag
-    //% help=tiles/set-tile-map
+    //% help=scene/set-tilemap
     //% deprecated=1
     export function setTilemap(tilemap: TileMapData) {
         setCurrentTilemap(tilemap);

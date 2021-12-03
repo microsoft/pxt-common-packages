@@ -16,6 +16,7 @@ scene.backgroundImage()
 ## Tiles and Tilemaps
 
 ```cards
+tiles.setTilemap(null)
 tiles.setTileAt(null, tiles.getTileLocation(0, 0))
 tiles.setWallAt(tiles.getTileLocation(0, 0), false)
 tiles.getTileLocation(0, 0)
@@ -52,6 +53,7 @@ scene.cameraShake(4,500)
 [set background image](/reference/scene/set-background-image),
 [background color](/reference/scene/background-color),
 [background image](/reference/scene/background-image),
+[set tilemap](/reference/scene/set-tilemap),
 [set tile at](/reference/scene/set-tile-at),
 [set wall at](/reference/scene/set-wall-at),
 [get tile location](/reference/scene/get-tile-location),
