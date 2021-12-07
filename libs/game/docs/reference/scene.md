@@ -17,7 +17,7 @@ scene.backgroundImage()
 
 ```cards
 tiles.setTilemap(null)
-tiles.setTileAt(null, tiles.getTileLocation(0, 0))
+tiles.setTileAt(tiles.getTileLocation(0, 0), null)
 tiles.setWallAt(tiles.getTileLocation(0, 0), false)
 tiles.getTileLocation(0, 0)
 tiles.getTilesByType(null)
@@ -25,7 +25,7 @@ tiles.placeOnTile(null, tiles.getTileLocation(0, 0))
 tiles.placeOnRandomTile(null, null)
 scene.onOverlapTile(SpriteKind.Player, null, function (sprite, location) {})
 scene.onHitWall(SpriteKind.Player, function (sprite, location) { })
-tiles.tileAtLocationEquals(location, null)
+tiles.tileAtLocationEquals(tiles.getTileLocation(0, 0), null)
 sprites.create(null).isHittingTile(CollisionDirection.Right)
 sprites.create(null).tileKindAt(TileDirection.Right, null)
 ```
