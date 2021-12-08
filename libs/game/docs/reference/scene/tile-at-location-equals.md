@@ -3,7 +3,7 @@
 Check if a location in the tilemap contains the tile you're looking for.
 
 ```sig
-tiles.tileAtLocationEquals(location, null)
+tiles.tileAtLocationEquals(tiles.getTileLocation(0, 0), null)
 ```
 
 ## Parameters
