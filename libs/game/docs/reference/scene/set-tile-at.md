@@ -3,15 +3,15 @@
 Set a tile at a location in the tilemap.
 
 ```sig
-tiles.setTileAt(null, tiles.getTileLocation(0, 0))
+tiles.setTileAt(tiles.getTileLocation(0, 0), null)
 ```
 
 You can set a tile at a specific column and row in the tilemap using a tile location object. Specify a tile to set in the tilemap and a location for it.
 
 ## Parameters
 
-* **tile**: the to set in the tilemap.
 * **loc**: a tile location in the tilemap.
+* **tile**: the to set in the tilemap.
 
 ## Example #example
 
