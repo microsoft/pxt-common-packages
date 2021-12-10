@@ -36,13 +36,16 @@ mySprite.ay = 0
 
 * **value**: the new vertical acceleration for the sprite in pixels per second, per second.
 
-## Sprite acceleration
+## Sprite vertical acceleration
 
-Acceleration of a sprite makes it speed up or slow down. The value for acceleration determines how quickly the speed  of the sprite will change. A positive value makes the sprite speed up as it moves. A negative value causes the sprite to slow down while it moves.
+The value for acceleration determines how quickly the speed of the sprite will change. Acceleration of a sprite makes it speed up in a direction toward the bottom or top. A positive value causes the sprite's speed in the `bottom` direction to increase. A negative value causes the sprite's speed in the `top` direction to increase.
+
+Acceleration can be used as an opposing force too. If a sprite is travelling toward the bottom at a certain speed and a negative vertical acceleration is applied, the sprite will keep moving to the bottom but it will slow down. When the sprite's speed reaches `0`, the sprite will begin to move to the top.
+
 
 ### ~ hint
 
-**How speed changes**
+#### How speed changes
 
 Speed, or velocity, is how much distance an object moves during some period of time. Distance in your game is measured in pixels so the speed of a sprite is in _pixels per second_. Speed is changed by _accelerating_ an object. In your game, a sprite is accelerated by some amount of change in speed per second. So, acceleration is measured in _pixels per second per second_.
 
@@ -128,6 +131,34 @@ game.onUpdateInterval(1000, function () {
     }
     interval += 1
 })
+```
+### Opposite force #ex3
+
+Make a sprite move from the top of the screen to the bottom. Apply acceleration in the opposite direction to slow the sprite down and send back to the top.
+
+```blocks
+let mySprite = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 5 5 5 5 5 5 . . . . . 
+    . . . 5 5 5 5 5 5 5 5 5 5 . . . 
+    . . . 5 5 5 5 5 5 5 5 5 5 . . . 
+    . . 5 5 5 5 5 5 5 5 5 5 5 5 . . 
+    . . 5 5 5 5 5 5 5 5 5 5 5 5 . . 
+    . . 5 5 5 5 5 5 5 5 5 5 5 5 . . 
+    . . 5 5 5 5 5 5 5 5 5 5 5 5 . . 
+    . . 5 5 5 5 5 5 5 5 5 5 5 5 . . 
+    . . 5 5 5 5 5 5 5 5 5 5 5 5 . . 
+    . . . 5 5 5 5 5 5 5 5 5 5 . . . 
+    . . . 5 5 5 5 5 5 5 5 5 5 . . . 
+    . . . . . 5 5 5 5 5 5 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player)
+mySprite.setStayInScreen(true)
+mySprite.top = 0
+mySprite.vy = 80
+mySprite.ay = -35
 ```
 
 ## See also #seealso
