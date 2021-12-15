@@ -1,10 +1,8 @@
 namespace pxsim.tts {
-    //%
     export function _getLanguageCode() {
         return window.navigator.language;
     }
 
-    //% promise
     export function _speakAsync(text: string, pitch?: number, rate?: number, volume?: number, language?: string, onStart?: RefAction, onBoundary?: RefAction): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const utterance = new SpeechSynthesisUtterance(text);
@@ -34,22 +32,18 @@ namespace pxsim.tts {
         });
     }
 
-    //%
     export function _pause() {
         speechSynthesis.pause();
     }
 
-    //%
     export function _isPaused(): boolean {
         return speechSynthesis.paused;
     }
 
-    //%
     export function _resume() {
         speechSynthesis.resume();
     }
 
-    //%
     export function _cancel() {
         speechSynthesis.cancel();
     }
