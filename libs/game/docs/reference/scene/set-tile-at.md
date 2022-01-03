@@ -1,61 +1,65 @@
 # set Tile At
 
-Change a tile in the tilemap to another tile.
+Set a tile at a location in the tilemap.
 
 ```sig
-scene.setTileAt(null, 0)
+tiles.setTileAt(tiles.getTileLocation(0, 0), null)
 ```
 
-A tile from the tile map has the [tile](/types/tile) type. You can change that tile by using it's object type, [tile](/types/tile), and the index of a different tile. The tile map is changed to have the new tile take the position in the tilemap where this one was.
+You can set a tile at a specific column and row in the tilemap using a tile location object. Specify a tile to set in the tilemap and a location for it.
 
 ## Parameters
 
-* **tile**: the [tile](/types/tile) object to be replaced.
-* **index**: the color index of the tile to replace the previous one.
+* **loc**: a tile location in the tilemap.
+* **tile**: the to set in the tilemap.
 
 ## Example #example
 
-Make a scene using a tilemap with border tiles and two tiles in the center. Replace the tiles in the center with the ones used for the border.
+Create an empty tilemap and a solid color tile. Set the solid color tile at different places in the tilemap and replace its previous location with a transparent tile.
 
 ```blocks
-scene.setTile(2, img`
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-`)
-scene.setTileMap(img`
-2 2 2 2 2 2 2 2 2 2 
-2 . . . . . . . . 2 
-2 . . . . . . . . 2 
-2 . . . 1 1 . . . 2 
-2 . . . . . . . . 2 
-2 . . . . . . . . 2 
-2 2 2 2 2 2 2 2 2 2 
-. . . . . . . . . . 
-`)
-pause(1000)
-scene.setTileAt(scene.getTile(4, 3), 2)
-pause(1000)
-scene.setTileAt(scene.getTile(5, 3), 2)
+tiles.setTilemap(tilemap`level1`)
+let spot = tiles.getTileLocation(0, 0)
+forever(function () {
+    tiles.setTileAt(spot, assets.tile`transparency16`)
+    spot = tiles.getTileLocation(randint(0, 9), randint(0, 6))
+    tiles.setTileAt(spot, assets.tile`myTile`)
+    pause(1000)
+})
 ```
 
 ## See also #seealso
 
-[set tile](/reference/scene/set-tile), [get tile](/reference/scene/get-tile)
+[get tile location](/reference/scene/get-tile-location),
+[place on tile](/reference/scene/place-on-tile)
 
-```package
-color-coded-tilemap
+```jres
+{
+    "transparency16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true
+    },
+    "tile1": {
+        "data": "hwQQABAAAABERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "myTile"
+    },
+    "level1": {
+        "id": "level1",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "tileset": [
+            "myTiles.transparency16",
+            "myTiles.tile1"
+        ],
+        "displayName": "level1"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myTiles"
+    }
+}
 ```

@@ -1,22 +1,21 @@
-# get Tiles By Type
+# set Wall At
 
-Return an array of tile locations from the tilemap that contain the specified tile.
+Set a tile as a wall tile in the tilemap.
 
 ```sig
-tiles.getTilesByType(null)
+tiles.setWallAt(tiles.getTileLocation(0, 0), false)
 ```
+
+Wall tiles create a barrier for sprites so that they can't pass through tilemap at the tile location. You can set a tile location in the tilemap as a wall or turn it back to a regular tile.
 
 ## Parameters
 
-* **tile**: a tile [image](/types/image) to search the tilemap for.
-
-## Returns
-
-* an [array](/types/array) of tile locations from the tilemap that have the tile specified in **tile**.
+* **loc**: a tile location in the tilemap.
+* **on**: a [boolean](/types/boolean) value to set the tile location be a wall tile if `true` or a regular tile if `false`.
 
 ## Example #example
 
-Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, find the column tiles in the tilemap and set them as either wall tiles or regular tiles.
+Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, set the tiles  in the column to be wall tiles or regular tiles.
 
 ```blocks
 let isWall = false
@@ -52,7 +51,8 @@ game.onUpdateInterval(5000, function () {
 
 ## See also #seealso
 
-[get tile location](/reference/scene/get-tile-location)
+[get tile location](/reference/scene/get-tile-location),
+[on hit wall](/reference/scene/on-hit-wall)
 
 ```jres
 {

@@ -58,6 +58,8 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 * [**vy- velocity y**](/reference/sprites/sprite/vy)
 * [**ax - acceleration x**](/reference/sprites/sprite/ax)
 * [**ay - acceleration y**](/reference/sprites/sprite/ay)
+* [**fx - friction x**](/reference/sprites/sprite/fx)
+* [**fy - friction y**](/reference/sprites/sprite/fy)
 
 ### Image and Attributes
 

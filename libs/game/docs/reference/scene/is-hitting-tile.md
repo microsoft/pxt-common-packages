@@ -1,25 +1,26 @@
-# get Tiles By Type
+# is Hitting Tile
 
-Return an array of tile locations from the tilemap that contain the specified tile.
+Check if a sprite is currently hitting a wall.
 
 ```sig
-tiles.getTilesByType(null)
+sprites.create(null).isHittingTile(CollisionDirection.Right)
 ```
+
+A wall is either a tile set as a wall or the edge of the scene if a tilemap is set.
 
 ## Parameters
 
-* **tile**: a tile [image](/types/image) to search the tilemap for.
+* **direction**: the direction the sprite moves toward when detecting a wall collision: `left`, `right`, `top`, or `bottom`.
 
 ## Returns
 
-* an [array](/types/array) of tile locations from the tilemap that have the tile specified in **tile**.
+* a [boolean](/types/boolean) value that is `true` if the sprite is hitting a wall on the chosen side or `false` if not.
 
 ## Example #example
 
-Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, find the column tiles in the tilemap and set them as either wall tiles or regular tiles.
+Make a tilemap with a wall going from top to bottom. Set a sprite in motion and make it say "Ouch!" when it hits the wall on its `right` side.
 
 ```blocks
-let isWall = false
 tiles.setTilemap(tilemap`level1`)
 let mySprite = sprites.create(img`
     . . . . . . . . . . . . . . . . 
@@ -42,17 +43,17 @@ let mySprite = sprites.create(img`
 mySprite.setBounceOnWall(true)
 mySprite.vx = 80
 mySprite.vy = 70
-game.onUpdateInterval(5000, function () {
-    isWall = !(isWall)
-    for (let wallTile of tiles.getTilesByType(assets.tile`myTile`)) {
-        tiles.setWallAt(wallTile, isWall)
+forever(function () {
+    if (mySprite.isHittingTile(CollisionDirection.Right)) {
+        mySprite.sayText("Ouch!", 200, false)
     }
 })
 ```
 
 ## See also #seealso
 
-[get tile location](/reference/scene/get-tile-location)
+[tile kind at](/reference/scene/tile-kind-at),
+[set tile at](/reference/scene/set-tile-at)
 
 ```jres
 {
@@ -70,7 +71,7 @@ game.onUpdateInterval(5000, function () {
     "level1": {
         "id": "level1",
         "mimeType": "application/mkcd-tilemap",
-        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAyMDAwMDAwMDAwMjAwMDAwMDAwMDIwMDAwMDAwMDAyMDAwMDAwMDAwMjAwMDAwMDAwMDIwMDAwMDAwMDAyMDAwMDAwMDAwMjAwMA==",
         "tileset": [
             "myTiles.transparency16",
             "myTiles.tile1"
