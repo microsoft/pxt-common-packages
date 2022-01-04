@@ -61,6 +61,8 @@ namespace sprites {
         }
 
         calculatePartialHeight(startLine: number, lengthToDraw: number) {
+            if (this.linebreaks.length === 0) return this.font.charHeight;
+
             let current = 0;
 
             for (let i = startLine; i < this.linebreaks.length + 1; i++) {
@@ -93,9 +95,9 @@ namespace sprites {
             return total;
         }
 
-        protected lineEnd(index: number) {
-            const prevEnd = index > 0 ? this.linebreaks[index - 1] : 0;
-            let end = index < this.linebreaks.length ? this.linebreaks[index] : this.text.length;
+        lineEnd(lineIndex: number) {
+            const prevEnd = lineIndex > 0 ? this.linebreaks[lineIndex - 1] : 0;
+            let end = lineIndex < this.linebreaks.length ? this.linebreaks[lineIndex] : this.text.length;
             let didMove = false;
 
             // Trim trailing whitespace
@@ -115,8 +117,8 @@ namespace sprites {
             return didMove ? end + 1 : end;
         }
 
-        protected lineStart(index: number) {
-            let start = index > 0 ? this.linebreaks[index - 1] : 0;
+        lineStart(lineIndex: number) {
+            let start = lineIndex > 0 ? this.linebreaks[lineIndex - 1] : 0;
 
             // Trim leading whitespace
             while (start < this.text.length) {
@@ -132,6 +134,29 @@ namespace sprites {
             }
 
             return start;
+        }
+
+        widthOfLine(lineIndex: number, fullTextOffset?: number) {
+            if (fullTextOffset != undefined) {
+                return (Math.min(this.lineEnd(lineIndex), fullTextOffset + 1) - this.lineStart(lineIndex)) * this.font.charWidth;
+            }
+            return (this.lineEnd(lineIndex) - this.lineStart(lineIndex)) * this.font.charWidth;
+        }
+
+        widthOfLines(lineStartIndex: number, lineEndIndex: number, offset?: number) {
+            if (this.linebreaks.length === 0) return this.widthOfLine(0, offset);
+
+            let width = 0;
+            let fullTextOffset: number;
+            for (let i = lineStartIndex; i < Math.min(lineEndIndex, this.linebreaks.length + 1); i++) {
+                if (offset != undefined) {
+                    fullTextOffset = this.lineStart(i) + offset;
+                    offset -= this.lineEnd(i) - this.lineStart(i);
+                }
+                if (fullTextOffset !== undefined && this.lineStart(i) > fullTextOffset) break;
+                width = Math.max(width, this.widthOfLine(i, fullTextOffset));
+            }
+            return width;
         }
     }
 
@@ -203,6 +228,9 @@ namespace sprites {
         protected pageLine: number;
         protected timer: number;
         protected pauseMillis: number;
+        protected onTickCB: () => void;
+        protected onEndCB: () => void;
+        protected prevOffset: number;
 
         constructor(public text: RenderText, public height: number) {
             this.state = RenderTextAnimationState.Idle;
@@ -232,17 +260,21 @@ namespace sprites {
         }
 
         currentHeight() {
-            const maxHeight = Math.min(
-                Math.idiv(this.height, this.text.lineHeight()) + 1,
-                this.text.linebreaks.length + 1 - this.pageLine
-            ) * this.text.lineHeight();
+            const minHeight = this.text.lineHeight();
+            const maxHeight = Math.max(
+                Math.min(
+                    Math.idiv(this.height, this.text.lineHeight()) + 1,
+                    this.text.linebreaks.length + 1 - this.pageLine
+                ) * this.text.lineHeight(),
+                minHeight
+            );
 
 
             if (this.state === RenderTextAnimationState.Printing) {
-                return Math.min(
+                return Math.max(Math.min(
                     this.text.calculatePartialHeight(this.pageLine, this.currentOffset()),
                     maxHeight
-                );
+                ), minHeight)
             }
             else if (this.state === RenderTextAnimationState.Pausing) {
                 return maxHeight
@@ -252,8 +284,32 @@ namespace sprites {
             }
         }
 
+        currentWidth() {
+            return this.text.widthOfLines(
+                this.pageLine,
+                this.pageLine + Math.idiv(this.currentHeight(), this.text.lineHeight()) + 1,
+                this.state === RenderTextAnimationState.Printing ? this.currentOffset() : undefined
+            );
+        }
+
         currentOffset() {
             return Math.idiv(control.millis() - this.timer, this.tickPeriod)
+        }
+
+        isDone() {
+            return this.state === RenderTextAnimationState.Idle;
+        }
+
+        cancel() {
+            this.state = RenderTextAnimationState.Idle;
+        }
+
+        onCharacterPrinted(cb: () => void) {
+            this.onTickCB = cb;
+        }
+
+        onAnimationEnd(cb: () => void) {
+            this.onEndCB = cb;
         }
 
         draw(canvas: Image, left: number, top: number, color: number) {
@@ -268,6 +324,10 @@ namespace sprites {
                     this.pageLine,
                     this.pageLine + Math.idiv(this.height, this.text.lineHeight()) + 1
                 );
+
+                if (this.onTickCB && this.prevOffset !== this.currentOffset()) {
+                    this.onTickCB();
+                }
 
                 if (pageFinished) {
                     this.state = RenderTextAnimationState.Pausing;
@@ -290,6 +350,7 @@ namespace sprites {
                     this.pageLine += Math.idiv(this.height, this.text.lineHeight()) + 1;
                     if (this.pageLine > this.text.linebreaks.length) {
                         this.state = RenderTextAnimationState.Idle;
+                        if (this.onEndCB) this.onEndCB();
                     }
                     else {
                         this.state = RenderTextAnimationState.Printing;
@@ -297,6 +358,8 @@ namespace sprites {
                     }
                 }
             }
+
+            this.prevOffset = this.currentOffset();
         }
     }
 }

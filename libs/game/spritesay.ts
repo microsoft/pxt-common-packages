@@ -17,6 +17,206 @@ namespace sprites {
     }
 
     export class SpriteSayRenderer extends BaseSpriteSayRenderer {
+        static drawSayFrame(textLeft: number, textTop: number, textWidth: number, textHeight: number, speakerX: number, speakerY: number, color: number, canvas: Image) {
+            if (textLeft + textWidth < 0 || textTop + textHeight < 0 || textLeft > canvas.width || textTop > canvas.height) return;
+
+            if (textHeight) {
+                // Draw main rectangle
+                canvas.fillRect(
+                    textLeft,
+                    textTop,
+                    textWidth,
+                    textHeight,
+                    color
+                );
+
+                // Draw lines around the rectangle to give it a bubble shape
+                canvas.fillRect(
+                    textLeft - 1,
+                    textTop + 1,
+                    1,
+                    textHeight - 2,
+                    color
+                );
+                canvas.fillRect(
+                    textLeft + textWidth,
+                    textTop + 1,
+                    1,
+                    textHeight - 2,
+                    color
+                );
+                canvas.fillRect(
+                    textLeft + 1,
+                    textTop - 1,
+                    textWidth - 2,
+                    1,
+                    color
+                );
+                canvas.fillRect(
+                    textLeft + 1,
+                    textTop + textHeight,
+                    textWidth - 2,
+                    1,
+                    color
+                );
+
+                // If the speaker location is within the bubble, don't draw an arrow
+                if (speakerX > textLeft && speakerX < textLeft + textWidth && speakerY > textTop && speakerY < textTop + textHeight) return;
+
+                const xDiff = Math.max(
+                    Math.abs(speakerX - textLeft),
+                    Math.abs(speakerX - (textLeft + textWidth))
+                );
+
+                const yDiff = Math.max(
+                    Math.abs(speakerY - textHeight),
+                    Math.abs(speakerY - (textHeight + textHeight))
+                );
+
+                // Draw the arrow
+                if (xDiff > yDiff) {
+                    if (speakerX > textLeft + textWidth) {
+                        const anchorY = Math.max(Math.min(speakerY, textTop + textHeight - 4), textTop + 5);
+                        canvas.fillRect(
+                            textLeft + textWidth + 1,
+                            anchorY - 2,
+                            1,
+                            3,
+                            color
+                        );
+                        canvas.fillRect(
+                            textLeft + textWidth + 2,
+                            anchorY - 1,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                    else if (speakerX < textLeft) {
+                        const anchorY = Math.max(Math.min(speakerY, textTop + textHeight - 4), textTop + 5);
+                        canvas.fillRect(
+                            textLeft - 2,
+                            anchorY - 2,
+                            1,
+                            3,
+                            color
+                        );
+                        canvas.fillRect(
+                            textLeft - 3,
+                            anchorY - 1,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                    else if (speakerY > textTop + textHeight) {
+                        const anchorX = Math.max(Math.min(speakerX, textLeft + textWidth - 4), textLeft + 5);
+                        canvas.fillRect(
+                            anchorX - 2,
+                            textTop + textHeight + 1,
+                            3,
+                            1,
+                            color
+                        );
+                        canvas.fillRect(
+                            anchorX - 1,
+                            textTop + textHeight + 2,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                    else if (speakerY < textTop) {
+                        const anchorX = Math.max(Math.min(speakerX, textLeft + textWidth - 4), textLeft + 5);
+                        canvas.fillRect(
+                            anchorX - 2,
+                            textTop - 2,
+                            3,
+                            1,
+                            color
+                        );
+                        canvas.fillRect(
+                            anchorX - 1,
+                            textTop - 3,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                }
+                else {
+                    if (speakerY > textTop + textHeight) {
+                        const anchorX = Math.max(Math.min(speakerX, textLeft + textWidth - 4), textLeft + 5);
+                        canvas.fillRect(
+                            anchorX - 2,
+                            textTop + textHeight + 1,
+                            3,
+                            1,
+                            color
+                        );
+                        canvas.fillRect(
+                            anchorX - 1,
+                            textTop + textHeight + 2,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                    else if (speakerY < textTop) {
+                        const anchorX = Math.max(Math.min(speakerX, textLeft + textWidth - 4), textLeft + 5);
+                        canvas.fillRect(
+                            anchorX - 2,
+                            textTop - 2,
+                            3,
+                            1,
+                            color
+                        );
+                        canvas.fillRect(
+                            anchorX - 1,
+                            textTop - 3,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                    else if (speakerX > textLeft + textWidth) {
+                        const anchorY = Math.max(Math.min(speakerY, textTop + textHeight - 4), textTop + 5);
+                        canvas.fillRect(
+                            textLeft + textWidth + 1,
+                            anchorY - 2,
+                            1,
+                            3,
+                            color
+                        );
+                        canvas.fillRect(
+                            textLeft + textWidth + 2,
+                            anchorY - 1,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                    else if (speakerX < textLeft) {
+                        const anchorY = Math.max(Math.min(speakerY, textTop + textHeight - 4), textTop + 5);
+                        canvas.fillRect(
+                            textLeft - 2,
+                            anchorY - 2,
+                            1,
+                            3,
+                            color
+                        );
+                        canvas.fillRect(
+                            textLeft - 3,
+                            anchorY - 1,
+                            1,
+                            1,
+                            color
+                        );
+                    }
+                }
+            }
+        }
+
         protected renderText: RenderText;
         protected animation: RenderTextAnimation;
 
@@ -45,62 +245,15 @@ namespace sprites {
             const t = Math.floor(owner.top - oy);
 
             const height = this.animation ? this.animation.currentHeight() : this.renderText.height;
-            const sayLeft = l + (owner.width >> 1) - (this.renderText.width >> 1);
+            const width = this.animation ? this.animation.currentWidth() : this.renderText.width;
+            const sayLeft = l + (owner.width >> 1) - (width >> 1);
             const sayTop =  t - height - 4;
 
+            if (sayLeft + width < 0 || sayTop + height < 0 || sayLeft > screen.width || sayTop > screen.height) return;
 
-            if (sayLeft + this.renderText.width < 0 || sayTop + height < 0 || sayLeft > screen.width || sayTop > screen.height) return;
+            SpriteSayRenderer.drawSayFrame(sayLeft, sayTop, width, height, owner.x, owner.y, this.bgColor, screen);
 
             if (height) {
-                screen.fillRect(
-                    sayLeft,
-                    sayTop,
-                    this.renderText.width,
-                    height,
-                    this.bgColor
-                );
-                screen.fillRect(
-                    sayLeft - 1,
-                    sayTop + 1,
-                    1,
-                    height - 2,
-                    this.bgColor
-                );
-                screen.fillRect(
-                    sayLeft + this.renderText.width,
-                    sayTop + 1,
-                    1,
-                    height - 2,
-                    this.bgColor
-                );
-                screen.fillRect(
-                    sayLeft + 1,
-                    sayTop - 1,
-                    this.renderText.width - 2,
-                    1,
-                    this.bgColor
-                );
-                screen.fillRect(
-                    sayLeft + 1,
-                    sayTop + height,
-                    this.renderText.width - 2,
-                    1,
-                    this.bgColor
-                );
-                screen.fillRect(
-                    sayLeft + (this.renderText.width >> 1) - 2,
-                    sayTop + height + 1,
-                    3,
-                    1,
-                    this.bgColor
-                );
-                screen.fillRect(
-                    sayLeft + (this.renderText.width >> 1) - 1,
-                    sayTop + height + 2,
-                    1,
-                    1,
-                    this.bgColor
-                );
                 if (this.animation) {
                     this.animation.draw(screen, sayLeft, sayTop, this.fgColor);
                 }
