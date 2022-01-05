@@ -1,0 +1,14 @@
+{
+    "name": "Pitch Detection",
+    "description": "Detect pitch from external microphone",
+    "files": [
+        "README.md",
+        "shims.d.ts",
+        "pitch-detection.ts"
+        
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
