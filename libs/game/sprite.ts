@@ -218,6 +218,16 @@ class Sprite extends sprites.BaseSprite {
         this.recalcSize();
         this.top = y - this.height / 2;
     }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="scale" callInDebugger
+    get scale(): number {
+        return Math.max(this.sx, this.sy);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="scale"
+    set scale(v: number) {
+        this.sx = this.sy = v;
+    }
 
     private _data: any;
     /**
@@ -252,7 +262,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="lifespan"
     lifespan: number;
-    private _image: Image;
+    _image: Image;
     private _obstacles: sprites.Obstacle[];
 
     private sayEndTime: number;
@@ -1073,7 +1083,7 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
-    private setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
+    setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
         anchor = anchor || ScaleAnchor.Middle;
 
         const hasSx = typeof sx === 'number';
@@ -1115,25 +1125,16 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
-    //% blockId=sprite_get_scale
-    //% block="%sprite(mySprite) scale"
-    //% help=sprites/sprite/get-scale
-    //% group="Scale" weight=100
-    getScale(): number {
-        return Math.max(this.sx, this.sy);
-    }
-
     //% blockId=sprite_set_scale
-    //% block="set %sprite(mySprite) scale to $value || $direction anchor $anchor"
+    //% block="set %sprite(mySprite) scale to $value, anchor on $anchor"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
     //% value.defl=1
-    //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
     //% help=sprites/sprite/set-scale
     //% group="Scale" weight=90
-    setScale(value: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
-        direction = direction || ScaleDirection.Uniformly;
+    setScale(value: number, anchor?: ScaleAnchor): void {
+        const direction = ScaleDirection.Uniformly;
         anchor = anchor || ScaleAnchor.Middle;
 
         let sx: number;
@@ -1145,87 +1146,25 @@ class Sprite extends sprites.BaseSprite {
         this.setScaleCore(sx, sy, anchor);
     }
 
-    //% blockId=sprite_grow_by_percent
-    //% block="grow %sprite(mySprite) by $amount percent || $direction anchor $anchor"
+    //% blockId=sprite_change_scale
+    //% block="change %sprite(mySprite) scale by $value, anchor on $anchor"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
-    //% amount.defl=10
-    //% direction.defl=ScaleDirection.Uniformly
+    //% value.defl=1
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/grow-by-amount
-    //% group="Scale" weight=80
-    growByPercent(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
-        amount /= 100;
-        direction = direction || ScaleDirection.Uniformly;
+    //% help=sprites/sprite/change-scale
+    //% group="Scale" weight=90
+    changeScale(value: number, anchor?: ScaleAnchor): void {
+        const direction = ScaleDirection.Uniformly;
         anchor = anchor || ScaleAnchor.Middle;
 
         let sx: number;
         let sy: number;
 
-        if (direction & ScaleDirection.Horizontally) sx = this.sx + amount;
-        if (direction & ScaleDirection.Vertically) sy = this.sy + amount;
+        if (direction & ScaleDirection.Horizontally) sx = this.sx + value;
+        if (direction & ScaleDirection.Vertically) sy = this.sy + value;
 
         this.setScaleCore(sx, sy, anchor);
-    }
-
-    //% blockId=sprite_shrink_by_percent
-    //% block="shrink %sprite(mySprite) by $amount percent || $direction anchor $anchor"
-    //% expandableArgumentMode=enabled
-    //% inlineInputMode=inline
-    //% amount.defl=10
-    //% direction.defl=ScaleDirection.Uniformly
-    //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/shrink-by-percent
-    //% group="Scale" weight=70
-    shrinkByPercent(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
-        this.growByPercent(-amount, direction, anchor);
-    }
-
-    //% blockId=sprite_grow_by_pixels
-    //% block="grow %sprite(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
-    //% expandableArgumentMode=enabled
-    //% inlineInputMode=inline
-    //% amount.defl=10
-    //% direction.defl=ScaleDirection.Horizontally
-    //% anchor.defl=ScaleAnchor.Middle
-    //% proportional.defl=0
-    //% help=sprites/sprite/grow-by-pixels
-    //% group="Scale" weight=60
-    growByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
-        direction = direction || ScaleDirection.Horizontally;
-        anchor = anchor || ScaleAnchor.Middle;
-        if (typeof proportional !== 'boolean') proportional = direction === ScaleDirection.Uniformly;
-
-        let sx: number;
-        let sy: number;
-
-        if (direction & ScaleDirection.Horizontally) {
-            const imgW = this._image.width;
-            const newW = this.width + amount;
-            sx = newW / imgW;
-        }
-
-        if (direction & ScaleDirection.Vertically) {
-            const imgH = this._image.height;
-            const newH = this.height + amount;
-            sy = newH / imgH;
-        }
-
-        this.setScaleCore(sx, sy, anchor, proportional);
-    }
-
-    //% blockId=sprite_shrink_by_pixels
-    //% block="shrink %sprite(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
-    //% expandableArgumentMode=enabled
-    //% inlineInputMode=inline
-    //% amount.defl=10
-    //% direction.defl=ScaleDirection.Horizontally
-    //% anchor.defl=ScaleAnchor.Middle
-    //% proportional.defl=0
-    //% help=sprites/sprite/grow-by-pixels
-    //% group="Scale" weight=50
-    shrinkByPixels(amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
-        this.growByPixels(-amount, direction, anchor, proportional);
     }
 
     toString() {
