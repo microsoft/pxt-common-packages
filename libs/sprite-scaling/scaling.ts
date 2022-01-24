@@ -1,6 +1,6 @@
 namespace sprites {
     //% blockId=sprite_set_scale_ex
-    //% block="set %sprite=variables_get(mySprite) scale to $value || $direction anchor $anchor"
+    //% block="set $sprite=variables_get(mySprite) scale to $value || $direction anchor $anchor"
     //% advanced=true
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
@@ -23,7 +23,7 @@ namespace sprites {
     }
 
     //% blockId=sprite_grow_by_percent_ex
-    //% block="grow %sprite=variables_get(mySprite) by $amount percent || $direction anchor $anchor"
+    //% block="grow $sprite=variables_get(mySprite) by $amount percent || $direction anchor $anchor"
     //% advanced=true
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
@@ -47,7 +47,7 @@ namespace sprites {
     }
 
     //% blockId=sprite_shrink_by_percent_ex
-    //% block="shrink %sprite=variables_get(mySprite) by $amount percent || $direction anchor $anchor"
+    //% block="shrink $sprite=variables_get(mySprite) by $amount percent || $direction anchor $anchor"
     //% advanced=true
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
@@ -61,7 +61,7 @@ namespace sprites {
     }
 
     //% blockId=sprite_grow_by_pixels_ex
-    //% block="grow %sprite=variables_get(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
+    //% block="grow $sprite=variables_get(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
     //% advanced=true
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
@@ -80,13 +80,13 @@ namespace sprites {
         let sy: number;
 
         if (direction & ScaleDirection.Horizontally) {
-            const imgW = sprite._image.width;
+            const imgW = sprite.image.width;
             const newW = sprite.width + amount;
             sx = newW / imgW;
         }
 
         if (direction & ScaleDirection.Vertically) {
-            const imgH = sprite._image.height;
+            const imgH = sprite.image.height;
             const newH = sprite.height + amount;
             sy = newH / imgH;
         }
@@ -95,7 +95,7 @@ namespace sprites {
     }
 
     //% blockId=sprite_shrink_by_pixels
-    //% block="shrink %sprite=variables_get(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
+    //% block="shrink $sprite=variables_get(mySprite) by $amount pixels $direction || anchor $anchor proportional $proportional"
     //% advanced=true
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline

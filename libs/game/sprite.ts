@@ -109,7 +109,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toFloat(this._x) + (this.width / 2)
+        return Fx.toFloat(Fx.add(this._x, Fx.div(this._width, Fx.twoFx8)));
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
@@ -120,7 +120,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toFloat(this._y) + (this.height / 2)
+        return Fx.toFloat(Fx.add(this._y, Fx.div(this._height, Fx.twoFx8)));
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
@@ -262,7 +262,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="lifespan"
     lifespan: number;
-    _image: Image;
+    private _image: Image;
     private _obstacles: sprites.Obstacle[];
 
     private sayEndTime: number;
@@ -301,7 +301,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     __serialize(offset: number): Buffer {
-        const buf = control.createBuffer(offset + 12);
+        const buf = control.createBuffer(offset + 16);
         let k = offset;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._x)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._y)); k += 2;
@@ -331,7 +331,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
     //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
-        if (!img) return; // don't break the sprite
+        if (!img || img === this._image) return;
         this._image = img;
         this.recalcSize();
     }
@@ -1086,8 +1086,8 @@ class Sprite extends sprites.BaseSprite {
     setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
         anchor = anchor || ScaleAnchor.Middle;
 
-        const hasSx = typeof sx === 'number';
-        const hasSy = typeof sy === 'number';
+        const hasSx = sx != null;
+        const hasSy = sy != null;
 
         const oldW = this.width;
         const oldH = this.height;
@@ -1126,7 +1126,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% blockId=sprite_set_scale
-    //% block="set %sprite(mySprite) scale to $value, anchor on $anchor"
+    //% block="set %sprite(mySprite) scale to $value anchor $anchor"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
     //% value.defl=1
@@ -1147,7 +1147,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% blockId=sprite_change_scale
-    //% block="change %sprite(mySprite) scale by $value, anchor on $anchor"
+    //% block="change %sprite(mySprite) scale by $value anchor $anchor"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
     //% value.defl=1
