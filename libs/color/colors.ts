@@ -3,26 +3,37 @@
  */
 const enum Colors {
     //% block=red
+    //% blockIdentity=color.wellKnown
     Red = 0xFF0000,
     //% block=orange
+    //% blockIdentity=color.wellKnown
     Orange = 0xFF7F00,
     //% block=yellow
+    //% blockIdentity=color.wellKnown
     Yellow = 0xFFFF00,
     //% block=green
+    //% blockIdentity=color.wellKnown
     Green = 0x00FF00,
     //% block=blue
+    //% blockIdentity=color.wellKnown
     Blue = 0x0000FF,
     //% block=indigo
+    //% blockIdentity=color.wellKnown
     Indigo = 0x4b0082,
     //% block=violet
+    //% blockIdentity=color.wellKnown
     Violet = 0x8a2be2,
     //% block=purple
+    //% blockIdentity=color.wellKnown
     Purple = 0xA033E5,
     //% block=pink
+    //% blockIdentity=color.wellKnown
     Pink = 0xFF007F,
     //% block=white
+    //% blockIdentity=color.wellKnown
     White = 0xFFFFFF,
     //% block=black
+    //% blockIdentity=color.wellKnown
     Black = 0x000000
 }
 
