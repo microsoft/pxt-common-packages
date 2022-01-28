@@ -1,21 +1,19 @@
 namespace game {
     export class Hitbox {
-        img: Image;
-        rev: number;
+        hash: Fx8;
         parent: Sprite;
         ox: Fx8;
         oy: Fx8;
         width: Fx8;
         height: Fx8;
 
-        constructor(parent: Sprite, width: number, height: number, ox: number, oy: number) {
-            this.img = parent.image;
-            this.rev = parent.image.revision();
+        constructor(parent: Sprite, width: Fx8, height: Fx8, ox: Fx8, oy: Fx8) {
+            this.hash = parent.calcDimensionalHash();
             this.parent = parent;
-            this.width = Fx8(width);
-            this.height = Fx8(height);
-            this.ox = Fx8(ox);
-            this.oy = Fx8(oy);
+            this.width = width;
+            this.height = height;
+            this.ox = ox;
+            this.oy = oy;
         }
 
         get left() {
@@ -41,7 +39,23 @@ namespace game {
         }
 
         isValid() {
-            return this.img === this.parent.image && this.rev === this.parent.image.revision();
+            return this.hash === this.parent.calcDimensionalHash();
+        }
+
+        contains(x: Fx8, y: Fx8): boolean {
+            return (x >= this.left) && (x <= this.right) && (y >= this.top) && (y <= this.bottom);
+        }
+
+        overlapsWith(other: Hitbox): boolean {
+            if (this.contains(other.left, other.top)) return true;
+            if (this.contains(other.left, other.bottom)) return true;
+            if (this.contains(other.right, other.top)) return true;
+            if (this.contains(other.right, other.bottom)) return true;
+            if (other.contains(this.left, this.top)) return true;
+            if (other.contains(this.left, this.bottom)) return true;
+            if (other.contains(this.right, this.top)) return true;
+            if (other.contains(this.right, this.bottom)) return true;
+            return false;
         }
     }
 
@@ -51,24 +65,28 @@ namespace game {
             return s._hitbox;
 
         const i = s.image;
-        let minX = i.width;
-        let minY = i.height;
-        let maxX = 0;
-        let maxY = 0;
+        let minX = Fx8(i.width);
+        let minY = Fx8(i.height);
+        let maxX = Fx.zeroFx8;
+        let maxY = Fx.zeroFx8;
 
-        for (let c = 0; c < i.width; c++) {
-            for (let r = 0; r < i.height; r++) {
+        for (let c = 0, fxc = Fx.zeroFx8; c < i.width; c++, fxc = Fx.add(fxc, Fx.oneFx8)) {
+            for (let r = 0, fxr = Fx.zeroFx8; r < i.height; r++, fxr = Fx.add(fxr, Fx.oneFx8)) {
                 if (i.getPixel(c, r)) {
-                    minX = Math.min(minX, c);
-                    minY = Math.min(minY, r);
-                    maxX = Math.max(maxX, c);
-                    maxY = Math.max(maxY, r);
+                    minX = Fx.min(minX, fxc);
+                    minY = Fx.min(minY, fxr);
+                    maxX = Fx.max(maxX, fxc);
+                    maxY = Fx.max(maxY, fxr);
                 }
             }
         }
 
-        const width = maxX - minX + 1;
-        const height = maxY - minY + 1;
+        minX = Fx.mul(minX, s._sx);
+        minY = Fx.mul(minY, s._sy);
+        maxX = Fx.mul(maxX, s._sx);
+        maxY = Fx.mul(maxY, s._sy);
+        const width  = Fx.add(Fx.sub(maxX, minX), Fx.oneFx8);
+        const height = Fx.add(Fx.sub(maxY, minY), Fx.oneFx8);
 
         return new Hitbox(s, width, height, minX, minY);
     }

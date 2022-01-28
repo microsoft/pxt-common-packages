@@ -310,8 +310,8 @@ namespace sprites {
             // reuse previous sprite if possible
             const imgh = font.charHeight + bubblePadding;
             if (!this.sayBubbleSprite
-                || this.sayBubbleSprite.image.width != bubbleWidth
-                || this.sayBubbleSprite.image.height != imgh) {
+                || this.sayBubbleSprite.width != bubbleWidth
+                || this.sayBubbleSprite.height != imgh) {
                 const sayImg = image.create(bubbleWidth, imgh);
                 if (this.sayBubbleSprite) // sprite with same image size, we can reuse it
                     this.sayBubbleSprite.setImage(sayImg);

@@ -639,11 +639,11 @@ namespace pxsim.ImageMethods {
         }
     }
 
-    export function _blit(img: RefImage, src: RefImage, args: RefCollection) {
-        blit(img, src, args);
+    export function _blit(img: RefImage, src: RefImage, args: RefCollection): boolean {
+        return blit(img, src, args);
     }
 
-    export function blit(dst: RefImage, src: RefImage, args: RefCollection) {
+    export function blit(dst: RefImage, src: RefImage, args: RefCollection): boolean {
         const xDst = args.getAt(0) as number;
         const yDst = args.getAt(1) as number;
         const wDst = args.getAt(2) as number;
@@ -653,6 +653,7 @@ namespace pxsim.ImageMethods {
         const wSrc = args.getAt(6) as number;
         const hSrc = args.getAt(7) as number;
         const transparent = args.getAt(8) as number;
+        const check = args.getAt(9) as number;
 
         const xSrcStep = ((wSrc << 16) / wDst) | 0;
         const ySrcStep = ((hSrc << 16) / hDst) | 0;
@@ -669,16 +670,27 @@ namespace pxsim.ImageMethods {
         const xSrcEnd = Math.min(src._width, xSrc + wSrc) << 16;
         const ySrcEnd = Math.min(src._height, ySrc + hSrc) << 16;
 
+        if (!check)
+            dst.makeWritable();
+
         for (let yDstCur = yDstStart, ySrcCur = ySrcStart; yDstCur < yDstEnd && ySrcCur < ySrcEnd; ++yDstCur, ySrcCur += ySrcStep) {
             const ySrcCurI = ySrcCur >> 16;
             for (let xDstCur = xDstStart, xSrcCur = xSrcStart; xDstCur < xDstEnd && xSrcCur < xSrcEnd; ++xDstCur, xSrcCur += xSrcStep) {
                 const xSrcCurI = xSrcCur >> 16;
                 const cSrc = getPixel(src, xSrcCurI, ySrcCurI);
+                if (check && cSrc) {
+                    const cDst = getPixel(dst, xDstCur, yDstCur);
+                    if (cDst) {
+                        return true;
+                    }
+                    continue;
+                }
                 if (!transparent || cSrc) {
                     setPixel(dst, xDstCur, yDstCur, cSrc);
                 }
             }
         }
+        return false;
     }
 }
 
