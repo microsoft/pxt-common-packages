@@ -98,9 +98,6 @@ static void init() {
 //%
 void scanStart() {
     init();
-    tcpip_adapter_ip_info_t ipInfo;                 
-    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
-    LOG("tcp ip: " IPSTR "\n", IP2STR(&ipInfo.ip));     
 
 /*
     scan_done = false;

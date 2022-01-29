@@ -12,38 +12,14 @@ namespace http {
 esp_err_t get_handler(httpd_req_t *req)
 {
     LOG("GET");
-    const char resp[] = "<h1>Join WiFi</h1><form action='/login'><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input type='submit'value='Connect'></form>";
+    const char resp[] = "<meta name='viewport'content='width=device-width,initial-scale=1'><h1>Join WiFi</h1><form action='/add-ap'><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input type='submit'value='Connect'></form>";
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
-esp_err_t post_handler(httpd_req_t *req)
+esp_err_t add_ap_handler(httpd_req_t *req)
 {
     LOG("post");
-
-    /* Destination buffer for content of HTTP POST request.
-     * httpd_req_recv() accepts char* only, but content could
-     * as well be any binary data (needs type casting).
-     * In case of string data, null termination will be absent, and
-     * content length would give length of string */
-    char content[100];
-
-    /* Truncate if content length larger than the buffer */
-    size_t recv_size = pxt::min(req->content_len, sizeof(content));
-
-    int ret = httpd_req_recv(req, content, recv_size);
-    if (ret <= 0) {  /* 0 return value indicates connection closed */
-        /* Check if timeout occurred */
-        if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
-            /* In case of timeout one can choose to retry calling
-             * httpd_req_recv(), but to keep it simple, here we
-             * respond with an HTTP 408 (Request Timeout) error */
-            httpd_resp_send_408(req);
-        }
-        /* In case of error, returning ESP_FAIL will
-         * ensure that the underlying socket is closed */
-        return ESP_FAIL;
-    }
 
     /* Send a simple response */
     const char resp[] = "URI POST Response";
@@ -61,9 +37,9 @@ httpd_uri_t uri_get = {
 
 /* URI handler structure for POST /uri */
 httpd_uri_t uri_post = {
-    .uri      = "/login",
+    .uri      = "/add-ap",
     .method   = HTTP_POST,
-    .handler  = post_handler,
+    .handler  = add_ap_handler,
     .user_ctx = NULL
 };
 
@@ -87,10 +63,6 @@ httpd_handle_t start_webserver(void)
         esp_netif_ip_info_t ip_info;
         esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
         LOG("ip: " IPSTR "\n", IP2STR(&ip_info.ip));
-
-        tcpip_adapter_ip_info_t ipInfo;                 
-        tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_AP, &ipInfo);
-        LOG("tcp ip: " IPSTR "\n", IP2STR(&ipInfo.ip));  
     }
     else {
         LOG("error starting server");
