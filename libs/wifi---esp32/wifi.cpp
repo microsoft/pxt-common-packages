@@ -95,14 +95,12 @@ static void init() {
 void scanStart() {
     init();
 
-/*
     scan_done = false;
     wifi_scan_config_t scan_config;
     memset(&scan_config, 0, sizeof(scan_config));
     // scan_config.scan_time.active.max = 600;
     esp_err_t err = esp_wifi_scan_start(&scan_config, false);
     LOG("scan start: %d", err);
-*/
 }
 
 /** Starts an HTTP server with a login dialog route */
