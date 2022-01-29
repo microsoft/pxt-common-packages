@@ -108,7 +108,7 @@ void scanStart() {
 /** Starts an HTTP server with a login dialog route */
 //%
 void startLoginServer() {
-    init()
+    init();
     http::startHttpServer();
 }
 

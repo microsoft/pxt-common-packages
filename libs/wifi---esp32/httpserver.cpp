@@ -9,7 +9,7 @@
 
 namespace http {
 
-esp_err_t get_handler(httpd_req_t *req)
+esp_err_t login_handler(httpd_req_t *req)
 {
     LOG("login");
     const char resp[] = "<meta name='viewport'content='width=device-width,initial-scale=1'><h1>Join WiFi</h1><form action='/add-ap'><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input type='submit'value='Connect'></form>";
@@ -37,30 +37,32 @@ esp_err_t add_ap_handler(httpd_req_t *req)
                     LOG("Found URL query parameter => password=%s", password);
                     // save ap info, restart
 
-                    // restart system
+
+                    const char resp[] = "Restarting device...";
+                    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+
                     //systemReset();
+                    return ESP_OK;
                 }
             }
         }
         free(buf);
     }
 
-    /* Send a simple response */
-    const char resp[] = "Restarting device...";
-    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send_500(req);
     return ESP_OK;
 }
 
 /* URI handler structure for GET / */
-httpd_uri_t uri_get = {
+httpd_uri_t login_get = {
     .uri      = "/login",
     .method   = HTTP_GET,
-    .handler  = get_handler,
+    .handler  = login_handler,
     .user_ctx = NULL
 };
 
 /* URI handler structure for POST /uri */
-httpd_uri_t uri_post = {
+httpd_uri_t add_ap_get = {
     .uri      = "/add-ap",
     .method   = HTTP_GET,
     .handler  = add_ap_handler,
@@ -83,12 +85,12 @@ httpd_handle_t start_webserver(void)
     /* Start the httpd server */
     if (httpd_start(&server, &config) == ESP_OK) {
         /* Register URI handlers */
-        httpd_register_uri_handler(server, &uri_get);
-        httpd_register_uri_handler(server, &uri_post);
+        httpd_register_uri_handler(server, &login_get);
+        httpd_register_uri_handler(server, &add_ap_get);
 
         esp_netif_ip_info_t ip_info;
         esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
-        LOG("ip: " IPSTR "\n", IP2STR(&ip_info.ip));
+        LOG("softap ip: " IPSTR "\n", IP2STR(&ip_info.ip));
     }
     else {
         LOG("error starting server");
