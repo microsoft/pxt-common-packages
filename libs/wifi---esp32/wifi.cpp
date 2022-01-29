@@ -69,7 +69,7 @@ static void init() {
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    esp_netif_init();
+    ESP_ERROR_CHECK(esp_netif_init());
     esp_netif_config_t netif_config = ESP_NETIF_DEFAULT_WIFI_STA();
     esp_netif_t *netif = esp_netif_new(&netif_config);
     assert(netif);
@@ -83,9 +83,13 @@ static void init() {
     ESP_ERROR_CHECK(
         esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &got_ip_handler, NULL));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    //ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
     ESP_ERROR_CHECK(esp_wifi_start());
+
+    http::startHttpServer();
+
     initialized = true;
 }
 
@@ -93,6 +97,7 @@ static void init() {
 //%
 void scanStart() {
     init();
+
     scan_done = false;
     wifi_scan_config_t scan_config;
     memset(&scan_config, 0, sizeof(scan_config));

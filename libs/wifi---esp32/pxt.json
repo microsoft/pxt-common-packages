@@ -7,6 +7,7 @@
         "enums.d.ts",
         "controller.ts",
         "wifi.h",
+        "httpserver.cpp",
         "socket.cpp",
         "wifi.cpp"
     ],

@@ -10,3 +10,8 @@ namespace pxt {
 namespace _wifi {
 int eventID();
 }
+
+namespace http {
+    void startHttpServer();
+    void stopHttpServer();
+}
