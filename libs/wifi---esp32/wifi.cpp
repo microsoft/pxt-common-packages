@@ -1,5 +1,4 @@
 #include "wifi.h"
-#include <tcpip_adapter.h>
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 #include "esp_netif.h"
@@ -64,7 +63,6 @@ static void init() {
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
     settings_init();
-    tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -88,8 +86,6 @@ static void init() {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
     ESP_ERROR_CHECK(esp_wifi_start());
-
-    http::startHttpServer();
              
     initialized = true;
 }
@@ -106,7 +102,14 @@ void scanStart() {
     // scan_config.scan_time.active.max = 600;
     esp_err_t err = esp_wifi_scan_start(&scan_config, false);
     LOG("scan start: %d", err);
-    */
+*/
+}
+
+/** Starts an HTTP server with a login dialog route */
+//%
+void startLoginServer() {
+    init()
+    http::startHttpServer();
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1

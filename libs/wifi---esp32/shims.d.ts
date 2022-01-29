@@ -35,6 +35,10 @@ declare namespace _wifi {
     //% shim=_wifi::scanStart
     function scanStart(): void;
 
+    /** Start a HTTP login server. */
+    //% shim=_wifi::scanLoginServer
+    function scanLoginServer(): void;
+
     /** Get the results of the scan if any. */
     //% shim=_wifi::scanResults
     function scanResults(): Buffer;

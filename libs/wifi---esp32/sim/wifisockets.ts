@@ -248,6 +248,9 @@ namespace pxsim._wifi {
         _raiseEvent(WifiEvent.ScanDone)
     }
 
+    export function startLoginServer(): void {
+    }
+
     export function scanResults(): RefBuffer {
         const b = new Uint8Array(7)
         b[0] = -20 // rssi
