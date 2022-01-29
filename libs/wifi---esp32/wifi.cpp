@@ -1,6 +1,5 @@
 #include "wifi.h"
 #include <tcpip_adapter.h>
-
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 #include "esp_netif.h"
@@ -91,7 +90,7 @@ static void init() {
     ESP_ERROR_CHECK(esp_wifi_start());
 
     http::startHttpServer();
-
+             
     initialized = true;
 }
 
@@ -99,17 +98,18 @@ static void init() {
 //%
 void scanStart() {
     init();
-
     tcpip_adapter_ip_info_t ipInfo;                 
     tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
-    LOG("ip: " IPSTR "\n", IP2STR(&ipInfo.ip));     
+    LOG("tcp ip: " IPSTR "\n", IP2STR(&ipInfo.ip));     
 
+/*
     scan_done = false;
     wifi_scan_config_t scan_config;
     memset(&scan_config, 0, sizeof(scan_config));
     // scan_config.scan_time.active.max = 600;
     esp_err_t err = esp_wifi_scan_start(&scan_config, false);
     LOG("scan start: %d", err);
+    */
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1

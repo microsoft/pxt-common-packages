@@ -1,23 +1,22 @@
 #include "wifi.h"
 #include <tcpip_adapter.h>
+#include <esp_netif.h>
 #include <esp_http_server.h>
+#include <mdns.h>
 
 #define TAG "http"
 #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__)
 
 namespace http {
 
-/* Our URI handler function to be called during GET /uri request */
 esp_err_t get_handler(httpd_req_t *req)
 {
-    LOG("get");
-    /* Send a simple response */
-    const char resp[] = "URI GET Response";
+    LOG("GET");
+    const char resp[] = "<h1>Join WiFi</h1><form action='/login'><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input type='submit'value='Connect'></form>";
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
-/* Our URI handler function to be called during POST /uri request */
 esp_err_t post_handler(httpd_req_t *req)
 {
     LOG("post");
@@ -52,9 +51,9 @@ esp_err_t post_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-/* URI handler structure for GET /uri */
+/* URI handler structure for GET / */
 httpd_uri_t uri_get = {
-    .uri      = "/uri",
+    .uri      = "/login",
     .method   = HTTP_GET,
     .handler  = get_handler,
     .user_ctx = NULL
@@ -62,7 +61,7 @@ httpd_uri_t uri_get = {
 
 /* URI handler structure for POST /uri */
 httpd_uri_t uri_post = {
-    .uri      = "/uri",
+    .uri      = "/login",
     .method   = HTTP_POST,
     .handler  = post_handler,
     .user_ctx = NULL
@@ -75,9 +74,6 @@ httpd_handle_t start_webserver(void)
 
     /* Generate default configuration */
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.lru_purge_enable = true;
-
-    LOG("port: '%d'", config.server_port);
 
     /* Empty handle to esp_http_server */
     httpd_handle_t server = NULL;
@@ -88,9 +84,13 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &uri_get);
         httpd_register_uri_handler(server, &uri_post);
 
+        esp_netif_ip_info_t ip_info;
+        esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
+        LOG("ip: " IPSTR "\n", IP2STR(&ip_info.ip));
+
         tcpip_adapter_ip_info_t ipInfo;                 
         tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_AP, &ipInfo);
-        LOG("ip: " IPSTR "\n", IP2STR(&ipInfo.ip));     
+        LOG("tcp ip: " IPSTR "\n", IP2STR(&ipInfo.ip));  
     }
     else {
         LOG("error starting server");
@@ -108,6 +108,16 @@ void stop_webserver(httpd_handle_t server)
     }
 }
 
+void start_mdns_service()
+{
+    LOG("start mDNS service");
+    //initialize mDNS service
+    ESP_ERROR_CHECK(mdns_init());
+    ESP_ERROR_CHECK(mdns_hostname_set("jacdac-iot"));
+    ESP_ERROR_CHECK(mdns_instance_name_set("Jacdac ESP32-S2 IoT"));
+    ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
+}
+
 static httpd_handle_t _server = NULL;
 
 /**
@@ -117,16 +127,8 @@ Starts a simple HTTP web server
 void startHttpServer() {
     if (NULL == _server) {
         _server = start_webserver();
+      //  start_mdns_service();
     }
-}
-
-/**
-Starts a simple HTTP web server
-**/
-//%
-void stopHttpServer() {
-    stop_webserver(_server);
-    _server = NULL;
 }
 
 }

@@ -31,7 +31,6 @@ namespace net {
                 this.networks.push(ap)
                 i += entrySize
             }
-            control.dmesg(`scan completed`)
             control.raiseEvent(_wifi.eventID(), EV_ScanCompleted)
         }
 
