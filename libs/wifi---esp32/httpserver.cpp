@@ -38,7 +38,7 @@ httpd_uri_t uri_get = {
 /* URI handler structure for POST /uri */
 httpd_uri_t uri_post = {
     .uri      = "/add-ap",
-    .method   = HTTP_POST,
+    .method   = HTTP_GET,
     .handler  = add_ap_handler,
     .user_ctx = NULL
 };
@@ -85,8 +85,7 @@ void start_mdns_service()
     LOG("start mDNS service");
     //initialize mDNS service
     ESP_ERROR_CHECK(mdns_init());
-    ESP_ERROR_CHECK(mdns_hostname_set("jacdac-iot"));
-    ESP_ERROR_CHECK(mdns_instance_name_set("Jacdac ESP32-S2 IoT"));
+    ESP_ERROR_CHECK(mdns_hostname_set("jacdac"));
     ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
 }
 
@@ -99,7 +98,7 @@ Starts a simple HTTP web server
 void startHttpServer() {
     if (NULL == _server) {
         _server = start_webserver();
-      //  start_mdns_service();
+        start_mdns_service();
     }
 }
 
