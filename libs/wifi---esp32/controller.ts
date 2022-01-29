@@ -43,8 +43,8 @@ namespace net {
             return this.networks
         }
 
-        public startLoginServer(): void {
-            _wifi.startLoginServer();
+        public startLoginServer(hostName: string): void {
+            _wifi.startLoginServer(hostName);
         }
 
         public disconnectAP() {

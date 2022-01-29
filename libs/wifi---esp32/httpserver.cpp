@@ -12,7 +12,7 @@ namespace http {
 esp_err_t login_handler(httpd_req_t *req)
 {
     LOG("login");
-    const char resp[] = "<style>html{background:#aaa}*{font-size:xx-large;font-family:monospace}form{min-height:100vh;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:.5rem}</style><meta name='viewport'content='width=device-width,initial-scale=1'><form action='/add-ap'><h1>Jacdac WiFi</h1><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input id='submit'type='submit'value='connect'></form>";
+    const char resp[] = "<style>html{background:#aaa}*{font-size:xx-large;font-family:monospace}form{min-height:100vh;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:.5rem}</style><meta name='viewport'content='width=device-width,initial-scale=1'><form action='/add-ap'><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input id='submit'type='submit'value='connect'></form>";
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
@@ -98,10 +98,11 @@ httpd_handle_t start_webserver(void)
     return server;
 }
 
-void start_mdns_service()
+void start_mdns_service(const char* hostName)
 {
     LOG("start mDNS service");
     ESP_ERROR_CHECK(mdns_init());
+    // TODO
     ESP_ERROR_CHECK(mdns_hostname_set("jacdac"));
     ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
 }
@@ -112,7 +113,7 @@ static httpd_handle_t _server = NULL;
 Starts a simple HTTP web server
 **/
 //%
-void startHttpServer() {
+void startHttpServer(String hostName) {
     if (NULL == _server) {
         _server = start_webserver();
         start_mdns_service();

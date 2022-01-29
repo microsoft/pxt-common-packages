@@ -105,9 +105,9 @@ void scanStart() {
 
 /** Starts an HTTP server with a login dialog route */
 //%
-void startLoginServer() {
+void startLoginServer(String hostName) {
     init();
-    http::startHttpServer();
+    http::startHttpServer(hostName);
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1

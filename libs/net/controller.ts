@@ -43,7 +43,7 @@ namespace net {
             return [];
         }
 
-        public startLoginServer(): void {
+        public startLoginServer(hostName: string): void {
             
         }
 
