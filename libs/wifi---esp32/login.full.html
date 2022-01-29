@@ -1,10 +1,27 @@
 <html>
   <head>
+    <style>
+      html {
+        background: #aaa;
+      }
+      * {
+        font-size: xx-large;
+        font-family: monospace;
+      }
+      form {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
-    <h1>Join WiFi</h1>
     <form action="/add-ap">
+      <h1>Jacdac WiFi</h1>
       <input type="text" name="name" id="ssid" placeholder="WiFi" required />
       <input
         type="text"
@@ -13,7 +30,7 @@
         placeholder="Password"
         required
       />
-      <input type="submit" value="Connect" />
+      <input id="submit" type="submit" value="connect" />
     </form>
   </body>
 </html>

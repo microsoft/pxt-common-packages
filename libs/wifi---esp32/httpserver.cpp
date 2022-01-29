@@ -12,7 +12,7 @@ namespace http {
 esp_err_t login_handler(httpd_req_t *req)
 {
     LOG("login");
-    const char resp[] = "<meta name='viewport'content='width=device-width,initial-scale=1'><h1>Join WiFi</h1><form action='/add-ap'><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input type='submit'value='Connect'></form>";
+    const char resp[] = "<style>html{background:#aaa}*{font-size:xx-large;font-family:monospace}form{min-height:100vh;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:.5rem}</style><meta name='viewport'content='width=device-width,initial-scale=1'><form action='/add-ap'><h1>Jacdac WiFi</h1><input name='name'id='ssid'placeholder='WiFi'required> <input name='password'id='password'placeholder='Password'required> <input id='submit'type='submit'value='connect'></form>";
     httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
