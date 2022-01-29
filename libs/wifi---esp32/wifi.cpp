@@ -1,4 +1,5 @@
 #include "wifi.h"
+#include <tcpip_adapter.h>
 
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
@@ -64,7 +65,7 @@ static void init() {
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
     settings_init();
-
+    tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -73,8 +74,9 @@ static void init() {
     esp_netif_config_t netif_config = ESP_NETIF_DEFAULT_WIFI_STA();
     esp_netif_t *netif = esp_netif_new(&netif_config);
     assert(netif);
-    esp_netif_attach_wifi_station(netif);
-    esp_wifi_set_default_wifi_sta_handlers();
+    ESP_ERROR_CHECK(esp_netif_attach_wifi_station(netif));
+    ESP_ERROR_CHECK(esp_wifi_set_default_wifi_sta_handlers());
+    ESP_ERROR_CHECK(esp_wifi_set_default_wifi_ap_handlers());
 
     ESP_ERROR_CHECK(
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &scan_done_handler, NULL));
@@ -97,6 +99,10 @@ static void init() {
 //%
 void scanStart() {
     init();
+
+    tcpip_adapter_ip_info_t ipInfo;                 
+    tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
+    LOG("ip: " IPSTR "\n", IP2STR(&ipInfo.ip));     
 
     scan_done = false;
     wifi_scan_config_t scan_config;

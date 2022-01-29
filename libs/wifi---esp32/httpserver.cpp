@@ -89,8 +89,8 @@ httpd_handle_t start_webserver(void)
         httpd_register_uri_handler(server, &uri_post);
 
         tcpip_adapter_ip_info_t ipInfo;                 
-        tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ipInfo);
-        LOG("ip: " IPSTR "\n", IP2STR(&ipinfo.ip));     
+        tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_AP, &ipInfo);
+        LOG("ip: " IPSTR "\n", IP2STR(&ipInfo.ip));     
     }
     else {
         LOG("error starting server");
