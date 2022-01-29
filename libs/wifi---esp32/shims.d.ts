@@ -36,8 +36,8 @@ declare namespace _wifi {
     function scanStart(): void;
 
     /** Start a HTTP login server. */
-    //% shim=_wifi::scanLoginServer
-    function scanLoginServer(): void;
+    //% shim=_wifi::startLoginServer
+    function startLoginServer(): void;
 
     /** Get the results of the scan if any. */
     //% shim=_wifi::scanResults
