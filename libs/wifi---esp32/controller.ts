@@ -44,6 +44,7 @@ namespace net {
         }
 
         public startLoginServer(hostName: string): void {
+            this.disconnect()
             _wifi.startLoginServer(hostName);
         }
 
