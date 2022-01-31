@@ -86,7 +86,7 @@ static void init() {
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
     // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
     ESP_ERROR_CHECK(esp_wifi_start());
-             
+
     initialized = true;
 }
 
@@ -107,7 +107,7 @@ void scanStart() {
 //%
 void startLoginServer(String hostName) {
     init();
-    http::startHttpServer(hostName);
+    http::startHttpServer(hostName->getUTF8Data());
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1

@@ -73,8 +73,6 @@ httpd_uri_t add_ap_get = {
 httpd_handle_t start_webserver(void)
 {
     LOG("starting server");
-    ESP_ERROR_CHECK(esp_wifi_set_default_wifi_ap_handlers());
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
 
     /* Generate default configuration */
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -90,7 +88,7 @@ httpd_handle_t start_webserver(void)
 
         esp_netif_ip_info_t ip_info;
         esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
-        LOG("softap ip: " IPSTR "\n", IP2STR(&ip_info.ip));
+        LOG("softap ip: " IPSTR, IP2STR(&ip_info.ip));
     }
     else {
         LOG("error starting server");
@@ -100,7 +98,7 @@ httpd_handle_t start_webserver(void)
 
 void start_mdns_service(const char* hostName)
 {
-    LOG("start mDNS service");
+    LOG("start mDNS service %s", hostName);
     ESP_ERROR_CHECK(mdns_init());
     ESP_ERROR_CHECK(mdns_hostname_set(hostName));
     ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
@@ -108,14 +106,10 @@ void start_mdns_service(const char* hostName)
 
 static httpd_handle_t _server = NULL;
 
-/**
-Starts a simple HTTP web server
-**/
-//%
-void startHttpServer(String hostName) {
+void startHttpServer(const char* hostName) {
     if (NULL == _server) {
         _server = start_webserver();
-        start_mdns_service(hostName->getUTF8Data());
+        start_mdns_service(hostName);
     }
 }
 
