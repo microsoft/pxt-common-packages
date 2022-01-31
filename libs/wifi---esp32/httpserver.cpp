@@ -116,7 +116,7 @@ Starts a simple HTTP web server
 void startHttpServer(String hostName) {
     if (NULL == _server) {
         _server = start_webserver();
-        start_mdns_service();
+        start_mdns_service(hostName->getUTF8Data());
     }
 }
 

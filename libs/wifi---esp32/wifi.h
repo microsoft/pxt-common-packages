@@ -12,5 +12,5 @@ int eventID();
 }
 
 namespace http {
-    void startHttpServer();
+    void startHttpServer(String hostName);
 }
