@@ -63,17 +63,18 @@ static void init() {
     esp_log_level_set(TAG, ESP_LOG_INFO);
 
     settings_init();
+
+    ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    ESP_ERROR_CHECK(esp_netif_init());
     esp_netif_config_t netif_config = ESP_NETIF_DEFAULT_WIFI_STA();
     esp_netif_t *netif = esp_netif_new(&netif_config);
     assert(netif);
     ESP_ERROR_CHECK(esp_netif_attach_wifi_station(netif));
     ESP_ERROR_CHECK(esp_wifi_set_default_wifi_sta_handlers());
-    ESP_ERROR_CHECK(esp_wifi_set_default_wifi_ap_handlers());
 
     ESP_ERROR_CHECK(
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_SCAN_DONE, &scan_done_handler, NULL));
@@ -82,9 +83,7 @@ static void init() {
     ESP_ERROR_CHECK(
         esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &got_ip_handler, NULL));
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-    //ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-    // ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_NULL));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
 
     initialized = true;

@@ -9,6 +9,9 @@
 
 namespace http {
 
+static httpd_handle_t _server = NULL;
+static wifi_config_t wifi_config;
+
 esp_err_t login_handler(httpd_req_t *req)
 {
     LOG("login");
@@ -69,6 +72,22 @@ httpd_uri_t add_ap_get = {
     .user_ctx = NULL
 };
 
+static void init() {
+    if (NULL != _server) return;
+
+    esp_netif_create_default_wifi_ap();
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+
+    wifi_config.ap.channel = 11;
+    wifi_config.ap.max_connection = 1;
+    wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+}
+
 /* Function for starting the webserver */
 httpd_handle_t start_webserver(void)
 {
@@ -104,13 +123,12 @@ void start_mdns_service(const char* hostName)
     ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
 }
 
-static httpd_handle_t _server = NULL;
-
 void startHttpServer(const char* hostName) {
-    if (NULL == _server) {
-        _server = start_webserver();
-        start_mdns_service(hostName);
-    }
+    if (NULL != _server) return;
+
+    init();
+    _server = start_webserver();
+    start_mdns_service(hostName);
 }
 
 }
