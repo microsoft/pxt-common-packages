@@ -72,62 +72,54 @@ httpd_uri_t add_ap_get = {
     .user_ctx = NULL
 };
 
-static void init() {
-    if (NULL != _server) return;
+/* Function for starting the webserver */
+static void init(const char* hostName)
+{
+    LOG("starting login server %s", hostName);
+    const char* ssid = hostName;
 
-    LOG("starting log server");
     esp_netif_create_default_wifi_ap();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
+    memcpy(wifi_config.ap.ssid, ssid, strlen(ssid));
+    wifi_config.ap.ssid_len = static_cast<uint8_t>(strlen(ssid));
     wifi_config.ap.channel = 11;
     wifi_config.ap.max_connection = 1;
     wifi_config.ap.authmode = WIFI_AUTH_OPEN;
 
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
-}
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));    
 
-/* Function for starting the webserver */
-httpd_handle_t start_webserver(void)
-{
     /* Generate default configuration */
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
     /* Empty handle to esp_http_server */
     httpd_handle_t server = NULL;
 
-    /* Start the httpd server */
-    if (httpd_start(&server, &config) == ESP_OK) {
-        /* Register URI handlers */
-        httpd_register_uri_handler(server, &login_get);
-        httpd_register_uri_handler(server, &add_ap_get);
+    ESP_ERROR_CHECK(httpd_start(&server, &config));
 
-        esp_netif_ip_info_t ip_info;
-        esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
-        LOG("softap ip: " IPSTR, IP2STR(&ip_info.ip));
-    }
-    else {
-        LOG("error starting login server");
-    }
-    return server;
-}
+    httpd_register_uri_handler(server, &login_get);
+    httpd_register_uri_handler(server, &add_ap_get);
 
-void start_mdns_service(const char* hostName)
-{
+    esp_netif_ip_info_t ip_info;
+    esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);
+    LOG("SoftAP ip: " IPSTR, IP2STR(&ip_info.ip));
+
     LOG("start mDNS service %s", hostName);
     ESP_ERROR_CHECK(mdns_init());
     ESP_ERROR_CHECK(mdns_hostname_set(hostName));
     ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
+
+    _server = server;
 }
 
 void startHttpServer(const char* hostName) {
-    if (NULL != _server) return;
-
-    init();
-    _server = start_webserver();
-    start_mdns_service(hostName);
+    if (NULL == _server) {
+        init(hostName);
+    }
 }
 
 }
