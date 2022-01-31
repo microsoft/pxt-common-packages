@@ -7,7 +7,7 @@
 #define TAG "http"
 #define LOG(...) ESP_LOGI(TAG, __VA_ARGS__)
 
-namespace http {
+namespace _wifi {
 
 static httpd_handle_t _server = NULL;
 static wifi_config_t wifi_config;
@@ -56,9 +56,23 @@ esp_err_t add_ap_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+// HTTP Error (404) Handler - Redirects all requests to the root page
+esp_err_t http_404_error_handler(httpd_req_t *req, httpd_err_code_t err)
+{
+    // Set status
+    httpd_resp_set_status(req, "302 Temporary Redirect");
+    // Redirect to the "/" root directory
+    httpd_resp_set_hdr(req, "Location", "/");
+    // iOS requires content in the response to detect a captive portal, simply redirecting is not sufficient.
+    httpd_resp_send(req, "Redirect to the captive portal", HTTPD_RESP_USE_STRLEN);
+
+    ESP_LOGI(TAG, "Redirecting to root");
+    return ESP_OK;
+}
+
 /* URI handler structure for GET / */
 httpd_uri_t login_get = {
-    .uri      = "/login",
+    .uri      = "/",
     .method   = HTTP_GET,
     .handler  = login_handler,
     .user_ctx = NULL
@@ -103,6 +117,7 @@ static void init(const char* hostName)
 
     httpd_register_uri_handler(server, &login_get);
     httpd_register_uri_handler(server, &add_ap_get);
+    httpd_register_err_handler(server, HTTPD_404_NOT_FOUND, http_404_error_handler);
 
     esp_netif_ip_info_t ip_info;
     esp_netif_get_ip_info(esp_netif_get_handle_from_ifkey("WIFI_AP_DEF"), &ip_info);

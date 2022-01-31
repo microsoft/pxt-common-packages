@@ -106,7 +106,7 @@ void scanStart() {
 //%
 void startLoginServer(String hostName) {
     init();
-    http::startHttpServer(hostName->getUTF8Data());
+    _wifi::startHttpServer(hostName->getUTF8Data());
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1

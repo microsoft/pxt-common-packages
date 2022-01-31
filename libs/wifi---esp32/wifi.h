@@ -8,9 +8,6 @@ namespace pxt {
 } // namespace pxt
 
 namespace _wifi {
-int eventID();
-}
-
-namespace http {
+    int eventID();
     void startHttpServer(const char* hostName);
 }
