@@ -75,6 +75,7 @@ httpd_uri_t add_ap_get = {
 static void init() {
     if (NULL != _server) return;
 
+    LOG("starting log server");
     esp_netif_create_default_wifi_ap();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -91,8 +92,6 @@ static void init() {
 /* Function for starting the webserver */
 httpd_handle_t start_webserver(void)
 {
-    LOG("starting server");
-
     /* Generate default configuration */
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
@@ -110,7 +109,7 @@ httpd_handle_t start_webserver(void)
         LOG("softap ip: " IPSTR, IP2STR(&ip_info.ip));
     }
     else {
-        LOG("error starting server");
+        LOG("error starting login server");
     }
     return server;
 }
