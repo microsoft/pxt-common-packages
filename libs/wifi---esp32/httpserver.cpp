@@ -102,8 +102,7 @@ void start_mdns_service(const char* hostName)
 {
     LOG("start mDNS service");
     ESP_ERROR_CHECK(mdns_init());
-    // TODO
-    ESP_ERROR_CHECK(mdns_hostname_set("jacdac"));
+    ESP_ERROR_CHECK(mdns_hostname_set(hostName));
     ESP_ERROR_CHECK(mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0));
 }
 
