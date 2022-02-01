@@ -1,0 +1,1 @@
+npx html-minifier --removeAttributeQuotes --collapse-whitespace --remove-comments --remove-optional-tags --remove-redundant-attributes --remove-script-type-attributes --quoteCharacter "'" --remove-tag-whitespace --use-short-doctype --minify-css true --minify-js true --html5 true -o login.html login.full.html

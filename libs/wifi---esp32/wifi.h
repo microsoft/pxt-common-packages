@@ -8,5 +8,17 @@ namespace pxt {
 } // namespace pxt
 
 namespace _wifi {
-int eventID();
+    enum class WifiEvent {
+        //%
+        ScanDone = 1,
+        //%
+        GotIP = 2,
+        //%
+        Disconnected = 3,
+        //%
+        AccessPointCredentialsAvailable = 4
+    };
+
+    int eventID();
+    void startHttpServer(const char* hostName);
 }

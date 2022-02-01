@@ -43,6 +43,10 @@ namespace net {
             return [];
         }
 
+        public startLoginServer(hostName: string): void {
+            
+        }
+
         public socket(): number {
             return -1;
         }

@@ -1,4 +1,7 @@
 namespace net {
+    //% shim=_wifi::_readLastAccessPointCredentials
+    declare function _readLastAccessPointCredentials(): string[];
+
     const EV_ScanCompleted = 1000
 
     export class WifiController extends net.Controller {
@@ -31,7 +34,6 @@ namespace net {
                 this.networks.push(ap)
                 i += entrySize
             }
-            control.dmesg(`scan completed`)
             control.raiseEvent(_wifi.eventID(), EV_ScanCompleted)
         }
 
@@ -42,6 +44,22 @@ namespace net {
             }
             control.waitForEvent(_wifi.eventID(), EV_ScanCompleted)
             return this.networks
+        }
+
+        public startLoginServer(hostName: string): void {
+            this.disconnect()
+            _wifi.startLoginServer(hostName);
+            control.onEvent(_wifi.eventID(), WifiEvent.AccessPointCredentialsAvailable, () => {
+                const credentials = _readLastAccessPointCredentials()
+                if (!!credentials && credentials.length == 2) {
+                    const ssid = credentials[0]
+                    const pwd = credentials[1]
+                    net.updateAccessPoint(ssid, pwd)
+                    console.debug(`restarting...`);
+                    pause(100);
+                    control.reset();
+                }
+            })
         }
 
         public disconnectAP() {
