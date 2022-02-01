@@ -10,6 +10,7 @@
 namespace _wifi {
 
 static httpd_handle_t _server = NULL;
+static const char* _lastApBuffer = NULL;
 static wifi_config_t wifi_config;
 
 esp_err_t login_handler(httpd_req_t *req)
@@ -27,33 +28,58 @@ esp_err_t add_ap_handler(httpd_req_t *req)
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
     size_t buf_len = httpd_req_get_url_query_len(req) + 1;
-    if (buf_len > 1) {
+    if (buf_len > 1 && buf_len < 256) {
         char* buf = (char*)malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
-            LOG("Found URL query => %s", buf);
             char name[64];
             char password[64];
             /* Get value of expected key from query string */
-            if (httpd_query_key_value(buf, "name", name, sizeof(name)) == ESP_OK) {
-                LOG("Found URL query parameter => name=%s", name);
-                if (httpd_query_key_value(buf, "password", password, sizeof(password)) == ESP_OK) {
-                    LOG("Found URL query parameter => password=%s", password);
-                    // save ap info, restart
-
-
-                    const char resp[] = "Restarting device...";
-                    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
-
-                    //systemReset();
+            if ((httpd_query_key_value(buf, "name", name, sizeof(name)) == ESP_OK) &&
+                (httpd_query_key_value(buf, "password", password, sizeof(password)) == ESP_OK)) {
+                // save ap info, let TS handle it
+                if (NULL == _lastApBuffer) {
+                    _lastApBuffer = buf;
+                    pxt::raiseEvent(_wifi::eventID(), (int)_wifi::WifiEvent::AccessPointCredentialsAvailable);
                     return ESP_OK;
                 }
             }
         }
         free(buf);
+        return ESP_OK;
     }
 
     httpd_resp_send_500(req);
     return ESP_OK;
+}
+
+//%
+RefCollection *_readLastAccessPointCredentials() {
+    auto res = Array_::mk();
+    registerGCObj(res);
+
+    char name[64];
+    char password[64];
+    /* Get value of expected key from query string */
+    if (NULL != _lastApBuffer &&
+        (httpd_query_key_value(_lastApBuffer, "name", name, sizeof(name)) == ESP_OK) &&
+        (httpd_query_key_value(_lastApBuffer, "password", password, sizeof(password)) == ESP_OK)) {
+
+        {
+            auto str = mkString(name, -1);
+            registerGCObj(str);
+            res->head.push((TValue)str);
+            unregisterGCObj(str);
+        }   
+        {
+            auto str = mkString(password, -1);
+            registerGCObj(str);
+            res->head.push((TValue)str);
+            unregisterGCObj(str);
+        }
+    }
+
+    unregisterGCObj(res);
+    return res;
 }
 
 // HTTP Error (404) Handler - Redirects all requests to the root page

@@ -11,15 +11,6 @@ void settings_init(void);
 
 namespace _wifi {
 
-enum class WifiEvent {
-    //%
-    ScanDone = 1,
-    //%
-    GotIP = 2,
-    //%
-    Disconnected = 3,
-};
-
 /** Get ID used in events. */
 //%
 int eventID() {

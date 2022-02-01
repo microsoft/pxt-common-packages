@@ -35,7 +35,7 @@ declare namespace _wifi {
     //% shim=_wifi::scanStart
     function scanStart(): void;
 
-    /** Start a HTTP login server. */
+    /** Starts an HTTP server with a login dialog route */
     //% shim=_wifi::startLoginServer
     function startLoginServer(hostName: string): void;
 
