@@ -1112,14 +1112,14 @@ class Sprite extends sprites.BaseSprite {
         if (anchor & (ScaleAnchor.Left | ScaleAnchor.Right)) {
             const newW = this.width;
             const diff = newW - oldW;
-            const diffOver2 = (diff / 2) | 0;
+            const diffOver2 = diff / 2;
             if (anchor & ScaleAnchor.Left) { this.x += diffOver2; }
             if (anchor & ScaleAnchor.Right) { this.x -= diffOver2; }
         }
         if (anchor & (ScaleAnchor.Top | ScaleAnchor.Bottom)) {
             const newH = this.height;
             const diff = newH - oldH;
-            const diffOver2 = (diff / 2) | 0;
+            const diffOver2 = diff / 2;
             if (anchor & ScaleAnchor.Top) { this.y += diffOver2; }
             if (anchor & ScaleAnchor.Bottom) { this.y -= diffOver2; }
         }
