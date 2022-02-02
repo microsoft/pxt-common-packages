@@ -1131,7 +1131,7 @@ class Sprite extends sprites.BaseSprite {
     //% inlineInputMode=inline
     //% value.defl=1
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/set-scale
+    //% help=sprites/sprite/scale
     //% group="Scale" weight=90
     setScale(value: number, anchor?: ScaleAnchor): void {
         const direction = ScaleDirection.Uniformly;
@@ -1152,7 +1152,7 @@ class Sprite extends sprites.BaseSprite {
     //% inlineInputMode=inline
     //% value.defl=1
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/change-scale
+    //% help=sprites/sprite/scale
     //% group="Scale" weight=90
     changeScale(value: number, anchor?: ScaleAnchor): void {
         const direction = ScaleDirection.Uniformly;
