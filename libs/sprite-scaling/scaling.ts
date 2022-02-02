@@ -1,4 +1,4 @@
-//% color="#7B2CBF" weight=100 icon="\uf021" block="Sprite Scaling"
+//% color="#7B2CBF" weight=99 icon="\u2195" block="Sprite Scaling"
 namespace scaling {
     //% blockId=sprite_set_scale_ex
     //% block="set $sprite=variables_get(mySprite) scale to $value || $direction anchor $anchor"
@@ -67,7 +67,8 @@ namespace scaling {
     export function growByPixels(sprite: Sprite, amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
         direction = direction || ScaleDirection.Horizontally;
         anchor = anchor || ScaleAnchor.Middle;
-        if (typeof proportional !== 'boolean') proportional = direction === ScaleDirection.Uniformly;
+
+        if (proportional == null) proportional = direction === ScaleDirection.Uniformly;
 
         let sx: number;
         let sy: number;
