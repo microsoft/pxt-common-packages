@@ -376,11 +376,11 @@ class Sprite extends sprites.BaseSprite {
         // If it's just a small change to the hitbox on one axis,
         // don't change the dimensions to avoid random clipping
         this._hitbox = newHitBox;
-        if (xDiff <= Fx.mul(Fx.twoFx8, this._sx)) {
+        if (xDiff <= Fx.twoFx8) {
             this._hitbox.ox = oMinX;
             this._hitbox.width = Fx.sub(oMaxX, oMinX);
         }
-        if (yDiff <= Fx.mul(Fx.twoFx8, this._sy)) {
+        if (yDiff <= Fx.twoFx8) {
             this._hitbox.oy = oMinY;
             this._hitbox.height = Fx.sub(oMaxY, oMinY);
         }
