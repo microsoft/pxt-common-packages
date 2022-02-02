@@ -6,7 +6,8 @@ namespace net {
         NoScannedNetworks = 4,
         NoKnownNetworks = 5,
         Connecting = 6,
-        ConnectionFailed = 7
+        ConnectionFailed = 7,
+        LoginServerStarted = 8
     }
     export class Controller {
         eventID: number
@@ -45,6 +46,10 @@ namespace net {
 
         public startLoginServer(hostName: string): void {
             
+        }
+
+        public isLoginServerEnabled(): boolean {
+            return false;
         }
 
         public socket(): number {

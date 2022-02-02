@@ -47,6 +47,9 @@ namespace net {
         }
 
         public startLoginServer(hostName: string): void {
+            if (_wifi.isLoginServerEnabled())
+                return
+                
             this.disconnect()
             _wifi.startLoginServer(hostName);
             control.onEvent(_wifi.eventID(), WifiEvent.AccessPointCredentialsAvailable, () => {
@@ -60,6 +63,11 @@ namespace net {
                     control.reset();
                 }
             })
+            this.emitEvent(ControllerEvent.LoginServerStarted);
+        }
+
+        public isLoginServerEnabled(): boolean {
+            return _wifi.isLoginServerEnabled()
         }
 
         public disconnectAP() {
