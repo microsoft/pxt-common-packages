@@ -12,16 +12,16 @@ namespace game {
             this.parent = parent;
             this.width = width;
             this.height = height;
-            this.ox = ox;
-            this.oy = oy;
+            this.ox = Fx.floor(ox);
+            this.oy = Fx.floor(oy);
         }
 
         get left() {
-            return Fx.add(this.ox, this.parent._x);
+            return Fx.add(this.ox, Fx.floor(this.parent._x));
         }
 
         get top() {
-            return Fx.add(this.oy, this.parent._y);
+            return Fx.add(this.oy, Fx.floor(this.parent._y));
         }
 
         get right() {
@@ -85,8 +85,8 @@ namespace game {
         minY = Fx.mul(minY, s._sy);
         maxX = Fx.mul(maxX, s._sx);
         maxY = Fx.mul(maxY, s._sy);
-        const width  = Fx.add(Fx.sub(maxX, minX), Fx.oneFx8);
-        const height = Fx.add(Fx.sub(maxY, minY), Fx.oneFx8);
+        const width  = Fx.add(Fx.sub(maxX, minX), s._sx);
+        const height = Fx.add(Fx.sub(maxY, minY), s._sy);
 
         return new Hitbox(s, width, height, minX, minY);
     }
