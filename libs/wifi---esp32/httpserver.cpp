@@ -40,6 +40,8 @@ esp_err_t add_ap_handler(httpd_req_t *req)
                 if (NULL == _lastApBuffer) {
                     _lastApBuffer = buf;
                     pxt::raiseEvent(_wifi::eventID(), (int)_wifi::WifiEvent::AccessPointCredentialsAvailable);
+                    const char resp[] = "Restarting...";
+                    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
                     return ESP_OK;
                 }
             }

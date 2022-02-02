@@ -22,14 +22,14 @@
   <body>
     <form action="/add-ap">
       <label for="ssid">WiFi:</label>
-      <input type="text" name="name" id="ssid" placeholder="WiFi" required />
+      <input type="text" name="name" id="ssid" required autocomplete="username" />
       <label for="password">Password:</label>
       <input
         type="password"
         name="password"
         id="password"
-        placeholder="Password"
         required
+        autocomplete="current-password"
       />
       <input id="submit" type="submit" value="connect" />
     </form>
