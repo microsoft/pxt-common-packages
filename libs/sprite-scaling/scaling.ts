@@ -1,5 +1,4 @@
-//% color="#7B2CBF" weight=100 icon="\uf021" block="Sprite Scaling"
-//% advanced=true
+//% color="#7B2CBF" weight=99 icon="\u2195" block="Sprite Scaling"
 namespace scaling {
     //% blockId=sprite_set_scale_ex
     //% block="set $sprite=variables_get(mySprite) scale to $value || $direction anchor $anchor"
@@ -8,7 +7,7 @@ namespace scaling {
     //% value.defl=1
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite-scaling/set-scale
+    //% help=sprites/sprite-scaling/scale
     export function setScale(sprite: Sprite, value: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
         direction = direction || ScaleDirection.Uniformly;
         anchor = anchor || ScaleAnchor.Middle;
@@ -29,7 +28,7 @@ namespace scaling {
     //% amount.defl=10
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite-scaling/grow-by-amount
+    //% help=sprites/sprite-scaling/scale
     export function growByPercent(sprite: Sprite, amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
         amount /= 100;
         direction = direction || ScaleDirection.Uniformly;
@@ -51,7 +50,7 @@ namespace scaling {
     //% amount.defl=10
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite-scaling/shrink-by-percent
+    //% help=sprites/sprite-scaling/scale
     export function shrinkByPercent(sprite: Sprite, amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
         growByPercent(sprite, -amount, direction, anchor);
     }
@@ -64,11 +63,12 @@ namespace scaling {
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
     //% proportional.defl=0
-    //% help=sprites/sprite-scaling/grow-by-pixels
+    //% help=sprites/sprite-scaling/scale
     export function growByPixels(sprite: Sprite, amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
         direction = direction || ScaleDirection.Horizontally;
         anchor = anchor || ScaleAnchor.Middle;
-        if (typeof proportional !== 'boolean') proportional = direction === ScaleDirection.Uniformly;
+
+        if (proportional == null) proportional = direction === ScaleDirection.Uniformly;
 
         let sx: number;
         let sy: number;
@@ -96,7 +96,7 @@ namespace scaling {
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
     //% proportional.defl=0
-    //% help=sprites/sprite-scaling/grow-by-pixels
+    //% help=sprites/sprite-scaling/scale
     export function shrinkByPixels(sprite: Sprite, amount: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
         growByPixels(sprite, -amount, direction, anchor, proportional);
     }
