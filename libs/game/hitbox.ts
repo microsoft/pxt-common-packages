@@ -12,8 +12,8 @@ namespace game {
             this.parent = parent;
             this.width = width;
             this.height = height;
-            this.ox = Fx.floor(ox);
-            this.oy = Fx.floor(oy);
+            this.ox = ox;
+            this.oy = oy;
         }
 
         get left() {
@@ -88,6 +88,6 @@ namespace game {
         const width  = Fx.add(Fx.sub(maxX, minX), s._sx);
         const height = Fx.add(Fx.sub(maxY, minY), s._sy);
 
-        return new Hitbox(s, width, height, minX, minY);
+        return new Hitbox(s, width, height, Fx.floor(minX), Fx.floor(minY));
     }
 }
