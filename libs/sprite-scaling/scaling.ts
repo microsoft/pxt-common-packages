@@ -1,5 +1,4 @@
 //% color="#7B2CBF" weight=100 icon="\uf021" block="Sprite Scaling"
-//% advanced=true
 namespace scaling {
     //% blockId=sprite_set_scale_ex
     //% block="set $sprite=variables_get(mySprite) scale to $value || $direction anchor $anchor"
