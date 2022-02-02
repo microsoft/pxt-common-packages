@@ -101,7 +101,7 @@ void startLoginServer(String hostName) {
         init();
         _wifi::startHttpServer(hostName->getUTF8Data());
     }
-    raiseWifiEvent(WifiEvent::LoginServerStarted)
+    raiseWifiEvent(WifiEvent::LoginServerStarted);
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1
