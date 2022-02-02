@@ -17,7 +17,7 @@ int eventID() {
     return WIFI_ID;
 }
 
-static bool scan_done, is_connected;
+static bool scan_done, is_connected,  login_server;
 static esp_netif_ip_info_t ip_info;
 
 static void raiseWifiEvent(WifiEvent e) {
@@ -96,8 +96,12 @@ void scanStart() {
 /** Starts an HTTP server with a login dialog route */
 //%
 void startLoginServer(String hostName) {
-    init();
-    _wifi::startHttpServer(hostName->getUTF8Data());
+    if (!login_server) {
+        login_server = true;
+        init();
+        _wifi::startHttpServer(hostName->getUTF8Data());
+    }
+    raiseWifiEvent(WifiEvent::LoginServerStarted)
 }
 
 #define JD_WIFI_APFLAGS_HAS_PASSWORD 0x1
@@ -224,6 +228,12 @@ int disconnect() {
 //%
 bool isConnected() {
     return is_connected;
+}
+
+/** Check if login server is running */
+//%
+bool isLoginServerEnabled() {
+    return login_server;
 }
 
 /** Return ipv4 address, netmask, and gateway. */

@@ -16,7 +16,9 @@ namespace _wifi {
         //%
         Disconnected = 3,
         //%
-        AccessPointCredentialsAvailable = 4
+        AccessPointCredentialsAvailable = 4,
+        //%
+        LoginServerStarted = 5,
     };
 
     int eventID();
