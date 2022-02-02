@@ -60,6 +60,12 @@ namespace Fx {
         else
             return b
     }
+    export function floor(v: Fx8): Fx8 {
+        return ((v as any as number) & ~0xff) as any as Fx8;
+    }
+    export function ceil(v: Fx8): Fx8 {
+        return (v as any as number) & 0xff ? Fx.floor(Fx.add(v, Fx.oneFx8)) : v;
+    }
     export function leftShift(a: Fx8, n: number) {
         return (a as any as number << n) as any as Fx8
     }

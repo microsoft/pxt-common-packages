@@ -301,7 +301,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     __serialize(offset: number): Buffer {
-        const buf = control.createBuffer(offset + 16);
+        const buf = control.createBuffer(offset + 20);
         let k = offset;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._x)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._y)); k += 2;
@@ -309,8 +309,8 @@ class Sprite extends sprites.BaseSprite {
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vy)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ax)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ay)); k += 2;
-        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._sx)); k += 2;
-        buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._sy)); k += 2;
+        buf.setNumber(NumberFormat.Float32LE, k, Fx.toFloat(this._sx)); k += 4;
+        buf.setNumber(NumberFormat.Float32LE, k, Fx.toFloat(this._sy)); k += 4;
         return buf;
     }
 
@@ -407,12 +407,12 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="width" callInDebugger
     get width() {
-        return Fx.toInt(this._width);
+        return Fx.toFloat(this._width);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="height" callInDebugger
     get height() {
-        return Fx.toInt(this._height);
+        return Fx.toFloat(this._height);
     }
 
     //% group="Physics" blockSetVariable="mySprite"
