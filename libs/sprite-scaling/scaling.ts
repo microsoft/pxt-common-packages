@@ -1,4 +1,4 @@
-//% color="#A5179E" weight=99 icon="\u2195" block="Sprite Scaling"
+//% color="#95078E" weight=99 icon="\u2195" block="Sprite Scaling"
 namespace scaling {
     //% blockId=sprite_scale_to_percent_ex
     //% block="set $sprite=variables_get(mySprite) scale to $value percent $direction anchor $anchor"
