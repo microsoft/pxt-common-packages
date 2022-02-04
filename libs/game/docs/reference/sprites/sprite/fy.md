@@ -84,7 +84,7 @@ game.onUpdateInterval(100, function () {
 })
 ```
 
-### Skipppng sprite #ex2
+### Skipping sprite #ex2
 
 Make a sprite move from the top to the bottom. Make it skip to the right once every second.
 

@@ -84,7 +84,7 @@ game.onUpdateInterval(100, function () {
 })
 ```
 
-### Skipppng sprite #ex2
+### Skipping sprite #ex2
 
 Make a sprite move from the left to the right. Make it skip to the right once every second.
 
