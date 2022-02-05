@@ -28,7 +28,8 @@
 #define VM_STACK_SIZE 1000
 
 #define VM_ENCODE_PC(pc) ((TValue)(((pc) << 9) | 2))
-#define VM_DECODE_PC(pc) (((uintptr_t)pc) >> 9)
+#define VM_DECODE_PC(pc) (((uintptr_t)(pc)) >> 9)
+#define VM_IS_ENCODED_PC(v) ((((uintptr_t)(v)) & ((1 << 9) - 1)) == 2)
 #define TAG_STACK_BOTTOM VM_ENCODE_PC(1)
 
 #define PXTEXT extern
@@ -136,6 +137,13 @@ struct VMImage {
     const OpcodeDesc **opcodeDescs;
     RefAction *entryPoint;
 
+    // every fiber's sp starts at stackTop and goes towards stackBase
+    // stackTop > stackBase
+    // stackLimit is close to stackBase
+    TValue *stackBase;
+    TValue *stackTop;
+    TValue *stackLimit;
+
     uint32_t numSections;
     uint32_t numNumberLiterals;
     uint32_t numConfigDataEntries;
@@ -146,14 +154,6 @@ struct VMImage {
     int toStringKey;
 
     int execLock;
-};
-
-// not doing this, likely
-struct StackFrame {
-    StackFrame *caller;
-    uint32_t *retPC;
-    TValue *stackBase;
-    uint32_t *fnbase;
 };
 
 typedef TValue (*fiber_resume_t)(void *);
@@ -174,8 +174,8 @@ struct FiberContext {
     TValue thrownValue;
     jmp_buf loopjmp;
 
-    TValue *stackBase;
-    TValue *stackLimit;
+    TValue *stackCopy;
+    int stackCopySize;
 
     // wait_for_event
     int waitSource;
@@ -186,6 +186,7 @@ struct FiberContext {
 
     fiber_resume_t wakeFn;
     void *wakeFnArg;
+    HandlerBinding *handlerBinding;
 };
 
 #define PXT_EXN_CTX() currentFiber

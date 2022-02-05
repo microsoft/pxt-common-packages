@@ -35,6 +35,10 @@ declare namespace _wifi {
     //% shim=_wifi::scanStart
     function scanStart(): void;
 
+    /** Starts an HTTP server with a login dialog route */
+    //% shim=_wifi::startLoginServer
+    function startLoginServer(hostName: string): void;
+
     /** Get the results of the scan if any. */
     //% shim=_wifi::scanResults
     function scanResults(): Buffer;
@@ -50,6 +54,18 @@ declare namespace _wifi {
     /** Check if connected. */
     //% shim=_wifi::isConnected
     function isConnected(): boolean;
+
+    /** Check if login server is running */
+    //% shim=_wifi::isLoginServerEnabled
+    function isLoginServerEnabled(): boolean;
+
+    /** Return ipv4 address, netmask, and gateway. */
+    //% shim=_wifi::ipInfo
+    function ipInfo(): Buffer;
+
+    /** Get RSSI of current connection or -128 when not connected. */
+    //% shim=_wifi::rssi
+    function rssi(): int32;
 }
 
 // Auto-generated. Do not edit. Really.

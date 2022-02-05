@@ -12,6 +12,15 @@
 #define DEVICE_ID_NOTIFY_ONE 1022
 #define DEVICE_ID_NOTIFY 1023
 
+#define CHK(call)                                                                                  \
+    {                                                                                              \
+        int __r = call;                                                                            \
+        if (__r != 0) {                                                                            \
+            DMESG("fail: %d at %d", __r, __LINE__);                                                \
+            abort();                                                                               \
+        }                                                                                          \
+    }
+
 namespace pxt {
 void raiseEvent(int id, int event);
 int allocateNotifyEvent();
@@ -32,7 +41,9 @@ typedef Buffer Sound;
 typedef struct worker *worker_t;
 worker_t worker_alloc(const char *id, uint32_t stack_size);
 int worker_run(worker_t w, TaskFunction_t fn, void *arg);
+int worker_run_wait(worker_t w, TaskFunction_t fn, void *arg);
 void worker_set_idle(worker_t w, TaskFunction_t fn, void *arg);
+extern worker_t fg_worker;
 
 void memInfo();
 

@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <style>
+      html {
+        background: #aaa;
+      }
+      * {
+        font-size: xx-large;
+        font-family: monospace;
+      }
+      form {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <form action="/add-ap">
+      <label for="ssid">WiFi:</label>
+      <input type="text" name="name" id="ssid" required autocomplete="username" />
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        required
+        autocomplete="current-password"
+      />
+      <input id="submit" type="submit" value="connect" />
+    </form>
+  </body>
+</html>

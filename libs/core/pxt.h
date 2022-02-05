@@ -18,6 +18,7 @@
 #include "Button.h"
 #include "CodalFiber.h"
 #include "MessageBus.h"
+#include "MultiButton.h"
 
 using namespace codal;
 
@@ -42,8 +43,6 @@ using namespace codal;
 #endif
 
 #define PXT_COMM_BASE 0x20002000 // 8k in
-#define PXT_CODAL 1
-
 
 namespace pxt {
 

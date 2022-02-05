@@ -18,7 +18,7 @@ you know which pin the pulse was on.
 
 ## Example #example
 
-Count every pulse on pin `D4` that is longer than 2 milleseconds in duration. Write the total
+Count every pulse on pin `D4` that is longer than 2 milliseconds in duration. Write the total
 number of pulses to the serial port every time the count adds another thousand pulses.
 
 ```blocks

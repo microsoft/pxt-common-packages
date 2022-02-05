@@ -17,6 +17,7 @@ namespace azureiot {
     let _messageBusId: number;
     let _receiveHandler: (msg: Json, sysProps: SMap<string>) => void;
     let _methodHandlers: SMap<(msg: Json) => Json>;
+    let twinRespHandlers: SMap<(status: number, body: any) => void>
 
     function log(msg: string) {
         console.add(logPriority, "azureiot: " + msg);
@@ -154,8 +155,8 @@ namespace azureiot {
             try {
                 c.disconnect()
             }
-            finally {
-                _mqttClient = undefined
+            catch {
+                // just ignore errors disconnecting
             }
         }
     }
@@ -166,6 +167,7 @@ namespace azureiot {
     export function connect() {
         const c = mqttClient();
         if (!c.connected) {
+            c.connect() // start connect if not started yet
             // busy wait for connection
             const start = control.millis()
             const timeout = 30000
@@ -216,8 +218,49 @@ namespace azureiot {
         let topic = `devices/${c.opt.clientId}/messages/events/`;
         if (sysProps)
             topic += encodeQuery(sysProps);
+        const m = JSON.stringify(msg)
+        msg = null
         // qos, retained are not supported
-        c.publish(topic, JSON.stringify(msg));
+        c.publish(topic, m);
+    }
+
+    /**
+     * Send a message via mqtt
+     * @param msg 
+     */
+    //%
+    export function publishMessageBuffer(msg: Buffer, sysProps?: SMap<string>) {
+        const c = mqttClient();
+        let topic = `devices/${c.opt.clientId}/messages/events/`;
+        if (sysProps)
+            topic += encodeQuery(sysProps);
+        // qos, retained are not supported
+        c.publish(topic, msg);
+    }
+
+    /**
+     * Send a message via mqtt
+     * @param msg 
+     */
+    //%
+    export function publishMessageHex(msg: Buffer, len?: number, sysProps?: SMap<string>) {
+        const c = mqttClient();
+        let topic = `devices/${c.opt.clientId}/messages/events/`;
+        if (sysProps)
+            topic += encodeQuery(sysProps);
+        if (len == null)
+            len = msg.length
+        if (len > msg.length) {
+            log(`len too long: ${len}/${msg.length}`)
+            len = msg.length
+        }
+        // qos, retained are not supported
+        if (c.startPublish(topic, len * 2)) {
+            const chunk = 128
+            for (let ptr = 0; ptr < len; ptr += chunk)
+                c.continuePublish(Buffer.fromUTF8(msg.slice(ptr, Math.min(chunk, len - ptr)).toHex()))
+            c.finishPublish()
+        }
     }
 
     /**
@@ -277,16 +320,16 @@ namespace azureiot {
         c.publish('$iothub/methods/res/' + status + "/?$rid=" + props["$rid"], JSON.stringify(resp))
     }
 
-    let twinRespHandlers: SMap<(status: number, body: any) => void>
-
     // $iothub/twin/res/{status}/?$rid={request id}
     function twinResponse(msg: mqtt.IMessage) {
         const args = parseTopicArgs(msg.topic)
         const h = twinRespHandlers[args["$rid"]]
         const status = parseInt(msg.topic.slice(17))
         // log(`twin resp: ${status} ${msg.content.toHex()} ${msg.content.toString()}`)
-        if (h)
+        if (h) {
+            delete twinRespHandlers[args["$rid"]]
             h(status, JSON.parse(msg.content.toString() || "{}"))
+        }
     }
 
     export class ValueAwaiter {

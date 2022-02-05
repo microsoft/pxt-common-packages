@@ -130,7 +130,7 @@ void op_stfld(FiberContext *ctx, unsigned arg) {
 
 static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
     if (ra->initialLen != 0)
-        error(PANIC_INVALID_VTABLE);
+        target_panic(PANIC_INVALID_VTABLE);
     auto act = (RefAction *)mkAction(1, ra);
     act->flags = BOUND_ACTION;
     act->fields[0] = obj;
@@ -138,13 +138,106 @@ static RefAction *bindAction(FiberContext *ctx, RefAction *ra, TValue obj) {
 }
 
 static inline void runAction(FiberContext *ctx, RefAction *ra) {
-    if (ctx->sp < ctx->stackLimit)
-        error(PANIC_STACK_OVERFLOW);
+    if (ctx->sp < ctx->img->stackLimit)
+        soft_panic(PANIC_STACK_OVERFLOW);
 
     PUSH((TValue)ctx->currAction);
     PUSH(VM_ENCODE_PC(ctx->pc - ctx->imgbase));
     ctx->currAction = ra;
     ctx->pc = actionPC(ra);
+}
+
+static const uint8_t *find_src_map() {
+    const uint32_t *p = (const uint32_t *)((uint32_t)vmImg->dataEnd & ~0xf);
+    const uint32_t *endP = p + 128;
+    while (p < endP) {
+        if (p[0] == 0x4d435253 && p[1] == 0x2d4e1588 && p[2] == 0x719986aa)
+            return (const uint8_t *)p;
+        p += 4;
+    }
+    DMESG("source map not found; dataEnd=%p", vmImg->dataEnd);
+    return NULL;
+}
+
+static const uint8_t *decode_num(const uint8_t *p, int *dst) {
+    auto v = *p++;
+    if (v < 0xf0) {
+        *dst = v;
+        return p;
+    }
+    auto sz = v & 0x07;
+    int r = 0;
+    for (int i = 0; i < sz; ++i) {
+        r |= *p++ << (i * 8);
+    }
+    if (v & 0x08)
+        r = -r;
+    *dst = r;
+    return p;
+}
+
+static const uint8_t *dump_pc_one(int addr, int off, const uint8_t *fn) {
+    if (!fn)
+        return NULL;
+    auto p = fn;
+    while (*p)
+        p++;
+    p++;
+    int prevLn = 0, prevOff = 0;
+    while (*p != 0xff) {
+        int a, b, c;
+        p = decode_num(p, &a);
+        p = decode_num(p, &b);
+        p = decode_num(p, &c);
+        prevLn += a;
+        b <<= 1;
+        prevOff += b;
+        c <<= 1;
+
+        int startA = prevOff;
+        int endA = startA + c;
+        if (startA <= addr + off && addr + off <= endA) {
+            DMESG(" PC:%x %s(%d)", addr, fn, prevLn);
+            return NULL;
+        }
+    }
+    return p + 1;
+}
+
+static void dump_pc(int addr, const uint8_t *srcmap) {
+    if (srcmap) {
+        auto p = srcmap + 16;
+        for (;;) {
+            auto a = dump_pc_one(addr, -2, p);
+            if (!a || !dump_pc_one(addr, -4, p) || !dump_pc_one(addr, 0, p))
+                return;
+            p = a;
+            if (*p == 0)
+                break;
+        }
+    }
+    DMESG(" PC:%x", addr);
+}
+
+void vm_stack_trace() {
+    auto ctx = currentFiber;
+    if (!ctx)
+        return;
+    DMESG("stack trace (programHash:%d):", programHash());
+    auto end = vmImg->stackTop;
+    auto ptr = ctx->sp;
+    auto srcmap = find_src_map();
+    dump_pc((ctx->pc - ctx->imgbase) << 1, srcmap);
+    int max = 30;
+    while (ptr < end && max) {
+        auto v = (uintptr_t)*ptr++;
+        if (VM_IS_ENCODED_PC(v)) {
+            dump_pc(VM_DECODE_PC(v) << 1, srcmap);
+            max--;
+        }
+    }
+    if (max == 0)
+        DMESG(" ...");
 }
 
 //%
@@ -177,7 +270,7 @@ static void callind(FiberContext *ctx, RefAction *ra, unsigned numArgs) {
 
     if (ra->initialLen > ra->len)
         // trying to call function template
-        error(PANIC_INVALID_VTABLE);
+        target_panic(PANIC_INVALID_VTABLE);
 
     runAction(ctx, ra);
 }
@@ -198,17 +291,20 @@ void op_callind(FiberContext *ctx, unsigned arg) {
 void op_ret(FiberContext *ctx, unsigned arg) {
     SPLIT_ARG(retNumArgs, numTmps);
 
-    // check if we're leaving a function that still has open try blocks
-    // (this results from invalid code generation)
-    if (ctx->tryFrame && ctx->tryFrame->registers[0] == (uintptr_t)ctx->currAction) {
-        DMESG("try frame %p left on return", ctx->tryFrame);
-        target_panic(PANIC_VM_ERROR);
-    }
-
     POP(numTmps);
     auto retaddr = (intptr_t)POPVAL();
     ctx->currAction = (RefAction *)POPVAL();
     POP(retNumArgs);
+
+    // check if we're leaving a function that still has open try blocks
+    // (this results from invalid code generation)
+    if (ctx->tryFrame &&
+        ctx->tryFrame->registers[2] < (uint8_t *)ctx->sp - (uint8_t *)vmImg->stackBase) {
+        DMESG("try frame %p left on return %d/%d", ctx->tryFrame, ctx->tryFrame->registers[2],
+              (uint8_t *)ctx->sp - (uint8_t *)vmImg->stackBase);
+        vm_stack_trace();
+        target_panic(PANIC_VM_ERROR);
+    }
 
     if (retaddr == (intptr_t)TAG_STACK_BOTTOM) {
         ctx->pc = NULL;
@@ -261,14 +357,14 @@ void op_try(FiberContext *ctx, unsigned arg) {
     auto f = pxt::beginTry();
     f->registers[0] = (uintptr_t)ctx->currAction;
     f->registers[1] = (uintptr_t)(ctx->pc + (int)arg);
-    f->registers[2] = (uintptr_t)ctx->sp;
+    f->registers[2] = (uint8_t *)ctx->sp - (uint8_t *)vmImg->stackBase;
 }
 
 void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx) {
     // TODO verification
     ctx->currAction = (RefAction *)tf->registers[0];
     ctx->pc = (uint16_t *)tf->registers[1];
-    ctx->sp = (TValue *)tf->registers[2];
+    ctx->sp = (TValue *)((uint8_t *)vmImg->stackBase + tf->registers[2]);
     longjmp(ctx->loopjmp, 1);
 }
 
@@ -513,7 +609,7 @@ void exec_loop(FiberContext *ctx) {
             break;
         uint16_t opcode = *ctx->pc++;
         TRACE("0x%x: %04x %d", (uint8_t *)ctx->pc - 2 - (uint8_t *)ctx->img->dataStart, opcode,
-              (int)(ctx->stackBase + VM_STACK_SIZE - ctx->sp));
+              (int)(vmImg->stackTop - ctx->sp));
         if (opcode >> 15 == 0) {
             opcodes[opcode & VM_OPCODE_BASE_MASK](ctx, opcode >> VM_OPCODE_ARG_POS);
             if (opcode & VM_OPCODE_PUSH_MASK)

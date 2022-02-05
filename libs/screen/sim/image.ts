@@ -638,6 +638,60 @@ namespace pxsim.ImageMethods {
             fy += stepFY
         }
     }
+
+    export function _blit(img: RefImage, src: RefImage, args: RefCollection): boolean {
+        return blit(img, src, args);
+    }
+
+    export function blit(dst: RefImage, src: RefImage, args: RefCollection): boolean {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        const wDst = args.getAt(2) as number;
+        const hDst = args.getAt(3) as number;
+        const xSrc = args.getAt(4) as number;
+        const ySrc = args.getAt(5) as number;
+        const wSrc = args.getAt(6) as number;
+        const hSrc = args.getAt(7) as number;
+        const transparent = args.getAt(8) as number;
+        const check = args.getAt(9) as number;
+
+        const xSrcStep = ((wSrc << 16) / wDst) | 0;
+        const ySrcStep = ((hSrc << 16) / hDst) | 0;
+
+        const xDstClip = Math.abs(Math.min(0, xDst));
+        const yDstClip = Math.abs(Math.min(0, yDst));
+        const xDstStart = xDst + xDstClip;
+        const yDstStart = yDst + yDstClip;
+        const xDstEnd = Math.min(dst._width, xDst + wDst);
+        const yDstEnd = Math.min(dst._height, yDst + hDst);
+
+        const xSrcStart = Math.max(0, (xSrc << 16) + xDstClip * xSrcStep);
+        const ySrcStart = Math.max(0, (ySrc << 16) + yDstClip * ySrcStep);
+        const xSrcEnd = Math.min(src._width, xSrc + wSrc) << 16;
+        const ySrcEnd = Math.min(src._height, ySrc + hSrc) << 16;
+
+        if (!check)
+            dst.makeWritable();
+
+        for (let yDstCur = yDstStart, ySrcCur = ySrcStart; yDstCur < yDstEnd && ySrcCur < ySrcEnd; ++yDstCur, ySrcCur += ySrcStep) {
+            const ySrcCurI = ySrcCur >> 16;
+            for (let xDstCur = xDstStart, xSrcCur = xSrcStart; xDstCur < xDstEnd && xSrcCur < xSrcEnd; ++xDstCur, xSrcCur += xSrcStep) {
+                const xSrcCurI = xSrcCur >> 16;
+                const cSrc = getPixel(src, xSrcCurI, ySrcCurI);
+                if (check && cSrc) {
+                    const cDst = getPixel(dst, xDstCur, yDstCur);
+                    if (cDst) {
+                        return true;
+                    }
+                    continue;
+                }
+                if (!transparent || cSrc) {
+                    setPixel(dst, xDstCur, yDstCur, cSrc);
+                }
+            }
+        }
+        return false;
+    }
 }
 
 namespace pxsim.image {

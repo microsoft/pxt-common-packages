@@ -147,7 +147,7 @@ namespace music {
     }
 
     /**
-    * Rest, or play silence, for some time (in milleseconds).
+    * Rest, or play silence, for some time (in milliseconds).
     * @param ms rest duration in milliseconds (ms), eg: BeatFraction.Half
     */
     //% help=music/rest

@@ -7,6 +7,7 @@
 
 namespace pxt {
 void *gcAllocBlock(size_t sz);
+void vm_stack_trace();
 }
 
 extern "C" void dmesg(const char *fmt, ...);

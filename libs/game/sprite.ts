@@ -58,6 +58,36 @@ enum FlipOption {
     FlipXY
 }
 
+enum ScaleDirection {
+    //% block="vertically"
+    Vertically = 0x01,
+    //% block="horizontally"
+    Horizontally = 0x02,
+    //% block="uniformly"
+    Uniformly = Vertically | Horizontally,
+}
+
+enum ScaleAnchor {
+    //% block="middle"
+    Middle = 0,
+    //% block="top"
+    Top = 0x01,
+    //% block="left"
+    Left = 0x02,
+    //% block="right"
+    Right = 0x04,
+    //% block="bottom"
+    Bottom = 0x08,
+    //% block="top left"
+    TopLeft = Top | Left,
+    //% block="top right"
+    TopRight = Top | Right,
+    //% block="bottom left"
+    BottomLeft = Bottom | Left,
+    //% block="bottom right"
+    BottomRight = Bottom | Right,
+}
+
 /**
  * A sprite on the screen
  **/
@@ -71,27 +101,31 @@ class Sprite extends sprites.BaseSprite {
     _ay: Fx8
     _fx: Fx8 // friction
     _fy: Fx8 // friction
+    _sx: Fx8 // scale
+    _sy: Fx8 // scale
+    _width: Fx8 // scaled width
+    _height: Fx8 // scaled height
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
     get x(): number {
-        return Fx.toFloat(this._x) + (this._image.width / 2)
+        return Fx.toFloat(Fx.add(this._x, Fx.div(this._width, Fx.twoFx8)));
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
     set x(v: number) {
-        this.left = v - (this._image.width / 2)
+        this.left = v - (this.width / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
     get y(): number {
-        return Fx.toFloat(this._y) + (this._image.height / 2)
+        return Fx.toFloat(Fx.add(this._y, Fx.div(this._height, Fx.twoFx8)));
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
     set y(v: number) {
-        this.top = v - (this._image.height / 2)
+        this.top = v - (this.height / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -158,6 +192,42 @@ class Sprite extends sprites.BaseSprite {
     set fy(v: number) {
         this._fy = Fx8(Math.max(0, v))
     }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sx (scale x)" callInDebugger
+    get sx(): number {
+        return Fx.toFloat(this._sx);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sx (scale x)"
+    set sx(v: number) {
+        const x = this.x;
+        this._sx = Fx8(Math.max(0, v));
+        this.recalcSize();
+        this.left = x - this.width / 2;
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sy (scale y)" callInDebugger
+    get sy(): number {
+        return Fx.toFloat(this._sy);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="sy (scale y)"
+    set sy(v: number) {
+        const y = this.y;
+        this._sy = Fx8(Math.max(0, v));
+        this.recalcSize();
+        this.top = y - this.height / 2;
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="scale" callInDebugger
+    get scale(): number {
+        return Math.max(this.sx, this.sy);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="scale"
+    set scale(v: number) {
+        this.sx = this.sy = v;
+    }
 
     private _data: any;
     /**
@@ -219,6 +289,8 @@ class Sprite extends sprites.BaseSprite {
         this.ay = 0
         this.fx = 0
         this.fy = 0
+        this._sx = Fx.oneFx8;
+        this._sy = Fx.oneFx8;
         this.flags = 0
         this.setImage(img);
         this.setKind(-1); // not a member of any type by default
@@ -229,7 +301,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     __serialize(offset: number): Buffer {
-        const buf = control.createBuffer(offset + 12);
+        const buf = control.createBuffer(offset + 20);
         let k = offset;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._x)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._y)); k += 2;
@@ -237,6 +309,8 @@ class Sprite extends sprites.BaseSprite {
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._vy)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ax)); k += 2;
         buf.setNumber(NumberFormat.Int16LE, k, Fx.toInt(this._ay)); k += 2;
+        buf.setNumber(NumberFormat.Float32LE, k, Fx.toFloat(this._sx)); k += 4;
+        buf.setNumber(NumberFormat.Float32LE, k, Fx.toFloat(this._sy)); k += 4;
         return buf;
     }
 
@@ -257,8 +331,17 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spritesetimage block="set %sprite(mySprite) image to %img=screen_image_picker"
     //% weight=7 help=sprites/sprite/set-image
     setImage(img: Image) {
-        if (!img) return; // don't break the sprite
+        if (!img || img === this._image) return;
         this._image = img;
+        this.recalcSize();
+    }
+
+    calcDimensionalHash() {
+        return Fx.mul(Fx.mul(this._width, this._height), Fx8(this._image.revision()));
+    }
+
+    resetHitbox() {
+        this._hitbox = null;
         this.setHitbox();
     }
 
@@ -311,19 +394,29 @@ class Sprite extends sprites.BaseSprite {
         return !(this.flags & SpriteFlag.Invisible);
     }
 
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="width"
-    get width() {
-        return this._image.width
+    private recalcSize(): void {
+        this._width = Fx8(this._image.width * this.sx);
+        this._height = Fx8(this._image.height * this.sy);
+        this.resetHitbox();
     }
-    //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="height"
-    get height() {
-        return this._image.height
+
+    private isScaled(): boolean {
+        return this._sx !== Fx.oneFx8 || this._sy !== Fx.oneFx8;
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="left"
+    //% blockCombine block="width" callInDebugger
+    get width() {
+        return Fx.toFloat(this._width);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="height" callInDebugger
+    get height() {
+        return Fx.toFloat(this._height);
+    }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="left" callInDebugger
     get left() {
         return Fx.toFloat(this._x)
     }
@@ -342,7 +435,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="right"
+    //% blockCombine block="right" callInDebugger
     get right() {
         return this.left + this.width
     }
@@ -353,7 +446,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="top"
+    //% blockCombine block="top" callInDebugger
     get top() {
         return Fx.toFloat(this._y);
     }
@@ -372,7 +465,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="bottom"
+    //% blockCombine block="bottom" callInDebugger
     get bottom() {
         return this.top + this.height;
     }
@@ -576,7 +669,19 @@ class Sprite extends sprites.BaseSprite {
         const l = Math.floor(this.left - ox);
         const t = Math.floor(this.top - oy);
 
-        screen.drawTransparentImage(this._image, l, t)
+        if (!this.isScaled())
+            screen.drawTransparentImage(this._image, l, t);
+        else
+            screen.blit(
+                // dst rect in screen
+                l, t,
+                this.width,
+                this.height,
+                // src rect in sprite image
+                this._image,
+                0, 0,
+                this._image.width, this._image.height,
+                true, false);
 
         if (this.flags & SpriteFlag.ShowPhysics) {
             const font = image.font5;
@@ -697,7 +802,46 @@ class Sprite extends sprites.BaseSprite {
             return false
         if (other.flags & SPRITE_NO_SPRITE_OVERLAPS)
             return false
-        return other._image.overlapsWith(this._image, this.left - other.left, this.top - other.top)
+        if (!other._hitbox.overlapsWith(this._hitbox))
+            return false;
+        if (!this.isScaled() && !other.isScaled()) {
+            return other._image.overlapsWith(
+                this._image,
+                this.left - other.left,
+                this.top - other.top)
+        } else {
+            if (this.sx == 0 || this.sy == 0 || other.sx == 0 || other.sy == 0) return false;
+
+            let A: Sprite;
+            let B: Sprite;
+
+            // Render larger-scaled sprite onto smaller-scaled one so that we don't
+            // skip over source pixels in the check.
+
+            // A is the smaller-scaled sprite
+            if (this.sx * this.sy < other.sx * other.sy) {
+                A = this;
+                B = other;
+            } else {
+                A = other;
+                B = this;
+            }
+
+            // Render B onto A
+            return helpers.imageBlit(
+                A.image,
+                // Dst rect in A
+                (B.left - A.left) / A.sx,
+                (B.top - A.top) / A.sy,
+                B.width / A.sx,
+                B.height / A.sy,
+                B.image,
+                // Src rect in B
+                0, 0,
+                B.image.width,
+                B.image.height,
+                true, true);
+        }
     }
 
     /**
@@ -705,8 +849,9 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spritehasobstacle block="is %sprite(mySprite) hitting wall %direction"
-    //% blockNamespace="scene" group="Collisions" blockGap=8
-    //% help=sprites/sprite/is-hitting-tile
+    //% blockNamespace="scene" group="Locations" blockGap=24
+    //% help=scene/is-hitting-tile
+    //% weight=15
     isHittingTile(direction: CollisionDirection): boolean {
         return this._obstacles && !!this._obstacles[direction];
     }
@@ -717,8 +862,9 @@ class Sprite extends sprites.BaseSprite {
      */
     //% blockId=spritetileat block="tile to $direction of $this(mySprite) is $tile"
     //% tile.shadow=tileset_tile_picker
-    //% blockNamespace="scene" group="Collisions" blockGap=8
-    //% help=sprites/sprite/tile-kind-at
+    //% blockNamespace="scene" group="Locations" blockGap=8
+    //% help=scene/tile-kind-at
+    //% weight=20
     tileKindAt(direction: TileDirection, tile: Image): boolean {
         const tilemap = game.currentScene().tileMap;
         let x = this.x >> tilemap.scale;
@@ -748,11 +894,26 @@ class Sprite extends sprites.BaseSprite {
      * @param direction
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
-    //% blockNamespace="scene" group="Collisions"
+    //% blockNamespace="scene" group="Locations"
+    //% direction.shadow=tiles_collision_direction_editor
     //% help=sprites/sprite/tile-hit-from
     //% deprecated=1
-    tileHitFrom(direction: CollisionDirection): number {
+    tileHitFrom(direction: number): number {
         return (this._obstacles && this._obstacles[direction]) ? this._obstacles[direction].tileIndex : -1;
+    }
+
+    /**
+     * Gets the tilemap location at the center of a sprite
+     */
+    //% block="tilemap location of $this"
+    //% blockId=tiles_location_of_sprite
+    //% this.shadow=variables_get
+    //% this.defl=mySprite
+    //% blockNamespace="scene" group="Locations" weight=90
+    tilemapLocation(): tiles.Location {
+        const scene = game.currentScene();
+        if (!scene.tileMap) return undefined;
+        return tiles.getTileLocation(this.x >> scene.tileMap.scale, this.y >> scene.tileMap.scale);
     }
 
     clearObstacles() {
@@ -920,6 +1081,90 @@ class Sprite extends sprites.BaseSprite {
             fs.rate = speed;
             fs.turnRate = turnRate;
         }
+    }
+
+    setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
+        anchor = anchor || ScaleAnchor.Middle;
+
+        const hasSx = sx != null;
+        const hasSy = sy != null;
+
+        const oldW = this.width;
+        const oldH = this.height;
+
+        if (hasSx) {
+            const oldSx = this.sx;
+            this.sx = sx;
+            if (!hasSy && proportional) {
+                const ratio = sx / oldSx;
+                this.sy *= ratio;
+            }
+        }
+        if (hasSy) {
+            const oldSy = this.sy;
+            this.sy = sy;
+            if (!hasSx && proportional) {
+                const ratio = sy / oldSy;
+                this.sx *= ratio;
+            }
+        }
+
+        if (anchor & (ScaleAnchor.Left | ScaleAnchor.Right)) {
+            const newW = this.width;
+            const diff = newW - oldW;
+            const diffOver2 = diff / 2;
+            if (anchor & ScaleAnchor.Left) { this.x += diffOver2; }
+            if (anchor & ScaleAnchor.Right) { this.x -= diffOver2; }
+        }
+        if (anchor & (ScaleAnchor.Top | ScaleAnchor.Bottom)) {
+            const newH = this.height;
+            const diff = newH - oldH;
+            const diffOver2 = diff / 2;
+            if (anchor & ScaleAnchor.Top) { this.y += diffOver2; }
+            if (anchor & ScaleAnchor.Bottom) { this.y -= diffOver2; }
+        }
+    }
+
+    //% blockId=sprite_set_scale
+    //% block="set %sprite(mySprite) scale to $value anchor $anchor"
+    //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
+    //% value.defl=1
+    //% anchor.defl=ScaleAnchor.Middle
+    //% help=sprites/sprite/scale
+    //% group="Scale" weight=90
+    setScale(value: number, anchor?: ScaleAnchor): void {
+        const direction = ScaleDirection.Uniformly;
+        anchor = anchor || ScaleAnchor.Middle;
+
+        let sx: number;
+        let sy: number;
+
+        if (direction & ScaleDirection.Horizontally) sx = value;
+        if (direction & ScaleDirection.Vertically) sy = value;
+
+        this.setScaleCore(sx, sy, anchor);
+    }
+
+    //% blockId=sprite_change_scale
+    //% block="change %sprite(mySprite) scale by $value anchor $anchor"
+    //% expandableArgumentMode=enabled
+    //% inlineInputMode=inline
+    //% value.defl=1
+    //% anchor.defl=ScaleAnchor.Middle
+    //% help=sprites/sprite/scale
+    //% group="Scale" weight=90
+    changeScale(value: number, anchor?: ScaleAnchor): void {
+        const direction = ScaleDirection.Uniformly;
+        anchor = anchor || ScaleAnchor.Middle;
+
+        let sx: number;
+        let sy: number;
+
+        if (direction & ScaleDirection.Horizontally) sx = this.sx + value;
+        if (direction & ScaleDirection.Vertically) sy = this.sy + value;
+
+        this.setScaleCore(sx, sy, anchor);
     }
 
     toString() {

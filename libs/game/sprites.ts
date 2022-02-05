@@ -73,6 +73,22 @@ namespace sprites {
     }
 
     /**
+     * Destroys all sprites of the given kind.
+     */
+    //% group="Effects"
+    //% weight=79
+    //% blockId=sprites_destroy_all_sprites_of_kind
+    //% block="destroy all sprites of kind $kind || with $effect effect for $duration ms"
+    //% kind.shadow=spritekind
+    //% duration.shadow=timePicker
+    //% expandableArgumentMode="toggle"
+    export function destroyAllSpritesOfKind(kind: number, effect?: effects.ParticleEffect, duration?: number) {
+        for (const sprite of allOfKind(kind)) {
+            sprite.destroy(effect, duration);
+        }
+    }
+
+    /**
      * Create a new sprite with a given speed, and place it at the edge of the screen so it moves towards the middle.
      * The sprite auto-destroys when it leaves the screen. You can modify position after it's created.
      */

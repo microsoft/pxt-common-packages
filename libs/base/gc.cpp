@@ -450,7 +450,7 @@ static GCBlock *allocateBlockCore() {
         }
 #endif
         gc(2); // dump roots
-        target_panic(PANIC_GC_OOM);
+        soft_panic(PANIC_GC_OOM);
     }
     auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
     auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 4 * 1024);
@@ -544,7 +544,11 @@ static void sweep(int flags) {
 
     if (midPtr) {
         uint32_t currFree = 0;
+#ifdef PXT_ESP32
+        auto limit = freeSize * 1 / 4;
+#else
         auto limit = freeSize * 1 / 2;
+#endif
         for (auto p = firstFree; p; p = p->nextFree) {
             auto len = VAR_BLOCK_WORDS(p->vtable);
             currFree += len;
@@ -730,7 +734,7 @@ void *gcAllocate(int numbytes) {
     // VVLOG("alloc %d bytes %d words", numbytes, numwords);
 
     if (numbytes > GC_MAX_ALLOC_SIZE)
-        target_panic(PANIC_GC_TOO_BIG_ALLOCATION);
+        soft_panic(PANIC_GC_TOO_BIG_ALLOCATION);
 
     if (PXT_IN_ISR() || (inGC & (IN_GC_PREALLOC | IN_GC_ALLOC | IN_GC_COLLECT | IN_GC_FREEZE)))
         target_panic(PANIC_CALLED_FROM_ISR);
@@ -792,11 +796,13 @@ void *gcAllocate(int numbytes) {
         if (i == 0)
             gc(0);
         // GC didn't help, try new block
-        else if (i == 1)
+        else if (i == 1) {
+            DMESG("gcAlloc(%d) (%d/%d free; %d max block) -> new block", numbytes,
+                  gcStats.lastFreeBytes, gcStats.totalBytes, gcStats.lastMaxBlockBytes);
             allocateBlock();
-        else
+        } else
             // the block allocated was apparently too small
-            target_panic(PANIC_GC_OOM);
+            soft_panic(PANIC_GC_OOM);
     }
 }
 
