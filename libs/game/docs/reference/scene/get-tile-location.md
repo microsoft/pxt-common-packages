@@ -48,10 +48,6 @@ forever(function () {
 })
 ```
 
-## Returns
-
-* a tile location for the column and row specifed.
-
 ## See also #seealso
 
 [set tile at](/reference/scene/set-tile-at),
