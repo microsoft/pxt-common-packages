@@ -12,7 +12,7 @@ The tile that is under the center of the sprite is considered as the sprite's ti
 
 ## Returns
 
-* a tile location object for the location of the sprite on the tilemap.
+* a tile [location](/reference/scene/location) object for the location of the sprite on the tilemap.
 
 ## Example #example
 

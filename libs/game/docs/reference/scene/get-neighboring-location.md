@@ -14,9 +14,11 @@ A neighboring tile is one that is immediately to the `left`, `right`, `top`, or 
 
 ## Returns
 
-* a **location** object for the neighbor tile.
+* a [location](/reference/scene/location) object for the neighbor tile.
 
 ## Example #example
+
+Rotate a donut sprite around adjacent tiles in a tilemap.
 
 ```blocks
 let nextSpot: tiles.Location = null

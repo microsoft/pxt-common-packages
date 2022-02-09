@@ -10,7 +10,7 @@ The tile in the tilemap at the location selected is checked to see if it is set 
 
 ## Parameters
 
-* **location**: the location object for the tile to check if it's a wall.
+* **location**: the [location](/reference/scene/location) object for the tile to check if it's a wall.
 
 ## Returns
 

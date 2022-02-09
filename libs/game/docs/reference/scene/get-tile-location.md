@@ -15,7 +15,7 @@ A tile location object represents a column and a row position in the tilemap. Lo
 
 ## Returns
 
-* a tile location object for a given column and row in the tilemap.
+* a tile [location](/reference/scene/location) object for a given column and row in the tilemap.
 
 ## Example #example
 
