@@ -281,12 +281,22 @@ namespace tiles {
         }
     }
 
+    export enum TileMapEvent {
+        Loaded,
+        Unloaded
+    }
+
+    export class TileMapEventHandler {
+        constructor(public event: TileMapEvent, public callback: (data: TileMapData) => void) {}
+    }
+
     export class TileMap {
         protected _scale: TileScale;
 
         protected _layer: number;
         protected _map: TileMapData;
         renderable: scene.Renderable;
+        protected handlerState: TileMapEventHandler[];
 
         constructor(scale: TileScale = TileScale.Sixteen) {
             this._layer = 1;
@@ -344,7 +354,27 @@ namespace tiles {
         }
 
         setData(map: TileMapData) {
+            const previous = this._map;
+
+            if (this.handlerState && previous !== map && previous) {
+                if (map) {
+                    for (const eventHandler of this.handlerState) {
+                        if (eventHandler.event === TileMapEvent.Unloaded) {
+                            eventHandler.callback(previous);
+                        }
+                    }
+                }
+            }
+
             this._map = map;
+
+            if (this.handlerState && previous !== map && map) {
+                for (const eventHandler of this.handlerState) {
+                    if (eventHandler.event === TileMapEvent.Loaded) {
+                        eventHandler.callback(map);
+                    }
+                }
+            }
         }
 
         public getTile(col: number, row: number): Location {
@@ -522,6 +552,26 @@ namespace tiles {
 
         public getTileImage(index: number) {
             return this.data.getTileImage(index);
+        }
+
+        public addEventListener(event: TileMapEvent, handler: (data: TileMapData) => void) {
+            if (!this.handlerState) this.handlerState = [];
+
+            for (const eventHandler of this.handlerState) {
+                if (eventHandler.event === event && eventHandler.callback === handler) return;
+            }
+            this.handlerState.push(new TileMapEventHandler(event, handler));
+        }
+
+        public removeEventListener(event: TileMapEvent, handler: (data: TileMapData) => void) {
+            if (!this.handlerState) return;
+
+            for (let i = 0; i < this.handlerState.length; i++) {
+                if (this.handlerState[i].event === event && this.handlerState[i].callback === handler) {
+                    this.handlerState.splice(i, 1)
+                    return;
+                }
+            }
         }
     }
 
@@ -760,5 +810,39 @@ namespace tiles {
     //% blockNamespace="scene" group="Tilemaps" duplicateShadowOnDrag
     export function _tilemapEditor(tilemap: TileMapData): TileMapData {
         return tilemap;
+    }
+
+    /**
+     * Adds an event handler that will fire whenever the specified event
+     * is triggered. Unloaded tilemap events will fire before the new tilemap
+     * is set and loaded events will fire afterwards. The same handler can
+     * not be added for the same event more than once.
+     *
+     * @param event     The event to subscribe to
+     * @param handler   The code to run when the event triggers
+     */
+    export function addEventListener(event: TileMapEvent, callback: (data: TileMapData) => void) {
+        const scene = game.currentScene();
+
+        if (!scene.tileMap) {
+            scene.tileMap = new TileMap();
+        }
+
+        scene.tileMap.addEventListener(event, callback);
+    }
+
+
+    /**
+     * Removes an event handler registered with addEventListener.
+     *
+     * @param event     The event that the handler was registered for
+     * @param handler   The handler to remove
+     */
+    export function removeEventListener(event: TileMapEvent, callback: (data: TileMapData) => void) {
+        const scene = game.currentScene();
+
+        if (!scene.tileMap) return;
+
+        scene.tileMap.removeEventListener(event, callback);
     }
 }
