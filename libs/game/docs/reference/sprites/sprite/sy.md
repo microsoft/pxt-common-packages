@@ -27,11 +27,11 @@ Set the height scale for the sprite.
 ```block
 let mySprite: Sprite = null
 
-mySprite.sy = 0
+mySprite.sy = 2
 ```
 
 ```typescript-ignore
-mySprite.sy = 0
+mySprite.sy = 2
 ```
 
 ### Parameter

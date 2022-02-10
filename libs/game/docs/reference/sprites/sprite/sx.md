@@ -27,11 +27,11 @@ Set the width scale for the sprite.
 ```block
 let mySprite: Sprite = null
 
-mySprite.sx = 0
+mySprite.sx = 2
 ```
 
 ```typescript-ignore
-mySprite.sx = 0
+mySprite.sx = 2
 ```
 
 ### Parameter
