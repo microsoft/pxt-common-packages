@@ -41,6 +41,17 @@ namespace controller {
         return // missing in sim
      }
 
+    export class ButtonHandler {
+        constructor(public event: number, public callback: () => void) { }
+    }
+
+    export class ButtonEventHandlerState {
+        constructor(public id: number) {};
+
+        public user: ButtonHandler[];
+        public system: ButtonHandler[];
+    }
+
     //% fixedInstances
     export class Button {
         _owner: Controller;
@@ -53,6 +64,13 @@ namespace controller {
         private _pressedElasped: number;
         private _repeatCount: number;
 
+        protected get handlerState(): ButtonEventHandlerState {
+            for (const state of game.currentScene().buttonEventHandlers) {
+                if (state.id === this.id) return state;
+            }
+            return undefined;
+        }
+
         toString(): string {
             return `btn ${this.id} ${this._pressed ? "down" : "up"}`;
         }
@@ -63,6 +81,7 @@ namespace controller {
             this.repeatDelay = undefined;
             this.repeatInterval = undefined;
             this._repeatCount = 0;
+
             if (id > 0) {
                 // this is to deal with the "anyButton" hack, which creates a button that is not visible
                 // in the UI, but used in event-handler to simulate the wildcard ANY for matching. As
@@ -103,7 +122,49 @@ namespace controller {
         //% blockId=keyonevent block="on %button **button** %event"
         //% group="Single Player"
         onEvent(event: ControllerButtonEvent, handler: () => void) {
-            control.onEvent(event, this.id, handler);
+            const eventHandler = this.getOrCreateHandlerForEvent(event);
+            eventHandler.callback = handler;
+        }
+
+        /**
+         * Adds an event handler that will fire whenever the specified event
+         * is triggered on this button. Handlers added using this method will
+         * not conflict with events added via onEvent. The same handler can
+         * not be added for the same event more than once.
+         *
+         * @param event     The event to subscribe to for this button
+         * @param handler   The code to run when the event triggers
+         */
+        addEventListener(event: ControllerButtonEvent, handler: () => void) {
+            this.getOrCreateHandlerForEvent(event);
+
+            const handlerState  = this.handlerState;
+
+            if (!handlerState.system) handlerState.system = [];
+
+            for (const eventHandler of handlerState.system) {
+                if (eventHandler.event === event && eventHandler.callback === handler) return;
+            }
+
+            handlerState.system.push(new ButtonHandler(event, handler));
+        }
+
+        /**
+         * Removes an event handler registered with addEventListener.
+         *
+         * @param event     The event that the handler was registered for
+         * @param handler   The handler to remove
+         */
+        removeEventListener(event: ControllerButtonEvent, handler: () => void) {
+            const handlerState  = this.handlerState;
+            if (!handlerState || !handlerState.system) return;
+
+            for (let i = 0; i < handlerState.system.length; i++) {
+                if (handlerState.system[i].event === event && handlerState.system[i].callback === handler) {
+                    handlerState.system.splice(i, 1)
+                    return;
+                }
+            }
         }
 
         /**
@@ -171,6 +232,42 @@ namespace controller {
                 this.raiseButtonRepeat();
                 this._repeatCount = count;
             }
+        }
+
+        protected runButtonEvents(event: ControllerButtonEvent) {
+            const handlerState = this.handlerState;
+            if (!handlerState) return;
+
+            const userHandler = this.getOrCreateHandlerForEvent(event);
+            if (userHandler.callback) userHandler.callback();
+
+            if (handlerState.system) {
+                for (const eventHandler of handlerState.system) {
+                    if (eventHandler.event === event && eventHandler.callback) eventHandler.callback();
+                }
+            }
+        }
+
+        protected getOrCreateHandlerForEvent(event: ControllerButtonEvent) {
+            if (!this.handlerState) {
+                game.currentScene().buttonEventHandlers.push(new ButtonEventHandlerState(this.id));
+            }
+
+            const handlerState = this.handlerState;
+            if (!handlerState.user) handlerState.user = [];
+
+            for (const eventHandler of handlerState.user) {
+                if (eventHandler.event === event) {
+                    return eventHandler;
+                }
+            }
+
+            // Register actual handler if this hasn't been used before
+            control.onEvent(event, this.id, () => this.runButtonEvents(event));
+
+            const newHandler = new ButtonHandler(event, undefined);
+            handlerState.user.push(newHandler);
+            return newHandler;
         }
     }
 
