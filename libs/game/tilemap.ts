@@ -662,7 +662,7 @@ namespace tiles {
     //% block="tile at $location is wall"
     //% location.shadow=mapgettile
     //% blockNamespace="scene" group="Locations" blockGap=8
-    //% weight=30
+    //% weight=30 help=scene/tile-at-location-is-wall
     export function tileAtLocationIsWall(location: Location): boolean {
         if (!location || !location.tileMap) return false;
         return location.isWall();
@@ -676,7 +676,7 @@ namespace tiles {
     //% blockId=tiles_image_at_location
     //% block="tile image at $location"
     //% location.shadow=mapgettile
-    //% weight=0
+    //% weight=0 help=scene/tile-image-at-location
     //% blockNamespace="scene" group="Locations"
     export function tileImageAtLocation(location: Location): Image {
         const scene = game.currentScene();
@@ -692,7 +692,7 @@ namespace tiles {
     //% blockId=mapplaceontile block="place $sprite=variables_get(mySprite) on top of $loc"
     //% loc.shadow=mapgettile
     //% blockNamespace="scene" group="Tilemap Operations" blockGap=8
-    //% help=scene/place
+    //% help=scene/place-on-tile
     //% weight=100
     export function placeOnTile(sprite: Sprite, loc: Location): void {
         if (!sprite || !loc || !loc.tileMap) return;
