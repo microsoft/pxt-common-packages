@@ -8,7 +8,7 @@ tiles.tileAtLocationEquals(tiles.getTileLocation(0, 0), null)
 
 ## Parameters
 
-* **location**: a location in the tilemap.
+* **location**: a [location](/reference/scene/location) in the tilemap.
 * **tile**: an [image](/types/image) that matches the tile you're looking for.
 
 ## Returns
