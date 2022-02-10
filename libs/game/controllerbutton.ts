@@ -138,7 +138,7 @@ namespace controller {
         addEventListener(event: ControllerButtonEvent, handler: () => void) {
             this.getOrCreateHandlerForEvent(event);
 
-            const handlerState  = this.handlerState;
+            const handlerState = this.handlerState;
 
             if (!handlerState.system) handlerState.system = [];
 
@@ -156,7 +156,7 @@ namespace controller {
          * @param handler   The handler to remove
          */
         removeEventListener(event: ControllerButtonEvent, handler: () => void) {
-            const handlerState  = this.handlerState;
+            const handlerState = this.handlerState;
             if (!handlerState || !handlerState.system) return;
 
             for (let i = 0; i < handlerState.system.length; i++) {
