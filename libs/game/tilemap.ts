@@ -309,7 +309,7 @@ namespace tiles {
             }
         }
 
-        protected get data(): TileMapData {
+        get data(): TileMapData {
             return this._map;
         }
 
