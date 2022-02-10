@@ -93,6 +93,7 @@ namespace scene {
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
         followingSprites: sprites.FollowingSprite[];
+        buttonEventHandlers: controller.ButtonEventHandlerState[];
 
         private _millis: number;
         private _data: any;
@@ -116,6 +117,7 @@ namespace scene {
             this.gameForeverHandlers = [];
             this.spritesByKind = {};
             this.controlledSprites = [];
+            this.buttonEventHandlers = [];
             this._data = {};
             this._millis = 0;
         }
