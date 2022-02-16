@@ -116,7 +116,6 @@ namespace scene {
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
         scene.tileMap.setData(map);
-        scene.tileMap.scale = map.scale;
     }
 
      /**

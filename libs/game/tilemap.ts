@@ -365,6 +365,9 @@ namespace tiles {
             }
 
             this._map = map;
+            if (map) {
+                this._scale = map.scale;
+            }
 
             if (this.handlerState && previous !== map && map) {
                 for (const eventHandler of this.handlerState) {
