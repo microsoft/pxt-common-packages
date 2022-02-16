@@ -357,16 +357,17 @@ namespace tiles {
             const previous = this._map;
 
             if (this.handlerState && previous !== map && previous) {
-                if (map) {
-                    for (const eventHandler of this.handlerState) {
-                        if (eventHandler.event === TileMapEvent.Unloaded) {
-                            eventHandler.callback(previous);
-                        }
+                for (const eventHandler of this.handlerState) {
+                    if (eventHandler.event === TileMapEvent.Unloaded) {
+                        eventHandler.callback(previous);
                     }
                 }
             }
 
             this._map = map;
+            if (map) {
+                this._scale = map.scale;
+            }
 
             if (this.handlerState && previous !== map && map) {
                 for (const eventHandler of this.handlerState) {
