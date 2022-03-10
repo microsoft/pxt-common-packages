@@ -85,7 +85,7 @@ CODAL_RADIO* getRadio() {
             return r;
         }
         if (!radioEnabled) {
-            getRadio()->setGroup(0);
+            getRadio()->setGroup(0); //Default group zero. This used to be pxt::programHash()
             getRadio()->setTransmitPower(6); // start with high power by default
             radioEnabled = true;
         }
