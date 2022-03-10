@@ -85,13 +85,53 @@ CODAL_RADIO* getRadio() {
             return r;
         }
         if (!radioEnabled) {
-            getRadio()->setGroup(pxt::programHash());
+            getRadio()->setGroup(0);
             getRadio()->setTransmitPower(6); // start with high power by default
             radioEnabled = true;
         }
         return r;
 #else
         return DEVICE_NOT_SUPPORTED;
+#endif
+    }
+
+    /**
+    * Disables the radio for use as a multipoint sender/receiver.
+    * Disabling radio will help conserve battery power when it is not in use.
+    */
+    //% help=radio/off
+    void off() {
+#ifdef CODAL_RADIO
+        auto radio = getRadio();
+        if (NULL == radio)
+            return;
+
+        int r = radio->disable();
+        if (r != DEVICE_OK) {
+            target_panic(43);
+        }
+#else
+        return;
+#endif
+    }
+
+    /**
+    * Initialises the radio for use as a multipoint sender/receiver
+    * Only useful when the radio.off() is used beforehand.
+    */
+    //% help=radio/on
+    void on() {
+#ifdef CODAL_RADIO
+        auto radio = getRadio();
+        if (NULL == radio)
+            return;
+
+        int r = radio->enable();
+        if (r != DEVICE_OK) {
+            target_panic(43);
+        }
+#else
+        return;
 #endif
     }
 
