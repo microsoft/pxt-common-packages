@@ -206,7 +206,6 @@ CODAL_RADIO* getRadio() {
 #ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK || NULL == msg) return;
 
-        target_panic(43);
         // don't send RSSI data; and make sure no buffer underflow
         int len = msg->length - sizeof(int);
         if (len > 0)
