@@ -73,25 +73,77 @@ CODAL_RADIO* getRadio() {
 #endif // #else
 
     bool radioEnabled = false;
+    bool init = false;
     int radioEnable() {
 #ifdef CODAL_RADIO
         auto radio = getRadio();
         if (NULL == radio) 
             return DEVICE_NOT_SUPPORTED;
 
+        if (init && !radioEnabled) {
+            //If radio was explicitly disabled from a call to off API
+            //We don't want to enable it here. User needs to call on API first.
+            return DEVICE_NOT_SUPPORTED;
+        }
+
         int r = radio->enable();
         if (r != DEVICE_OK) {
             target_panic(43);
             return r;
         }
-        if (!radioEnabled) {
-            getRadio()->setGroup(pxt::programHash());
+        if (!init) {
+            getRadio()->setGroup(0); //Default group zero. This used to be pxt::programHash()
             getRadio()->setTransmitPower(6); // start with high power by default
-            radioEnabled = true;
+            init = true;
         }
+        radioEnabled = true;
         return r;
 #else
         return DEVICE_NOT_SUPPORTED;
+#endif
+    }
+
+    /**
+    * Disables the radio for use as a multipoint sender/receiver.
+    * Disabling radio will help conserve battery power when it is not in use.
+    */
+    //% help=radio/off
+    void off() {
+#ifdef CODAL_RADIO
+        auto radio = getRadio();
+        if (NULL == radio)
+            return;
+
+        int r = radio->disable();
+        if (r != DEVICE_OK) {
+            target_panic(43);
+        } else {
+            radioEnabled = false;
+        }
+#else
+        return;
+#endif
+    }
+
+    /**
+    * Initialises the radio for use as a multipoint sender/receiver
+    * Only useful when the radio.off() is used beforehand.
+    */
+    //% help=radio/on
+    void on() {
+#ifdef CODAL_RADIO
+        auto radio = getRadio();
+        if (NULL == radio)
+            return;
+
+        int r = radio->enable();
+        if (r != DEVICE_OK) {
+            target_panic(43);
+        } else {
+            radioEnabled = true;
+        }
+#else
+        return;
 #endif
     }
 
