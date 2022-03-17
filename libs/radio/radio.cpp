@@ -237,6 +237,7 @@ CODAL_RADIO* getRadio() {
     //% weight=100
     //% blockId=radio_set_group block="radio set group %ID"
     //% id.min=0 id.max=255
+    //% group="Group"
     void setGroup(int id) {
 #ifdef CODAL_RADIO        
         if (radioEnable() != DEVICE_OK) return;

@@ -21,6 +21,7 @@ namespace radio {
     //% weight=200
     //% blockGap=8
     //% help=radio/send-message
+    //% group="Broadcast"
     export function sendMessage(msg: number): void {
         // 0 is MICROBIT_EVT_ANY, shifting by 1
         radio.raiseEvent(BROADCAST_GENERAL_ID, msg + 1);
@@ -35,6 +36,7 @@ namespace radio {
     //% msg.shadow=radioMessageCode draggableParameters
     //% weight=199
     //% help=radio/on-received-message
+    //% group="Broadcast"
     export function onReceivedMessage(msg: number, handler: () => void) {
         control.onEvent(BROADCAST_GENERAL_ID, msg + 1, handler);
     }
