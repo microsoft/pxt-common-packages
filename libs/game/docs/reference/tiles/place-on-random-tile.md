@@ -43,7 +43,7 @@ tiles.placeOnRandomTile(mySprite, assets.tile`myTile`)
 
 ## See also #seealso
 
-[get tile](/reference/tiles/place-on-tile)
+[place on tile](/reference/tiles/place-on-tile)
 
 ```jres
 {
