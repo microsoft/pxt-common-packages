@@ -3,7 +3,7 @@
 Get the image of the tile at a location in the tilemap.
 
 ```sig
-tiles.tileImageAtLocation(tiles.getTileAtLocation(0, 0))
+tiles.tileImageAtLocation(tiles.getTileLocation(0, 0))
 ```
 
 ## Parameters
@@ -31,7 +31,7 @@ mySprite.vx = 50
 
 ## See also #seealso
 
-[location](/reference/tiles/location)
+[get-tile-location](/reference/tiles/get-tile-location)
 
 ```jres
 {

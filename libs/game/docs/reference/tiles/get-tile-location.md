@@ -50,8 +50,8 @@ forever(function () {
 
 ## See also #seealso
 
-[set tile at](/reference/scene/set-tile-at),
-[place on tile](/reference/scene/place-on-tile)
+[set tile at](/reference/tiles/set-tile-at),
+[place on tile](/reference/tiles/place-on-tile)
 
 ```jres
 {

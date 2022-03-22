@@ -198,7 +198,7 @@ game.showLongText(displayString, DialogLayout.Bottom)
 
 ## See also #seealso
 
-[get neighboring location](/reference/scene/get-neighboring-location)
+[get neighboring location](/reference/tiles/get-neighboring-location)
 
 ```jres
 {

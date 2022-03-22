@@ -14,7 +14,7 @@ A neighboring tile is one that is immediately to the `left`, `right`, `top`, or 
 
 ## Returns
 
-* a [location](/reference/scene/location) object for the neighbor tile.
+* a [location](/reference/tiles/location) object for the neighbor tile.
 
 ## Example #example
 
@@ -63,7 +63,7 @@ game.onUpdateInterval(1000, function () {
 
 ## See also #seealso
 
-[get tile location](/reference/scene/get-tile-location)
+[get tile location](/reference/tiles/get-tile-location)
 
 ```jres
 {

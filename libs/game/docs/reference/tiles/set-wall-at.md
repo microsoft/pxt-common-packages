@@ -10,7 +10,7 @@ Wall tiles create a barrier for sprites so that they can't pass through tilemap 
 
 ## Parameters
 
-* **loc**: a tile location in the tilemap.
+* **loc**: a tile [location](/reference/tiles/location) in the tilemap.
 * **on**: a [boolean](/types/boolean) value to set the tile location be a wall tile if `true` or a regular tile if `false`.
 
 ## Example #example
