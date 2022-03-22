@@ -8,7 +8,7 @@ tiles.tileImageAtLocation(tiles.getTileAtLocation(0, 0))
 
 ## Parameters
 
-* **location**: the [location](/reference/scene/location) object for the tile to return it's image.
+* **location**: the [location](/reference/tiles/location) object for the tile to return it's image.
 
 ## Returns
 
@@ -31,7 +31,7 @@ mySprite.vx = 50
 
 ## See also #seealso
 
-[location](/reference/scene/location)
+[location](/reference/tiles/location)
 
 ```jres
 {

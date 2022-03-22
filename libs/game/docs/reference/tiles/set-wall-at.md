@@ -1,87 +1,86 @@
 # set Wall At
 
-Set a wall at a tile location in the tilemap.
+Set a tile as a wall tile in the tilemap.
 
 ```sig
-tiles.setWallAt(null, false)
+tiles.setWallAt(tiles.getTileLocation(0, 0), false)
 ```
 
-Tiles in a tilemap can serve as "wall" tiles to cause an action on a sprite that
-comes in contact with the tile. Sprites have flags ([boolean](/types/boolean)
-settings) that can set certain behavior when the contact a wall tile.
+Wall tiles create a barrier for sprites so that they can't pass through tilemap at the tile location. You can set a tile location in the tilemap as a wall or turn it back to a regular tile.
 
 ## Parameters
 
-* **tile**: the [tile](/types/tile) location.
-* **on**: a [boolean](/types/boolean) value that sets the wall **ON** if `true` or **OFF** if `false` at the tile location.
+* **loc**: a tile location in the tilemap.
+* **on**: a [boolean](/types/boolean) value to set the tile location be a wall tile if `true` or a regular tile if `false`.
 
 ## Example #example
 
-Create a scene with two horizontal walls. Bounce a sprite between the walls.
+Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, set the tiles  in the column to be wall tiles or regular tiles.
 
 ```blocks
-namespace myTiles {
-    //% blockIdentity=images._tile
-    export const tile0 = img`
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-. . . . . . . . . . . . . . . . 
-`
-}
-tiles.setTilemap(tiles.createTilemap(
-            hex`0a0008000000000000000000000009090909090909090909000000000000000000000000000000000000000000000000000000000000000000000000000000000909090909090909090900000000000000000000`,
-            img`
-. . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
-. . . . . . . . . . 
-`,
-            [myTiles.tile0,sprites.castle.tilePath4,sprites.castle.tilePath3,sprites.castle.tilePath1,sprites.castle.tilePath9,sprites.castle.tilePath6,sprites.castle.tilePath8,sprites.castle.tilePath7,sprites.castle.tilePath2,sprites.castle.tilePath5],
-            TileScale.Sixteen
-        ))
-for (let index = 0; index <= 9; index++) {
-    tiles.setWallAt(tiles.getTileLocation(index, 1), true)
-    tiles.setWallAt(tiles.getTileLocation(index, 6), true)
-}
+let isWall = false
+tiles.setTilemap(tilemap`level1`)
 let mySprite = sprites.create(img`
-2 5 5 5 5 5 5 5 5 5 5 5 5 5 2 2 
-2 2 2 5 5 5 5 5 5 5 5 5 5 2 2 3 
-7 7 2 2 5 5 5 5 5 5 5 5 2 2 3 3 
-7 7 7 2 2 5 5 5 5 5 5 2 2 3 3 3 
-7 7 7 7 2 5 5 5 5 5 2 2 3 3 3 3 
-7 7 7 7 7 2 5 5 5 5 2 3 3 3 3 3 
-7 7 7 7 7 2 2 5 5 2 2 3 3 3 3 3 
-7 7 7 7 7 7 2 2 2 2 3 3 3 3 3 3 
-7 7 7 7 7 7 7 2 2 3 3 3 3 3 3 3 
-7 7 7 7 7 7 7 2 2 2 2 3 3 3 3 3 
-7 7 7 7 7 7 2 2 4 4 4 2 2 3 3 3 
-7 7 7 7 7 2 4 4 4 4 4 4 2 2 3 3 
-7 7 7 2 2 4 4 4 4 4 4 4 4 2 3 3 
-7 7 2 2 4 4 4 4 4 4 4 4 4 2 2 3 
-7 2 2 4 4 4 4 4 4 4 4 4 4 4 2 3 
-2 2 4 4 4 4 4 4 4 4 4 4 4 4 2 2 
-`, SpriteKind.Player)
-mySprite.setVelocity(50, 50)
-mySprite.setFlag(SpriteFlag.BounceOnWall, true)
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 1 1 1 1 1 1 . . . . . 
+    . . . 1 1 2 2 2 2 2 2 1 1 . . . 
+    . . . 1 2 2 2 2 2 2 2 2 1 . . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . . 1 2 2 2 2 2 2 2 2 1 . . . 
+    . . . 1 1 2 2 2 2 2 2 1 1 . . . 
+    . . . . . 1 1 1 1 1 1 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player)
+mySprite.setBounceOnWall(true)
+mySprite.vx = 80
+mySprite.vy = 70
+game.onUpdateInterval(5000, function () {
+    isWall = !(isWall)
+    for (let wallTile of tiles.getTilesByType(assets.tile`myTile`)) {
+        tiles.setWallAt(wallTile, isWall)
+    }
+})
 ```
 
 ## See also #seealso
 
-[set tile](/reference/tiles/set-tile), [get tile location](/reference/tiles/get-tile-location)
+[get tile location](/reference/tiles/get-tile-location),
+[on hit wall](/reference/scene/on-hit-wall)
+
+```jres
+{
+    "transparency16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true
+    },
+    "tile1": {
+        "data": "hwQQABAAAADu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7g==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "myTile"
+    },
+    "level1": {
+        "id": "level1",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "tileset": [
+            "myTiles.transparency16",
+            "myTiles.tile1"
+        ],
+        "displayName": "level1"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myTiles"
+    }
+}
+```

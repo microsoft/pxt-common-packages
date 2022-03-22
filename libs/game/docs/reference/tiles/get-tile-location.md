@@ -1,51 +1,92 @@
 # get Tile Location
 
-Get a tile location from the tilemap.
+Get the tile location object for a particular column and row position in the tilemap.
 
 ```sig
 tiles.getTileLocation(0, 0)
 ```
 
+A tile location object represents a column and a row position in the tilemap. Location objects are used to get and set tiles or tile information for specific places in the tilemap.
+
 ## Parameters
 
-* **col**: the column of the tile in the tilemap.
-* **row**: the row of the tile in the tilemap.
+* **col**: a [number](/types/number) that is the tilemap column of the tile location.
+* **row**: a [number](/types/number) that is the tilemap row of the tile location.
 
 ## Returns
 
-* a [tile](/types/tile) from a location in the tilemap.
+* a tile [location](/reference/tiles/location) object for a given column and row in the tilemap.
 
 ## Example #example
 
-Make a scene using a tilemap with border tiles and two tiles in the center. Replace the tiles in the center with the ones used for the border.
+Make a grid tilemap with two tile colors. Create a round shaped sprite. Ramdomly choose a tile location to place the sprite at in the grid.
 
 ```blocks
-let image = img`
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-`;
-// TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9)); 
-pause(1000)
-tiles.setTileAt(tiles.getTileLocation(4, 3), image)
-pause(1000)
-tiles.setTileAt(tiles.getTileLocation(5, 3), image)
+tiles.setTilemap(tilemap`level1`)
+let mySprite = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 7 7 7 7 7 7 . . . . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . 7 7 7 7 7 7 7 7 7 7 7 7 . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . . 7 7 7 7 7 7 7 7 7 7 . . . 
+    . . . . . 7 7 7 7 7 7 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player)
+
+forever(function () {
+    tiles.placeOnTile(mySprite, tiles.getTileLocation(randint(0, 9), randint(0, 6)))
+    pause(500)
+})
 ```
 
 ## See also #seealso
 
-[get tiles by type](/reference/tiles/get-tiles-by-type),
-[set tile at](/reference/tiles/set-tile-at)
+[set tile at](/reference/scene/set-tile-at),
+[place on tile](/reference/scene/place-on-tile)
+
+```jres
+{
+    "transparency16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true
+    },
+    "tile1": {
+        "data": "hwQQABAAAADd3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3Q==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "myTile"
+    },
+    "tile2": {
+        "data": "hwQQABAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "myTile0"
+    },
+    "level1": {
+        "id": "level1",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwYTAwMDgwMDAxMDIwMTAyMDEwMjAxMDIwMTAyMDIwMTAyMDEwMjAxMDIwMTAyMDEwMTAyMDEwMjAxMDIwMTAyMDEwMjAyMDEwMjAxMDIwMTAyMDEwMjAxMDEwMjAxMDIwMTAyMDEwMjAxMDIwMjAxMDIwMTAyMDEwMjAxMDIwMTAxMDIwMTAyMDEwMjAxMDIwMTAyMDIwMTAyMDEwMjAxMDIwMTAyMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "tileset": [
+            "myTiles.transparency16",
+            "myTiles.tile1",
+            "myTiles.tile2"
+        ],
+        "displayName": "level1"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myTiles"
+    }
+}
+```

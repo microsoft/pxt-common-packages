@@ -12,7 +12,7 @@ The tile that is under the center of the sprite is considered as the sprite's ti
 
 ## Returns
 
-* a tile [location](/reference/scene/location) object for the location of the sprite on the tilemap.
+* a tile [location](/reference/tiles/location) object for the location of the sprite on the tilemap.
 
 ## Example #example
 
@@ -42,7 +42,7 @@ mySprite.sayText("col: " + tmLocation.column + " row: " + tmLocation.row)
 
 ## See also #seealso
 
-[get tile location](/reference/scene/get-tile-location)
+[get tile location](/reference/tiles/get-tile-location)
 
 ```jres
 {
