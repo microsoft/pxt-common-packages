@@ -6,7 +6,7 @@ Set a tilemap as the current tilemap for the game scene.
 tiles.setTilemap(null)
 ```
 
-A [tilemap](/refernece/tiles/tilemap) is a data object that contains the dimensions, layers, and tile list for a tile mapping to set as the scene for a game. A game program can have more than one tilemap defined and the game's scene or _level_ can change by setting a different tilemap at certain times during a game.
+A [tilemap](/reference/tiles/tilemap) is a data object that contains the dimensions, layers, and tile list for a tile mapping to set as the scene for a game. A game program can have more than one tilemap defined and the game's scene or _level_ can change by setting a different tilemap at certain times during a game.
 
 Tilemaps aren't coded by the user but are created using a tilemap editor. Each tilemap in a game project is a named resource and is contained within the project's **assets** collection. In code, a particular tilemap is specified with it's resource name like this:
 
@@ -16,7 +16,7 @@ tiles.setTilemap(tilemap`level1`)
 
 ## Parameters
 
-* **tilemap**: the [tilemap](/refernece/tiles/tilemap) data containing the tilemap layout and tiles to set for the game scene. The tilemap can be specified by it's resource name, such as: `` tilemap`level1` ``.
+* **tilemap**: the [tilemap](/reference/tiles/tilemap) data containing the tilemap layout and tiles to set for the game scene. The tilemap can be specified by it's resource name, such as: `` tilemap`level1` ``.
 
 ## Example #example
 
@@ -48,7 +48,7 @@ mySprite.vx = 16
 
 ## See also #seealso
 
-[tilemap](/refernece/tiles/tilemap),
+[tilemap](/reference/tiles/tilemap),
 [set tile at](/reference/scene/set-tile-at)
 
 ```jres
