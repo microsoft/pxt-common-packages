@@ -43,7 +43,7 @@ mySprite.vx = 50
 mySprite.vy = 50
 ```
 
-### Boucne on the the edge of the screen
+### Bounce on the the edge of the screen
 
 With a scene that has no tilemap set, make a sprite bounce on the edges of the screen.
 
