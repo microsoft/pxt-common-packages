@@ -319,7 +319,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Image"
     //% blockId=spriteimage block="%sprite(mySprite) image"
-    //% weight=8
+    //% weight=8 help=sprites/sprite/image
     get image(): Image {
         return this._image;
     }
