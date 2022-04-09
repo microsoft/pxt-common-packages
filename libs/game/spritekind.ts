@@ -5,6 +5,7 @@ namespace sprites {
     //% shim=KIND_GET
     //% blockId=spritekind block="$kind"
     //% kindNamespace=SpriteKind kindMemberName=kind kindPromptHint="e.g. Coin, Fireball, Asteroid..."
+    //% help=sprites/sprite-kind
     export function _spriteKind(kind: number): number {
         return kind;
     }
