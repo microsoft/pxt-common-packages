@@ -596,7 +596,7 @@ namespace tiles {
     //% tilemap.fieldOptions.filter="tile"
     //% tilemap.fieldOptions.taggedTemplate="tilemap"
     //% blockNamespace="scene" duplicateShadowOnDrag
-    //% help=scene/set-tilemap
+    //% help=tiles/set-tilemap
     //% deprecated=1
     export function setTilemap(tilemap: TileMapData) {
         setCurrentTilemap(tilemap);
@@ -611,7 +611,7 @@ namespace tiles {
     //% weight=201 blockGap=8
     //% tilemap.shadow=tiles_tilemap_editor
     //% blockNamespace="scene" group="Tilemaps" duplicateShadowOnDrag
-    //% help=tiles/set-tile-map
+    //% help=tiles/set-current-tilemap
     export function setCurrentTilemap(tilemap: TileMapData) {
         scene.setTileMapLevel(tilemap);
     }
@@ -809,6 +809,7 @@ namespace tiles {
     //% tilemap.fieldOptions.filter="tile"
     //% tilemap.fieldOptions.taggedTemplate="tilemap"
     //% blockNamespace="scene" group="Tilemaps" duplicateShadowOnDrag
+    //% help=tiles/tilemap
     export function _tilemapEditor(tilemap: TileMapData): TileMapData {
         return tilemap;
     }
