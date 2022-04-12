@@ -625,7 +625,7 @@ namespace tiles {
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tilemap Operations" blockGap=8
-    //% help=tiless/set-tile-at
+    //% help=tiles/set-tile-at
     //% weight=70
     export function setTileAt(loc: Location, tile: Image): void {
         const scene = game.currentScene();
