@@ -1,25 +1,21 @@
-# get Tile Location
+# place On Tile
 
-Get the tile location object for a particular column and row position in the tilemap.
+Move a sprite's position to the center of a tile location in the tilemap.
 
 ```sig
-tiles.getTileLocation(0, 0)
+tiles.placeOnTile(null, tiles.getTileLocation(0, 0))
 ```
 
-A tile location object represents a column and a row position in the tilemap. Location objects are used to get and set tiles or tile information for specific places in the tilemap.
+A sprite will locate itself on top of a tile in the tilemap using a tilemap location object. A location object contains a tile row value and a tile column value.
 
 ## Parameters
 
-* **col**: a [number](/types/number) that is the tilemap column of the tile location.
-* **row**: a [number](/types/number) that is the tilemap row of the tile location.
-
-## Returns
-
-* a tile [location](/reference/tiles/location) object for a given column and row in the tilemap.
+* **sprite**: the sprite to move onto the tile.
+* **loc**: a tile [location](/reference/tiles/location) in the tilemap.
 
 ## Example #example
 
-Make a grid tilemap with two tile colors. Create a round shaped sprite. Ramdomly choose a tile location to place the sprite at in the grid.
+Make a grid tilemap with two tile colors. Create a round shaped sprite. Ramdomly place the sprite on a tile in the grid.
 
 ```blocks
 tiles.setTilemap(tilemap`level1`)
@@ -50,8 +46,8 @@ forever(function () {
 
 ## See also #seealso
 
-[set tile at](/reference/tiles/set-tile-at),
-[place on tile](/reference/tiles/place-on-tile)
+[get tile location](/reference/tiles/get-tile-location),
+[place on random tile](/reference/tiles/place-on-random-tile)
 
 ```jres
 {
