@@ -21,10 +21,6 @@ Create a sprite with a circular image. Move the sprite around the screen with th
 ### Single player
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite: Sprite = null
 mySprite = sprites.create(img`
 . . . . . . . . . . . . . . . . 
@@ -50,10 +46,6 @@ controller.moveSprite(mySprite, 100, 100)
 ### Multiplayer
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let mySprite: Sprite = null
 mySprite = sprites.create(img`
 . . . . . . . . . . . . . . . . 

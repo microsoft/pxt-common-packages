@@ -7,7 +7,7 @@ namespace pxt {
 Action mkAction(int totallen, RefAction *act) {
     check(getVTable(act)->classNo == BuiltInType::RefAction, PANIC_INVALID_BINARY_HEADER, 1);
 #ifdef PXT_VM
-    check(act->initialLen == totallen, PANIC_INVALID_BINARY_HEADER, 13);
+    check(act->initialLen <= totallen, PANIC_INVALID_BINARY_HEADER, 13);
 #endif
 
     if (totallen == 0) {
@@ -20,7 +20,7 @@ Action mkAction(int totallen, RefAction *act) {
 #ifdef PXT_VM
     r->numArgs = act->numArgs;
     r->initialLen = act->initialLen;
-    r->reserved = act->reserved;
+    r->flags = 0;
 #endif
     r->func = act->func;
     memset(r->fields, 0, r->len * sizeof(void *));
@@ -315,8 +315,7 @@ void RefAction::destroy(RefAction *t) {}
 
 void RefAction::print(RefAction *t) {
 #ifdef PXT_VM
-    DMESG("RefAction %p pc=%X size=%d", t,
-          (const uint8_t *)t->func - (const uint8_t *)vmImg->dataStart, t->len);
+    DMESG("RefAction %p pc=%X size=%d", t, (uint32_t)t->func, t->len);
 #else
     DMESG("RefAction %p pc=%X size=%d", t, (const uint8_t *)t->func - (const uint8_t *)bytecode,
           t->len);
@@ -391,11 +390,11 @@ void checkStr(bool cond, const char *msg) {
 
 #ifdef PXT_VM
 int templateHash() {
-    return (int)vmImg->infoHeader->hexHash;
+    return *(int*)&vmImg->infoHeader->hexHash;
 }
 
 int programHash() {
-    return (int)vmImg->infoHeader->programHash;
+    return *(int*)&vmImg->infoHeader->programHash;
 }
 
 int getNumGlobals() {
@@ -507,7 +506,7 @@ RefCollection *keysOf(TValue v) {
 //% expose
 TValue mapDeleteByString(RefMap *map, String key) {
     if (getAnyVTable((TValue)map) != &RefMap_vtable)
-        target_panic(PANIC_DELETE_ON_CLASS);
+        soft_panic(PANIC_DELETE_ON_CLASS);
     int i = map->findIdx(key);
     if (i >= 0) {
         map->keys.remove(i);

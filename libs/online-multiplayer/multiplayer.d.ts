@@ -5,8 +5,8 @@ declare namespace multiplayer {
     //% shim=multiplayer::getCurrentImage
     function getCurrentImage(): Image;
 
-    //% shim=multiplayer::setIsClient
-    function setIsClient(on: boolean): void;
+    //% shim=multiplayer::setOrigin
+    function setOrigin(origin: string): void;
 
     //% shim=multiplayer::getOrigin
     function getOrigin(): string;

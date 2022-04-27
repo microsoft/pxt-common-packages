@@ -78,6 +78,13 @@ namespace settings {
     }
 
     /**
+     * Set named settings to a given JSON object.
+     */
+    export function writeJSON(key: string, value: any) {
+        writeString(key, JSON.stringify(value))
+    }
+
+    /**
      * Set named settings to a given number.
      */
     export function writeNumber(key: string, value: number) {
@@ -107,6 +114,16 @@ namespace settings {
             return undefined
         else
             return buf.toString()
+    }
+
+    /**
+     * Read named setting as a JSON object.
+     */
+    export function readJSON(key: string) {
+        const s = readString(key)
+        if (s)
+            return JSON.parse(s)
+        return undefined
     }
 
     /**
@@ -181,30 +198,27 @@ namespace settings {
     //% fixedInstances
     export class SecretStore {
         constructor(private key: string) { }
-        
+
         setSecret(name: string, value: any) {
             const secrets = this.readSecrets();
             secrets[name] = value;
-            writeString(this.key, JSON.stringify(secrets));
+            writeJSON(this.key, secrets);
         }
 
         updateSecret(name: string, value: any) {
             const secrets = this.readSecrets();
             const secret = secrets[name];
             if (secret === undefined)
-                secrets[name] = value; 
+                secrets[name] = value;
             else jsonMergeFrom(secret, value);
-            const v = JSON.stringify(secrets);
-            writeString(this.key, v);
+            writeJSON(this.key, secrets)
         }
 
         readSecret(name: string, ensure: boolean = false): any {
             const secrets = this.readSecrets();
             const secret = secrets[name];
-            if (ensure && !secret) {
-                control.dmesg("missing secret " + name);
-                control.panic(control.PXT_PANIC.SETTINGS_SECRET_MISSING);
-            }
+            if (ensure && !secret)
+                throw "missing secret " + name;
             return secret;
         }
 
@@ -214,8 +228,7 @@ namespace settings {
 
         readSecrets(): any {
             try {
-                const src = readString(this.key) || "{}";
-                return JSON.parse(src) || {};
+                return readJSON(this.key) || {}
             } catch {
                 control.dmesg("invalid secret format")
                 return {};

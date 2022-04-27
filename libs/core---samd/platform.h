@@ -10,13 +10,15 @@
 #include "ZI2C.h"
 #include "ZSingleWireSerial.h"
 #include "SAMDNVM.h"
-
+#include "SAMDPDM.h"
 #include "SAMDSerial.h"
 
 // cap touch not available on 51 yet
 #ifdef SAMD21
 #include "CapTouchButton.h"
 #endif
+
+#define MIC_DEVICE SAMD21PDM
 
 #ifdef SAMD21
 #define OUTPUT_BITS 10
@@ -46,7 +48,11 @@ typedef int PinName;
 #define USB_HANDOVER 0
 
 // if we ever want to support 100+ pin packages, need to add PC,PD ports and increase this to 128
+#ifdef SAMD51
+#define DEV_NUM_PINS 128
+#else
 #define DEV_NUM_PINS 64
+#endif
 
 #define IS_ANALOG_PIN(id) 1
 
@@ -132,5 +138,68 @@ typedef int PinName;
 #define PB29 61
 #define PB30 62
 #define PB31 63
-
+#define PC00  64
+#define PC01  65
+#define PC02  66
+#define PC03  67
+#define PC04  68
+#define PC05  69
+#define PC06  70
+#define PC07  71
+#define PC08  72
+#define PC09  73
+#define PC10  74
+#define PC11  75
+#define PC12  76
+#define PC13  77
+#define PC14  78
+#define PC15  79
+#define PC16  80
+#define PC17  81
+#define PC18  82
+#define PC19  83
+#define PC20  84
+#define PC21  85
+#define PC22  86
+#define PC23  87
+#define PC24  88
+#define PC25  89
+#define PC26  90
+#define PC27  91
+#define PC28  92
+#define PC29  93
+#define PC30  94
+#define PC31  95
+#define PD00  96
+#define PD01  97
+#define PD02  98
+#define PD03  99
+#define PD04  100
+#define PD05  101
+#define PD06  102
+#define PD07  103
+#define PD08  104
+#define PD09  105
+#define PD10  106
+#define PD11  107
+#define PD12  108
+#define PD13  109
+#define PD14  110
+#define PD15  111
+#define PD16  112
+#define PD17  113
+#define PD18  114
+#define PD19  115
+#define PD20  116
+#define PD21  117
+#define PD22  118
+#define PD23  119
+#define PD24  120
+#define PD25  121
+#define PD26  122
+#define PD27  123
+#define PD28  124
+#define PD29  125
+#define PD30  126
+#define PD31  127
 #endif

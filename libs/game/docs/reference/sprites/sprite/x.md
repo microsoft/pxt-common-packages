@@ -37,13 +37,10 @@ The sprite image forms a rectangle with some number of pixel columns. The **x** 
 Set the sprite **x** and **y** locations to `64`. Have the sprite say what it's **x** value is.
 
 ```blocks
-enum SpriteKind {
-    Example,
-    Player,
-    Enemy
+namespace SpriteKind {
+    export const Example = SpriteKind.create()
 }
-let mySprite: Sprite = null
-mySprite = sprites.create(img`
+let mySprite = sprites.create(img`
 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 7 
 7 7 2 2 2 2 2 2 2 2 2 2 2 2 7 7 
 7 5 7 2 2 2 2 2 2 2 2 2 2 7 4 7 

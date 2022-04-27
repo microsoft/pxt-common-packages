@@ -365,7 +365,7 @@ bool eq_bool(TValue a, TValue b);
 bool eqq_bool(TValue a, TValue b);
 
 //%
-void failedCast(TValue v);
+void failedCast(TValue v, void *addr = NULL);
 //%
 void missingProperty(TValue v);
 
@@ -378,6 +378,10 @@ struct HandlerBinding {
     int source;
     int value;
     Action action;
+#ifndef PXT_CODAL
+    uint32_t flags;
+    struct Event *pending;
+#endif
 };
 HandlerBinding *findBinding(int source, int value);
 HandlerBinding *nextBinding(HandlerBinding *curr, int source, int value);
@@ -399,8 +403,7 @@ class RefObject;
 static inline RefObject *incrRC(RefObject *r) {
     return r;
 }
-static inline void decrRC(RefObject *) {
-}
+static inline void decrRC(RefObject *) {}
 
 inline void *ptrOfLiteral(int offset) {
     return &bytecode[offset];
@@ -431,6 +434,7 @@ typedef void **PPVoid;
 typedef void *Object_;
 
 #define VTABLE_MAGIC 0xF9
+#define VTABLE_MAGIC2 0xF8
 
 enum class ValType : uint8_t {
     Undefined,
@@ -451,8 +455,11 @@ enum class BuiltInType : uint16_t {
     RefCollection = 6,
     RefRefLocal = 7,
     RefMap = 8,
-    RefMImage = 9,
-    MMap = 10, // linux, mostly ev3
+    RefMImage = 9,             // microbit-specific
+    MMap = 10,                 // linux, mostly ev3
+    BoxedString_SkipList = 11, // used by VM bytecode representation only
+    BoxedString_ASCII = 12,    // ditto
+    ZPin = 13,
     User0 = 16,
 };
 
@@ -483,6 +490,8 @@ extern const VTable string_inline_utf8_vt;
 extern const VTable string_cons_vt;
 //%
 extern const VTable string_skiplist16_vt;
+//%
+extern const VTable string_skiplist16_packed_vt;
 #endif
 //%
 extern const VTable buffer_vt;
@@ -491,42 +500,33 @@ extern const VTable number_vt;
 //%
 extern const VTable RefAction_vtable;
 
-#define PXT_VTABLE_TO_INT(vt) ((uintptr_t)(vt))
-
-// allocate 1M of heap on iOS
-#define PXT_IOS_HEAP_ALLOC_BITS 20
-
-#ifdef PXT_IOS
-extern uint8_t *gcBase;
+#ifndef PXT_IS_READONLY
+// assume ARM - ram addresses are 0x2000_0000+; flash is either 0x0+ or 0x0800_0000+
+#define PXT_IS_READONLY(v) (isTagged(v) || !((uintptr_t)v >> 28))
 #endif
 
 inline bool isReadOnly(TValue v) {
-#ifdef PXT64
-#ifdef PXT_IOS
-    return !isPointer(v) || (((uintptr_t)v - (uintptr_t)gcBase) >> PXT_IOS_HEAP_ALLOC_BITS) != 0;
-#else
-    return !isPointer(v) || !((uintptr_t)v >> 37);
-#endif
-#else
-    return isTagged(v) || !((uintptr_t)v >> 28);
-#endif
+    return PXT_IS_READONLY(v);
 }
 
 // A base abstract class for ref-counted objects.
 class RefObject {
   public:
-    uintptr_t vtable;
+    const VTable *vtable;
 
     RefObject(const VTable *vt) {
-#if defined(PXT32) && defined(PXT_VM)
+#if defined(PXT32) && defined(PXT_VM) && !defined(PXT_ESP32)
         if ((uint32_t)vt & 0xf0000000)
             target_panic(PANIC_INVALID_VTABLE);
 #endif
-        vtable = PXT_VTABLE_TO_INT(vt);
+        vtable = vt;
     }
 
     void destroyVT();
     void printVT();
+
+    inline uintptr_t vt() { return (uintptr_t)vtable; }
+    inline void setVT(uintptr_t v) { vtable = (const VTable *)v; }
 
     inline void ref() {}
     inline void unref() {}
@@ -636,7 +636,7 @@ class RefRecord : public RefObject {
 };
 
 static inline VTable *getVTable(RefObject *r) {
-    return (VTable *)(r->vtable & ~1);
+    return (VTable *)(r->vt() & ~1);
 }
 
 static inline VTable *getAnyVTable(TValue v) {
@@ -663,16 +663,15 @@ typedef TValue (*ActionCB)(TValue *captured, TValue arg0, TValue arg1, TValue ar
 // Ref-counted function pointer.
 class RefAction : public RefObject {
   public:
-#if defined(PXT_VM) && defined(PXT32)
-    uint32_t _padding; // match binary format in .pxt64 files
-#endif
     uint16_t len;
     uint16_t numArgs;
 #ifdef PXT_VM
     uint16_t initialLen;
-    uint16_t reserved;
-#endif
+    uint16_t flags;
+    uintptr_t func;
+#else
     ActionCB func; // The function pointer
+#endif
     // fields[] contain captured locals
     TValue fields[];
 
@@ -716,12 +715,12 @@ class BoxedString : public RefObject {
   public:
     union {
         struct {
-            uint16_t length;
+            uint16_t length; // ==size
             char data[0];
         } ascii;
 #if PXT_UTF8
         struct {
-            uint16_t length;
+            uint16_t size;
             char data[0];
         } utf8;
         struct {
@@ -729,24 +728,28 @@ class BoxedString : public RefObject {
             BoxedString *right;
         } cons;
         struct {
-            uint16_t size;
-            uint16_t length;
+            uint16_t size;   // in bytes
+            uint16_t length; // in characters
             uint16_t *list;
         } skip;
+        struct {
+            uint16_t size;   // in bytes
+            uint16_t length; // in characters
+            uint16_t list[0];
+        } skip_pack;
 #endif
     };
 
 #if PXT_UTF8
     uintptr_t runMethod(int idx) {
-        return ((uintptr_t(*)(BoxedString *))((VTable *)this->vtable)->methods[idx])(this);
+        return ((uintptr_t(*)(BoxedString *))vtable->methods[idx])(this);
     }
     const char *getUTF8Data() { return (const char *)runMethod(4); }
     uint32_t getUTF8Size() { return (uint32_t)runMethod(5); }
     // in characters
     uint32_t getLength() { return (uint32_t)runMethod(6); }
     const char *getUTF8DataAt(uint32_t pos) {
-        auto meth =
-            ((const char *(*)(BoxedString *, uint32_t))((VTable *)this->vtable)->methods[7]);
+        auto meth = ((const char *(*)(BoxedString *, uint32_t))vtable->methods[7]);
         return meth(this, pos);
     }
 #else
@@ -775,12 +778,10 @@ class BoxedBuffer : public RefObject {
   public:
     // data needs to be word-aligned, so we use 32 bits for length
     int length;
-#ifdef PXT_VM
-    // VM can be 64 bit and it compiles as such
-    int32_t _padding;
-#endif
     uint8_t data[0];
     BoxedBuffer() : RefObject(&buffer_vt) {}
+
+    static bool isInstance(TValue v);
 };
 
 // cross version compatible way of access data field
@@ -822,6 +823,7 @@ struct ImageHeader {
 class RefImage : public RefObject {
   public:
     BoxedBuffer *buffer;
+    uint32_t revision;
 
     RefImage(BoxedBuffer *buf);
     RefImage(uint32_t sz);
@@ -976,26 +978,26 @@ void gcProcessStacks(int flags);
 
 void gcProcess(TValue v);
 void gcFreeze();
+
 #ifdef PXT_VM
 void gcStartup();
 void gcPreStartup();
-void *gcPrealloc(int numbytes);
-bool inGCPrealloc();
-#else
-static inline bool inGCPrealloc() {
-    return false;
-}
 #endif
 
 void coreReset();
 void gcReset();
 void systemReset();
 
+void doNothing();
+
 void *gcAllocate(int numbytes);
 void *gcAllocateArray(int numbytes);
 extern "C" void *app_alloc(int numbytes);
 extern "C" void *app_free(void *ptr);
+extern "C" void *app_alloc_at(void *at, int numbytes);
 void gcPreAllocateBlock(uint32_t sz);
+
+int redirectSamples(int16_t *dst, int numsamples, int samplerate);
 
 #ifdef PXT64
 #define TOWORDS(bytes) (((bytes) + 7) >> 3)
@@ -1040,13 +1042,34 @@ inline void initPerfCounters() {}
 inline void dumpPerfCounters() {}
 #endif
 
-#ifdef PXT_VM
-String mkInternalString(const char *str);
-#define PXT_DEF_STRING(name, val) String name = mkInternalString(val);
-#else
+// Handling of built-in string literals (like "[Object]", "true" etc.).
+
+// This has the same layout as BoxedString, but has statically allocated buffer
+template <size_t N> struct BoxedStringLayout {
+    const void *vtable;
+    uint16_t size;
+    const char data[N];
+};
+
+template <size_t N> constexpr size_t _boxedStringLen(char const (&)[N]) {
+    return N;
+}
+
+// strings defined here as used as (String)name
 #define PXT_DEF_STRING(name, val)                                                                  \
-    static const char name[] __attribute__((aligned(4))) = "@PXT@:" val;
-#endif
+    const BoxedStringLayout<_boxedStringLen(val)> name[1] = {                                      \
+        {&pxt::string_inline_ascii_vt, _boxedStringLen(val) - 1, val}};
+
+// bigger value - less memory, but slower
+// 16/20 keeps s.length and s.charCodeAt(i) at about 200 cycles (for actual unicode strings),
+// which is similar to amortized allocation time
+#define PXT_STRING_SKIP_INCR 16 // needs to be power of 2; needs to be kept in sync with compiler
+#define PXT_STRING_MIN_SKIP                                                                        \
+    20 // min. size of string to use skip list; static code has its own limit
+
+#define PXT_NUM_SKIP_ENTRIES(p) ((p)->skip.length / PXT_STRING_SKIP_INCR)
+#define PXT_SKIP_DATA_IND(p) ((const char *)(p->skip.list + PXT_NUM_SKIP_ENTRIES(p)))
+#define PXT_SKIP_DATA_PACK(p) ((const char *)(p->skip_pack.list + PXT_NUM_SKIP_ENTRIES(p)))
 
 } // namespace pxt
 
@@ -1080,7 +1103,7 @@ TValue mapGetByString(RefMap *map, String key);
 int lookupMapKey(String key);
 //%
 TValue mapGet(RefMap *map, unsigned key);
-//%
+//% expose
 void mapSetByString(RefMap *map, String key, TValue val);
 //%
 void mapSet(RefMap *map, unsigned key, TValue val);
@@ -1148,15 +1171,26 @@ bool removeElement(RefCollection *c, TValue x);
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp, BuiltInType::tp,   \
                          0,          0,       {__VA_ARGS__}};
+#define DEF_VTABLE_EXT(name, tp, valtype, ...)                                                     \
+    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC2, 0, BuiltInType::tp, BuiltInType::tp,  \
+                         0,          0,       {__VA_ARGS__}};
 #else
 #define DEF_VTABLE(name, tp, valtype, ...)                                                         \
     const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC, 0, BuiltInType::tp,                    \
+                         0,          0,       {__VA_ARGS__}};
+#define DEF_VTABLE_EXT(name, tp, valtype, ...)                                                     \
+    const VTable name = {sizeof(tp), valtype, VTABLE_MAGIC2, 0, BuiltInType::tp,                   \
                          0,          0,       {__VA_ARGS__}};
 #endif
 
 #define PXT_VTABLE(classname, valtp)                                                               \
     DEF_VTABLE(classname##_vtable, classname, valtp, (void *)&classname::destroy,                  \
                (void *)&classname::print, (void *)&classname::scan, (void *)&classname::gcsize)
+
+#define PXT_EXT_VTABLE(classname)                                                                  \
+    static int classname##_gcsize() { return sizeof(classname); }                                  \
+    DEF_VTABLE_EXT(classname##_vtable, classname, ValType::Object, (void *)&pxt::doNothing,        \
+                   (void *)&pxt::anyPrint, (void *)&pxt::doNothing, (void *)&classname##_gcsize)
 
 #define PXT_VTABLE_INIT(classname) RefObject(&classname##_vtable)
 

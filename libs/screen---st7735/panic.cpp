@@ -266,9 +266,12 @@ static void drawPanic(int code) {
 }
 
 extern "C" void target_panic(int statusCode) {
-    __disable_irq();
+    __disable_irq(); // low-level disable
+    target_disable_irq(); // make sure they stay disabled in DMESG()
 
     DMESG("*** CODAL PANIC : [%d]", statusCode);
+
+    __disable_irq(); // disable IRQ after DMESG() again just to make sure
 
     if (panicMode) {
         // avoid recursive panic invocation

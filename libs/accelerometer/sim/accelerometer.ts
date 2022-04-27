@@ -264,7 +264,7 @@ namespace pxsim {
           */
         public getX(system: MicroBitCoordinateSystem = MicroBitCoordinateSystem.SIMPLE_CARTESIAN): number {
             this.activate();
-            let val: number;            
+            let val: number;
             switch (system) {
                 case MicroBitCoordinateSystem.SIMPLE_CARTESIAN:
                     val = -this.sample.x;
@@ -320,7 +320,7 @@ namespace pxsim {
           */
         public getZ(system: MicroBitCoordinateSystem = MicroBitCoordinateSystem.SIMPLE_CARTESIAN): number {
             this.activate();
-            let val: number;            
+            let val: number;
             switch (system) {
                 case MicroBitCoordinateSystem.NORTH_EAST_DOWN:
                     val = -this.sample.z;
@@ -390,7 +390,7 @@ namespace pxsim {
     export class AccelerometerState {
         accelerometer: Accelerometer;
         useShake = false;
-        private tiltDecayer = 0;
+        private tiltDecayer: any = 0;
         private element: HTMLElement | SVGElement;
 
         constructor(runtime: Runtime) {
@@ -440,20 +440,20 @@ namespace pxsim {
                         this.updateTilt();
                     }, 50)
                 }
-            }, false);            
+            }, false);
         }
 
         private updateTilt() {
             if (!this.accelerometer.isActive || !this.element) return;
-    
+
             const x = this.accelerometer.getX();
             const y = this.accelerometer.getY();
             const af = 8 / 1023;
             const s = 1 - Math.min(0.1, Math.pow(Math.max(Math.abs(x), Math.abs(y)) / 1023, 2) / 35);
-    
+
             this.element.style.transform = `perspective(30em) rotateX(${y * af}deg) rotateY(${x * af}deg) scale(${s}, ${s})`
             this.element.style.perspectiveOrigin = "50% 50% 50%";
             this.element.style.perspective = "30em";
-        }            
+        }
     }
 }

@@ -17,6 +17,7 @@ namespace game {
     let dialogFrame: Image;
     let dialogCursor: Image;
     let dialogTextColor: number;
+    const MAX_FRAME_UNIT = 12;
 
     export class BaseDialog {
         image: Image;
@@ -167,11 +168,11 @@ namespace game {
         }
 
         protected textAreaWidth() {
-            return this.image.width - ((this.innerLeft + this.unit) << 1) - 2;
+            return this.image.width - ((this.innerLeft + Math.min(this.unit, MAX_FRAME_UNIT)) << 1) - 2;
         }
 
         protected textAreaHeight() {
-            return this.image.height - ((this.innerTop + this.unit) << 1) - 1;
+            return this.image.height - ((this.innerTop + Math.min(this.unit, MAX_FRAME_UNIT)) << 1) - 1;
         }
 
         protected setFont(font: image.Font) {
@@ -226,9 +227,9 @@ namespace game {
         }
 
         setText(rawString: string) {
+            this.setFont(image.getFontForText(rawString));
             this.chunks = this.chunkText(rawString);
             this.chunkIndex = 0;
-            this.setFont(image.getFontForText(rawString));
         }
 
         drawTextCore() {
@@ -240,8 +241,10 @@ namespace game {
             const charactersPerRow = Math.floor(availableWidth / this.font.charWidth);
             const rowsOfCharacters = Math.floor(availableHeight / this.rowHeight());
 
-            const textLeft = 1 + this.innerLeft + this.unit + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
-            const textTop = 1 + this.innerTop + this.unit + ((availableHeight - rowsOfCharacters * this.rowHeight()) >> 1);
+            if (this.unit > MAX_FRAME_UNIT) this.drawBorder();
+
+            const textLeft = 1 + this.innerLeft + Math.min(this.unit, MAX_FRAME_UNIT) + ((availableWidth - charactersPerRow * this.font.charWidth) >> 1);
+            const textTop = 1 + (this.image.height >> 1) - ((lines.length * this.rowHeight()) >> 1);
 
             for (let row = 0; row < lines.length; row++) {
                 this.image.print(
@@ -407,8 +410,10 @@ namespace game {
      */
     //% blockId=game_show_long_text group="Dialogs"
     //% block="show long text %str %layout"
+    //% str.shadow=text
     //% help=game/show-long-text
-    export function showLongText(str: string, layout: DialogLayout) {
+    export function showLongText(str: any, layout: DialogLayout) {
+        str = console.inspect(str);
         controller._setUserEventsEnabled(false);
         game.pushScene();
         game.currentScene().flags |= scene.Flag.SeeThrough;
@@ -620,8 +625,12 @@ namespace game {
      */
     //% weight=90 help=game/splash
     //% blockId=gameSplash block="splash %title||%subtitle"
+    //% title.shadow=text
+    //% subtitle.shadow=text
     //% group="Prompt"
-    export function splash(title: string, subtitle?: string) {
+    export function splash(title: any, subtitle?: any) {
+        title = console.inspect(title);
+        subtitle = subtitle ? console.inspect(subtitle) : subtitle;
         controller._setUserEventsEnabled(false);
         game.pushScene();
         game.currentScene().flags |= scene.Flag.SeeThrough;
@@ -656,7 +665,10 @@ namespace game {
         return charCode <= 32 ||
             (charCode >= 58 && charCode <= 64) ||
             (charCode >= 91 && charCode <= 96) ||
-            (charCode >= 123 && charCode <= 126);
+            (charCode >= 123 && charCode <= 126) || 
+            (charCode >= 19968 && charCode <= 40869) ||
+            charCode == 12290 || 
+            charCode == 65292;
     }
 
     function breakIntoPages(text: string, lineLengths: number[]): string[][] {

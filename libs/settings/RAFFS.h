@@ -18,7 +18,12 @@ struct BlockedEntries {
 };
 
 #define RAFFS_FOLLOWING_MASK 0x8000
+
+#ifdef PICO_BOARD
+#define RAFFS_FLASH_BUFFER_SIZE 256
+#else
 #define RAFFS_FLASH_BUFFER_SIZE 64
+#endif
 
 struct MetaEntry {
     uint16_t fnhash;    // hash of file name
@@ -39,8 +44,6 @@ class FS {
 
     uint8_t *basePtr, *freeDataPtr;
     MetaEntry *endPtr, *metaPtr, *readDirPtr, *cachedMeta;
-    uintptr_t baseAddr;
-    uint32_t bytes;
     int32_t gcHorizon;
     DirEntry dirEnt;
     uintptr_t flashBufAddr;
@@ -78,7 +81,8 @@ class FS {
     // This is usually set to around 10s (10000), so that if user writes a program that writes to flash in
     // a loop, it doesn't wear out flash completely.
     uint16_t minGCSpacing;
-    
+    uintptr_t baseAddr;
+    uint32_t bytes;
 
     FS(codal::Flash &flash, uintptr_t baseAddr, uint32_t bytes);
     ~FS();

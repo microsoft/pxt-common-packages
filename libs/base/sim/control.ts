@@ -160,14 +160,12 @@ namespace pxsim.control {
     }
 
     export function __log(priority: number, str: string) {
-        let prefix = "";
         switch (priority) {
-            case 0: prefix = "d>"; break;
-            case 1: prefix = "l>"; break;
-            case 2: prefix = "w>"; break;
-            case 3: prefix = "e>"; break;
+            case 0: console.debug("d>" + str); break;
+            case 1: console.log("l>" + str); break;
+            case 2: console.warn("w>" + str); break;
+            case 3: console.error("e>" + str); break;
         }
-        console.log(prefix + str);
         runtime.board.writeSerial(str);
     }
 

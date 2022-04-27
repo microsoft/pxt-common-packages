@@ -1,0 +1,14 @@
+{
+    "name": "text-to-speech",
+    "description": "Browser-only text to speech support",
+    "files": [
+        "shims.d.ts",
+        "tts.ts"
+    ],
+    "testFiles": [
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}

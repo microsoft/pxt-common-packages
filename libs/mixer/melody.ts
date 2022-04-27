@@ -247,10 +247,17 @@ namespace music {
             control.runInParallel(() => {
                 while (this._player == p) {
                     p.play(volume)
-                    if (!loop)
+                    if (!loop) {
+                        // Unregister the melody when done playing, but
+                        // only if it hasn't been restarted. (Looping
+                        // melodies never stop on their own, they only
+                        // get unregistered via stop().)
+                        if (this._player == p) {
+                            this.unregisterMelody();
+                        }
                         break
+                    }
                 }
-                this.unregisterMelody();
             })
         }
 
@@ -429,12 +436,15 @@ namespace music {
             //   1 - triangle
             //   2 - sawtooth
             //   3 - sine
-            //   5 - noise
+            //   4 - pseudorandom square wave noise (tunable)
+            //   5 - white noise (ignores frequency)
             //   11 - square 10%
             //   12 - square 20%
             //   ...
             //   15 - square 50%
-            //
+            //   16 - filtered square wave, cycle length 16
+            //   17 - filtered square wave, cycle length 32
+            //   18 - filtered square wave, cycle length 64
 
             const consumeToken = () => {
                 if (token && tokenKind != Token.Note) {
@@ -448,7 +458,7 @@ namespace music {
                         case Token.Tempo: tempo = Math.max(1, d); break;
                         case Token.Hz: hz = d; tokenKind = Token.Ms; break;
                         case Token.Ms: ms = d; break;
-                        case Token.WaveForm: soundWave = Math.clamp(1, 15, d); break;
+                        case Token.WaveForm: soundWave = Math.clamp(1, 18, d); break;
                         case Token.EnvelopeA: envA = d; tokenKind = Token.EnvelopeD; break;
                         case Token.EnvelopeD: envD = d; tokenKind = Token.EnvelopeS; break;
                         case Token.EnvelopeS: envS = Math.clamp(0, 255, d); tokenKind = Token.EnvelopeR; break;
@@ -600,4 +610,34 @@ namespace music {
 
     //% fixedInstance whenUsed block="pew pew"
     export const pewPew = new Melody('!1200,200^50')
+
+    //% fixedInstance whenUsed block="knock"
+    export const knock = new Melody('~4 @0,0,255,150 !300,1 !211,1')
+
+    //% fixedInstance whenUsed block="footstep"
+    export const footstep = new Melody('~4 @0,0,60,50 !200,1')
+
+    //% fixedInstance whenUsed block="thump"
+    export const thump = new Melody('~4 @0,0,255,150 !100,1')
+
+    //% fixedInstance whenUsed block="small crash"
+    export const smallCrash = new Melody('~4 @10,490,0,1 !800,1')
+
+    //% fixedInstance whenUsed block="big crash"
+    export const bigCrash = new Melody('~4 @10,990,0,1 !400,1')
+
+    //% fixedInstance whenUsed block="zapped"
+    export const zapped = new Melody('~16 @10,490,0,0 !1600,500^1')
+
+    //% fixedInstance whenUsed block="buzzer"
+    export const buzzer = new Melody('~16 @10,0,255,250 !2000,300')
+
+    //% fixedInstance whenUsed block="sonar"
+    export const sonar = new Melody('~16 @10,1500,0,0 !200,1 !200,1500^190')
+
+    //% fixedInstance whenUsed block="spooky"
+    export const spooky = new Melody('~16 @700,1300,0,0 !100,1 ~18 !108,2000')
+
+    //% fixedInstance whenUsed block="beam up"
+    export const beamUp = new Melody('~18 @10,1500,0,0 !200,1500^4000')
 }

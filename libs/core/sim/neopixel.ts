@@ -1,4 +1,3 @@
-
 namespace pxsim {
     export enum NeoPixelMode {
         RGB = 1,
@@ -10,6 +9,7 @@ namespace pxsim {
     export class CommonNeoPixelState {
         public buffer: Uint8Array;
         public mode: number = NeoPixelMode.RGB; // GRB
+        public width: number = 1;
         public get length() {
             return this.buffer ? (this.buffer.length / this.stride) | 0 : 0;
         }
@@ -73,12 +73,10 @@ namespace pxsim.light {
 }
 
 namespace pxsim.visuals {
-    const PIXEL_SPACING = PIN_DIST * 3;
+    const PIXEL_SPACING = PIN_DIST * 2.5;  // 3
     const PIXEL_RADIUS = PIN_DIST;
     const CANVAS_WIDTH = 1.2 * PIN_DIST;
     const CANVAS_HEIGHT = 12 * PIN_DIST;
-    const CANVAS_VIEW_WIDTH = CANVAS_WIDTH;
-    const CANVAS_VIEW_HEIGHT = CANVAS_HEIGHT;
     const CANVAS_VIEW_PADDING = PIN_DIST * 4;
     const CANVAS_LEFT = 1.4 * PIN_DIST;
     const CANVAS_TOP = PIN_DIST;
@@ -136,12 +134,17 @@ namespace pxsim.visuals {
         public el: SVGElement;
         public cy: number;
 
-        constructor(xy: Coord = [0, 0]) {
+        constructor(xy: Coord = [0, 0], width: number = 1) {
             let el = <SVGElement>svg.elt("rect");
             let r = PIXEL_RADIUS;
             let [cx, cy] = xy;
             let y = cy - r;
-            svg.hydrate(el, { x: "-50%", y: y, width: "100%", height: r * 2, class: "sim-neopixel" });
+            if (width <= 1)
+                svg.hydrate(el, { x: "-50%", y: y, width: "100%", height: r * 2, class: "sim-neopixel" });
+            else {
+                let x = cx - r;
+                svg.hydrate(el, { x: x, y: y, width: r * 2, height: r * 2, class: "sim-neopixel" });
+            }
             this.el = el;
             this.cy = cy;
         }
@@ -158,14 +161,12 @@ namespace pxsim.visuals {
 
     export class NeoPixelCanvas {
         public canvas: SVGSVGElement;
-        public pin: number;
-        public pixels: NeoPixel[];
+        private pixels: NeoPixel[];
         private viewBox: [number, number, number, number];
         private background: SVGRectElement;
 
-        constructor(pin: number) {
+        constructor(pin: number, public cols: number = 1) {
             this.pixels = [];
-            this.pin = pin;
             let el = <SVGSVGElement>svg.elt("svg");
             svg.hydrate(el, {
                 "class": `sim-neopixel-canvas`,
@@ -176,7 +177,7 @@ namespace pxsim.visuals {
             });
             this.canvas = el;
             this.background = <SVGRectElement>svg.child(el, "rect", { class: "sim-neopixel-background hidden" });
-            this.updateViewBox(-CANVAS_VIEW_WIDTH / 2, 0, CANVAS_VIEW_WIDTH, CANVAS_VIEW_HEIGHT);
+            this.updateViewBox(-CANVAS_WIDTH / 2, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         }
 
         private updateViewBox(x: number, y: number, w: number, h: number) {
@@ -189,30 +190,50 @@ namespace pxsim.visuals {
             if (!colors || colors.length <= 0)
                 return;
 
+            if (this.pixels.length == 0 && this.cols > 1) {
+                // first time, so redo width of canvas
+                let rows = Math.ceil(colors.length / this.cols);
+                let rt = CANVAS_HEIGHT / rows;
+                let width = this.cols * rt;
+                this.canvas.setAttributeNS(null, "width", `${width}px`)
+                this.updateViewBox(0, 0, width, CANVAS_HEIGHT);
+            }
+
             for (let i = 0; i < colors.length; i++) {
                 let pixel = this.pixels[i];
                 if (!pixel) {
                     let cxy: Coord = [0, CANVAS_VIEW_PADDING + i * PIXEL_SPACING];
-                    pixel = this.pixels[i] = new NeoPixel(cxy);
+                    if (this.cols > 1) {
+                        const row = Math.floor(i / this.cols);
+                        const col = i - row * this.cols;
+                        cxy  = [(col + 1) * PIXEL_SPACING,  (row + 1) * PIXEL_SPACING]
+                    }
+                    pixel = this.pixels[i] = new NeoPixel(cxy, this.cols);
                     svg.hydrate(pixel.el, { title: `offset: ${i}` });
                     this.canvas.appendChild(pixel.el);
                 }
-                let color = colors[i];
-                pixel.setRgb(color as [number, number, number]);
+                pixel.setRgb(colors[i] as [number, number, number]);
             }
 
             //show the canvas if it's hidden
             pxsim.U.removeClass(this.background, "hidden");
 
-            //resize if necessary
+            // resize
             let [first, last] = [this.pixels[0], this.pixels[this.pixels.length - 1]]
             let yDiff = last.cy - first.cy;
             let newH = yDiff + CANVAS_VIEW_PADDING * 2;
             let [oldX, oldY, oldW, oldH] = this.viewBox;
-            if (oldH < newH) {
+            if (newH > oldH) {
                 let scalar = newH / oldH;
                 let newW = oldW * scalar;
-                this.updateViewBox(-newW / 2, oldY, newW, newH);
+                if (this.cols > 1) {
+                    // different computation for matrix
+                    let rows = Math.ceil(colors.length / this.cols);
+                    newH = PIXEL_SPACING * (rows + 1);
+                    newW = PIXEL_SPACING * (this.cols + 1);
+                    this.updateViewBox(0, oldY, newW, newH);
+                } else
+                    this.updateViewBox(-newW / 2, oldY, newW, newH);
             }
         }
 
@@ -251,7 +272,7 @@ namespace pxsim.visuals {
         private pin: Pin;
 
         constructor(public parsePinString: (name: string) => Pin) {
-            
+
         }
 
         public init(bus: EventBus, state: CommonNeoPixelStateConstructor, svgEl: SVGSVGElement, otherParams: Map<string>): void {
@@ -262,17 +283,26 @@ namespace pxsim.visuals {
                 || this.parsePinString("pins.MOSI");
             this.lastLocation = [0, 0];
             this.state = state(this.pin);
-
             let part = mkNeoPixelPart();
             this.part = part;
             this.stripGroup.appendChild(part.el);
-            let canvas = new NeoPixelCanvas(this.pin.id);
+            this.overElement = null;
+            this.makeCanvas();
+        }
+        private makeCanvas() {
+            let canvas = new NeoPixelCanvas(this.pin.id, this.state.width);
+            if (this.overElement) {
+                this.overElement.removeChild(this.canvas.canvas);
+                this.overElement.appendChild(canvas.canvas)
+            } else {
+                let canvasG = svg.elt("g", { class: "sim-neopixel-canvas-parent" });
+                canvasG.appendChild(canvas.canvas);
+                this.overElement = canvasG;
+            }
             this.canvas = canvas;
-            let canvasG = svg.elt("g", { class: "sim-neopixel-canvas-parent" });
-            this.overElement = canvasG;
-            canvasG.appendChild(canvas.canvas);
             this.updateStripLoc();
         }
+
         public moveToCoord(xy: Coord): void {
             let [x, y] = xy;
             let loc: Coord = [x, y];
@@ -286,11 +316,14 @@ namespace pxsim.visuals {
             svg.hydrate(this.part.el, { transform: `translate(${x} ${y})` }); //TODO: update part's l,h, etc.
         }
         public updateState(): void {
+            if (this.state.width != this.canvas.cols) {
+                this.makeCanvas();
+            }
             let colors: number[][] = [];
             for (let i = 0; i < this.state.length; i++) {
                 colors.push(this.state.pixelColor(i));
             }
-            this.canvas.update(colors);
+           this.canvas.update(colors);
         }
         public updateTheme(): void { }
     }

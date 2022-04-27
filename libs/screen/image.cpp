@@ -28,6 +28,7 @@ int RefImage::wordHeight() {
 }
 
 void RefImage::makeWritable() {
+    ++revision;
     if (buffer->isReadOnly()) {
         buffer = mkBuffer(data(), length());
     }
@@ -47,6 +48,7 @@ void RefImage::clamp(int *x, int *y) {
 }
 
 RefImage::RefImage(BoxedBuffer *buf) : PXT_VTABLE_INIT(RefImage), buffer(buf) {
+    revision = 0;
     if (!buf)
         oops(21);
 }
@@ -143,6 +145,11 @@ bool isMono(Image_ img) {
 //% property
 bool isStatic(Image_ img) {
     return img->buffer->isReadOnly();
+}
+
+//% property
+bool revision(Image_ img) {
+    return img->revision;
 }
 
 /**
@@ -1068,6 +1075,61 @@ void _blitRow(Image_ img, int xy, Image_ from, int xh) {
     blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh));
 }
 
+bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
+    int xDst = pxt::toInt(args->getAt(0));
+    int yDst = pxt::toInt(args->getAt(1));
+    int wDst = pxt::toInt(args->getAt(2));
+    int hDst = pxt::toInt(args->getAt(3));
+    int xSrc = pxt::toInt(args->getAt(4));
+    int ySrc = pxt::toInt(args->getAt(5));
+    int wSrc = pxt::toInt(args->getAt(6));
+    int hSrc = pxt::toInt(args->getAt(7));
+    bool transparent = pxt::toBoolQuick(args->getAt(8));
+    bool check = pxt::toBoolQuick(args->getAt(9));
+
+    int xSrcStep = (wSrc << 16) / wDst;
+    int ySrcStep = (hSrc << 16) / hDst;
+
+    int xDstClip = abs(min(0, xDst));
+    int yDstClip = abs(min(0, yDst));
+    int xDstStart = xDst + xDstClip;
+    int yDstStart = yDst + yDstClip;
+    int xDstEnd = min(dst->width(), xDst + wDst);
+    int yDstEnd = min(dst->height(), yDst + hDst);
+
+    int xSrcStart = max(0, (xSrc << 16) + xDstClip * xSrcStep);
+    int ySrcStart = max(0, (ySrc << 16) + yDstClip * ySrcStep);
+    int xSrcEnd = min(src->width(), xSrc + wSrc) << 16;
+    int ySrcEnd = min(src->height(), ySrc + hSrc) << 16;
+
+    if (!check)
+        dst->makeWritable();
+
+    for (int yDstCur = yDstStart, ySrcCur = ySrcStart; yDstCur < yDstEnd && ySrcCur < ySrcEnd; ++yDstCur, ySrcCur += ySrcStep) {
+        int ySrcCurI = ySrcCur >> 16;
+        for (int xDstCur = xDstStart, xSrcCur = xSrcStart; xDstCur < xDstEnd && xSrcCur < xSrcEnd; ++xDstCur, xSrcCur += xSrcStep) {
+            int xSrcCurI = xSrcCur >> 16;
+            int cSrc = getCore(src, xSrcCurI, ySrcCurI);
+            if (check && cSrc) {
+                int cDst = getCore(dst, xDstCur, yDstCur);
+                if (cDst) {
+                    return true;
+                }
+                continue;
+            }
+            if (!transparent || cSrc) {
+                setCore(dst, xDstCur, yDstCur, cSrc);
+            }
+        }
+    }
+    return false;
+}
+
+//%
+bool _blit(Image_ img, Image_ src, pxt::RefCollection *args) {
+    return blit(img, src, args);
+}
+
 void fillCircle(Image_ img, int cx, int cy, int r, int c) {
     int x = r - 1;
     int y = 0;
@@ -1143,6 +1205,7 @@ Buffer doubledIcon(Buffer icon) {
 
 #ifndef __linux__
 extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
+    void *dst0 = dst;
     if (sz >= 4 && !((uintptr_t)dst & 3) && !((uintptr_t)src & 3)) {
         size_t cnt = sz >> 2;
         uint32_t *d = (uint32_t *)dst;
@@ -1155,17 +1218,19 @@ extern "C" void *memcpy(void *dst, const void *src, size_t sz) {
         src = s;
     }
 
-    uint8_t *dd = (uint8_t *)dst;
-    uint8_t *ss = (uint8_t *)src;
+    // see comment in memset() below (have not seen optimization here, but better safe than sorry)
+    volatile uint8_t *dd = (uint8_t *)dst;
+    volatile uint8_t *ss = (uint8_t *)src;
 
     while (sz--) {
         *dd++ = *ss++;
     }
 
-    return dst;
+    return dst0;
 }
 
 extern "C" void *memset(void *dst, int v, size_t sz) {
+    void *dst0 = dst;
     if (sz >= 4 && !((uintptr_t)dst & 3)) {
         size_t cnt = sz >> 2;
         uint32_t vv = 0x01010101 * v;
@@ -1177,12 +1242,13 @@ extern "C" void *memset(void *dst, int v, size_t sz) {
         dst = d;
     }
 
-    uint8_t *dd = (uint8_t *)dst;
+    // without volatile here, GCC may optimize the loop to memset() call which is obviously not great
+    volatile uint8_t *dd = (uint8_t *)dst;
 
     while (sz--) {
         *dd++ = v;
     }
 
-    return dst;
+    return dst0;
 }
 #endif

@@ -7,7 +7,7 @@ namespace multiplayer {
     }
 
     //%
-    void setIsClient(bool on) {
+    void setOrigin(String origin) {
         // no
     }
 

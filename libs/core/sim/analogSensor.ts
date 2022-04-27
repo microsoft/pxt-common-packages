@@ -11,7 +11,7 @@ namespace pxsim {
         private level: number;
         private state = ThresholdState.Normal;
 
-        constructor(public id: number, private min = 0, private max = 255, private lowThreshold = 64, private highThreshold = 192) {
+        constructor(public id: number, public min = 0, public max = 255, public lowThreshold = 64, public highThreshold = 192) {
             this.level = Math.ceil((max - min) / 2);
         }
 

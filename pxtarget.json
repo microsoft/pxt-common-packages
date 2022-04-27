@@ -38,6 +38,7 @@
         "libs/color-sensor",
         "libs/light-spectrum-sensor",
         "libs/edge-connector",
+        "libs/online-multiplayer",
         "libs/proximity",
         "libs/feather",
         "libs/esp32",
@@ -53,6 +54,6 @@
         "libs/radio",
         "libs/radio-broadcast",
         "libs/matrix-keypad",
-        "libs/online-multiplayer"
+        "libs/sprite-scaling"
     ]
 }

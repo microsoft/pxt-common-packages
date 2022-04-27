@@ -8,12 +8,12 @@ namespace pxsim.multiplayer {
         });
     }
 
-    export function setIsClient(on: boolean) {
-        getMultiplayerState().origin = on ? "client" : "server";
-    }
-
     export function getCurrentImage(): pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
+    }
+
+    export function setOrigin(origin: "client" | "server" | undefined) {
+        getMultiplayerState().origin = origin;
     }
 
     export function getOrigin(): string {
@@ -51,14 +51,19 @@ namespace pxsim {
         state: "Pressed" | "Released" | "Held";
     }
 
+    type MultiplayerOrigin = "client" | "server" | undefined;
+
     export class MultiplayerState {
         lastMessageId: number;
-        origin: "client" | "server";
+        origin: "client" | "server" | undefined;
         backgroundImage: RefImage;
 
         constructor() {
             this.lastMessageId = 0;
-            this.origin = "server";
+            const originMatch = /mp=(\w+)/.exec(window.location.href);
+            if (originMatch) {
+                this.origin = originMatch[1] as MultiplayerOrigin;
+            }
         }
 
         send(msg: SimulatorMultiplayerMessage) {
@@ -72,19 +77,21 @@ namespace pxsim {
         }
 
         init() {
-            runtime.board.addMessageListener(msg => this.messageHandler(msg));
-            setInterval(() => {
-                if (this.origin === "server") {
-                    const b = board() as ScreenBoard;
-                    const screenState = b && b.screenState;
-                    const lastImage = screenState && screenState.lastImage;
-                    lastImage && pxsim.multiplayer.postImage(lastImage, "broadcast-screen");
-                }
-            }, 50);
+            if (this.origin) {
+                runtime.board.addMessageListener(msg => this.messageHandler(msg));
+                setInterval(() => {
+                    if (this.origin === "server") {
+                        const b = board() as ScreenBoard;
+                        const screenState = b && b.screenState;
+                        const lastImage = screenState && screenState.lastImage;
+                        lastImage && pxsim.multiplayer.postImage(lastImage, "broadcast-screen");
+                    }
+                }, 50);
+            }
         }
 
         setButton(key: number, isPressed: boolean) {
-            if (this.origin !== "server") {
+            if (this.origin === "client") {
                 this.send(<pxsim.MultiplayerButtonEvent>{
                     content: "Button",
                     button: key,

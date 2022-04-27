@@ -61,7 +61,7 @@ namespace sensors {
             });
         }
 
-        get spectrum(): LightSpectrum {
+        spectrum(): LightSpectrum {
             if (!this.reading) {
                 this._spectrum = this.readSpectrum();
                 this.startReading();

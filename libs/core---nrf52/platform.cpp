@@ -62,7 +62,7 @@ LowLevelTimer *allocateTimer() {
         return new NRFLowLevelTimer(dev, timers[idx].irqn);
     }
 
-    target_panic(PANIC_OUT_OF_TIMERS);
+    soft_panic(PANIC_OUT_OF_TIMERS);
     return NULL;
 }
 
@@ -112,6 +112,10 @@ static void disableNFConPins() {
         // Reset, so the changes can take effect.
         NVIC_SystemReset();
     }
+}
+
+void deepSleep() {
+    NRF_POWER->SYSTEMOFF = 1;
 }
 
 void platform_init() {

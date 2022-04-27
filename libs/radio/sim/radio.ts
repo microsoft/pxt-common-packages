@@ -22,11 +22,13 @@ namespace pxsim.radio {
     export function sendRawPacket(buf: RefBuffer) {
         let cb = getResume();
         const state = pxsim.getRadioState();
-        state.datagram.send({
-            type: 0,
-            groupId: state.groupId,
-            bufferData: buf.data
-        });
+        if (state.enable) {
+            state.datagram.send({
+                type: 0,
+                groupId: state.groupId,
+                bufferData: buf.data
+            });
+        }
         setTimeout(cb, 1);
     }
 
@@ -50,4 +52,15 @@ namespace pxsim.radio {
         const state = pxsim.getRadioState();
         state.datagram.onReceived(handler);
     }
+
+    export function off(){
+        const state = pxsim.getRadioState();
+        state.off();
+    }
+
+    export function on(){
+        const state = pxsim.getRadioState();
+        state.on();
+    }
+
 }

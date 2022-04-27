@@ -18,10 +18,8 @@ sprites.onDestroyed(0, function (sprite) {
 Create a ``Ghost`` sprite and set it's ``lifespan`` to `1500`. You win the game when the ghost is destroyed.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy,
-    Ghost
+namespace SpriteKind {
+    export const Ghost = SpriteKind.create()
 }
 let ghost: Sprite = null
 ghost = sprites.create(img`

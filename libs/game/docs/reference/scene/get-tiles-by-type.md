@@ -1,65 +1,86 @@
 # get Tiles By Type
 
-Get a list of tiles in the tilemap that have the same color index.
+Return an array of tile locations from the tilemap that contain the specified tile.
 
 ```sig
-scene.getTilesByType(0)
+tiles.getTilesByType(null)
 ```
-
-All the tiles in the tilemap with the chosen **index** are returned in an array of [tiles](/types/tile). You can use this array to change or replace the tiles as one group.
 
 ## Parameters
 
-* **index**: the color index to the tiles to make a list for.
+* **tile**: a tile [image](/types/image) to search the tilemap for.
 
 ## Returns
 
-* an [array](/types/array) of [tiles](/types/tile) from the tilemap that have the same color **index**.
+* an [array](/types/array) of tile locations from the tilemap that have the tile specified in **tile**.
 
 ## Example #example
 
-Get a list of all the tiles in the center of the tilemap. Replace all of them with the tile type used for the border.
+Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, find the column tiles in the tilemap and set them as either wall tiles or regular tiles.
 
 ```blocks
-scene.setTile(2, img`
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-`)
-scene.setTileMap(img`
-2 2 2 2 2 2 2 2 2 2 
-2 8 . . . 8 . . . 2 
-2 . 8 . 8 . 8 . 8 2 
-2 . . 8 . . . 8 . 2 
-2 . 8 . 8 . 8 . 8 2 
-2 8 . . . 8 . . . 2 
-2 2 2 2 2 2 2 2 2 2 
-. . . . . . . . . . 
-`)
-for (let tile of scene.getTilesByType(8)) {
-    scene.setTileAt(tile, 2)
-    pause(500)
-}
+let isWall = false
+tiles.setTilemap(tilemap`level1`)
+let mySprite = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 1 1 1 1 1 1 . . . . . 
+    . . . 1 1 2 2 2 2 2 2 1 1 . . . 
+    . . . 1 2 2 2 2 2 2 2 2 1 . . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . . 1 2 2 2 2 2 2 2 2 1 . . . 
+    . . . 1 1 2 2 2 2 2 2 1 1 . . . 
+    . . . . . 1 1 1 1 1 1 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player)
+mySprite.setBounceOnWall(true)
+mySprite.vx = 80
+mySprite.vy = 70
+game.onUpdateInterval(5000, function () {
+    isWall = !(isWall)
+    for (let wallTile of tiles.getTilesByType(assets.tile`myTile`)) {
+        tiles.setWallAt(wallTile, isWall)
+    }
+})
 ```
 
 ## See also #seealso
 
-[get tile](/reference/scene/get-tile),
-[set tile at](/reference/scene/set-tile-at)
+[get tile location](/reference/scene/get-tile-location)
 
-```package
-color-coded-tilemap
+```jres
+{
+    "transparency16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true
+    },
+    "tile1": {
+        "data": "hwQQABAAAADu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7g==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "myTile"
+    },
+    "level1": {
+        "id": "level1",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "tileset": [
+            "myTiles.transparency16",
+            "myTiles.tile1"
+        ],
+        "displayName": "level1"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myTiles"
+    }
+}
 ```

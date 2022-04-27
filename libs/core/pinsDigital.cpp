@@ -34,7 +34,6 @@ namespace DigitalInOutPinMethods {
  */
 //% help=pins/digital-read weight=61
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
-//% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
@@ -50,7 +49,6 @@ bool digitalRead(DigitalInOutPin name) {
     */
 //% help=pins/digital-write weight=60
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value=toggleHighLow"
-//% parts="led" trackArgs=0
 //% blockNamespace=pins
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
@@ -69,7 +67,6 @@ void digitalWrite(DigitalInOutPin name, bool value) {
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
-//% parts="slideswitch" trackArgs=0
 //% deprecated=1 hidden=1
 void onPulsed(DigitalInOutPin pin, PulseValue pulse, Action body) {
     pin->eventOn(DEVICE_PIN_EVENT_ON_PULSE);
@@ -85,7 +82,6 @@ void onPulsed(DigitalInOutPin pin, PulseValue pulse, Action body) {
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
-//% parts="slideswitch" trackArgs=0
 void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
     switch(event) {
         case PinEvent::PulseHigh:
@@ -151,6 +147,8 @@ void setPull(DigitalInOutPin name, PinPullMode pull) {
 }
 
 }
+
+#ifdef PXT_CODAL
 
 namespace pxt {
 
@@ -289,3 +287,5 @@ void disableButtonMultiplexer() {
 }
 
 }
+
+#endif

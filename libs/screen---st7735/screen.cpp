@@ -159,13 +159,15 @@ class WDisplay {
             return DISPLAY_TYPE_SMART;
         }
 
+        hc = hc >> 1;
+
         // SER pin (or first bit of second HC) is orientation
-        if (hc & 0x100)
+        if (hc & 0x0010)
             *cfg0 = 0x80;
         else
             *cfg0 = 0x40;
 
-        uint32_t configId = (hc >> 14) & 0x7;
+        uint32_t configId = (hc & 0xe0) >> 5;
 
         switch (configId) {
         case 1:

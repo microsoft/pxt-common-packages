@@ -65,19 +65,33 @@ namespace net {
         onError(handler: (msg: string) => void): void {
             this._errorHandler = handler;
         }
+
+        private flushReadBuffer() {
+            while (!this._closed && this._messageHandler) {
+                const buf = this.read()
+                if (buf.length) {
+                    this._messageHandler(buf)
+                } else {
+                    break
+                }
+            }
+        }
+
         onMessage(handler: (data: Buffer) => void): void {
             if (this._messageHandler === undefined) {
-                control.runInParallel(() => {
-                    while (!this._closed) {
-                        let buf = this.read()
-                        if (buf.length) {
-                            if (this._messageHandler)
-                                this._messageHandler(buf)
-                        } else {
+                const src = this.controller.dataAvailableSrc(this._socknum)
+                const value = this.controller.dataAvailableValue(this._socknum)
+                if (src > 0 && value > 0) {
+                    this.flushReadBuffer()
+                    control.internalOnEvent(src, value, () => this.flushReadBuffer())
+                } else {
+                    control.runInParallel(() => {
+                        while (!this._closed) {
+                            this.flushReadBuffer()
                             pause(200)
                         }
-                    }
-                })
+                    })
+                }
             }
             this._messageHandler = handler || null;
         }
@@ -89,12 +103,12 @@ namespace net {
             while (this._buffer.indexOf(hex`0d0a`) < 0) {
                 // there's no line already in there, read some more
                 let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
-                if (avail) {
+                if (avail > 0) {
                     this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
-                } else if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
+                } else if (avail < 0 || (this._timeout > 0 && monotonic() - stamp > this._timeout)) {
                     // Make sure to close socket so that we don't exhaust sockets.
                     this.close()
-                    control.fail("Didn't receive full response, failing out")
+                    throw "Didn't receive full response, failing out"
                 } else {
                     pause(20)
                 }
@@ -106,14 +120,16 @@ namespace net {
             return pref.toString()
         }
 
-        /** Read up to 'size' bytes from the socket, this may be buffered internally! If 'size' isnt specified, return everything in the buffer. */
+        /** Read up to 'size' bytes from the socket, this may be buffered internally! If 'size' isn't specified, return everything in the buffer. */
         public read(size: number = 0): Buffer {
             // print("Socket read", size)
             if (size == 0) {
                 if (this._buffer.length == 0) {
                     let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
-                    if (avail)
-                        this._buffer = this._buffer.concat(this.controller.socketRead(this._socknum, avail))
+                    if (avail > 0)
+                        this._buffer = this.controller.socketRead(this._socknum, avail)
+                    if (avail < 0)
+                        this.close()
                 }
                 let ret = this._buffer
                 this._buffer = hex``
@@ -126,7 +142,7 @@ namespace net {
             while (to_read > 0) {
                 // print("Bytes to read:", to_read)
                 let avail = Math.min(this.controller.socketAvailable(this._socknum), MAX_PACKET)
-                if (avail) {
+                if (avail > 0) {
                     stamp = monotonic()
                     let recv = this.controller.socketRead(this._socknum, Math.min(to_read, avail))
                     received.push(recv)
@@ -135,7 +151,7 @@ namespace net {
                     pause(20)
                 }
 
-                if (this._timeout > 0 && monotonic() - stamp > this._timeout) {
+                if (avail < 0 || (this._timeout > 0 && monotonic() - stamp > this._timeout)) {
                     break
                 }
 
@@ -163,6 +179,7 @@ namespace net {
         /** Close the socket, after reading whatever remains */
         public close() {
             this._closed = true;
+            this._buffer = hex``
             this.controller.socketClose(this._socknum)
             if (this._closeHandler)
                 this._closeHandler();

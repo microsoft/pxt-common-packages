@@ -11,7 +11,28 @@ PXT_ABI(__aeabi_dsub)
 PXT_ABI(__aeabi_ddiv)
 PXT_ABI(__aeabi_dmul)
 
-#define PXT_COMM_BASE 0x20001000 // 4k in
+#ifdef DEVICE_GET_FIBER_LIST_AVAILABLE
+// newer codal-core has get_fiber_list() but not list_fibers()
+namespace codal {
+/*
+ * Return all current fibers.
+ *
+ * @param dest If non-null, it points to an array of pointers to fibers to store results in.
+ *
+ * @return the number of fibers (potentially) stored
+ */
+int list_fibers(Fiber **dest) {
+    int i = 0;
+    for (Fiber *fib = codal::get_fiber_list(); fib; fib = fib->next) {
+        if (dest)
+            dest[i] = fib;
+        i++;
+    }
+    return i;
+}
+
+} // namespace codal
+#endif
 
 namespace pxt {
 
@@ -39,37 +60,10 @@ static void commInit() {
     if (!commSize)
         return;
 
-    FreeList *head = NULL;
-    void *commBase = (void *)PXT_COMM_BASE;
-    for (;;) {
-        void *p = xmalloc(4);
-        // assume 4 byte alloc header; if we're not hitting 8 byte alignment, try allocating 8
-        // bytes, not 4 without the volatile, gcc assumes 8 byte alignment on malloc()
-        volatile uintptr_t hp = (uintptr_t)p;
-        if (hp & 4) {
-            xfree(p);
-            p = xmalloc(8);
-        }
-        if (p == commBase) {
-            xfree(p);
-            // allocate the comm section; this is never freed
-            p = xmalloc(commSize);
-            if (p != commBase)
-                oops(10);
-            break;
-        }
-        if (p > commBase)
-            oops(11);
-        auto f = (FreeList *)p;
-        f->next = head;
-        head = f;
-    }
-    // free all the filler stuff
-    while (head) {
-        auto p = head;
-        head = head->next;
-        xfree(p);
-    }
+    void *r = app_alloc_at((void *)PXT_COMM_BASE, commSize);
+    DMESG("comm %d -> %p", commSize, r);
+    if (!r)
+        target_panic(20);
 }
 
 static void initCodal() {
@@ -167,7 +161,7 @@ void runForever(Action a) {
 void runInParallel(Action a) {
     if (a != 0) {
         registerGCPtr(a);
-        create_fiber((void (*)(void *))runAction0, (void *)a, fiberDone);
+        create_fiber((void (*)(void *))(void*)runAction0, (void *)a, fiberDone);
     }
 }
 

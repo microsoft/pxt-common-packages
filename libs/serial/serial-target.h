@@ -51,17 +51,16 @@ class CodalSerialDeviceProxy {
         // n maybe 0 but we still call read to force
         // to initialize rx
         auto buf = mkBuffer(NULL, n);
+        auto res = buf;
+        registerGCObj(buf);
         auto read = ser.read(buf->data, buf->length, SerialMode::ASYNC);
         if (read == DEVICE_SERIAL_IN_USE || read == 0) { // someone else is reading
-            return mkBuffer(NULL, 0);
+            res = mkBuffer(NULL, 0);
+        } else if (buf->length != read) {
+            res = mkBuffer(buf->data, read);
         }
-        if (buf->length != read) {
-            registerGCObj(buf);
-            auto buf2 = mkBuffer(buf->data, read);
-            unregisterGCObj(buf);
-            buf = buf2;
-        }
-        return buf;
+        unregisterGCObj(buf);
+        return res;
     }
 
     void writeBuffer(Buffer buffer) {

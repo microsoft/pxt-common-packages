@@ -24,8 +24,8 @@ void setByte(Buffer buf, int off, int v) {
 }
 
 /**
-* Reads an unsigned byte at a particular location
-*/
+ * Reads an unsigned byte at a particular location
+ */
 //%
 int getUint8(Buffer buf, int off) {
     return getByte(buf, off);
@@ -40,8 +40,8 @@ bool isReadOnly(Buffer buf) {
 }
 
 /**
-* Writes an unsigned byte at a particular location
-*/
+ * Writes an unsigned byte at a particular location
+ */
 //%
 void setUint8(Buffer buf, int off, int v) {
     setByte(buf, off, v);
@@ -54,7 +54,7 @@ int writeBuffer(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int le
     if (srcOffset < 0 || dstOffset < 0 || dstOffset > buf->length)
         return -1;
 
-    length = min(src->length - srcOffset, buf->length - dstOffset);
+    length = pxt::min(src->length - srcOffset, buf->length - dstOffset);
 
     if (length < 0)
         return -1;
@@ -103,7 +103,7 @@ void fill(Buffer buf, int value, int offset = 0, int length = -1) {
         return; // DEVICE_INVALID_PARAMETER;
     if (length < 0)
         length = buf->length;
-    length = min(length, buf->length - offset);
+    length = pxt::min(length, buf->length - offset);
     memset(buf->data + offset, value, length);
 }
 
@@ -112,10 +112,10 @@ void fill(Buffer buf, int value, int offset = 0, int length = -1) {
  */
 //%
 Buffer slice(Buffer buf, int offset = 0, int length = -1) {
-    offset = min((int)buf->length, offset);
+    offset = pxt::min((int)buf->length, offset);
     if (length < 0)
         length = buf->length;
-    length = min(length, buf->length - offset);
+    length = pxt::min(length, buf->length - offset);
     return mkBuffer(buf->data + offset, length);
 }
 
@@ -237,6 +237,10 @@ uint32_t hash(Buffer buf, int bits) {
 
 } // namespace BufferMethods
 
+bool BoxedBuffer::isInstance(TValue v) {
+    return getAnyVTable(v) == &buffer_vt;
+}
+
 // The functions below are deprecated in control namespace, but they are referenced
 // in Buffer namespaces via explicit shim=...
 namespace control {
@@ -248,7 +252,6 @@ namespace control {
 Buffer createBuffer(int size) {
     return mkBuffer(NULL, size);
 }
-
 
 /**
  * Create a new buffer with UTF8-encoded string

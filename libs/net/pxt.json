@@ -6,6 +6,7 @@
         "controller.ts",
         "controllersocket.ts",
         "net.ts",
+        "netutil.ts",
         "requests.ts"
     ],
     "public": true,

@@ -76,6 +76,9 @@ void set_usb_strings(const char *uf2_info) {
             string_descriptors[0] = dev;
             string_descriptors[1] = dev;
         }
+    } else {
+        string_descriptors[0] = "Unknown Corp.";
+        string_descriptors[1] = "PXT Device (app)";
     }
 
     string_descriptors[2] = serial;
@@ -98,7 +101,6 @@ void usb_init() {
     // so we add a dummy interface
     usb.add(dummyIface);
 #endif
-
 
 #if CONFIG_ENABLED(DEVICE_MOUSE)
     usb.add(mouse);
@@ -133,7 +135,7 @@ bool isUSBInitialized() {
     return false;
 #endif
 }
-}
+} // namespace control
 
 namespace pxt {
 static void (*pSendToUART)(const char *data, int len) = NULL;

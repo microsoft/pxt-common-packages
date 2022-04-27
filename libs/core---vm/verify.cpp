@@ -8,7 +8,7 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     return img;
 }
 
-// next free error 1057
+// next free error 1066
 #define ERROR(code, pos) return setVMImgError(img, code, pos)
 #define CHECK(cond, code)                                                                          \
     do {                                                                                           \
@@ -27,7 +27,118 @@ VMImage *setVMImgError(VMImage *img, int code, void *pos) {
     for (sect = (VMImageSection *)img->dataStart;                                                  \
          (next = vmNextSection(sect), (uint64_t *)sect < img->dataEnd); sect = next)
 
-#define ALLOC_ARRAY(tp, sz) (tp *)gcPrealloc(sizeof(tp) * sz)
+#define ALLOC_ARRAY(tp, sz) (tp *)xmalloc(sz == 0 ? 1 : sizeof(tp) * sz)
+
+#define VM_MAX_PATCH 7
+
+struct VMPatchState {
+    uint32_t offset;
+    uint32_t bytesLeftInSect;
+    uint8_t patchOff;
+    const char *error;
+    uint64_t patch[VM_MAX_PATCH];
+};
+
+static const VTable *vtFor(VMImageSection *sect) {
+    if (sect->type == SectionType::Function)
+        return &pxt::RefAction_vtable;
+    else if (sect->type == SectionType::Literal)
+        switch ((BuiltInType)sect->aux) {
+        case BuiltInType::BoxedString_ASCII:
+            return &pxt::string_inline_ascii_vt;
+        case BuiltInType::BoxedString_SkipList:
+            return &pxt::string_skiplist16_packed_vt;
+        case BuiltInType::BoxedString:
+            return &pxt::string_inline_utf8_vt;
+        case BuiltInType::BoxedBuffer:
+            return &pxt::buffer_vt;
+        default:
+            return NULL;
+        }
+    return NULL;
+}
+
+static bool isStringSection(VMImageSection *sect) {
+    if (sect->type == SectionType::Literal)
+        switch ((BuiltInType)sect->aux) {
+        case BuiltInType::BoxedString_ASCII:
+        case BuiltInType::BoxedString_SkipList:
+        case BuiltInType::BoxedString:
+            return true;
+        default:
+            return false;
+        }
+    return false;
+}
+
+VMPatchState *vm_alloc_patch_state() {
+    return (VMPatchState *)calloc(sizeof(VMPatchState), 1);
+}
+
+void vm_finish_patch(VMPatchState *state) {
+    free(state);
+}
+
+const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len) {
+    if (state->error)
+        return state->error;
+
+    if (len <= 8 || !ALIGNED(len))
+        return (state->error = "invalid chunk size");
+
+    while (len > 0) {
+        if (state->bytesLeftInSect == 0) {
+            VMImageSection sect;
+            memcpy(&sect, data, sizeof(sect));
+
+            if (!ALIGNED(sect.size) || !sect.size)
+                return (state->error = "invalid section");
+
+            state->bytesLeftInSect = sect.size;
+
+            memset(state->patch, 0, sizeof(state->patch));
+            state->patchOff = 1;
+
+            const VTable *vt = NULL;
+#ifdef PXT32
+            if (sect.type == SectionType::NumberBoxes) {
+                return (state->error = "TODO: NumberBoxes");
+            }
+#endif
+            if (sect.type == SectionType::Literal || sect.type == SectionType::Function) {
+                vt = vtFor(&sect);
+                if (!vt)
+                    return (state->error = "unknown literal vt");
+#ifdef PXT64
+                state->patch[0] = (uint64_t)vt;
+#else
+                state->patch[0] = (uint64_t)(uint32_t)vt << 32;
+#endif
+            } else if (sect.type == SectionType::VTable) {
+                auto dest = (void **)((uint32_t *)state->patch + 4);
+                dest[0] = (void *)pxt::RefRecord_destroy;
+                dest[1] = (void *)pxt::RefRecord_print;
+                dest[2] = (void *)pxt::RefRecord_scan;
+                dest[3] = (void *)pxt::RefRecord_gcsize;
+            }
+        } else if (state->patchOff != 0) {
+            uint64_t p = state->patch[state->patchOff - 1];
+            if (p)
+                memcpy(data, &p, sizeof(p));
+            if (state->patchOff == VM_MAX_PATCH) {
+                state->patchOff = 0;
+            } else {
+                state->patchOff++;
+            }
+        }
+
+        state->bytesLeftInSect -= 8;
+        data += 8;
+        len -= 8;
+    }
+
+    return NULL;
+}
 
 static VMImage *countSections(VMImage *img) {
     auto p = img->dataStart;
@@ -45,13 +156,9 @@ static VMImage *countSections(VMImage *img) {
     return NULL;
 }
 
-struct CompiledString {
-    uint32_t numbytes;
-    char utf8data[0];
-};
-
 static VMImage *loadSections(VMImage *img) {
     auto idx = 0;
+    VMImageSection *numberBoxes = NULL;
 
     FOR_SECTIONS() {
         CHECK(sect->size < 32000, 1014);
@@ -112,31 +219,60 @@ static VMImage *loadSections(VMImage *img) {
                 return img;
         }
 
+        if (sect->type == SectionType::NumberBoxes) {
+            CHECK(!numberBoxes, 1061);
+            numberBoxes = sect;
+        }
+
         if (sect->type == SectionType::NumberLiterals) {
+            CHECK(!!numberBoxes, 1062);
             CHECK(!img->numberLiterals, 1004);
             img->numNumberLiterals = (sect->size >> 3) - 1;
             uint64_t *values = (uint64_t *)sect->data;
 
-#ifdef PXT64
-            img->numberLiterals = (TValue *)values;
-#else
-            img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
-#endif
+            int numBoxed = 0;
 
             for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
                 auto ptr = &values[i];
-                auto v = *ptr;
-                if (isEncodedDouble(v))
+                uint64_t v = *ptr;
+                if (isEncodedDouble(v)) {
                     CHECK_AT(!isnan(decodeDouble(v)), 1005, ptr);
-                else if (v & 1)
+                    numBoxed++;
+                } else if (v & 1) {
                     CHECK_AT((v >> 1) <= 0xffffffff, 1006, ptr);
-                else if (v == 0) {
+                    if (!canBeTagged(v >> 1))
+                        numBoxed++;
+                } else if (v == 0) {
                     // OK - padding probably
-                } else
+                } else {
                     CHECK_AT(false, 1007, ptr);
+                }
+            }
+
+            CHECK(numberBoxes->size >= sizeof(VMImageSection) + (numBoxed + 1) * 12, 1063);
+            CHECK(numberBoxes->size <= 4 + sizeof(VMImageSection) + (numBoxed + 1) * 12, 1063);
+
+            img->numberLiterals = ALLOC_ARRAY(TValue, img->numNumberLiterals);
 #ifdef PXT32
-                img->numberLiterals[i] =
-                    v == 0 ? 0 : isEncodedDouble(v) ? fromDouble(decodeDouble(v)) : fromInt(v >> 1);
+            img->boxedNumbers = (BoxedNumber *)numberBoxes->data;
+            int boxedPtr = 0;
+#endif
+
+            for (unsigned i = 0; i < img->numNumberLiterals; ++i) {
+                uint64_t v = values[i];
+#ifdef PXT32
+                if (!isEncodedDouble(v) && canBeTagged(v >> 1)) {
+                    img->numberLiterals[i] = (TValue)v;
+                } else {
+                    CHECK(boxedPtr < numBoxed, 1060); // should never happen
+                    double x = isEncodedDouble(v) ? decodeDouble(v) : (int32_t)(v >> 1);
+                    CHECK(img->boxedNumbers[boxedPtr].vtable == &number_vt, 1064);
+                    CHECK(img->boxedNumbers[boxedPtr].num == x, 1065);
+                    img->numberLiterals[i] = (TValue)&img->boxedNumbers[boxedPtr];
+                    boxedPtr++;
+                }
+#else
+                img->numberLiterals[i] = (TValue)v;
 #endif
             }
         }
@@ -150,20 +286,41 @@ static VMImage *loadSections(VMImage *img) {
         img->sections[idx] = sect;
 
         if (sect->type == SectionType::Literal) {
-            if (sect->aux == (int)BuiltInType::BoxedString ||
-                sect->aux == (int)BuiltInType::BoxedBuffer) {
-                auto str = (CompiledString *)sect->data;
-                CHECK(sect->size >= str->numbytes + 8 + 4, 1042);
-                auto v = sect->aux == (int)BuiltInType::BoxedString
-                             ? (TValue)mkString(str->utf8data, str->numbytes)
-                             : (TValue)mkBuffer((uint8_t *)str->utf8data, str->numbytes);
-                // registerGCPtr(v);
-                img->pointerLiterals[idx] = v;
-            } else {
-                CHECK(0, 1050);
+            CHECK(sect->size >= 20, 1066);
+            switch ((BuiltInType)sect->aux) {
+            case BuiltInType::BoxedString_ASCII:
+            case BuiltInType::BoxedString: {
+                auto p = (BoxedString *)vmLiteralVal(sect);
+                CHECK(sect->size >= 16 + 2 + (uint32_t)p->ascii.length + 1, 1067);
+                CHECK(p->ascii.data[p->ascii.length] == 0, 1068);
+                break;
             }
-        } else if (sect->type == SectionType::Function || sect->type == SectionType::VTable) {
-            img->pointerLiterals[idx] = (TValue)sect;
+            case BuiltInType::BoxedString_SkipList: {
+                auto p = (BoxedString *)vmLiteralVal(sect);
+                CHECK(sect->size >= 16 + 4 + PXT_NUM_SKIP_ENTRIES(p) * 2 + (uint32_t)p->skip_pack.size + 1,
+                      1069);
+                CHECK(PXT_SKIP_DATA_PACK(p)[p->skip_pack.size] == 0, 1070);
+                for (int i = 0; i < PXT_NUM_SKIP_ENTRIES(p); ++i) {
+                    CHECK(p->skip_pack.list[i] <= p->skip_pack.size, 1071);
+                }
+                break;
+            }
+            case BuiltInType::BoxedBuffer: {
+                auto p = (BoxedBuffer *)vmLiteralVal(sect);
+                CHECK(sect->size >= 16 + 4 + (uint32_t)p->length, 1072);
+                break;
+            }
+            default:
+                CHECK(false, 1050);
+            }
+            img->pointerLiterals[idx] = vmLiteralVal(sect);
+            // TODO validate size/length of boxed string/buffer; check utf8 encoding?; 1042 error
+        } else if (sect->type == SectionType::Function) {
+            img->pointerLiterals[idx] = vmLiteralVal(sect);
+            if (!img->entryPoint)
+                img->entryPoint = (RefAction *)img->pointerLiterals[idx];
+        } else if (sect->type == SectionType::VTable) {
+            img->pointerLiterals[idx] = (TValue)(sect->data);
         } else {
             img->pointerLiterals[idx] = nullptr;
         }
@@ -175,6 +332,7 @@ static VMImage *loadSections(VMImage *img) {
     CHECK_AT(img->opcodes != NULL, 1020, 0);
     CHECK_AT(img->numberLiterals != NULL, 1021, 0);
     CHECK_AT(img->configData != NULL, 1022, 0);
+    CHECK_AT(img->entryPoint != NULL, 1059, 0);
 
     return NULL;
 }
@@ -182,19 +340,18 @@ static VMImage *loadSections(VMImage *img) {
 static VMImage *loadIfaceNames(VMImage *img) {
     FOR_SECTIONS() {
         if (sect->type == SectionType::IfaceMemberNames) {
-            uint64_t *ptrs = (uint64_t *)sect->data;
-            uintptr_t *dst = (uintptr_t *)ptrs;
-            img->ifaceMemberNames = dst;
+            uint32_t *ptrs = (uint32_t *)sect->data;
             auto len = *ptrs++;
-            img->numIfaceMemberNames = (uint32_t)len;
+            CHECK(len < 0x40000, 1047);
+            uintptr_t *dst = ALLOC_ARRAY(uintptr_t, len + 1);
+            img->ifaceMemberNames = dst;
+            img->numIfaceMemberNames = len;
             *dst++ = len;
-            CHECK(sect->size >= 16 + len * 8, 1047);
+            CHECK(sect->size >= 12 + len * 4, 1047);
             for (unsigned i = 0; i < len; ++i) {
                 CHECK(ptrs[i] < img->numSections, 1051);
                 auto ss = img->sections[ptrs[i]];
-                CHECK(ss->type == SectionType::Literal &&
-                          (BuiltInType)ss->aux == BuiltInType::BoxedString,
-                      1052);
+                CHECK(isStringSection(ss), 1052);
                 dst[i] = (uintptr_t)img->pointerLiterals[ptrs[i]];
                 // pointers have to be sorted
                 CHECK(i == 0 || dst[i - 1] < dst[i], 1053);
@@ -255,12 +412,11 @@ static VMImage *validateFunctions(VMImage *img) {
                 if (ent->memberId == 0)
                     continue;
                 if (ent->aux == 0) {
+                    CHECK(ent->method < (unsigned)(vt->numbytes >> 3), 1035);
+                } else {
                     CHECK(ent->method < img->numSections, 1037);
                     auto fn = img->sections[ent->method];
                     CHECK(fn->type == SectionType::Function, 1039);
-                } else {
-                    CHECK(ent->aux < (vt->numbytes >> 3), 1035);
-                    CHECK(ent->aux == ent->method, 1036);
                 }
             }
 
@@ -281,29 +437,20 @@ static VMImage *validateFunctions(VMImage *img) {
     return NULL;
 }
 
-static VMImage *injectVTables(VMImage *img) {
-    // this is the last FOR_SECTIONS() that will ever work
+static VMImage *checkVTables(VMImage *img) {
     FOR_SECTIONS() {
+        auto vt = vtFor(sect);
+        if (vt) {
+            CHECK(((RefObject *)vmLiteralVal(sect))->vtable == vt, 1057);
+        }
         if (sect->type == SectionType::Literal) {
-            switch ((BuiltInType)sect->aux) {
-            case BuiltInType::BoxedString:
-            case BuiltInType::BoxedBuffer:
-                break;
-            default:
-                CHECK(0, 1043);
-                break;
-            }
-        } else if (sect->type == SectionType::Function) {
-            if (!img->entryPoint)
-                img->entryPoint = (RefAction *)sect;
-            ((RefAction *)sect)->vtable = PXT_VTABLE_TO_INT(&RefAction_vtable);
-            ((RefAction *)sect)->func = (ActionCB)((uint8_t *)sect + VM_FUNCTION_CODE_OFFSET);
+            CHECK(vt != NULL, 1043);
         } else if (sect->type == SectionType::VTable) {
             auto vt = (VTable *)sect->data;
-            vt->methods[0] = (void *)pxt::RefRecord_destroy;
-            vt->methods[1] = (void *)pxt::RefRecord_print;
-            vt->methods[2] = (void *)pxt::RefRecord_scan;
-            vt->methods[3] = (void *)pxt::RefRecord_gcsize;
+            CHECK(vt->methods[0] == (void *)pxt::RefRecord_destroy, 1058);
+            CHECK(vt->methods[1] == (void *)pxt::RefRecord_print, 1058);
+            CHECK(vt->methods[2] == (void *)pxt::RefRecord_scan, 1058);
+            CHECK(vt->methods[3] == (void *)pxt::RefRecord_gcsize, 1058);
         }
     }
     return NULL;
@@ -321,8 +468,8 @@ VMImage *loadVMImage(void *data, unsigned length) {
     img->dataStart = (uint64_t *)data;
     img->dataEnd = (uint64_t *)((uint8_t *)data + length);
 
-    if (countSections(img) || loadSections(img) || loadIfaceNames(img) || validateFunctions(img) ||
-        injectVTables(img)) {
+    if (countSections(img) || checkVTables(img) || loadSections(img) || loadIfaceNames(img) ||
+        validateFunctions(img)) {
         // error!
         return img;
     }
@@ -335,6 +482,14 @@ VMImage *loadVMImage(void *data, unsigned length) {
 void unloadVMImage(VMImage *img) {
     if (!img)
         return;
+
+    free(img->pointerLiterals);
+    free(img->sections);
+    free(img->opcodes);
+    free(img->opcodeDescs);
+    free(img->numberLiterals);
+    free(img->ifaceMemberNames);
+
     free(img->dataStart);
     memset(img, 0, sizeof(*img));
     delete img;

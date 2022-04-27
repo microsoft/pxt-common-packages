@@ -9,33 +9,21 @@ namespace music {
 
 SINGLETON(WSynthesizer);
 
-static const int16_t sinQ[256] = {
-    0,     201,   403,   605,   807,   1009,  1210,  1412,  1614,  1815,  2017,  2218,  2419,
-    2621,  2822,  3023,  3224,  3425,  3625,  3826,  4026,  4226,  4426,  4626,  4826,  5026,
-    5225,  5424,  5623,  5822,  6020,  6219,  6417,  6615,  6812,  7009,  7206,  7403,  7600,
-    7796,  7992,  8187,  8383,  8578,  8772,  8967,  9161,  9354,  9547,  9740,  9933,  10125,
-    10317, 10508, 10699, 10890, 11080, 11270, 11459, 11648, 11836, 12024, 12212, 12399, 12585,
-    12772, 12957, 13142, 13327, 13511, 13695, 13878, 14060, 14243, 14424, 14605, 14785, 14965,
-    15145, 15323, 15501, 15679, 15856, 16032, 16208, 16383, 16557, 16731, 16905, 17077, 17249,
-    17420, 17591, 17761, 17930, 18099, 18267, 18434, 18600, 18766, 18931, 19096, 19259, 19422,
-    19585, 19746, 19907, 20067, 20226, 20384, 20542, 20699, 20855, 21010, 21165, 21318, 21471,
-    21623, 21774, 21925, 22074, 22223, 22371, 22518, 22664, 22810, 22954, 23098, 23241, 23382,
-    23523, 23663, 23803, 23941, 24078, 24215, 24350, 24485, 24618, 24751, 24883, 25014, 25144,
-    25273, 25401, 25528, 25654, 25779, 25903, 26026, 26148, 26269, 26389, 26509, 26627, 26744,
-    26860, 26975, 27089, 27202, 27314, 27425, 27535, 27644, 27752, 27859, 27964, 28069, 28173,
-    28275, 28377, 28477, 28576, 28674, 28772, 28868, 28963, 29056, 29149, 29241, 29331, 29421,
-    29509, 29596, 29682, 29767, 29851, 29934, 30015, 30096, 30175, 30253, 30330, 30406, 30480,
-    30554, 30626, 30697, 30767, 30836, 30904, 30970, 31036, 31100, 31163, 31225, 31285, 31345,
-    31403, 31460, 31516, 31570, 31624, 31676, 31727, 31777, 31825, 31873, 31919, 31964, 32008,
-    32050, 32092, 32132, 32171, 32209, 32245, 32280, 32314, 32347, 32379, 32409, 32438, 32466,
-    32493, 32518, 32542, 32565, 32587, 32607, 32627, 32645, 32661, 32677, 32691, 32704, 32716,
-    32727, 32736, 32744, 32751, 32757, 32761, 32764, 32766, 32767};
+// Tone generator arguments:
+//
+// sound: a pointer to the currently-playing sound, usable for looking up the
+// waveform or generator-specific state.
+//
+// position: offset within the currently-playing wave, range 0..1023.
+//
+// cycle: a 6-bit cyclical sequence number of the wave, incremented each time
+// the position loops from 1023 back to 0.
+typedef int (*gentone_t)(PlayingSound *sound, uint32_t position, uint8_t cycle);
 
-typedef int (*gentone_t)(uintptr_t userData, uint32_t position);
-
-static int noiseTone(uintptr_t userData, uint32_t position) {
-    (void)userData;
+static int noiseTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
     (void)position;
+    (void)cycle;
     // see https://en.wikipedia.org/wiki/Xorshift
     static uint32_t x = 0xf01ba80;
     x ^= x << 13;
@@ -44,35 +32,124 @@ static int noiseTone(uintptr_t userData, uint32_t position) {
     return (x & 0xffff) - 0x7fff;
 }
 
-static int sineTone(uintptr_t userData, uint32_t position) {
-    (void)userData;
-    int p = position >= 512 ? position - 512 : position;
-    int r;
-    if (p < 256) {
-        r = sinQ[p];
-    } else {
-        r = sinQ[511 - p];
+static int sineTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
+    (void)cycle;
+    int32_t p = position;
+    if (p >= 512) {
+        p -= 512;
     }
-    return position >= 512 ? -r : r;
+    if (p > 256) {
+        p = 512 - p;
+    }
+
+    // Approximate sin(x * pi / 2) with the odd polynomial y = cx^5 + bx^3 + ax
+    // using the constraint y(1) = 1 => a = 1 - b - c
+    //   => y = c x^5 + b x^3 + (1 - b - c) * x
+    //
+    // Do a least-squares fit of this to sin(x * pi / 2) in the range 0..1
+    // inclusive, using 21 evenly spaced points. Resulting approximation:
+    //
+    // sin(x*pi/2) ~= 0.0721435357258*x**5 - 0.642443736562*x**3 + 1.57030020084*x
+
+    // Scale the constants by 32767 to match the desired output range.
+    constexpr int32_t c = 0.0721435357258 * 32767;
+    constexpr int32_t b = -0.642443736562 * 32767;
+    constexpr int32_t a = 1.57030020084 * 32767;
+
+    // Calculate using y = ((c * x^2 + b) * x^2 + a) * x
+    //
+    // The position p is x * 256, so after each multiply with p we need to
+    // shift right by 8 bits to keep the decimal point in the same place.  (The
+    // approximation has a negative error near x=1 which helps avoid overflow.)
+    int32_t p2 = p * p;
+    int32_t u = (c * p2 >> 16) + b;
+    int32_t v = (u * p2 >> 16) + a;
+    int32_t w = v * p >> 8;
+
+    // The result is within 7/32767 or 0.02%, signal-to-error ratio about 38 dB.
+    return position >= 512 ? -w : w;
 }
 
-static int sawtoothTone(uintptr_t userData, uint32_t position) {
-    (void)userData;
+static int sawtoothTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
+    (void)cycle;
     return (position << 6) - 0x7fff;
 }
 
-static int triangleTone(uintptr_t userData, uint32_t position) {
-    (void)userData;
+static int triangleTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    (void)sound;
+    (void)cycle;
     return position < 512 ? (position << 7) - 0x7fff : ((1023 - position) << 7) - 0x7fff;
 }
 
-static int squareWaveTone(uintptr_t wave, uint32_t position) {
-    return position < (102 * (wave - SW_SQUARE_10 + 1)) ? -0x7fff : 0x7fff;
+static int squareWaveTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    (void)cycle;
+    uint8_t wave = sound->currInstr->soundWave;
+    return (int)position < (102 * (wave - SW_SQUARE_10 + 1)) ? -0x7fff : 0x7fff;
 }
 
-static int silenceTone(uintptr_t userData, uint32_t position) {
-    (void)userData;
+static int tunedNoiseTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    // Generate a square wave filtered by a random bit sequence. Since the generator
+    // is called multiple times per wave, use PlayingSound state data to ensure we
+    // only generate a random bit once per wave, and then reuse it for future
+    // calls for that wave.
+    //
+    // Use the low 6 bits of generatorState to store the last-used cycle, and
+    // random_bit to store the last on/off state. (random_bit is arbitrary as
+    // long as it isn't one of the low 6 bits.)
+    constexpr uint32_t random_bit = 0x8000;
+    static uint32_t x = 0xf01ba80; // seed for the static RNG state
+    uint8_t prev_cycle = sound->generatorState & 0x3f;
+    uint32_t is_on;
+    if (cycle == prev_cycle) {
+        is_on = sound->generatorState & random_bit;
+    } else {
+        // see https://en.wikipedia.org/wiki/Xorshift
+        x ^= x << 13;
+        x ^= x >> 17;
+        x ^= x << 5;
+        is_on = (x & random_bit);
+        sound->generatorState = (cycle & 0x3f) | is_on;
+    }
+    if (!is_on)
+        return 0;
+    return position < 512 ? -0x7fff : 0x7fff;
+}
+
+// Bit patterns for use by the cyclic noise tone.
+//
+// The bit pattern is arbitrary, but should have equal numbers of 0 and 1 bits,
+// and should avoid long identical-bit runs for the lower parts. The values below
+// were chosen based on a random permutation of the hex nibbles 0..f and then
+// hand-tweaked by swapping some nibbles. Generated by:
+//
+//   shuf -i 0-15 | perl -ne 's/(\d+)/printf("%x",$1)/e'
+static const uint32_t cycle_bits[] = {0x2df0eb47, 0xc8165a93};
+static const uint8_t cycle_mask[] = {0xf, 0x1f, 0x3f};
+
+static int cycleNoiseTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    // Generate a square wave filtered by a short-cycle pseudorandom bit sequence.
+    // The bit sequence repeats every 16/32/64 waves.
+    //
+    // The "cycle" argument corresponds to the sequential number of the generated
+    // wave. This is currently a 6-bit value. Since the pseudorandom bit sequences
+    // evenly fit into this, there's no need to track generator state.
+    uint8_t wave = sound->currInstr->soundWave;
+    int cycle_index = wave - SW_SQUARE_CYCLE_16;
+    // CLAMP(0, cycle_index, sizeof cycle_bits / sizeof cycle_bits[0])
+    cycle &= cycle_mask[cycle_index];
+    bool is_on = (cycle_bits[cycle >> 5] & (1U << (cycle & 0x1f)));
+    if (!is_on)
+        return 0;
+    return position < 512 ? -0x7fff : 0x7fff;
+}
+
+static int silenceTone(PlayingSound *sound, uint32_t position, uint8_t cycle) {
+    // Generate a square wave filtered by a short-cycle pseudorandom bit sequence.
+    (void)sound;
     (void)position;
+    (void)cycle;
     return 0;
 }
 
@@ -82,6 +159,8 @@ static gentone_t getWaveFn(uint8_t wave) {
         return triangleTone;
     case SW_SAWTOOTH:
         return sawtoothTone;
+    case SW_TUNEDNOISE:
+        return tunedNoiseTone;
     case SW_NOISE:
         return noiseTone;
     case SW_SINE:
@@ -89,6 +168,8 @@ static gentone_t getWaveFn(uint8_t wave) {
     default:
         if (SW_SQUARE_10 <= wave && wave <= SW_SQUARE_50)
             return squareWaveTone;
+        if (SW_SQUARE_CYCLE_16 <= wave && wave <= SW_SQUARE_CYCLE_64)
+            return cycleNoiseTone;
         else
             return silenceTone;
     }
@@ -132,13 +213,6 @@ int WSynthesizer::updateQueues() {
             snd->startSampleNo = currSample;
             snd->currInstr = (SoundInstruction *)p->instructions->data;
             snd->instrEnd = snd->currInstr + p->instructions->length / sizeof(SoundInstruction);
-            for (auto p = snd->currInstr; p < snd->instrEnd; p++) {
-                CLAMP(20, p->frequency, 20000);
-                CLAMP(20, p->endFrequency, 20000);
-                CLAMP(0, p->startVolume, 1023);
-                CLAMP(0, p->endVolume, 1023);
-                CLAMP(1, p->duration, 60000);
-            }
             snd->prevVolume = -1;
         } else {
             // no more sounds to move
@@ -186,20 +260,28 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
         uint32_t samplesLeft = 0;
         uint8_t wave = 0;
         int32_t volume = 0;
-        uint32_t prevFreq = 0;
-        uint32_t prevEndFreq = 0;
 
         for (int j = 0; j < numsamples; ++j) {
             if (samplesLeft == 0) {
-                instr = ++snd->currInstr;
-                if (instr >= snd->instrEnd) {
+                snd->currInstr++;
+                if (snd->currInstr >= snd->instrEnd) {
                     break;
                 }
+                SoundInstruction copy = *snd->currInstr;
+                instr = &copy;
+                CLAMP(20, instr->frequency, 20000);
+                CLAMP(20, instr->endFrequency, 20000);
+                CLAMP(0, instr->startVolume, 1023);
+                CLAMP(0, instr->endVolume, 1023);
+                CLAMP(1, instr->duration, 60000);
+
                 wave = instr->soundWave;
                 fn = getWaveFn(wave);
 
                 samplesLeft = (uint32_t)(instr->duration * samplesPerMS >> 8);
-                volumeStep = ((int)(instr->endVolume - instr->startVolume) << 16) / samplesLeft;
+                // make sure the division is signed
+                volumeStep =
+                    (int)((instr->endVolume - instr->startVolume) << 16) / (int)samplesLeft;
 
                 if (j == 0 && snd->prevVolume != -1) {
                     // restore previous state
@@ -207,26 +289,22 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
                     volume = snd->prevVolume;
                     toneStep = snd->prevToneStep;
                     toneDelta = snd->prevToneDelta;
-                    prevFreq = instr->frequency;
-                    prevEndFreq = instr->endFrequency;
                 } else {
-                    LOG("#sampl %d %p", samplesLeft, instr);
+                    LOG("#sampl %d %p", samplesLeft, snd->currInstr);
                     volume = instr->startVolume << 16;
-                    if (prevFreq != instr->frequency || prevEndFreq != instr->endFrequency) {
-                        toneStep = (uint32_t)(toneStepMult * instr->frequency);
-                        if (instr->frequency != instr->endFrequency) {
-                            uint32_t endToneStep = (uint32_t)(toneStepMult * instr->endFrequency);
-                            toneDelta = (int32_t)(endToneStep - toneStep) / (int32_t)samplesLeft;
-                        } else {
-                            toneDelta = 0;
-                        }
-                        prevFreq = instr->frequency;
-                        prevEndFreq = instr->endFrequency;
+                    LOG("%d-%dHz %d-%d vol", instr->frequency, instr->endFrequency,
+                        instr->startVolume, instr->endVolume);
+                    toneStep = (uint32_t)(toneStepMult * instr->frequency);
+                    if (instr->frequency != instr->endFrequency) {
+                        uint32_t endToneStep = (uint32_t)(toneStepMult * instr->endFrequency);
+                        toneDelta = (int32_t)(endToneStep - toneStep) / (int32_t)samplesLeft;
+                    } else {
+                        toneDelta = 0;
                     }
                 }
             }
 
-            int v = fn(wave, (tonePosition >> 16) & 1023);
+            int v = fn(snd, (tonePosition >> 16) & 1023, tonePosition >> 26);
             v = (v * (volume >> 16)) >> (10 + (16 - OUTPUT_BITS));
 
             // if (v > MAXVAL)
@@ -240,7 +318,7 @@ int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
             samplesLeft--;
         }
 
-        if (instr >= snd->instrEnd) {
+        if (snd->currInstr >= snd->instrEnd) {
             snd->sound->state = SoundState::Done;
             snd->sound = NULL;
         } else {
@@ -296,8 +374,8 @@ void queuePlayInstructions(int when, Buffer buf) {
     p->instructions = buf;
     p->startSampleNo = snd->currSample + when * snd->sampleRate / 1000;
 
-    LOG("Queue %dms now=%d off=%d %p", when, snd->currSample, p->startSampleNo - snd->currSample,
-        buf->data);
+    LOG("Queue %dms now=%d off=%d %p sampl:%dHz", when, snd->currSample,
+        p->startSampleNo - snd->currSample, buf->data, snd->sampleRate);
 
     target_disable_irq();
     // add new sound to queue
@@ -349,6 +427,16 @@ WSynthesizer::WSynthesizer() : upstream(NULL), out(*this) {
 }
 
 } // namespace music
+
+namespace pxt {
+int redirectSamples(int16_t *dst, int numsamples, int samplerate) {
+    auto snd = music::getWSynthesizer();
+    snd->upstream = NULL; // disconnect from regular playback mechanism
+    snd->sampleRate = samplerate;
+    return snd->fillSamples(dst, numsamples);
+}
+
+} // namespace pxt
 
 namespace jacdac {
 __attribute__((weak)) void setJackRouterOutput(int output) {}

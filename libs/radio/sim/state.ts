@@ -87,20 +87,18 @@ namespace pxsim {
         datagram: RadioDatagram;
         groupId: number;
         band: number;
+        enable: boolean;
 
-        constructor(runtime: Runtime, dal: RadioDAL) {
+        constructor(private readonly runtime: Runtime, private readonly board: BaseBoard, dal: RadioDAL) {
             this.datagram = new RadioDatagram(runtime, dal);
             this.power = 6; // default value
             this.groupId = 0;
             this.band = 7; // https://github.com/lancaster-university/microbit-dal/blob/master/inc/core/MicroBitConfig.h#L320
+            this.enable = true;
+            this.board.addMessageListener(this.handleMessage.bind(this))
         }
 
-        addListeners() {
-            const board = runtime.board as pxsim.BaseBoard;
-            board.addMessageListener(msg => this.messageHandler(msg));
-        }
-
-        private messageHandler(msg: SimulatorMessage) {
+        private handleMessage(msg: SimulatorMessage) {
             if (msg.type == "radiopacket") {
                 let packet = <SimulatorRadioPacketMessage>msg;
                 this.receivePacket(packet);
@@ -108,12 +106,16 @@ namespace pxsim {
         }
 
         public setGroup(id: number) {
-            this.groupId = id & 0xff; // byte only
+            if (this.enable) {
+                this.groupId = id & 0xff; // byte only
+            }
         }
 
         setTransmitPower(power: number) {
-            power = power | 0;
-            this.power = Math.max(0, Math.min(7, power));
+            if (this.enable) {
+                power = power | 0;
+                this.power = Math.max(0, Math.min(7, power));
+            }
         }
 
         setTransmitSerialNumber(sn: boolean) {
@@ -121,25 +123,40 @@ namespace pxsim {
         }
 
         setFrequencyBand(band: number) {
-            band = band | 0;
-            if (band < 0 || band > 83) return;
-            this.band = band;
+            if (this.enable) {
+                band = band | 0;
+                if (band < 0 || band > 83) return;
+                this.band = band;
+            }
         }
 
+        off() {
+           this.enable = false;
+        }
+
+        on() {
+            this.enable = true;
+         }
+ 
         raiseEvent(id: number, eventid: number) {
-            Runtime.postMessage(<SimulatorEventBusMessage>{
-                type: "eventbus",
-                broadcast: true,
-                id,
-                eventid,
-                power: this.power,
-                group: this.groupId
-            })
+            if (this.enable) {
+                Runtime.postMessage(<SimulatorEventBusMessage>{
+                    type: "eventbus",
+                    broadcast: true,
+                    id,
+                    eventid,
+                    power: this.power,
+                    group: this.groupId
+                })
+            }
         }
 
         receivePacket(packet: SimulatorRadioPacketMessage) {
-            if (this.groupId == packet.payload.groupId)
-                this.datagram.queue(packet)
+            if (this.enable) {
+                if (this.groupId == packet.payload.groupId) {
+                    this.datagram.queue(packet)
+               }
+            }
         }
     }
 }

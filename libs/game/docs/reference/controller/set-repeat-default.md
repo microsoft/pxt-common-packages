@@ -18,10 +18,6 @@ When your using a repeated controller button event, you may want to decide when 
 Create a sprite with a circular image.  Set the button event repeat time to `200` milliseconds when a controller button is held down. Move the sprite down and to the right when button **A** is pressed. When button **B** is pressed, send the sprite in the other direction but faster.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 controller.A.onEvent(ControllerButtonEvent.Repeated, function () {
     mySprite.top += 1
     mySprite.left += 1

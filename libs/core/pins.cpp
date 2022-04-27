@@ -11,7 +11,7 @@ DevicePin *getPin(int id) {
     id &= CFG_PIN_NAME_MSK;
 
     if (id >= DEV_NUM_PINS)
-        target_panic(PANIC_NO_SUCH_PIN);
+        soft_panic(PANIC_NO_SUCH_PIN);
 
     // we could use lookupComponent() here - it would be slightly slower
 
@@ -31,12 +31,15 @@ DevicePin *getPin(int id) {
 
 //%
 DevicePin *getPinCfg(int key) {
-    return getPin(getConfig(key));
+    int p = getConfig(key, -1);
+    if (p == -1)
+        DMESG("no pin cfg: %d", key);
+    return getPin(p);
 }
 
 void linkPin(int from, int to) {
     if (from < 0 || from >= DEV_NUM_PINS)
-        target_panic(PANIC_NO_SUCH_PIN);
+        soft_panic(PANIC_NO_SUCH_PIN);
     getPin(to);
     pinPos[from] = pinPos[to];
 }

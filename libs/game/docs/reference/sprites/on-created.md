@@ -14,28 +14,27 @@ Sprites are created by using the [create](/reference/sprites/sprite/destroy) and
 Sprites have three types: ``player``, ``food``, ``coin``. You can track the creation of any sprite with a particular type by using the sprite object parameter called ``sprite``.
 
 ```blocks
-let smiley: Sprite = null
-smiley = sprites.create(img`
-. . . . . f f f f f f f . . . . 
-. . . f f e e e e e e e f . . . 
-. . f e e e e e e e e e e f . . 
-. f e e e e e e e e e e e e f . 
-f e e e e f f e e e f f e e e f 
-f e e e e f f e e e f f e e e f 
-f e e e e e e e e e e e e e e f 
-f e e e e e e e e e e e e e e f 
-f e e e e e e e f e e e e e e f 
-f e e e e e e e e e e e e e e f 
-f e e e e f e e e e e f e e e f 
-f e e e e e f f f f f e e e e f 
-. f e e e e e e e e e e e e f . 
-. . f e e e e e e e e e e f . . 
-. . . f f e e e e e e e f . . . 
-. . . . . f f f f f f f . . . . 
-`)
-sprites.onCreated(SpriteType.Player, function (sprite) {
+sprites.onCreated(SpriteKind.Player, function (sprite) {
     sprite.say("Hello, I'm new here")
 })
+let smiley = sprites.create(img`
+    . . . . . f f f f f f f . . . .
+    . . . f f e e e e e e e f . . .
+    . . f e e e e e e e e e e f . .
+    . f e e e e e e e e e e e e f .
+    f e e e e f f e e e f f e e e f
+    f e e e e f f e e e f f e e e f
+    f e e e e e e e e e e e e e e f
+    f e e e e e e e e e e e e e e f
+    f e e e e e e e f e e e e e e f
+    f e e e e e e e e e e e e e e f
+    f e e e e f e e e e e f e e e f
+    f e e e e e f f f f f e e e e f
+    . f e e e e e e e e e e e e f .
+    . . f e e e e e e e e e e f . .
+    . . . f f e e e e e e e f . . .
+    . . . . . f f f f f f f . . . .
+    `, SpriteKind.Player)
 ```
 
 ## Parameters
@@ -49,29 +48,24 @@ sprites.onCreated(SpriteType.Player, function (sprite) {
 Create a ``player`` sprite as an "observer" for the creation and destruction of a ``food`` sprite. Have the observer say something when some food is created and when it's created.
 
 ```blocks
-let snack: Sprite = null
-let foodBlock: Image = null
+sprites.onDestroyed(SpriteKind.Food, function (sprite) {
+    viewer.say("food's gone!!", 1000)
+})
+sprites.onCreated(SpriteKind.Food, function (sprite) {
+    viewer.say("I see food!", 1000)
+})
 let viewer: Sprite = null
-let playerBlock: Image = null
-
-playerBlock = image.create(16, 16)
+let playerBlock = image.create(16, 16)
 playerBlock.fill(7)
-viewer = sprites.create(playerBlock, SpriteType.Player)
+viewer = sprites.create(playerBlock, SpriteKind.Player)
 viewer.setPosition(8, 32)
-foodBlock = image.create(32, 32)
+let foodBlock = image.create(32, 32)
 foodBlock.fill(8)
 pause(1000)
-snack = sprites.create(foodBlock, SpriteType.Food)
+let snack = sprites.create(foodBlock, SpriteKind.Food)
 snack.say("new food here")
 pause(2000)
 snack.destroy()
-
-sprites.onCreated(SpriteType.Food, function (sprite) {
-    viewer.say("I see food!", 1000)
-})
-sprites.onDestroyed(SpriteType.Food, function (sprite) {
-    viewer.say("food's gone!", 1000)
-})
 ```
 
 ## See also #seeaslo

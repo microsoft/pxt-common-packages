@@ -6,7 +6,7 @@ Create a new sprite with motion from a pixel image.
 sprites.createProjectile(img``, 0, 0, 0)
 ```
 
-A projectile is a sprite the moves from the location where it's created at. It moves with a speed (velocity), that you set in both the horizontal and veritcal directions. The sprite starts at the screen coordinate of (0, 0) unless you tell it to come from another sprite. If you do that, the projectile will start from the center of sprite you set as the source.
+A projectile is a sprite the moves from the location where it's created at. It moves with a speed (velocity), that you set in both the horizontal and vertical directions. The sprite starts at the screen coordinate of (0, 0) unless you tell it to come from another sprite. If you do that, the projectile will start from the center of sprite you set as the source.
 
 The projectile has all the same properties that a non-moving sprite has. It will overlap with other sprites and hit collide with tiles.
 
@@ -31,10 +31,6 @@ Projectiles are destroyed when they move off of the screen.
 Send a smiley sprite from one corner of the screen to the other.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy
-}
 let smiley: Sprite = null
 let xSpeed = 50
 let ySpeed = xSpeed * scene.screenHeight() / scene.screenWidth()
@@ -63,10 +59,8 @@ f e e e e e f f f f f e e e e f
 Send photons out of a spaceship when the ``B`` button is pressed.
 
 ```blocks
-enum SpriteKind {
-    Player,
-    Enemy,
-    Photon
+namespace SpriteKind {
+    export const Photon = SpriteKind.create()
 }
 let photon: Sprite = null
 
