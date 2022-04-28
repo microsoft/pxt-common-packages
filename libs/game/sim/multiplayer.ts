@@ -78,6 +78,7 @@ namespace pxsim {
 
         init() {
             if (this.origin) {
+                multiplayer.init();
                 runtime.board.addMessageListener(msg => this.messageHandler(msg));
                 setInterval(() => {
                     if (this.origin === "server") {
