@@ -48,7 +48,9 @@
         "effects.ts",
         "texteffects.ts",
         "assetTemplates.ts",
-        "animation.ts"
+        "animation.ts",
+        "multiplayer.cpp",
+        "multiplayer.ts"
     ],
     "public": true,
     "dependencies": {
