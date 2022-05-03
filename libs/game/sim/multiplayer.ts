@@ -51,19 +51,14 @@ namespace pxsim {
         state: "Pressed" | "Released" | "Held";
     }
 
-    type MultiplayerOrigin = "client" | "server" | undefined;
-
     export class MultiplayerState {
         lastMessageId: number;
-        origin: "client" | "server" | undefined;
+        origin: string;
         backgroundImage: RefImage;
 
         constructor() {
             this.lastMessageId = 0;
-            const originMatch = /mp=(\w+)/.exec(window.location.href);
-            if (originMatch) {
-                this.origin = originMatch[1] as MultiplayerOrigin;
-            }
+            this.origin = /[\&\?]mp=(server|client)/i.exec(window.location.href)?.[1]?.toLowerCase();
         }
 
         send(msg: SimulatorMultiplayerMessage) {
@@ -77,18 +72,15 @@ namespace pxsim {
         }
 
         init() {
-            if (this.origin) {
-                multiplayer.init();
-                runtime.board.addMessageListener(msg => this.messageHandler(msg));
-                setInterval(() => {
-                    if (this.origin === "server") {
-                        const b = board() as ScreenBoard;
-                        const screenState = b && b.screenState;
-                        const lastImage = screenState && screenState.lastImage;
-                        lastImage && pxsim.multiplayer.postImage(lastImage, "broadcast-screen");
-                    }
-                }, 50);
-            }
+            runtime.board.addMessageListener(msg => this.messageHandler(msg));
+            setInterval(() => {
+                if (this.origin === "server") {
+                    const b = board() as ScreenBoard;
+                    const screenState = b && b.screenState;
+                    const lastImage = screenState && screenState.lastImage;
+                    lastImage && pxsim.multiplayer.postImage(lastImage, "broadcast-screen");
+                }
+            }, 50);
         }
 
         setButton(key: number, isPressed: boolean) {
@@ -107,16 +99,20 @@ namespace pxsim {
             }
 
             if (isImageMessage(msg)) {
-                // HACK: peer js can convert Uint8Array into ArrayBuffer when transmitting; fix this.
-                if (!ArrayBuffer.isView(msg.image.data)) {
-                    msg.image.data = new Uint8Array(msg.image.data);
+                if (this.origin === "client") {
+                    // HACK: peer js can convert Uint8Array into ArrayBuffer when transmitting; fix this.
+                    if (!ArrayBuffer.isView(msg.image.data)) {
+                        msg.image.data = new Uint8Array(msg.image.data);
+                    }
+                    this.backgroundImage = pxsim.image.ofBuffer(msg.image);
                 }
-                this.backgroundImage = pxsim.image.ofBuffer(msg.image);
             } else if (isButtonMessage(msg)) {
-                (board() as any).setButton(
-                    msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
-                    msg.state === "Pressed" || msg.state === "Held"
-                );
+                if (this.origin === "server") {
+                    (board() as any).setButton(
+                        msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
+                        msg.state === "Pressed" || msg.state === "Held"
+                    );
+                }
             }
         }
     }
