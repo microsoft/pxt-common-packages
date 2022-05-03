@@ -14,8 +14,11 @@ namespace multiplayer {
                 if (getOrigin() === "client") {
                     const im: Image = getCurrentImage();
                     scene.setBackgroundImage(im);
+                    // clear default menu button behavior
+                    controller.menu.onEvent(ControllerButtonEvent.Pressed, () => { });
                 }
             });
         });
+        game.pushScene();
     }
 }
