@@ -58,7 +58,6 @@ namespace pxsim {
 
         constructor() {
             this.lastMessageId = 0;
-            this.origin = /[\&\?]mp=(server|client)/i.exec(window.location.href)?.[1]?.toLowerCase();
         }
 
         send(msg: SimulatorMultiplayerMessage) {
@@ -72,7 +71,8 @@ namespace pxsim {
             });
         }
 
-        init() {
+        init(origin: string) {
+            this.origin = origin;
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
             setInterval(() => {
                 if (this.origin === "server") {
