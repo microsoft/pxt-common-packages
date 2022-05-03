@@ -65,6 +65,7 @@ namespace pxsim {
             Runtime.postMessage(<SimulatorMultiplayerMessage>{
                 ...msg,
                 broadcast: true,
+                toParentIFrameOnly: true,
                 type: "multiplayer",
                 origin: this.origin,
                 id: this.lastMessageId++
