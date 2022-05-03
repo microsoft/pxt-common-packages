@@ -10,7 +10,7 @@ namespace multiplayer {
 
     export function init() {
         game.addScenePushHandler(() => {
-            game.eventContext().registerFrameHandler(scene.MULTIPLAYER_MESSAGING_PRIORITY, () => {
+            game.eventContext().registerFrameHandler(scene.MULTIPLAYER_SCREEN_PRIORITY, () => {
                 if (getOrigin() === "client") {
                     const im: Image = getCurrentImage();
                     scene.setBackgroundImage(im);
