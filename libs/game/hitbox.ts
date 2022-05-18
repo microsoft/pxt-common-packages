@@ -17,11 +17,11 @@ namespace game {
         }
 
         get left() {
-            return Fx.add(this.ox, Fx.floor(this.parent._x));
+            return Fx.add(this.ox, this.parent._x);
         }
 
         get top() {
-            return Fx.add(this.oy, Fx.floor(this.parent._y));
+            return Fx.add(this.oy, this.parent._y);
         }
 
         get right() {
