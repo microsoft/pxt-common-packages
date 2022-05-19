@@ -36,8 +36,8 @@ namespace pxsim.keymap {
         getKeymapState().setPlayerKeys(player, up, down, left, right, A, B);
     }
 
-    export function _setSystemKeys(screenshot: number, gif: number) {
-        getKeymapState().setSystemKeys(screenshot, gif);
+    export function _setSystemKeys(screenshot: number, gif: number, menu: number, reset: number) {
+        getKeymapState().setSystemKeys(screenshot, gif, menu, reset);
     }
 }
 
@@ -88,7 +88,9 @@ namespace pxsim {
             // System keymap
             this.setSystemKeys(
                 80, // P - Screenshot
-                82 // R - Gif
+                82, // R - Gif
+                0, // Menu - not mapped
+                0 // Reset - not mapped
             );
 
             // Player 1 alternate mapping. This is cleared when the game sets any player keys explicitly
@@ -136,18 +138,20 @@ namespace pxsim {
             this.saveMap(mapName, keyCodes);
         }
 
-        public setSystemKeys(screenshot: number, gif: number) {
+        public setSystemKeys(screenshot: number, gif: number, menu: number, reset: number) {
             const mapName = "system";
             // Clear existing mapped keys for system
             this.clearMap(mapName);
             this.keymap[screenshot] = Key.Screenshot;
             this.keymap[gif] = Key.Gif;
+            this.keymap[menu] = Key.Menu;
+            this.keymap[reset] = Key.Reset;
             // Remember this mapping
-            this.saveMap(mapName, [screenshot, gif]);
+            this.saveMap(mapName, [screenshot, gif, menu, reset]);
         }
 
         public getKey(keyCode: number): Key {
-            return this.keymap[keyCode] || this.altmap[keyCode] || Key.None;
+            return keyCode ? this.keymap[keyCode] || this.altmap[keyCode] || Key.None : Key.None;
         }
 
         private saveMap(name: string, keyCodes: number[]) {
