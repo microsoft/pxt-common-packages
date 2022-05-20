@@ -394,7 +394,7 @@ class Sprite extends sprites.BaseSprite {
         return !(this.flags & SpriteFlag.Invisible);
     }
 
-    private recalcSize(): void {
+    protected recalcSize(): void {
         this._width = Fx8(this._image.width * this.sx);
         this._height = Fx8(this._image.height * this.sy);
         this.resetHitbox();
@@ -645,21 +645,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     __drawCore(camera: scene.Camera) {
-        if (this.sayRenderer) {
-            if (this.sayEndTime !== undefined) {
-                if (control.millis() < this.sayEndTime) {
-                    this.sayRenderer.draw(screen, camera, this);
-                }
-                else {
-                    this.sayRenderer.destroy();
-                    this.sayRenderer = undefined;
-                    this.sayEndTime = undefined;
-                }
-            }
-            else {
-                this.sayRenderer.draw(screen, camera, this)
-            }
-        }
+        this.drawSay(camera);
 
         if (this.isOutOfScreen(camera)) return;
 
@@ -669,47 +655,8 @@ class Sprite extends sprites.BaseSprite {
         const l = Math.floor(this.left - ox);
         const t = Math.floor(this.top - oy);
 
-        if (!this.isScaled())
-            screen.drawTransparentImage(this._image, l, t);
-        else
-            screen.blit(
-                // dst rect in screen
-                l, t,
-                this.width,
-                this.height,
-                // src rect in sprite image
-                this._image,
-                0, 0,
-                this._image.width, this._image.height,
-                true, false);
-
-        if (this.flags & SpriteFlag.ShowPhysics) {
-            const font = image.font5;
-            const margin = 2;
-            let tx = l;
-            let ty = t + this.height + margin;
-            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
-            tx -= font.charWidth;
-            if (this.vx || this.vy) {
-                ty += font.charHeight + margin;
-                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
-            }
-            if (this.ax || this.ay) {
-                ty += font.charHeight + margin;
-                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
-            }
-        }
-
-        // debug info
-        if (game.debug) {
-            screen.drawRect(
-                Fx.toInt(this._hitbox.left) - ox,
-                Fx.toInt(this._hitbox.top) - oy,
-                Fx.toInt(this._hitbox.width),
-                Fx.toInt(this._hitbox.height),
-                1
-            );
-        }
+        this.drawSprite(l, t);
+        this.drawDebug(l, t, ox, oy);
     }
 
     __update(camera: scene.Camera, dt: number) {
@@ -1170,5 +1117,69 @@ class Sprite extends sprites.BaseSprite {
 
     toString() {
         return `${this.id}(${this.x},${this.y})->(${this.vx},${this.vy})`;
+    }
+
+    protected drawSay(camera: scene.Camera) {
+        if (this.sayRenderer) {
+            if (this.sayEndTime !== undefined) {
+                if (control.millis() < this.sayEndTime) {
+                    this.sayRenderer.draw(screen, camera, this);
+                }
+                else {
+                    this.sayRenderer.destroy();
+                    this.sayRenderer = undefined;
+                    this.sayEndTime = undefined;
+                }
+            }
+            else {
+                this.sayRenderer.draw(screen, camera, this)
+            }
+        }
+    }
+
+    protected drawDebug(left: number, top: number, offsetX: number, offsetY: number) {
+        if (this.flags & SpriteFlag.ShowPhysics) {
+            const font = image.font5;
+            const margin = 2;
+            let tx = left;
+            let ty = top + this.height + margin;
+            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
+            tx -= font.charWidth;
+            if (this.vx || this.vy) {
+                ty += font.charHeight + margin;
+                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
+            }
+            if (this.ax || this.ay) {
+                ty += font.charHeight + margin;
+                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
+            }
+        }
+
+        // debug info
+        if (game.debug) {
+            screen.drawRect(
+                Fx.toInt(this._hitbox.left) - offsetX,
+                Fx.toInt(this._hitbox.top) - offsetY,
+                Fx.toInt(this._hitbox.width),
+                Fx.toInt(this._hitbox.height),
+                1
+            );
+        }
+    }
+
+    protected drawSprite(drawLeft: number, drawTop: number) {
+        if (!this.isScaled())
+            screen.drawTransparentImage(this._image, drawLeft, drawTop);
+        else
+            screen.blit(
+                // dst rect in screen
+                drawLeft, drawTop,
+                this.width,
+                this.height,
+                // src rect in sprite image
+                this._image,
+                0, 0,
+                this._image.width, this._image.height,
+                true, false);
     }
 }
