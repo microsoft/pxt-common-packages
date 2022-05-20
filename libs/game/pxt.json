@@ -50,7 +50,9 @@
         "assetTemplates.ts",
         "animation.ts",
         "multiplayer.cpp",
-        "multiplayer.ts"
+        "multiplayer.ts",
+        "keymap.cpp",
+        "keymap.ts"
     ],
     "public": true,
     "dependencies": {
