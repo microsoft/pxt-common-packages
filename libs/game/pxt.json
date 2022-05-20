@@ -13,6 +13,7 @@
         "spritesay.ts",
         "sprites.ts",
         "sprite.ts",
+        "extendableSprite.ts",
         "sprite.d.ts",
         "spritemap.ts",
         "spriteevents.ts",
