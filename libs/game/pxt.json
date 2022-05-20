@@ -13,6 +13,7 @@
         "spritesay.ts",
         "sprites.ts",
         "sprite.ts",
+        "extendableSprite.ts",
         "sprite.d.ts",
         "spritemap.ts",
         "spriteevents.ts",
@@ -48,7 +49,9 @@
         "effects.ts",
         "texteffects.ts",
         "assetTemplates.ts",
-        "animation.ts"
+        "animation.ts",
+        "keymap.cpp",
+        "keymap.ts"
     ],
     "public": true,
     "dependencies": {
