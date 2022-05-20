@@ -42,6 +42,11 @@ namespace sprites {
         update(deltaTimeMillis: number) {
         }
 
+        /**
+         * Sets the width and height of this sprite. Once set, this will also prevent
+         * this width and height from automatically changing whenever scale or the image
+         * changes
+         */
         setDimensions(width: number, height: number) {
             this._width = Fx8(width);
             this._height = Fx8(height);
@@ -72,5 +77,4 @@ namespace sprites {
             super.recalcSize();
         }
     }
-
 }
