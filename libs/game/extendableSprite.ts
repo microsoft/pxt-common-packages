@@ -7,6 +7,8 @@ namespace sprites {
      * in the constructor
      */
     export class ExtendableSprite extends Sprite {
+        protected hasCustomDimensions: boolean;
+
         constructor(spriteImage: Image, kind?: number) {
             super(spriteImage);
 
@@ -18,6 +20,8 @@ namespace sprites {
             scene.createdHandlers
                 .filter(h => h.kind == kind)
                 .forEach(h => h.handler(this));
+
+            this.hasCustomDimensions = false;
         }
 
         /**
@@ -37,14 +41,35 @@ namespace sprites {
          */
         update(deltaTimeMillis: number) {
         }
+
+        setDimensions(width: number, height: number) {
+            this._width = Fx8(width);
+            this._height = Fx8(height);
+            this.hasCustomDimensions = true;
+            this.resetHitbox();
+        }
         
         __update(camera: scene.Camera, dt: number) {
             super.__update(camera, dt);
             this.update(game.currentScene().eventContext.deltaTimeMillis)
         }
 
+        setHitbox() {
+            if (this.hasCustomDimensions) {
+                this._hitbox = new game.Hitbox(this, this._width, this._height, Fx.zeroFx8, Fx.zeroFx8)
+            }
+            else {
+                super.setHitbox();
+            }
+        }
+
         protected drawSprite(drawLeft: number, drawTop: number): void {
             this.draw(drawLeft, drawTop);
+        }
+
+        protected recalcSize() {
+            if (this.hasCustomDimensions) return;
+            super.recalcSize();
         }
     }
 

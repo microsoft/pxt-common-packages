@@ -394,7 +394,7 @@ class Sprite extends sprites.BaseSprite {
         return !(this.flags & SpriteFlag.Invisible);
     }
 
-    private recalcSize(): void {
+    protected recalcSize(): void {
         this._width = Fx8(this._image.width * this.sx);
         this._height = Fx8(this._image.height * this.sy);
         this.resetHitbox();
