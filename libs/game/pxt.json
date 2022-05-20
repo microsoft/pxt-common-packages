@@ -48,7 +48,9 @@
         "effects.ts",
         "texteffects.ts",
         "assetTemplates.ts",
-        "animation.ts"
+        "animation.ts",
+        "keymap.cpp",
+        "keymap.ts"
     ],
     "public": true,
     "dependencies": {
