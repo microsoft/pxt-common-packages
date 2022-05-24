@@ -136,7 +136,8 @@ int _remove(String key) {
 //%
 bool _exists(String key) {
     auto f = openKey(key, "rb");
-    fclose(f);
+    if (f != NULL)
+        fclose(f);
     return f != NULL;
 }
 
