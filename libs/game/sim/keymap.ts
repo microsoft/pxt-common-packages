@@ -89,8 +89,8 @@ namespace pxsim {
             this.setSystemKeys(
                 80, // P - Screenshot
                 82, // R - Gif
-                49, // Menu - '1' button
-                50 // Reset - '2' button
+                192, // Menu - '`' (backtick) button
+                8 // Reset - Backspace button
             );
 
             // Player 1 alternate mapping. This is cleared when the game sets any player keys explicitly
