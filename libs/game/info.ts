@@ -204,6 +204,19 @@ namespace info {
                 `;
     }
 
+    export function saveAllScores() {
+        const allScoresKey = "all-scores";
+        let allScores: number[];
+        if (players) {
+            allScores = players.filter(item => item.hasScore()).map(item => item.score());
+        }
+        else {
+            allScores = [];
+        }
+
+        settings.writeJSON(allScoresKey, allScores);
+    }
+
     export function saveHighScore() {
         if (players) {
             let hs = 0;
