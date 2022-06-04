@@ -857,6 +857,7 @@ class Sprite extends sprites.BaseSprite {
     //% this.shadow=variables_get
     //% this.defl=mySprite
     //% blockNamespace="scene" group="Locations" weight=90
+    //% help=scene/tilemap-location
     tilemapLocation(): tiles.Location {
         const scene = game.currentScene();
         if (!scene.tileMap) return undefined;
