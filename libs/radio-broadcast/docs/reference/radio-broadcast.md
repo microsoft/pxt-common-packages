@@ -11,11 +11,11 @@ radio.sendMessage(0)
 radio.onReceivedMessage(0, function() {})
 ```
 
-```package
-radio-broadcast
-```
-
 ## See Also
 
 [send message](/reference/radio/send-message),
 [send value](/reference/radio/on-received-message)
+
+```package
+radio-broadcast
+```
