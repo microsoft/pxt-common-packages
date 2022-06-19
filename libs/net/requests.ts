@@ -167,14 +167,12 @@ read only when requested
             port = parseInt(tmp[1])
         }
 
-        let ipaddr = net.instance().hostByName(host)
-
         let sock: Socket;
         if (proto == "https:") {
             // for SSL we need to know the host name
             sock = net.instance().createSocket(host, port, true)
         } else {
-            sock = net.instance().createSocket(ipaddr, port, false)
+            sock = net.instance().createSocket(host, port, false)
         }
         // our response
         let resp = new Response(sock)
@@ -266,7 +264,10 @@ read only when requested
      **/
     //% blockId=netgetstring block="get string $url"
     export function getString(url: string, options?: RequestOptions): string {
-        return get(url, options).text;
+        const res = get(url, options)
+        const rv = res.status_code == 200 ? res.text : undefined
+        res.close()
+        return rv
     }
 
     /** 
@@ -277,7 +278,10 @@ read only when requested
         options = options || {};
         options.headers = options.headers || {};
         options.headers["accept"] = options.headers["accept"] || "application/json";
-        return get(url, options).json;
+        const res = get(url, options);
+        const rv = res.status_code == 200 ? res.json : undefined;
+        res.close()
+        return rv
     }
 
     /** Send HTTP POST request */

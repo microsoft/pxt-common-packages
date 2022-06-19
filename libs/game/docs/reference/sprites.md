@@ -23,6 +23,8 @@ sprites.create(null).setKind(0)
 sprites.create(null).kind()
 sprites.create(null).setBounceOnWall(false)
 sprites.create(null).setStayInScreen(false)
+sprites.create(null).setScale(1, ScaleAnchor.Middle)
+sprites.create(null).changeScale(1, ScaleAnchor.Middle)
 ```
 
 ## Sprite effects
@@ -55,9 +57,11 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 ### Physics
 
 * [**vx - velocity x**](/reference/sprites/sprite/vx)
-* [**vy- velocity y**](/reference/sprites/sprite/vy)
+* [**vy - velocity y**](/reference/sprites/sprite/vy)
 * [**ax - acceleration x**](/reference/sprites/sprite/ax)
 * [**ay - acceleration y**](/reference/sprites/sprite/ay)
+* [**fx - friction x**](/reference/sprites/sprite/fx)
+* [**fy - friction y**](/reference/sprites/sprite/fy)
 
 ### Image and Attributes
 
@@ -65,6 +69,12 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 * [**width**](/reference/sprites/sprite/width)
 * [**height**](/reference/sprites/sprite/height)
 * [**lifespan**](/reference/sprites/sprite/lifespan)
+
+### Scaling
+
+* [**sx - scale x**](/reference/sprites/sprite/sx)
+* [**sy - scale y**](/reference/sprites/sprite/sy)
+* [**scale**](/reference/sprites/sprite/scale)
 
 ## See also
 
@@ -85,4 +95,6 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 [clear particles](/reference/sprites/sprite/clear-particles),
 [on created](/reference/sprites/on-created),
 [on destroyed](/reference/sprites/on-destroyed),
-[on overlap](/reference/sprites/on-overlap)
+[on overlap](/reference/sprites/on-overlap),
+[set scale](/reference/sprites/sprite/set-scale),
+[change scale](/reference/sprites/sprite/change-scale)

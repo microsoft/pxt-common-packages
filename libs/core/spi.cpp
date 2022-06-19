@@ -91,7 +91,7 @@ SPI_ createSlaveSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInO
 #ifdef CODAL_SPI_SLAVE_SUPPORTED
   auto dev = spis;
   if (!csPin)
-    target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+    soft_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
   while(dev) {
     if (dev->matchPins(mosiPin, misoPin, sckPin))
       return dev;
@@ -103,7 +103,7 @@ SPI_ createSlaveSPI(DigitalInOutPin mosiPin, DigitalInOutPin misoPin, DigitalInO
   spis = ser;
   return ser;
 #else
-  target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+  soft_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
   return NULL;
 #endif
 }
@@ -135,7 +135,7 @@ int write(SPI_ device, int value) {
 //% argsNullable
 void transfer(SPI_ device, Buffer command, Buffer response) {
     if (!device)
-        target_panic(PANIC_CAST_FROM_NULL);
+        soft_panic(PANIC_CAST_FROM_NULL);
     if (!command && !response)
         return;
     device->transfer(command, response);

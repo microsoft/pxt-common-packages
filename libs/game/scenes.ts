@@ -18,7 +18,7 @@ enum CameraProperty {
 }
 
 //% weight=88 color="#4b6584" icon="\uf1bb"
-//% groups='["Screen", "Effects", "Tiles", "Collisions", "Camera"]'
+//% groups='["Screen", "Camera", "Effects", "Tilemaps", "Tilemap Operations", "Locations"]'
 //% blockGap=8
 namespace scene {
     /**
@@ -116,7 +116,6 @@ namespace scene {
         if (!scene.tileMap)
             scene.tileMap = new tiles.TileMap();
         scene.tileMap.setData(map);
-        scene.tileMap.scale = map.scale;
     }
 
      /**
@@ -128,6 +127,7 @@ namespace scene {
     //% duration.shadow=timePicker duration.defl=500
     //% group="Camera"
     //% help=scene/camera-shake
+    //% weight=90
     export function cameraShake(amplitude: number = 4, duration: number = 500) {
         const scene = game.currentScene();
         scene.camera.shake(amplitude, duration);
@@ -140,6 +140,7 @@ namespace scene {
     //% blockId=camerafollow block="camera follow sprite %sprite=variables_get(mySprite)"
     //% group="Camera"
     //% help=scene/camera-follow-sprite
+    //% weight=100
     export function cameraFollowSprite(sprite: Sprite) {
         const scene = game.currentScene();
         scene.camera.sprite = sprite;
@@ -152,6 +153,7 @@ namespace scene {
     //% blockId=camerapos block="center camera at x %x y %y"
     //% group="Camera"
     //% help=scene/center-camera-at
+    //% weight=80
     export function centerCameraAt(x: number, y: number) {
         const scene = game.currentScene();
         scene.camera.sprite = undefined;
@@ -190,6 +192,7 @@ namespace scene {
     //% blockId=cameraproperty block="camera $property"
     //% group="Camera"
     //% help=scene/camera-property
+    //% weight=70
     export function cameraProperty(property: CameraProperty): number {
         const scene = game.currentScene();
         switch (property) {

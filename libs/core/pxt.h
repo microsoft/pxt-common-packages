@@ -18,6 +18,7 @@
 #include "Button.h"
 #include "CodalFiber.h"
 #include "MessageBus.h"
+#include "MultiButton.h"
 
 using namespace codal;
 
@@ -42,8 +43,6 @@ using namespace codal;
 #endif
 
 #define PXT_COMM_BASE 0x20002000 // 8k in
-#define PXT_CODAL 1
-
 
 namespace pxt {
 
@@ -71,6 +70,9 @@ void set_usb_strings(const char *uf2_info);
 extern void (*logJDFrame)(const uint8_t *data);
 extern void (*sendJDFrame)(const uint8_t *data);
 
+static inline void raiseEvent(int src, int val) {
+    Event(src, val);
+}
 
 } // namespace pxt
 

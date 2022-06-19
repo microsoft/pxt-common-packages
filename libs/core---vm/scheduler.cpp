@@ -18,14 +18,25 @@
 #endif
 #endif
 
+#define HANDLER_RUNNING 0x0001
+
 // should this be something like CXX11 or whatever?
 #define THROW throw()
 #define THREAD_DBG(...)
 
+static uint8_t in_xmalloc_panic;
+
 void *xmalloc(size_t sz) {
     auto r = malloc(sz);
-    if (r == NULL)
-        oops(50); // shouldn't happen
+    if (r == NULL) {
+        DMESG("failed to allocate %d bytes", sz);
+        if (in_xmalloc_panic) {
+            target_panic(PANIC_GC_OOM);
+        } else {
+            in_xmalloc_panic = 1;
+            soft_panic(PANIC_GC_OOM); // this can happen on esp32 etc; shouldn't on linux/ios etc
+        }
+    }
     return r;
 }
 
@@ -43,9 +54,13 @@ void operator delete[](void *p) THROW {
     xfree(p);
 }
 
+uint8_t *gcBase;
+
 namespace pxt {
 
+#ifndef PXT_ESP32
 static uint64_t startTime;
+#endif
 
 FiberContext *allFibers;
 FiberContext *currentFiber;
@@ -100,6 +115,7 @@ extern "C" void target_panic(int error_code) {
     panic_core(error_code);
 
 #if defined(PXT_ESP32)
+    // sleep_core_us(5 * 1000 * 1000);
     abort();
 #elif defined(PXT_VM)
     systemReset();
@@ -113,13 +129,21 @@ DLLEXPORT int pxt_get_panic_code() {
     return panicCode;
 }
 
+void ets_log_dmesg();
 void soft_panic(int errorCode) {
     if (errorCode >= 999)
         errorCode = 999;
     if (errorCode <= 0)
         errorCode = 1;
+    vm_stack_trace();
     panic_core(1000 + errorCode);
+#if defined(PXT_ESP32)
+    ets_log_dmesg();
+    sleep_core_us(4000000);
+    abort();
+#else
     systemReset();
+#endif
 }
 
 void sleep_core_us(uint64_t us) {
@@ -157,7 +181,8 @@ void sleep_us(uint64_t us) {
     }
 }
 
-uint64_t currTime() {
+#ifndef PXT_ESP32
+static uint64_t currTime() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return tv.tv_sec * 1000000LL + tv.tv_usec;
@@ -168,6 +193,7 @@ uint64_t current_time_us() {
         startTime = currTime();
     return currTime() - startTime;
 }
+#endif
 
 int current_time_ms() {
     return (int)(current_time_us() / 1000);
@@ -185,24 +211,50 @@ void disposeFiber(FiberContext *t) {
         }
     }
 
-    xfree(t->stackBase);
+    // DMESG("free: %p %p", t, t->stackCopy);
+
+    xfree(t->stackCopy);
     xfree(t);
+
+    if (currentFiber == t)
+        currentFiber = NULL;
 }
 
-FiberContext *setupThread(Action a, TValue arg = 0) {
-    // DMESG("setup thread: %p", a);
+#define INITIAL_STACK_COPY_SIZE 16
+
+FiberContext *setupThread(Action a, TValue arg = 0, HandlerBinding *hb = NULL) {
+#if 0
+    int numThreads = 0;
+    for (auto p = allFibers; p; p = p->next)
+        numThreads++;
+    DMESG("setup thread: %p #%d", a, numThreads);
+    //if (numThreads > 10)
+    //    abort();
+#endif
     auto t = (FiberContext *)xmalloc(sizeof(FiberContext));
     memset(t, 0, sizeof(*t));
-    t->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
-    t->stackLimit = t->stackBase + VM_MAX_FUNCTION_STACK + 5;
-    t->sp = t->stackBase + VM_STACK_SIZE;
-    *--t->sp = (TValue)0xf00df00df00df00d;
-    *--t->sp = 0;
-    *--t->sp = 0;
-    *--t->sp = 0;
-    *--t->sp = arg;
-    *--t->sp = 0;
-    *--t->sp = TAG_STACK_BOTTOM;
+    if (!vmImg->stackBase) {
+        vmImg->stackBase = (TValue *)xmalloc(VM_STACK_SIZE * sizeof(TValue));
+        vmImg->stackTop = vmImg->stackBase + VM_STACK_SIZE;
+        vmImg->stackLimit = vmImg->stackBase + VM_MAX_FUNCTION_STACK + 5;
+    }
+    t->stackCopy = (TValue *)xmalloc(sizeof(TValue) * INITIAL_STACK_COPY_SIZE);
+    t->stackCopySize = INITIAL_STACK_COPY_SIZE;
+    t->sp = vmImg->stackTop - 8;
+
+    // DMESG("thr: %p %p", t, t->stackCopy);
+
+    auto ptr = t->stackCopy;
+    *ptr++ = TAG_STACK_BOTTOM;
+    *ptr++ = 0;
+    *ptr++ = arg;
+    *ptr++ = 0;
+    *ptr++ = 0;
+    *ptr++ = 0;
+    *ptr++ = 0;
+    *ptr++ = (TValue)0xf00df00df00df00d;
+
+    t->handlerBinding = hb;
     auto ra = (RefAction *)a;
     // we only pass 1 argument, but can in fact handle up to 4
     if (ra->numArgs > 2)
@@ -242,16 +294,55 @@ void waitForEvent(int source, int value) {
     schedule();
 }
 
+FiberContext *suspendFiber() {
+    currentFiber->waitSource = PXT_WAIT_SOURCE_PROMISE;
+    schedule();
+    return currentFiber;
+}
+
+void resumeFiberWithFn(FiberContext *ctx, fiber_resume_t fn, void *arg) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->wakeFn = fn;
+    ctx->wakeFnArg = arg;
+}
+
+void resumeFiber(FiberContext *ctx, TValue v) {
+    if (ctx->waitSource != PXT_WAIT_SOURCE_PROMISE)
+        oops(52);
+    ctx->waitSource = 0;
+    ctx->r0 = v;
+}
+
+static void startHandler(HandlerBinding *hb, Event &e) {
+    if (!hb)
+        return;
+    lastEvent = e; // this is quite racy
+    if (hb->flags & HANDLER_RUNNING) {
+        auto tmp = mkEvent(e.source, e.value);
+        if (hb->pending == NULL) {
+            hb->pending = tmp;
+        } else {
+            int numev = 0;
+            auto p = hb->pending;
+            for (; p->next; p = p->next)
+                numev++;
+            if (numev >= 10) {
+                xfree(tmp);
+                return;
+            }
+            p->next = tmp;
+        }
+    } else {
+        hb->flags |= HANDLER_RUNNING;
+        setupThread(hb->action, fromInt(e.value), hb);
+    }
+}
+
 static void dispatchEvent(Event &e) {
-    lastEvent = e;
-
-    auto curr = findBinding(e.source, e.value);
-    if (curr)
-        setupThread(curr->action, fromInt(e.value));
-
-    curr = findBinding(e.source, DEVICE_EVT_ANY);
-    if (curr)
-        setupThread(curr->action, fromInt(e.value));
+    startHandler(findBinding(e.source, e.value), e);
+    startHandler(findBinding(e.source, DEVICE_EVT_ANY), e);
 }
 
 static void wakeFibers() {
@@ -285,6 +376,26 @@ static void wakeFibers() {
     }
 }
 
+static void saveStack() {
+    auto f = currentFiber;
+    if (!f)
+        return;
+    int sizeNeeded = vmImg->stackTop - f->sp;
+    // DMESG("save %d %p", sizeNeeded, f);
+    if (!f->stackCopy || sizeNeeded > f->stackCopySize) {
+        xfree(f->stackCopy);
+        f->stackCopySize = sizeNeeded + 10;
+        f->stackCopy = (TValue *)xmalloc(f->stackCopySize * sizeof(TValue));
+        // DMESG(" -> %p", f->stackCopy);
+    }
+    memcpy(f->stackCopy, f->sp, sizeNeeded * sizeof(TValue));
+}
+
+static void restoreStack() {
+    auto f = currentFiber;
+    memcpy(f->sp, f->stackCopy, (uint8_t *)vmImg->stackTop - (uint8_t *)f->sp);
+}
+
 static void mainRunLoop() {
     FiberContext *f = NULL;
     for (;;) {
@@ -305,9 +416,20 @@ static void mainRunLoop() {
             f = f->next;
         }
         if (f) {
-            currentFiber = f;
+            if (currentFiber != f) {
+                saveStack();
+                currentFiber = f;
+                restoreStack();
+            }
             f->pc = f->resumePC;
             f->resumePC = NULL;
+            if (f->wakeFn) {
+                auto fn = f->wakeFn;
+                f->wakeFn = NULL;
+                f->r0 = fn(f->wakeFnArg);
+                if (f->wakeTime || f->waitSource)
+                    continue; // we got suspended again
+            }
             exec_loop(f);
             if (panicCode)
                 return;
@@ -324,6 +446,17 @@ static void mainRunLoop() {
                     if (*f->sp != TAG_STACK_BOTTOM)
                         target_panic(PANIC_INVALID_IMAGE);
                 } else {
+                    auto hb = f->handlerBinding;
+                    if (hb) {
+                        auto pev = hb->pending;
+                        if (pev) {
+                            hb->pending = pev->next;
+                            setupThread(hb->action, fromInt(pev->value), hb);
+                            xfree(pev);
+                        } else {
+                            f->handlerBinding->flags &= ~HANDLER_RUNNING;
+                        }
+                    }
                     disposeFiber(f);
                 }
             }
@@ -389,30 +522,20 @@ void initRuntime() {
     systemReset();
 }
 
-#ifdef PXT64
-#define GC_BASE 0x2000000000
-#define GC_PAGE_SIZE (64 * 1024)
-#else
-#define GC_BASE 0x20000000
-#define GC_PAGE_SIZE 4096
-#endif
-
-uint8_t *gcBase;
-
 void *gcAllocBlock(size_t sz) {
 #ifdef PXT_ESP32
     void *r = xmalloc(sz);
 #else
     static uint8_t *currPtr = (uint8_t *)GC_BASE;
     sz = (sz + GC_PAGE_SIZE - 1) & ~(GC_PAGE_SIZE - 1);
-#if defined(PXT64)
+#if defined(PXT64) || defined(__MINGW32__)
     if (!gcBase) {
         gcBase = (uint8_t *)xmalloc(1 << PXT_VM_HEAP_ALLOC_BITS);
         currPtr = gcBase;
     }
     void *r = currPtr;
-    if ((uint8_t *)currPtr - gcBase > 1024 * 1024 - sz)
-        target_panic(20);
+    if ((uint8_t *)currPtr - gcBase > (1 << PXT_VM_HEAP_ALLOC_BITS) - (int)sz)
+        soft_panic(20);
 #else
     void *r = mmap(currPtr, sz, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
     if (r == MAP_FAILED) {
@@ -433,14 +556,20 @@ void *gcAllocBlock(size_t sz) {
 void gcProcessStacks(int flags) {
     int cnt = 0;
     for (auto f = allFibers; f; f = f->next) {
-        auto end = f->stackBase + VM_STACK_SIZE - 1;
-        auto ptr = f->sp;
+        TValue *end, *ptr;
+        if (f == currentFiber) {
+            end = vmImg->stackTop;
+            ptr = f->sp;
+        } else {
+            end = f->stackCopy + (vmImg->stackTop - f->sp);
+            ptr = f->stackCopy;
+        }
         gcProcess((TValue)f->currAction);
         gcProcess((TValue)f->r0);
         if (flags & 2)
             DMESG("RS%d:%p/%d", cnt++, ptr, end - ptr);
         // VLOG("mark: %p - %p", ptr, end);
-        while (ptr <= end) {
+        while (ptr < end) {
             gcProcess(*ptr++);
         }
     }

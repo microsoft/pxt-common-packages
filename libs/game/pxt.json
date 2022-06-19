@@ -9,8 +9,11 @@
         "controller.ts",
         "controllerbutton.ts",
         "hitbox.ts",
+        "renderText.ts",
+        "spritesay.ts",
         "sprites.ts",
         "sprite.ts",
+        "extendableSprite.ts",
         "sprite.d.ts",
         "spritemap.ts",
         "spriteevents.ts",
@@ -46,7 +49,11 @@
         "effects.ts",
         "texteffects.ts",
         "assetTemplates.ts",
-        "animation.ts"
+        "animation.ts",
+        "multiplayer.cpp",
+        "multiplayer.ts",
+        "keymap.cpp",
+        "keymap.ts"
     ],
     "public": true,
     "dependencies": {

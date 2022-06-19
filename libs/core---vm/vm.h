@@ -28,7 +28,8 @@
 #define VM_STACK_SIZE 1000
 
 #define VM_ENCODE_PC(pc) ((TValue)(((pc) << 9) | 2))
-#define VM_DECODE_PC(pc) (((uintptr_t)pc) >> 9)
+#define VM_DECODE_PC(pc) (((uintptr_t)(pc)) >> 9)
+#define VM_IS_ENCODED_PC(v) ((((uintptr_t)(v)) & ((1 << 9) - 1)) == 2)
 #define TAG_STACK_BOTTOM VM_ENCODE_PC(1)
 
 #define PXTEXT extern
@@ -89,6 +90,8 @@ const char *vm_patch_image(VMPatchState *state, uint8_t *data, uint32_t len);
 
 STATIC_ASSERT(sizeof(VMImageSection) == 8);
 
+#define PXT_WAIT_SOURCE_PROMISE 0x1fff0
+
 struct OpcodeDesc {
     const char *name;
     OpFun fn;
@@ -134,6 +137,13 @@ struct VMImage {
     const OpcodeDesc **opcodeDescs;
     RefAction *entryPoint;
 
+    // every fiber's sp starts at stackTop and goes towards stackBase
+    // stackTop > stackBase
+    // stackLimit is close to stackBase
+    TValue *stackBase;
+    TValue *stackTop;
+    TValue *stackLimit;
+
     uint32_t numSections;
     uint32_t numNumberLiterals;
     uint32_t numConfigDataEntries;
@@ -146,13 +156,7 @@ struct VMImage {
     int execLock;
 };
 
-// not doing this, likely
-struct StackFrame {
-    StackFrame *caller;
-    uint32_t *retPC;
-    TValue *stackBase;
-    uint32_t *fnbase;
-};
+typedef TValue (*fiber_resume_t)(void *);
 
 struct FiberContext {
     FiberContext *next;
@@ -170,8 +174,8 @@ struct FiberContext {
     TValue thrownValue;
     jmp_buf loopjmp;
 
-    TValue *stackBase;
-    TValue *stackLimit;
+    TValue *stackCopy;
+    int stackCopySize;
 
     // wait_for_event
     int waitSource;
@@ -179,12 +183,23 @@ struct FiberContext {
 
     // for sleep
     uint64_t wakeTime;
+
+    fiber_resume_t wakeFn;
+    void *wakeFnArg;
+    HandlerBinding *handlerBinding;
 };
 
 #define PXT_EXN_CTX() currentFiber
 
 void restoreVMExceptionState(TryFrame *tf, FiberContext *ctx);
 #define pxt_restore_exception_state restoreVMExceptionState
+
+FiberContext *suspendFiber(); // returns currentFiber
+// this can be called from a different thread; fn(arg) will be called from user code thread
+// just before the VM resumes execution; the result value will be stored in ctx->r0
+void resumeFiberWithFn(FiberContext *ctx, fiber_resume_t fn, void *arg);
+// a simpler version
+void resumeFiber(FiberContext *ctx, TValue v);
 
 extern VMImage *vmImg;
 extern FiberContext *currentFiber;

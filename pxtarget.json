@@ -52,6 +52,7 @@
         "libs/palette",
         "libs/radio",
         "libs/radio-broadcast",
-        "libs/matrix-keypad"
+        "libs/matrix-keypad",
+        "libs/sprite-scaling"
     ]
 }

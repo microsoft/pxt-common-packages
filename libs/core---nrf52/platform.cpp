@@ -62,7 +62,7 @@ LowLevelTimer *allocateTimer() {
         return new NRFLowLevelTimer(dev, timers[idx].irqn);
     }
 
-    target_panic(PANIC_OUT_OF_TIMERS);
+    soft_panic(PANIC_OUT_OF_TIMERS);
     return NULL;
 }
 

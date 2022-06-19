@@ -99,7 +99,7 @@ LowLevelTimer *allocateTimer() {
         return new STMLowLevelTimer(dev, timers[idx].irqn);
     }
 
-    target_panic(PANIC_OUT_OF_TIMERS);
+    soft_panic(PANIC_OUT_OF_TIMERS);
     return NULL;
 }
 
@@ -148,7 +148,7 @@ extern "C" void apply_clock_init(RCC_OscInitTypeDef *oscInit, RCC_ClkInitTypeDef
         oscInit->PLL.PLLQ = 7;
         flashLatency = FLASH_LATENCY_2;
     } else {
-        target_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
+        soft_panic(PANIC_CODAL_HARDWARE_CONFIGURATION_ERROR);
     }
 
     DMESG("CPU clock: %dMHz -> %dMHz", mhz,

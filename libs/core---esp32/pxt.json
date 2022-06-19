@@ -3,15 +3,26 @@
     "files": [
         "README.md",
         "Makefile",
+        "certs.mk",
         "dal.d.ts",
         "scheduler.cpp",
         "config.cpp",
         "target.cpp",
+        "dmesg.cpp",
+        "dmesg.h",
+        "usb.cpp",
         "pxt.h",
         "platform.h",
         "platform.cpp",
         "pxtcore.h",
+        "uf2hid.h",
         "pins.h",
+        "pins.cpp",
+        "pintarget.cpp",
+        "pintarget.h",
+        "pinsDigital.cpp",
+        "pins.ts",
+        "pinscompat.ts",
         "control.cpp",
         "shims.d.ts",
         "enums.d.ts",
@@ -24,9 +35,19 @@
         "vm.h",
         "verify.cpp",
         "vmload.cpp",
+        "worker.cpp",
+        "crypto.cpp",
+        "crypto.ts",
         "pxtparts.json",
         "CMakeLists.txt",
         "sdkconfig.defaults"
     ],
+    "dalDTS": {
+        "includeDirs": [
+            "main"
+        ],
+        "excludePrefix": [
+        ]
+    },
     "additionalFilePath": "../core---vm"
 }

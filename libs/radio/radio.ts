@@ -14,7 +14,7 @@ enum RadioPacketProperty {
 /**
  * Communicate data using radio packets
  */
-//% color=#E3008C weight=96 icon="\uf012"
+//% color=#E3008C weight=96 icon="\uf012" groups='["Group", "Broadcast", "Send", "Receive"]'
 namespace radio {
 
     // keep in sync with CODAL
@@ -95,6 +95,8 @@ namespace radio {
     //% help=radio/on-received-number
     //% blockId=radio_on_number_drag block="on radio received" blockGap=16
     //% useLoc="radio.onDataPacketReceived" draggableParameters=reporter
+    //% group="Receive"
+    //% weight=20
     export function onReceivedNumber(cb: (receivedNumber: number) => void) {
         init();
         onReceivedNumberHandler = cb;
@@ -106,6 +108,8 @@ namespace radio {
     //% help=radio/on-received-value
     //% blockId=radio_on_value_drag block="on radio received" blockGap=16
     //% useLoc="radio.onDataPacketReceived" draggableParameters=reporter
+    //% group="Receive"
+    //% weight=19
     export function onReceivedValue(cb: (name: string, value: number) => void) {
         init();
         onReceivedValueHandler = cb;
@@ -117,6 +121,8 @@ namespace radio {
     //% help=radio/on-received-string
     //% blockId=radio_on_string_drag block="on radio received" blockGap=16
     //% useLoc="radio.onDataPacketReceived" draggableParameters=reporter
+    //% group="Receive"
+    //% weight=18
     export function onReceivedString(cb: (receivedString: string) => void) {
         init();
         onReceivedStringHandler = cb;
@@ -138,8 +144,10 @@ namespace radio {
      * @param type the type of property to retrieve from the last packet
      */
     //% help=radio/received-packet
-    //% weight=11 blockGap=8
+    //% blockGap=8
     //% blockId=radio_received_packet block="received packet %type=radio_packet_property" blockGap=16
+    //% group="Receive"
+    //% weight=16
     export function receivedPacket(type: number) {
         if (lastPacket) {
             switch (type) {
@@ -272,6 +280,7 @@ namespace radio {
     //% help=radio/send-number
     //% weight=60
     //% blockId=radio_datagram_send block="radio send number %value" blockGap=8
+    //% group="Send"
     export function sendNumber(value: number) {
         let packet: RadioPacket;
 
@@ -296,6 +305,7 @@ namespace radio {
     //% help=radio/send-value
     //% weight=59
     //% blockId=radio_datagram_send_value block="radio send|value %name|= %value" blockGap=8
+    //% group="Send"
     export function sendValue(name: string, value: number) {
         let packet: RadioPacket;
 
@@ -319,6 +329,7 @@ namespace radio {
     //% weight=58
     //% blockId=radio_datagram_send_string block="radio send string %msg"
     //% msg.shadowOptions.toString=true
+    //% group="Send"
     export function sendString(value: string) {
         const packet = RadioPacket.mkPacket(PACKET_TYPE_STRING);
         packet.stringPayload = value;
