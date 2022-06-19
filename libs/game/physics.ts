@@ -607,7 +607,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
                 tileOverlapHandlers
-                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(currentTileMap.getTileImage(tile)))
+                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(currentTileMap.getTileImage(tile.tileSet)))
                     .forEach(h => h.handler(sprite, tile));
             }
         }
