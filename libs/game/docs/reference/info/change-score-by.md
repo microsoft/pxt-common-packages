@@ -45,4 +45,5 @@ if (info.player2.life() > 8) {
 ## See also #seealso
 
 [set score](/reference/info/set-score),
-[score](/reference/info/score)
+[score](/reference/info/score),
+[on score](/reference/info/on-score)
