@@ -90,7 +90,7 @@ namespace pxsim {
                 80, // P - Screenshot
                 82, // R - Gif
                 192, // Menu - '`' (backtick) button
-                50 // Reset - Backspace button
+                8 // Reset - Backspace button
             );
 
             // Player 1 alternate mapping. This is cleared when the game sets any player keys explicitly
