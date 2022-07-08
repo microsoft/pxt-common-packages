@@ -54,7 +54,7 @@ int writeBuffer(Buffer buf, int dstOffset, Buffer src, int srcOffset = 0, int le
     if (srcOffset < 0 || dstOffset < 0 || dstOffset > buf->length)
         return -1;
 
-    length = pxt::min(src->length - srcOffset, buf->length - dstOffset);
+    length = min(src->length - srcOffset, buf->length - dstOffset);
 
     if (length < 0)
         return -1;
@@ -103,7 +103,7 @@ void fill(Buffer buf, int value, int offset = 0, int length = -1) {
         return; // DEVICE_INVALID_PARAMETER;
     if (length < 0)
         length = buf->length;
-    length = pxt::min(length, buf->length - offset);
+    length = min(length, buf->length - offset);
     memset(buf->data + offset, value, length);
 }
 
@@ -112,10 +112,10 @@ void fill(Buffer buf, int value, int offset = 0, int length = -1) {
  */
 //%
 Buffer slice(Buffer buf, int offset = 0, int length = -1) {
-    offset = pxt::min((int)buf->length, offset);
+    offset = min((int)buf->length, offset);
     if (length < 0)
         length = buf->length;
-    length = pxt::min(length, buf->length - offset);
+    length = min(length, buf->length - offset);
     return mkBuffer(buf->data + offset, length);
 }
 
