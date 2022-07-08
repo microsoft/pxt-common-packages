@@ -65,7 +65,7 @@ logs = sprites.create(img`
 logs.startEffect(effects.fire)
 ```
 
-### Immediately clear particles
+### Immediately clear all particles
 
 The clear particles block gets rid of the sources, but if you want to immediately get rid of all particles on the screen you need to also call `particles.clearAll()`, which is currently only available in text coding.
 
