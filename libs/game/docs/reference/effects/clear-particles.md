@@ -65,6 +65,43 @@ logs = sprites.create(img`
 logs.startEffect(effects.fire)
 ```
 
+### Immediately clear particles
+
+The clear particles block gets rid of the sources, but if you want to immediately get rid of all particles on the screen you need to also call `particles.clearAll()`, which is currently only available in text coding.
+
+```typescript
+let logs: Sprite = null
+controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
+    effects.clearParticles(logs)
+    logs.startEffect(effects.blizzard, 750)
+    logs.startEffect(effects.bubbles, 2000)
+})
+
+controller.B.onEvent(ControllerButtonEvent.Pressed, function () {
+    effects.clearParticles(logs)
+    particles.clearAll()
+})
+logs = sprites.create(img`
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . e . . .
+    . . e e . . . . . . . e e . . .
+    . . . e e e . . . e e d e . . .
+    . . . e d e e e . e d e e . . .
+    . . . e e d d e e d d e . . . .
+    . . . . . e e d d e e . . . . .
+    . . . e e d e e d d e . . . . .
+    . . e e d d e e e d d e e . . .
+    . . e d d e e . e e e d e e . .
+    . . e e e . . . . . e e e . . .
+    . . . . . . . . . . . . . . . .
+`, 0)
+logs.startEffect(effects.fire)
+```
+
 ## See also #seealso
 
 [start effect](/reference/sprites/sprite/start-effect)
