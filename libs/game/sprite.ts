@@ -337,7 +337,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     calcDimensionalHash() {
-        return Fx.mul(Fx.mul(this._width, this._height), Fx8(this._image.revision()));
+        return this._image.revision() + Fx.toIntShifted(this._width, 8) + Fx.toIntShifted(this._height, 16);
     }
 
     resetHitbox() {

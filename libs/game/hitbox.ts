@@ -1,6 +1,6 @@
 namespace game {
     export class Hitbox {
-        hash: Fx8;
+        hash: number;
         parent: Sprite;
         ox: Fx8;
         oy: Fx8;
@@ -46,7 +46,20 @@ namespace game {
             return (x >= this.left) && (x <= this.right) && (y >= this.top) && (y <= this.bottom);
         }
 
+        updateIfInvalid() {
+            if (!this.isValid()) {
+                const newHB = calculateHitBox(this.parent)
+                this.hash = newHB.hash;
+                this.ox = newHB.ox;
+                this.oy = newHB.oy;
+                this.width = newHB.width;
+                this.height = newHB.height;
+            }
+        }
+
         overlapsWith(other: Hitbox): boolean {
+            this.updateIfInvalid();
+            other.updateIfInvalid();
             if (this.contains(other.left, other.top)) return true;
             if (this.contains(other.left, other.bottom)) return true;
             if (this.contains(other.right, other.top)) return true;
