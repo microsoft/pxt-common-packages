@@ -346,11 +346,11 @@ class Sprite extends sprites.BaseSprite {
     }
 
     setHitbox() {
-        if (!this._hitbox) {
+        if (this._hitbox) {
+            this._hitbox.updateIfInvalid();
+        } else {
             this._hitbox = game.calculateHitBox(this);
-            return;
         }
-        this._hitbox.updateIfInvalid();
     }
 
     isStatic() {
