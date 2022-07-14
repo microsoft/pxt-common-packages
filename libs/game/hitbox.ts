@@ -74,7 +74,6 @@ namespace game {
 
             // If it's just a small change to the hitbox on one axis,
             // don't change the dimensions to avoid random clipping
-            // this._hitbox = newHitBox;
             if (xDiff > Fx.twoFx8) {
                 this.ox = nMinX;
                 this.width = newHitBox.width;
