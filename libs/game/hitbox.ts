@@ -47,14 +47,43 @@ namespace game {
         }
 
         updateIfInvalid() {
-            if (!this.isValid()) {
-                const newHB = calculateHitBox(this.parent)
-                this.hash = newHB.hash;
-                this.ox = newHB.ox;
-                this.oy = newHB.oy;
-                this.width = newHB.width;
-                this.height = newHB.height;
+            if (this.isValid())
+                return;
+
+            const newHitBox = game.calculateHitBox(this.parent);
+
+            const oMinX = this.ox;
+            const oMinY = this.oy;
+            const oMaxX = Fx.add(oMinX, this.width);
+            const oMaxY = Fx.add(oMinY, this.height);
+
+            const nMinX = newHitBox.ox;
+            const nMinY = newHitBox.oy;
+            const nMaxX = Fx.add(nMinX, newHitBox.width);
+            const nMaxY = Fx.add(nMinY, newHitBox.height);
+
+            // total diff in x / y corners between the two hitboxes
+            const xDiff = Fx.add(
+                Fx.abs(Fx.sub(oMinX, nMinX)),
+                Fx.abs(Fx.sub(oMaxX, nMaxX))
+            );
+            const yDiff = Fx.add(
+                Fx.abs(Fx.sub(oMinY, nMinY)),
+                Fx.abs(Fx.sub(oMaxY, nMaxY))
+            );
+
+            // If it's just a small change to the hitbox on one axis,
+            // don't change the dimensions to avoid random clipping
+            // this._hitbox = newHitBox;
+            if (xDiff > Fx.twoFx8) {
+                this.ox = oMinX;
+                this.width = Fx.sub(oMaxX, oMinX);
             }
+            if (yDiff > Fx.twoFx8) {
+                this.oy = oMinY;
+                this.height = Fx.sub(oMaxY, oMinY);
+            }
+            this.hash = newHitBox.hash;
         }
 
         overlapsWith(other: Hitbox): boolean {
