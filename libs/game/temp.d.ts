@@ -36,4 +36,10 @@ declare namespace Math {
     function sign(x: number): number;
 }
 
+declare interface Image {
+    revision(): number;
+    isStatic(): boolean;
+    equals(img: Image): boolean;
+}
+
 declare const img: any;
