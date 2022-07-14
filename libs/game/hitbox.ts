@@ -76,12 +76,12 @@ namespace game {
             // don't change the dimensions to avoid random clipping
             // this._hitbox = newHitBox;
             if (xDiff > Fx.twoFx8) {
-                this.ox = oMinX;
-                this.width = Fx.sub(oMaxX, oMinX);
+                this.ox = nMinX;
+                this.width = newHitBox.width;
             }
             if (yDiff > Fx.twoFx8) {
-                this.oy = oMinY;
-                this.height = Fx.sub(oMaxY, oMinY);
+                this.oy = nMinY;
+                this.height = newHitBox.height;
             }
             this.hash = newHitBox.hash;
         }
