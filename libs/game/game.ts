@@ -191,6 +191,9 @@ namespace game {
                 effect = win ? winEffect : loseEffect;
             }
 
+            // Save all scores as relevant to the game.
+            info.saveAllScores();
+
             // collect the scores before poping the scenes
             const scoreInfo = info.player1.getState();
             const highScore = info.highScore();

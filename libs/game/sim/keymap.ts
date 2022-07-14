@@ -67,9 +67,9 @@ namespace pxsim {
             this.setPlayerKeys(
                 1, // Player 1
                 87, // W - Up
-                83, // D - Down
+                83, // S - Down
                 65, // A - Left
-                83, // S - Right
+                68, // D - Right
                 32, // Space - A
                 13 // Enter - B
             );
@@ -79,7 +79,7 @@ namespace pxsim {
                 73, // I - Up
                 75, // K - Down
                 74, // J - Left
-                75, // K - Right
+                76, // L - Right
                 85, // U - A
                 79 // O - B
             );
@@ -89,8 +89,8 @@ namespace pxsim {
             this.setSystemKeys(
                 80, // P - Screenshot
                 82, // R - Gif
-                0, // Menu - not mapped
-                0 // Reset - not mapped
+                192, // Menu - '`' (backtick) button
+                8 // Reset - Backspace button
             );
 
             // Player 1 alternate mapping. This is cleared when the game sets any player keys explicitly
