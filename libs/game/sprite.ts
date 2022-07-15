@@ -337,7 +337,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     calcDimensionalHash() {
-        return Fx.mul(Fx.mul(this._width, this._height), Fx8(this._image.revision()));
+        return this._image.revision() + Fx.toIntShifted(this._width, 8) + Fx.toIntShifted(this._height, 16);
     }
 
     resetHitbox() {
@@ -346,43 +346,10 @@ class Sprite extends sprites.BaseSprite {
     }
 
     setHitbox() {
-        const newHitBox = game.calculateHitBox(this);
-
-        if (!this._hitbox || this._hitbox.isValid()) {
-            this._hitbox = newHitBox;
-            return;
-        }
-
-        const oMinX = this._hitbox.ox;
-        const oMinY = this._hitbox.oy;
-        const oMaxX = Fx.add(oMinX, this._hitbox.width);
-        const oMaxY = Fx.add(oMinY, this._hitbox.height);
-
-        const nMinX = newHitBox.ox;
-        const nMinY = newHitBox.oy;
-        const nMaxX = Fx.add(nMinX, newHitBox.width);
-        const nMaxY = Fx.add(nMinY, newHitBox.height);
-
-        // total diff in x / y corners between the two hitboxes
-        const xDiff = Fx.add(
-            Fx.abs(Fx.sub(oMinX, nMinX)),
-            Fx.abs(Fx.sub(oMaxX, nMaxX))
-        );
-        const yDiff = Fx.add(
-            Fx.abs(Fx.sub(oMinY, nMinY)),
-            Fx.abs(Fx.sub(oMaxY, nMaxY))
-        );
-
-        // If it's just a small change to the hitbox on one axis,
-        // don't change the dimensions to avoid random clipping
-        this._hitbox = newHitBox;
-        if (xDiff <= Fx.twoFx8) {
-            this._hitbox.ox = oMinX;
-            this._hitbox.width = Fx.sub(oMaxX, oMinX);
-        }
-        if (yDiff <= Fx.twoFx8) {
-            this._hitbox.oy = oMinY;
-            this._hitbox.height = Fx.sub(oMaxY, oMinY);
+        if (this._hitbox) {
+            this._hitbox.updateIfInvalid();
+        } else {
+            this._hitbox = game.calculateHitBox(this);
         }
     }
 
