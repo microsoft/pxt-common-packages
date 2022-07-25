@@ -4,6 +4,7 @@
 
 #include "hardware/pll.h"
 #include "hardware/clocks.h"
+#include "hardware/structs/rosc.h"
 
 namespace pxt {
 
@@ -12,9 +13,21 @@ LowLevelTimer *allocateTimer() {
   return new RP2040LowLevelTimer();
 }
 
+static uint32_t hw_random(void) {
+    uint8_t buf[16];
+    for (unsigned i = 0; i < sizeof(buf); ++i) {
+        buf[i] = 0;
+        for (int j = 0; j < 8; ++j) {
+            buf[i] <<= 1;
+            if (rosc_hw->randombit)
+                buf[i] |= 1;
+        }
+    }
+    return hash_fnv1(buf, sizeof(buf));
+}
+
 static void initRandomSeed() {
-  uint32_t f_rosc = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_ROSC_CLKSRC);
-  seedRandom(f_rosc);
+  seedRandom(hw_random());
 }
 
 void deepSleep() {
