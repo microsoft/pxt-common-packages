@@ -20,12 +20,20 @@ namespace info {
         _ExplicitlySetLife = 1 << 7,
     }
 
+    class ScoreReachedHandler {
+        public isTriggered: boolean;
+        constructor(public score: number, public handler: () => void) {
+            this.isTriggered = false;
+        }
+    }
+
     export class PlayerState {
         public score: number;
         // undefined: not used
         // null: reached 0 and callback was invoked
         public life: number;
         public lifeZeroHandler: () => void;
+        public scoreReachedHandler: ScoreReachedHandler
 
         constructor() { }
     }
@@ -320,6 +328,24 @@ namespace info {
     }
 
     /**
+     * Runs code once each time the score reaches a given value. This will also
+     * run if the score "passes" the given value in either direction without ever
+     * having the exact value (e.g. if score is changed by more than 1)
+     *
+     * @param score the score to fire the event on
+     * @param handler code to run when the score reaches the given value
+     */
+    //% weight=10
+    //% blockId=gameonscore
+    //% block="on score $score"
+    //% score.defl=100
+    //% help=info/on-score
+    //% group="Score"
+    export function onScore(score: number, handler: () => void) {
+        player1.onScore(score, handler);
+    }
+
+    /**
      * Start a countdown of the given duration in seconds
      * @param duration the duration of the countdown, eg: 10
      */
@@ -605,7 +631,16 @@ namespace info {
             }
 
             this.score(); // invoked for side effects
+
+            const oldScore = state.score || 0;
             state.score = (value | 0);
+
+            if (state.scoreReachedHandler && (
+                (oldScore < state.scoreReachedHandler.score && state.score >= state.scoreReachedHandler.score) ||
+                (oldScore > state.scoreReachedHandler.score && state.score <= state.scoreReachedHandler.score)
+            )) {
+                state.scoreReachedHandler.handler();
+            }
         }
 
         /**
@@ -694,6 +729,24 @@ namespace info {
         onLifeZero(handler: () => void) {
             const state = this.getState();
             state.lifeZeroHandler = handler;
+        }
+
+        /**
+         * Runs code once each time the score reaches a given value. This will also
+         * run if the score "passes" the given value in either direction without ever
+         * having the exact value (e.g. if score is changed by more than 1)
+         *
+         * @param score the score to fire the event on
+         * @param handler code to run when the score reaches the given value
+         */
+        //% blockId=playerinfoonscore
+        //% block="on $this score $score"
+        //% score.defl=100
+        //% help=info/on-score
+        //% group="Multiplayer"
+        onScore(score: number, handler: () => void) {
+            const state = this.getState();
+            state.scoreReachedHandler = new ScoreReachedHandler(score, handler);
         }
 
         raiseLifeZero(gameOver: boolean) {
