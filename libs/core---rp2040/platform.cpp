@@ -9,8 +9,8 @@
 namespace pxt {
 
 LowLevelTimer *allocateTimer() {
-  // TODO: add config to low level timer
-  return new RP2040LowLevelTimer();
+    // TODO: add config to low level timer
+    return new RP2040LowLevelTimer();
 }
 
 static uint32_t hw_random(void) {
@@ -27,16 +27,31 @@ static uint32_t hw_random(void) {
 }
 
 static void initRandomSeed() {
-  seedRandom(hw_random());
+    seedRandom(hw_random());
 }
 
-void deepSleep() {
-
-}
+void deepSleep() {}
 
 void platform_init() {
-  initRandomSeed();
+    initRandomSeed();
+}
 
+int *getBootloaderConfigData() {
+    static bool inited;
+    static int *cached;
+
+    if (!inited) {
+        inited = 1;
+        for (int i = 1; i <= 64; i *= 2) {
+            uint32_t *p = (uint32_t *)(XIP_BASE + i * 1024 * 1024 - 4096);
+            if (p[0] == CFG_MAGIC0 && p[1] == CFG_MAGIC1) {
+                cached = (int *)p;
+                break;
+            }
+        }
+    }
+
+    return cached;
 }
 
 } // namespace pxt
