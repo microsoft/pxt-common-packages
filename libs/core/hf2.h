@@ -21,10 +21,24 @@ typedef struct {
     };
 } HF2_Buffer;
 
+struct HF2_PendingWrite {
+    HF2_PendingWrite *next;
+    uint16_t size;
+    uint8_t flag;
+    uint8_t _reserved;
+    uint8_t data[0];
+};
+
 class HF2 : public CodalUSBInterface {
     bool gotSomePacket;
     bool ctrlWaiting;
     uint32_t lastExchange;
+
+#ifdef USB_EP_FLAG_ASYNC
+    HF2_PendingWrite *pendingWrite;
+    int pendingWriteSize;
+    int pendingWritePtr;
+#endif
 
   public:
     HF2_Buffer &pkt;
@@ -36,6 +50,7 @@ class HF2 : public CodalUSBInterface {
     int sendResponseWithData(const void *data, int size);
     int sendEvent(uint32_t evId, const void *data, int size);
     void sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t prepend = -1);
+    void pokeSend();
 
     HF2(HF2_Buffer &pkt);
     virtual int endpointRequest();
