@@ -267,8 +267,10 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #if defined(NRF52840) || defined(NRF52833)
 #define DBL_TAP_PTR ((volatile uint32_t *)0x20007F7C)
 #endif
+#ifdef DBL_TAP_PTR
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 #define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
+#endif
 #endif
 
 static HF2 *jdLogger;
@@ -279,7 +281,7 @@ static void jdLog(const uint8_t *frame) {
 void HF2::pokeSend() {
 #ifdef USB_EP_FLAG_ASYNC
     target_disable_irq();
-    if (pendingWrite && in->canWrite()) {
+    while (pendingWrite && in->canWrite()) {
         in->flags |= USB_EP_FLAG_ASYNC;
 
         int size = pendingWrite->size - pendingWritePtr;
@@ -291,7 +293,8 @@ void HF2::pokeSend() {
             s = size;
             buf[0] = pendingWrite->flag;
         } else {
-            buf[0] = pendingWrite->flag == HF2_FLAG_CMDPKT_LAST ? HF2_FLAG_CMDPKT_BODY : pendingWrite->flag;
+            buf[0] = pendingWrite->flag == HF2_FLAG_CMDPKT_LAST ? HF2_FLAG_CMDPKT_BODY
+                                                                : pendingWrite->flag;
         }
         buf[0] |= s;
         uint8_t *dst = (uint8_t *)buf;
@@ -364,6 +367,7 @@ int HF2::endpointRequest() {
         target_reset();
         break;
 
+#ifdef QUICK_BOOT
     case HF2_CMD_RESET_INTO_APP:
         QUICK_BOOT(1);
         NVIC_SystemReset();
@@ -372,6 +376,12 @@ int HF2::endpointRequest() {
         QUICK_BOOT(0);
         NVIC_SystemReset();
         break;
+#else
+    case HF2_CMD_RESET_INTO_APP:
+        NVIC_SystemReset();
+        break;
+    // reset into bootloader not supported
+#endif
 
 #if USB_HANDOVER
     case HF2_CMD_START_FLASH:
