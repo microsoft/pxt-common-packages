@@ -101,20 +101,53 @@ int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
     return DEVICE_NOT_SUPPORTED;
 }
 
-// same as in microbit
-#define CTRL_GET_REPORT 0x01
-#define CTRL_SET_REPORT 0x09
-#define CTRL_OUT_REPORT_H 0x2
-#define CTRL_IN_REPORT_H 0x1
+#define HF2_FLAG_EVENT 0x01
 
+REAL_TIME_FUNC
 void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t prepend) {
     if (!CodalUSB::usbInstance->isInitialised())
         return;
 
-    uint32_t buf[64 / 4]; // aligned
+#ifdef USB_EP_FLAG_ASYNC
+    // drop non-responses if too much stuff queued up
+    if (flag != HF2_FLAG_CMDPKT_LAST && pendingWriteSize > 1000)
+        return;
+#endif
+
+    if (flag == HF2_FLAG_EVENT)
+        flag = HF2_FLAG_CMDPKT_LAST;
 
     if (prepend + 1)
         size += 4;
+
+#ifdef USB_EP_FLAG_ASYNC
+    HF2_PendingWrite *e = (HF2_PendingWrite *)malloc(sizeof(HF2_PendingWrite) + size);
+    e->size = size;
+    e->flag = flag;
+    e->next = NULL;
+    uint8_t *dst = e->data;
+    if (prepend + 1) {
+        memcpy(dst, &prepend, 4);
+        dst += 4;
+        size -= 4;
+    }
+    memcpy(dst, data, size);
+
+    target_disable_irq();
+    auto p = this->pendingWrite;
+    if (!p)
+        this->pendingWrite = e;
+    else {
+        while (p->next)
+            p = p->next;
+        p->next = e;
+    }
+    this->pendingWriteSize += 16 + e->size;
+    target_enable_irq();
+
+    pokeSend();
+#else
+    uint32_t buf[64 / 4]; // aligned
 
     target_disable_irq();
     while (size > 0) {
@@ -143,6 +176,7 @@ void HF2::sendBuffer(uint8_t flag, const void *data, unsigned size, uint32_t pre
         in->write(buf, sizeof(buf));
     }
     target_enable_irq();
+#endif
 }
 
 const InterfaceInfo *HF2::getInterfaceInfo() {
@@ -154,7 +188,7 @@ const InterfaceInfo *HF2::getInterfaceInfo() {
 }
 
 int HF2::sendEvent(uint32_t evId, const void *data, int size) {
-    sendBuffer(HF2_FLAG_CMDPKT_LAST, data, size, evId);
+    sendBuffer(HF2_FLAG_EVENT, data, size, evId);
     return 0;
 }
 
@@ -231,7 +265,7 @@ static void copy_words(void *dst0, const void *src0, uint32_t n_words) {
 #define DBL_TAP_PTR ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
 #if defined(NRF52840) || defined(NRF52833)
-#define DBL_TAP_PTR ((volatile uint32_t*)0x20007F7C)
+#define DBL_TAP_PTR ((volatile uint32_t *)0x20007F7C)
 #endif
 #define DBL_TAP_MAGIC_QUICK_BOOT 0xf02669ef
 #define QUICK_BOOT(v) *DBL_TAP_PTR = v ? DBL_TAP_MAGIC_QUICK_BOOT : 0
@@ -242,7 +276,50 @@ static void jdLog(const uint8_t *frame) {
     jdLogger->sendEvent(HF2_EV_JDS_PACKET, frame, frame[2] + 12);
 }
 
+void HF2::pokeSend() {
+#ifdef USB_EP_FLAG_ASYNC
+    target_disable_irq();
+    if (pendingWrite && in->canWrite()) {
+        in->flags |= USB_EP_FLAG_ASYNC;
+
+        int size = pendingWrite->size - pendingWritePtr;
+        usb_assert(size > 0);
+        uint32_t buf[64 / 4] = {0};
+
+        int s = 63;
+        if (size <= 63) {
+            s = size;
+            buf[0] = pendingWrite->flag;
+        } else {
+            buf[0] = pendingWrite->flag == HF2_FLAG_CMDPKT_LAST ? HF2_FLAG_CMDPKT_BODY : pendingWrite->flag;
+        }
+        buf[0] |= s;
+        uint8_t *dst = (uint8_t *)buf;
+        dst++;
+        memcpy(dst, pendingWrite->data + pendingWritePtr, s);
+
+        int r = in->write(buf, sizeof(buf));
+        if (r == 0) {
+            if (s == size) {
+                pendingWritePtr = 0;
+                pendingWriteSize -= 16 + pendingWrite->size;
+                HF2_PendingWrite *n = pendingWrite->next;
+                free(pendingWrite);
+                pendingWrite = n;
+            } else {
+                pendingWritePtr += s;
+            }
+        }
+    }
+    target_enable_irq();
+#endif
+}
+
 int HF2::endpointRequest() {
+#ifdef USB_EP_FLAG_ASYNC
+    pokeSend();
+#endif
+
     int sz = recv();
 
     if (!sz)
@@ -369,6 +446,11 @@ int HF2::endpointRequest() {
 
 HF2::HF2(HF2_Buffer &p) : gotSomePacket(false), ctrlWaiting(false), pkt(p), useHID(false) {
     lastExchange = 0;
+#ifdef USB_EP_FLAG_ASYNC
+    pendingWrite = NULL;
+    pendingWriteSize = 0;
+    pendingWritePtr = 0;
+#endif
 }
 
 static const InterfaceInfo dummyIfaceInfo = {

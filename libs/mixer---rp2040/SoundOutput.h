@@ -10,7 +10,7 @@ class SoundOutput {
   public:
     RP2040PWM dac;
 
-    SoundOutput(DataSource &data) : dac(*LOOKUP_PIN(JACK_SND), data) {
+    SoundOutput(DataSource &data) : dac(*LOOKUP_PIN(JACK_SND), data, 44000) {
         jacdac::setJackRouterOutput(-1);
     }
 

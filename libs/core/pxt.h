@@ -44,6 +44,11 @@ using namespace codal;
 
 #define PXT_COMM_BASE 0x20002000 // 8k in
 
+// old codal compat
+#ifndef REAL_TIME_FUNC
+#define REAL_TIME_FUNC /* */
+#endif
+
 namespace pxt {
 
 #if CONFIG_ENABLED(DEVICE_USB)
