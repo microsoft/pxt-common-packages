@@ -269,7 +269,7 @@ namespace music {
     //% weight=0 help=music/generate-similar-sound
     //% blockGap=8
     //% group="Sounds"
-    export function generateSimilarSound(sound: SoundEffect) {
+    export function randomizeSound(sound: SoundEffect) {
         const res = new SoundEffect();
         res.waveShape = sound.waveShape;
         res.startFrequency = sound.startFrequency;
