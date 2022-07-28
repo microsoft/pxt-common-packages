@@ -81,15 +81,17 @@ namespace music {
 
 
     /**
-     * Play a sound effect from a sound expression string.
-     * @param sound the sound expression string
+     * Play a SoundEffect.
+     * @param sound the SoundEffect to play
      * @param mode the play mode, play until done or in the background
      */
     //% blockId=soundExpression_playSoundEffect
     //% block="play sound $sound $mode"
     //% sound.shadow=soundExpression_createSoundEffect
-    //% weight=100 help=music/play-sound-effect
+    //% weight=30
+    //% help=music/play-sound-effect
     //% blockGap=8
+    //% group="Sounds"
     export function playSoundEffect(sound: SoundEffect, mode: SoundExpressionPlayMode) {
         const toPlay = sound.toBuffer(music.volume());
 
@@ -137,6 +139,8 @@ namespace music {
     //% inlineInputMode="variable"
     //% inlineInputModeLimit=3
     //% expandableArgumentBreaks="3,5"
+    //% weight=20
+    //% group="Sounds"
     export function createSoundEffect(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): SoundEffect {
         const result = new SoundEffect();
 
@@ -253,6 +257,18 @@ namespace music {
         }
     }
 
+
+    /**
+     * Generate a random similar sound effect to the given one.
+     *
+     * @param sound the sound effect
+     */
+    //% blockId=soundExpression_generateSimilarSound
+    //% block="randomize $sound"
+    //% sound.shadow=soundExpression_createSoundEffect
+    //% weight=0 help=music/generate-similar-sound
+    //% blockGap=8
+    //% group="Sounds"
     export function generateSimilarSound(sound: SoundEffect) {
         const res = new SoundEffect();
         res.waveShape = sound.waveShape;
@@ -265,11 +281,10 @@ namespace music {
         res.interpolation = randomInterpolation();
 
         res.duration = Math.clamp(
-            res.duration + (Math.random() - 0.5) * res.duration,
             Math.min(100, res.duration),
-            Math.max(2000, res.duration)
+            Math.max(2000, res.duration),
+            res.duration + (Math.random() - 0.5) * res.duration,
         );
-
 
         if (res.waveShape === WaveShape.Noise) {
             // The primary waveforms don't produce sounds that are similar to noise,
@@ -298,33 +313,33 @@ namespace music {
             newFrequencyDifference *= -1;
         }
 
-        newFrequencyDifference = Math.clamp(newFrequencyDifference, -5000, 5000);
+        newFrequencyDifference = Math.clamp(-5000, 5000, newFrequencyDifference);
 
         res.startFrequency = Math.clamp(
-            Math.random() * 5000,
             Math.max(-newFrequencyDifference, 1),
-            Math.clamp(5000 - newFrequencyDifference, 1, 5000)
+            Math.clamp(1, 5000, 5000 - newFrequencyDifference),
+            Math.random() * 5000,
         );
 
-        res.endFrequency = Math.clamp(res.startFrequency + newFrequencyDifference, 1, 5000);
+        res.endFrequency = Math.clamp(1, 5000, res.startFrequency + newFrequencyDifference);
 
         // Same strategy for volume
         const oldVolumeDifference = res.endVolume - res.startVolume;
         let newVolumeDifference = oldVolumeDifference + oldVolumeDifference * (Math.random() - 0.5);
 
-        newVolumeDifference = Math.clamp(newVolumeDifference, -255, 255);
+        newVolumeDifference = Math.clamp(-255, 255, newVolumeDifference);
 
         if (Math.sign(oldVolumeDifference) !== Math.sign(newVolumeDifference)) {
             newVolumeDifference *= -1;
         }
 
         res.startVolume = Math.clamp(
-            Math.random() * 255,
             Math.max(-newVolumeDifference, 0),
-            Math.clamp(255 - newVolumeDifference, 0, 255)
+            Math.clamp(0, 255, 255 - newVolumeDifference),
+            Math.random() * 255,
         );
 
-        res.endVolume = Math.clamp(res.startVolume + newVolumeDifference, 0, 255);
+        res.endVolume = Math.clamp(0, 255, res.startVolume + newVolumeDifference);
 
         return res;
     }
