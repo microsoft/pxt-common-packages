@@ -39,6 +39,47 @@ enum SoundExpressionPlayMode {
 }
 
 namespace music {
+    export class SoundEffect {
+        waveShape: WaveShape;
+        startFrequency: number;
+        endFrequency: number;
+        startVolume: number;
+        endVolume: number;
+        duration: number;
+        effect: SoundExpressionEffect;
+        interpolation: InterpolationCurve;
+
+        constructor() {
+            this.waveShape = WaveShape.Sine;
+            this.startFrequency = 5000;
+            this.endFrequency = 1;
+            this.startVolume = 255;
+            this.endVolume = 0;
+            this.duration = 1000;
+            this.effect = SoundExpressionEffect.None;
+            this.interpolation = InterpolationCurve.Linear;
+        }
+
+        toBuffer(volume?: number) {
+            if (volume === undefined) volume = music.volume();
+
+            return soundToInstructionBuffer(
+                this.waveShape,
+                this.startFrequency,
+                this.endFrequency,
+                this.startVolume,
+                this.endVolume,
+                this.duration,
+                this.effect,
+                this.interpolation,
+                20,
+                1,
+                volume
+            );
+        }
+    }
+
+
     /**
      * Play a sound effect from a sound expression string.
      * @param sound the sound expression string
@@ -49,16 +90,12 @@ namespace music {
     //% sound.shadow=soundExpression_createSoundEffect
     //% weight=100 help=music/play-sound-effect
     //% blockGap=8
-    export function playSoundEffect(sound: Buffer, mode: SoundExpressionPlayMode) {
-        queuePlayInstructions(0, sound);
+    export function playSoundEffect(sound: SoundEffect, mode: SoundExpressionPlayMode) {
+        const toPlay = sound.toBuffer(music.volume());
+
+        queuePlayInstructions(0, toPlay);
         if (mode === SoundExpressionPlayMode.UntilDone) {
-            let totalDuration = 0;
-
-            for (let i = 0; i < sound.length; i += 12) {
-                totalDuration += sound.getNumber(NumberFormat.UInt16LE, i + 4);
-            }
-
-            pause(totalDuration);
+            pause(sound.duration);
         }
     }
 
@@ -100,8 +137,19 @@ namespace music {
     //% inlineInputMode="variable"
     //% inlineInputModeLimit=3
     //% expandableArgumentBreaks="3,5"
-    export function createSoundEffect(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): Buffer {
-        return soundToInstructionBuffer(waveShape, startFrequency, endFrequency, startVolume, endVolume, duration, effect, interpolation, 20, 1);
+    export function createSoundEffect(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): SoundEffect {
+        const result = new SoundEffect();
+
+        result.waveShape = waveShape;
+        result.startFrequency = startFrequency;
+        result.endFrequency = endFrequency;
+        result.startVolume = startVolume;
+        result.endVolume = endVolume;
+        result.duration = duration;
+        result.effect = effect;
+        result.interpolation = interpolation;
+
+        return result;
     }
 
     interface Step {
@@ -109,25 +157,25 @@ namespace music {
         volume: number;
     }
 
-     export function soundToInstructionBuffer(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve, fxSteps: number, fxRange: number) {
+     export function soundToInstructionBuffer(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve, fxSteps: number, fxRange: number, globalVolume: number) {
         const steps: Step[] = [];
 
         // Optimize the simple case
         if (interpolation === InterpolationCurve.Linear && effect === SoundExpressionEffect.None) {
             steps.push({
                 frequency: startFrequency,
-                volume: (startVolume / 255) * 1024,
+                volume: (startVolume / 255) * globalVolume,
             })
             steps.push({
                 frequency: endFrequency,
-                volume: (endVolume / 255) * 1024,
+                volume: (endVolume / 255) * globalVolume,
             })
         }
         else {
 
             fxSteps = Math.min(fxSteps, Math.floor(duration / 5))
 
-            const getVolumeAt = (t: number) => ((startVolume + t * (endVolume - startVolume) / duration) / 255) * 1024;
+            const getVolumeAt = (t: number) => ((startVolume + t * (endVolume - startVolume) / duration) / 255) * globalVolume;
             let getFrequencyAt: (t: number) => number;
 
             switch (interpolation) {
@@ -202,6 +250,113 @@ namespace music {
             case WaveShape.Triangle: return 1;
             case WaveShape.Noise: return 18;
             case WaveShape.Sawtooth: return 2;
+        }
+    }
+
+    export function generateSimilarSound(sound: SoundEffect) {
+        const res = new SoundEffect();
+        res.waveShape = sound.waveShape;
+        res.startFrequency = sound.startFrequency;
+        res.endFrequency = sound.endFrequency;
+        res.startVolume = sound.startVolume;
+        res.endVolume = sound.endVolume;
+        res.duration = sound.duration;
+        res.effect = sound.effect;
+        res.interpolation = randomInterpolation();
+
+        res.duration = Math.clamp(
+            res.duration + (Math.random() - 0.5) * res.duration,
+            Math.min(100, res.duration),
+            Math.max(2000, res.duration)
+        );
+
+
+        if (res.waveShape === WaveShape.Noise) {
+            // The primary waveforms don't produce sounds that are similar to noise,
+            // but adding an effect sorta does
+            if (Math.percentChance(20)) {
+                res.waveShape = randomWave();
+                res.effect = randomEffect();
+            }
+        }
+        else {
+            res.waveShape = randomWave();
+
+            // Adding an effect can drastically alter the sound, so keep it
+            // at a low percent chance unless there already is one
+            if (res.effect !== SoundExpressionEffect.None || Math.percentChance(10)) {
+                res.effect = randomEffect();
+            }
+        }
+
+        // Instead of randomly changing the frequency, change the slope and choose
+        // a new start frequency. This keeps a similar profile to the sound
+        const oldFrequencyDifference = res.endFrequency - res.startFrequency;
+        let newFrequencyDifference = oldFrequencyDifference + (oldFrequencyDifference * 2) * (Math.random() - 0.5);
+
+        if (Math.sign(oldFrequencyDifference) !== Math.sign(newFrequencyDifference)) {
+            newFrequencyDifference *= -1;
+        }
+
+        newFrequencyDifference = Math.clamp(newFrequencyDifference, -5000, 5000);
+
+        res.startFrequency = Math.clamp(
+            Math.random() * 5000,
+            Math.max(-newFrequencyDifference, 1),
+            Math.clamp(5000 - newFrequencyDifference, 1, 5000)
+        );
+
+        res.endFrequency = Math.clamp(res.startFrequency + newFrequencyDifference, 1, 5000);
+
+        // Same strategy for volume
+        const oldVolumeDifference = res.endVolume - res.startVolume;
+        let newVolumeDifference = oldVolumeDifference + oldVolumeDifference * (Math.random() - 0.5);
+
+        newVolumeDifference = Math.clamp(newVolumeDifference, -255, 255);
+
+        if (Math.sign(oldVolumeDifference) !== Math.sign(newVolumeDifference)) {
+            newVolumeDifference *= -1;
+        }
+
+        res.startVolume = Math.clamp(
+            Math.random() * 255,
+            Math.max(-newVolumeDifference, 0),
+            Math.clamp(255 - newVolumeDifference, 0, 255)
+        );
+
+        res.endVolume = Math.clamp(res.startVolume + newVolumeDifference, 0, 255);
+
+        return res;
+    }
+
+    function randomWave() {
+        switch (Math.randomRange(0, 3)) {
+            case 1: return WaveShape.Sawtooth;
+            case 2: return WaveShape.Square;
+            case 3: return WaveShape.Triangle;
+            case 0:
+            default:
+                return WaveShape.Sine;
+        }
+    }
+
+    function randomEffect() {
+        switch (Math.randomRange(0, 2)) {
+            case 1: return SoundExpressionEffect.Warble;
+            case 2: return  SoundExpressionEffect.Tremolo;
+            case 0:
+            default:
+                return SoundExpressionEffect.Vibrato;
+        }
+    }
+
+    function randomInterpolation() {
+        switch (Math.randomRange(0, 2)) {
+            case 1: return InterpolationCurve.Linear;
+            case 2: return  InterpolationCurve.Curve;
+            case 0:
+            default:
+                return InterpolationCurve.Logarithmic;
         }
     }
 
