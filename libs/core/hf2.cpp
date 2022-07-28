@@ -101,12 +101,6 @@ int HF2::stdRequest(UsbEndpointIn &ctrl, USBSetup &setup) {
     return DEVICE_NOT_SUPPORTED;
 }
 
-// same as in microbit
-#define CTRL_GET_REPORT 0x01
-#define CTRL_SET_REPORT 0x09
-#define CTRL_OUT_REPORT_H 0x2
-#define CTRL_IN_REPORT_H 0x1
-
 #define HF2_FLAG_EVENT 0x01
 
 REAL_TIME_FUNC
