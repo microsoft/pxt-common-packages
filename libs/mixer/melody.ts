@@ -112,7 +112,7 @@ namespace music {
 
     /**
      * Play a melody from the melody editor.
-     * @param melody - string of up to eight notes [C D E F G A B C5] or rests [-] separated by spaces, 
+     * @param melody - string of up to eight notes [C D E F G A B C5] or rests [-] separated by spaces,
      * which will be played one at a time, ex: "E D G F B A C5 B "
      * @param tempo - number in beats per minute (bpm), dictating how long each note will play for
      */
@@ -176,7 +176,7 @@ namespace music {
      */
     //% help=music/stop-all-sounds
     //% blockId=music_stop_all_sounds block="stop all sounds"
-    //% weight=10
+    //% weight=45
     //% group="Sounds"
     export function stopAllSounds() {
         Melody.stopAll();

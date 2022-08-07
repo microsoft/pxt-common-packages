@@ -1,6 +1,6 @@
 namespace pxsim.music {
     export function playInstructions(b: RefBuffer) {
-        return AudioContextManager.playInstructionsAsync(b)
+        return AudioContextManager.playInstructionsAsync(b.data)
     }
 
     export function queuePlayInstructions(when: number, b: RefBuffer) {

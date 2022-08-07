@@ -13,6 +13,7 @@
         "ns.ts",
         "targetoverrides.ts",
         "music.ts",
+        "soundEffect.ts",
         "pxtparts.json",
         "headphone.svg"
     ],

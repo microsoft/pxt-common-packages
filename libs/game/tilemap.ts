@@ -110,7 +110,7 @@ namespace tiles {
         //% this.defl=location
         //% this.shadow=variables_get
         //% group="Locations" blockGap=8
-        //% weight=10
+        //% weight=10 help=tiles/get-neighboring-location
         public getNeighboringLocation(direction: CollisionDirection): Location {
             switch (direction) {
                 case CollisionDirection.Top:
