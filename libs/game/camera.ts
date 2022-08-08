@@ -67,7 +67,7 @@ namespace scene {
             if (amplitude <= 0 || duration <= 0) {
                 this.shakeStartTime = undefined;
             } else {
-                // this overrides any existing shake operation            
+                // this overrides any existing shake operation
                 this.shakeStartTime = control.millis();
                 this.shakeAmplitude = amplitude;
                 this.shakeDuration = duration;
@@ -82,9 +82,8 @@ namespace scene {
                 this.offsetY = this.sprite.y - (screen.height >> 1);
             }
 
-            // normalize offset
-            this.offsetX |= 0;
-            this.offsetY |= 0;
+            this.offsetX = Math.floor(this.offsetX);
+            this.offsetY = Math.floor(this.offsetY);
 
             this.drawOffsetX = this.offsetX;
             this.drawOffsetY = this.offsetY;
