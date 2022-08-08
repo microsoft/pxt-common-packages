@@ -81,6 +81,10 @@ namespace scene {
                 this.offsetX = this.sprite.x - (screen.width >> 1);
                 this.offsetY = this.sprite.y - (screen.height >> 1);
             }
+
+            this.offsetX = Math.floor(this.offsetX);
+            this.offsetY = Math.floor(this.offsetY);
+
             this.drawOffsetX = this.offsetX;
             this.drawOffsetY = this.offsetY;
 
