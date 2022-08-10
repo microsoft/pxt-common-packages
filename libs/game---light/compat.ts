@@ -21,7 +21,11 @@ class Scene {
         return control.millis()
     }
 
-    buttonEventHandlers: controller.ButtonEventHandlerState[] = [];
+    constructor() {
+        this.buttonEventHandlers = []
+    }
+
+    buttonEventHandlers: controller.ButtonEventHandlerState[];
 }
 
 namespace game {
