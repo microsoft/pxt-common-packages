@@ -20,6 +20,8 @@ class Scene {
     millis() {
         return control.millis()
     }
+
+    buttonEventHandlers: controller.ButtonEventHandlerState[] = [];
 }
 
 namespace game {
