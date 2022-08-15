@@ -4,6 +4,10 @@ namespace scene.systemMenu {
     }
 }
 
+namespace power {
+    export function poke() {}
+}
+
 namespace scene {
     export const SCREEN_CLEAR_PRIORITY = 1;
     export const UPDATE_INTERVAL_PRIORITY = 19;

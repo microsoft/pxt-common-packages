@@ -17,8 +17,6 @@
     "additionalFilePath": "../game",
     "dependencies": {
         "settings": "file:../settings",
-        "screen": "file:../screen",
-        "mixer": "file:../mixer",
-        "power": "file:../power"
+        "screen": "file:../screen"
     }
 }
