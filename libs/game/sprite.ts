@@ -639,28 +639,6 @@ class Sprite extends sprites.BaseSprite {
             this.destroy()
         }
 
-        const bounce = this.flags & sprites.Flag.BounceOnWall;
-        const tm = game.currentScene().tileMap;
-        if (this.flags & sprites.Flag.StayInScreen || (bounce && !tm)) {
-            if (this.left < camera.offsetX) {
-                this.left = camera.offsetX;
-                if (bounce) this.vx = -this.vx;
-            }
-            else if (this.right > camera.offsetX + screen.width) {
-                this.right = camera.offsetX + screen.width;
-                if (bounce) this.vx = -this.vx;
-            }
-
-            if (this.top < camera.offsetY) {
-                this.top = camera.offsetY;
-                if (bounce) this.vy = -this.vy;
-            }
-            else if (this.bottom > camera.offsetY + screen.height) {
-                this.bottom = camera.offsetY + screen.height;
-                if (bounce) this.vy = -this.vy;
-            }
-        }
-
         if (this.sayRenderer) this.sayRenderer.update(dt, camera, this);
     }
 
