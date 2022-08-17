@@ -195,6 +195,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap);
                 }
+                
+                // check for screen edge collisions
+                const bounce = s.flags & sprites.Flag.BounceOnWall;
+                if (s.flags & sprites.Flag.StayInScreen || (bounce && !tileMap)) {
+                    this.screenEdgeCollisions(ms, bounce, scene.camera);
+                }
+
                 // if sprite still needs to move, add it to the next step of movements
                 if (Fx.abs(ms.dx) > MIN_MOVE_GAP || Fx.abs(ms.dy) > MIN_MOVE_GAP) {
                     remainingMovers.push(ms);
@@ -343,6 +350,29 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                         });
                 }
             }
+        }
+    }
+
+    protected screenEdgeCollisions(movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
+        let s = movingSprite.sprite;
+        if (!s.isStatic()) s.setHitbox();
+
+        let offset = Fx.toFloat(s._hitbox.left) - camera.offsetX;
+        if (offset < 0) {
+            s.left -= offset;
+            if (bounce) s.vx = -s.vx;
+        }
+        else if ((offset = Fx.toFloat(s._hitbox.right) - camera.offsetX - screen.width) > 0) {
+            s.right -= offset;
+            if (bounce) s.vx = -s.vx;
+        }
+        if ((offset = Fx.toFloat(s._hitbox.top) - camera.offsetY) < 0) {
+            s.top -= offset;
+            if (bounce) s.vy = -s.vy;
+        }
+        else if ((offset = Fx.toFloat(s._hitbox.bottom) - camera.offsetY - screen.height) > 0) {
+            s.bottom -= offset;
+            if (bounce) s.vy = -s.vy;
         }
     }
 
