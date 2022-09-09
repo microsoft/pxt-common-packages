@@ -1504,7 +1504,19 @@ int getConfig(int key, int defl) {
         return defl;
     int *cfgData = vmImg->configData;
 #else
-    int *cfgData = bytecode ? *(int **)&bytecode[18] : NULL;
+    int *cfgData = NULL;
+    if (bytecode) {
+        cfgData = *(int **)&bytecode[18];
+    } else {
+        // This happens when getConfig() is called before the TypeScript
+        // program starts (exec_binary()). One example is overriding heap size with:
+        // namespace userconfig { export const SYSTEM_HEAP_BYTES = 10000 }
+        unsigned *pc = (unsigned *)functionsAndBytecode;
+        if (*pc++ == 0x4210) {
+            uint16_t *bcode = *((uint16_t **)pc++);
+            cfgData = *(int **)&bcode[18];
+        }
+    }
 #endif
 
     if (cfgData) {
