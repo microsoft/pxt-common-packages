@@ -121,7 +121,7 @@ f405100800100800 021e7c5455542800 031e007e48493000 0a1e007c45443800 0b1e00304948
 611e0050586a2800 6a1e04047d040400 6b1e00083d482000 801e7c2112207c00 811e384132403800 821e7c2012217c00
 831e384032413800 841e7c2110217c00 851e384230423800 f21e040972080400 f31e00b84142f800 a3207e0a7a120a00
 a420a8fcaa828400 a720087e2a1c0800 ab200098a4a6bf02 ac20183c5a5a4200 af20627f22443800 9021103854101000
-912108047e040800 9221101054381000 932110207e201000 9421103810103810 95212844fe442800 
+912108047e040800 9221101054381000 932110207e201000 9421103810103810 95212844fe442800
 `,
 
     }
@@ -196,7 +196,27 @@ namespace texteffects {
 }
 
 interface Image {
+    /**
+     * Prints some text to an image at a given location
+     *
+     * @param text The text to print
+     * @param x The pixel coordinate of the left side of the text
+     * @param y The pixel coordinate of the top side of the text
+     * @param color The color to print the text
+     * @param font The font to use when printing the text
+     * @param offsets Character offsets for text effects
+     */
     //% helper=imagePrint
+    //% blockId=image_print_text
+    //% blockNamespace="images"
+    //% inlineInputMode="inline"
+    //% group="Drawing"
+    //% block="$this print $text at x $x y $y $color"
+    //% this.shadow=variables_get
+    //% this.defl=picture
+    //% text.defl=abc
+    //% color.shadow=colorindexpicker
+    //% weight=5
     print(text: string, x: number, y: number, color?: number, font?: image.Font, offsets?: texteffects.TextEffectState[]): void;
 
     //% helper=imagePrintCenter

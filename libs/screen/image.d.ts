@@ -31,6 +31,46 @@ interface Image {
     drawRect(x: number, y: number, w: number, h: number, c: color): void;
 
     /**
+     * Draw an empty circle.
+     *
+     * @param cx The center x coordinate of the circle
+     * @param cy The center y coordinate of the circle
+     * @param r The radius of the circle
+     * @param c The color to draw the circle
+     */
+    //% helper=imageDrawCircle
+    //% blockId=image_draw_circle
+    //% block="draw circle in $this at cx $cx cy $cy radius $r $c"
+    //% this.shadow=variables_get
+    //% this.defl=picture
+    //% c.shadow=colorindexpicker
+    //% inlineInputMode="inline"
+    //% weight=10
+    //% blockNamespace="images"
+    //% group="Drawing"
+    drawCircle(cx: number, cy: number, r: number, c: color): void;
+
+    /**
+     * Fills a circle
+     *
+     * @param cx The center x coordinate of the circle
+     * @param cy The center y coordinate of the circle
+     * @param r The radius of the circle
+     * @param c The color to draw the circle
+     */
+    //% helper=imageFillCircle
+    //% blockId=image_fill_circle
+    //% block="fill circle in $this at cx $cx cy $cy radius $r $c"
+    //% this.shadow=variables_get
+    //% this.defl=picture
+    //% c.shadow=colorindexpicker
+    //% inlineInputMode="inline"
+    //% weight=9
+    //% blockNamespace="images"
+    //% group="Drawing"
+    fillCircle(cx: number, cy: number, r: number, c: color): void;
+
+    /**
      * Set pixel color
      */
     //% shim=ImageMethods::setPixel blockNamespace="images" group="Drawing"
@@ -110,6 +150,19 @@ interface Image {
 
     //% shim=ImageMethods::revision
     revision(): number;
+
+    /**
+     * Draw given image with transparent background on the current image
+     */
+    //% shim=ImageMethods::drawTransparentImage
+    //% blockNamespace="images"
+    //% group="Drawing"
+    //% block="$this draw $from at x $x y $y"
+    //% this.shadow=variables_get
+    //% this.defl="picture"
+    //% from.shadow=screen_image_picker
+    //% weight=0
+    drawTransparentImage(from: Image, x: int32, y: int32): void;
 }
 
 declare namespace image {
