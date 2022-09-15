@@ -156,6 +156,7 @@ interface Image {
      */
     //% shim=ImageMethods::drawTransparentImage
     //% blockNamespace="images"
+    //% blockId=image_draw_transparent_image
     //% group="Drawing"
     //% block="$this draw $from at x $x y $y"
     //% this.shadow=variables_get
