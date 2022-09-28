@@ -746,6 +746,9 @@ namespace pxsim.image {
 
 
     export function create(w: number, h: number) {
+        // truncate decimal sizes
+        w |= 0
+        h |= 0
         return new RefImage(w, h, getScreenState().bpp())
     }
 
