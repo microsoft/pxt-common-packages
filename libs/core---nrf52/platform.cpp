@@ -119,6 +119,12 @@ void deepSleep() {
 }
 
 void platform_init() {
+#ifdef PXT_PROFILE
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+#endif
+
     initRandomSeed();
 
     disableNFConPins(); // this is needed when P0_9 and P0_10 are to be used as regular pins

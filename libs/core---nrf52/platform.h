@@ -38,6 +38,9 @@ typedef uint8_t PinName;
 
 #define DEFAULT_NEOPIXEL_PIN P0_0
 
+#define PERF_NOW() (DWT->CYCCNT)
+#define PERF_NOW_SCALE 64
+
 // The parameters below needs tuning!
 
 /*
