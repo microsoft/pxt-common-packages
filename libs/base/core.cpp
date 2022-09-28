@@ -208,10 +208,10 @@ static void setupSkipList(String r, const char *data, int packed) {
     auto len = r->skip.size;
     if (data)
         memcpy(dst, data, len);
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
     dst[len] = 0;
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
     const char *ptr = dst;
     auto skipEntries = PXT_NUM_SKIP_ENTRIES(r);
     auto lst = packed ? r->skip_pack.list : r->skip.list;
@@ -1775,15 +1775,21 @@ void anyPrint(TValue v) {
 static void dtorDoNothing() {}
 
 #define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
-    static uint32_t name##_size(tp *p) { return TOWORDS(sizeof(tp) + szexpr); }                    \
+    static uint32_t name##_size(tp *p) {                                                           \
+        return TOWORDS(sizeof(tp) + szexpr);                                                       \
+    }                                                                                              \
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
                (void *)&name##_size)
 
 #define NOOP ((void)0)
 
 #define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
-    static uint32_t name##_gcsize(BoxedString *p) { return TOWORDS(sizeof(void *) + (gcsize)); }   \
-    static void name##_gcscan(BoxedString *p) { scan; }                                            \
+    static uint32_t name##_gcsize(BoxedString *p) {                                                \
+        return TOWORDS(sizeof(void *) + (gcsize));                                                 \
+    }                                                                                              \
+    static void name##_gcscan(BoxedString *p) {                                                    \
+        scan;                                                                                      \
+    }                                                                                              \
     static const char *name##_data(BoxedString *p) {                                               \
         fix;                                                                                       \
         return data;                                                                               \
@@ -1944,6 +1950,8 @@ void dumpPerfCounters() {
     for (uint32_t i = 0; i < info->numPerfCounters; ++i) {
         auto c = &perfCounters[i];
         DMESG("%d,%d,%s", c->numstops, c->value, info->perfCounterNames[i]);
+        c->value = 0;
+        c->numstops = 0;
     }
 }
 
@@ -1962,7 +1970,7 @@ void stopPerfCounter(PerfCounters n) {
     auto c = &perfCounters[(uint32_t)n];
     if (!c->start)
         oops(51);
-    c->value += PERF_NOW() - c->start;
+    c->value += ((PERF_NOW() - c->start) & PERF_NOW_MASK) / PERF_NOW_SCALE;
     c->start = 0;
     c->numstops++;
 }

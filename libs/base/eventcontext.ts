@@ -49,6 +49,7 @@ namespace control {
         private frameWorker: number;
         private framesInSample: number;
         private timeInSample: number;
+        private lastPerfDump: number;
         public deltaTimeMillis: number;
         private prevTimeMillis: number;
         private idleCallbacks: (() => void)[];
@@ -81,16 +82,19 @@ namespace control {
             for (let f of this.frameCallbacks) {
                 f.handler()
             }
-            let runtime = control.millis() - loopStart
+            const now = control.millis()
+            let runtime = now - loopStart
             this.timeInSample += runtime
             this.framesInSample++
             if (this.timeInSample > 1000 || this.framesInSample > 30) {
+                const realTimeInSample = now - this.lastPerfDump
+                this.lastPerfDump = now
                 const fps = this.framesInSample / (this.timeInSample / 1000);
                 EventContext.lastStats = `fps:${Math.round(fps)}`;
                 if (fps < 99)
                     EventContext.lastStats += "." + (Math.round(fps * 10) % 10)
-                if (control.ramSize() > 2000000 && control.profilingEnabled()) {
-                    control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames`)
+                if (control.profilingEnabled()) {
+                    control.dmesg(`${(fps * 100) | 0}/100 fps - ${this.framesInSample} frames (${this.timeInSample}ms/${realTimeInSample}ms)`)
                     control.gc()
                     control.dmesgPerfCounters()
                 }

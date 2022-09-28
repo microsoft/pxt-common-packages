@@ -1020,6 +1020,14 @@ enum class PerfCounters {
 #error "missing platform timer support"
 #endif
 
+#ifndef PERF_NOW_MASK
+#define PERF_NOW_MASK 0xffffffff
+#endif
+
+#ifndef PERF_NOW_SCALE
+#define PERF_NOW_SCALE 1
+#endif
+
 struct PerfCounter {
     uint32_t value;
     uint32_t numstops;
