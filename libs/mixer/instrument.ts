@@ -350,8 +350,8 @@ namespace music.sequencer {
             this.offset = this.offset || 0;
             this.ampEnvelope = new Envelope(this.buf, this.offset + 1);
             this.pitchEnvelope = new Envelope(this.buf, this.offset + 11);
-            this.ampLFO = new LFO(this.buf, 21);
-            this.pitchLFO = new LFO(this.buf, 24)
+            this.ampLFO = new LFO(this.buf, this.offset + 21);
+            this.pitchLFO = new LFO(this.buf, this.offset + 24)
         }
 
         get waveform(): number {
@@ -551,7 +551,6 @@ namespace music.sequencer {
                 nextPLTime += pitchLFOInterval;
             }
         }
-
 
         let prevAmp = instrumentVolumeAtTime(instrument, gateLength, 0, volume) | 0;
         let prevPitch = instrumentPitchAtTime(instrument, noteFrequency, gateLength, 0) | 0;
