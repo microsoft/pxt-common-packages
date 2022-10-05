@@ -386,7 +386,7 @@ namespace info {
     /**
      * Get the value of the current count down
      */
-    //% block
+    //% block="countdown"
     //% blockId=gamegetcountdown
     //% group="Countdown"
     export function getCountdown() {
