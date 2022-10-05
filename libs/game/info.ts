@@ -384,6 +384,26 @@ namespace info {
     }
 
     /**
+     * Get the value of the current count down
+     */
+    //% block
+    //% blockId=gamegetcountdown
+    //% group="Countdown"
+    export function getCountdown() {
+        return (infoState.gameEnd - game.currentScene().millis()) / 1000;
+    }
+
+    /**
+     * Get the value of the current count down
+     */
+    //% block="change countdown by $seconds (s)"
+    //% blockId=gamechangecountdown
+    //% group="Countdown"
+    export function changeCountdownBy(seconds: number) {
+        infoState.gameEnd += (seconds * 1000);
+    }
+
+    /**
      * Run code when the countdown reaches 0. If this function
      * is not called then game.over() is called instead
      */
