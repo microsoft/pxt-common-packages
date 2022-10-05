@@ -359,11 +359,22 @@ namespace info {
     }
 
     /**
+     * Get the value of the current count down
+     */
+    //% block="countdown"
+    //% blockId=gamegetcountdown
+    //% weight=79
+    //% group="Countdown"
+    export function getCountdown() {
+        return (infoState.gameEnd - game.currentScene().millis()) / 1000;
+    }
+
+    /**
      * Start a countdown of the given duration in seconds
      * @param duration the duration of the countdown, eg: 10
      */
     //% blockId=gamecountdown block="start countdown %duration (s)"
-    //% help=info/start-countdown weight=79 blockGap=8
+    //% help=info/start-countdown weight=78 blockGap=8
     //% group="Countdown"
     export function startCountdown(duration: number) {
         updateFlag(Visibility.Countdown, true);
@@ -372,9 +383,24 @@ namespace info {
     }
 
     /**
+     * Get the value of the current count down
+     */
+    //% block="change countdown by $seconds (s)"
+    //% blockId=gamechangecountdown
+    //% weight=77
+    //% group="Countdown"
+    export function changeCountdownBy(seconds: number) {
+        if (!infoState) {
+            startCountdown(seconds);
+            return;
+        }
+        infoState.gameEnd += (seconds * 1000);
+    }
+
+    /**
      * Stop the current countdown and hides the timer display
      */
-    //% blockId=gamestopcountdown block="stop countdown" weight=78
+    //% blockId=gamestopcountdown block="stop countdown" weight=76
     //% help=info/stop-countdown
     //% group="Countdown"
     export function stopCountdown() {
@@ -384,30 +410,10 @@ namespace info {
     }
 
     /**
-     * Get the value of the current count down
-     */
-    //% block="countdown"
-    //% blockId=gamegetcountdown
-    //% group="Countdown"
-    export function getCountdown() {
-        return (infoState.gameEnd - game.currentScene().millis()) / 1000;
-    }
-
-    /**
-     * Get the value of the current count down
-     */
-    //% block="change countdown by $seconds (s)"
-    //% blockId=gamechangecountdown
-    //% group="Countdown"
-    export function changeCountdownBy(seconds: number) {
-        infoState.gameEnd += (seconds * 1000);
-    }
-
-    /**
      * Run code when the countdown reaches 0. If this function
      * is not called then game.over() is called instead
      */
-    //% blockId=gamecountdownevent block="on countdown end" weight=77
+    //% blockId=gamecountdownevent block="on countdown end" weight=75
     //% help=info/on-countdown-end
     //% group="Countdown"
     export function onCountdownEnd(handler: () => void) {
