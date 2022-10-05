@@ -365,8 +365,9 @@ namespace info {
     //% blockId=gamegetcountdown
     //% weight=79
     //% group="Countdown"
-    export function getCountdown() {
-        return (infoState.gameEnd - game.currentScene().millis()) / 1000;
+    export function countdown(): number {
+        initHUD();
+        return infoState.gameEnd ? ((infoState.gameEnd - game.currentScene().millis()) / 1000) : 0;
     }
 
     /**
@@ -383,18 +384,15 @@ namespace info {
     }
 
     /**
-     * Get the value of the current count down
+     * Change the running countdown by the given number of seconds
+     * @param seconds the number of seconds the countdown should be changed by
      */
     //% block="change countdown by $seconds (s)"
     //% blockId=gamechangecountdown
     //% weight=77
     //% group="Countdown"
     export function changeCountdownBy(seconds: number) {
-        if (!infoState) {
-            startCountdown(seconds);
-            return;
-        }
-        infoState.gameEnd += (seconds * 1000);
+        startCountdown((countdown() + seconds));
     }
 
     /**
