@@ -109,7 +109,7 @@ namespace pxsim {
                 }
             } else if (isButtonMessage(msg)) {
                 if (this.origin === "server") {
-                    board().handleKeyEvent(
+                    (board() as any).handleKeyEvent(
                         msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
                         msg.state === "Pressed" || msg.state === "Held"
                     );
