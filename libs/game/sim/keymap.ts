@@ -160,7 +160,7 @@ namespace pxsim {
 
         private clearMap(name: string) {
             const keyCodes = this.mappings[name];
-            keyCodes?.forEach(keyCode => delete this.keymap[keyCode]);
+            keyCodes && keyCodes.forEach(keyCode => delete this.keymap[keyCode]);
             delete this.mappings[name];
         }
     }
