@@ -51,10 +51,12 @@ namespace pxsim {
         state: "Pressed" | "Released" | "Held";
     }
 
+    let postScreenInterval: any;
     export class MultiplayerState {
         lastMessageId: number;
         origin: string;
         backgroundImage: RefImage;
+
 
         constructor() {
             this.lastMessageId = 0;
@@ -74,7 +76,10 @@ namespace pxsim {
         init(origin: string) {
             this.origin = origin;
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
-            setInterval(() => {
+            if (postScreenInterval) {
+                clearInterval(postScreenInterval)
+            }
+            postScreenInterval = setInterval(() => {
                 if (this.origin === "server") {
                     const b = board() as ScreenBoard;
                     const screenState = b && b.screenState;
