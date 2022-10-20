@@ -65,6 +65,7 @@ namespace scene {
     export const RENDER_DIAGNOSTICS_PRIORITY = 150;
     export const MULTIPLAYER_SCREEN_PRIORITY = 190;
     export const UPDATE_SCREEN_PRIORITY = 200;
+    export const MULTIPLAYER_POST_SCREEN_PRIORITY = 210;
 
     // default rendering z indices
     export const ON_PAINT_Z = -20;
@@ -179,6 +180,7 @@ namespace scene {
             });
             // update screen
             this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
+            multiplayer.initServer();
             // register additional components
             Scene.initializers.forEach(f => f(this));
         }

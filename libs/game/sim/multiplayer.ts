@@ -1,12 +1,20 @@
 namespace pxsim.multiplayer {
-    export function postImage(im: pxsim.RefImage, goal: string) {
+    const throttledImgPost = pxsim.U.throttle((msg: MultiplayerImageMessage) =>{
+        getMultiplayerState().send(msg);
+    }, 50, true);
+
+    export function postImage(im: pxsim.RefImage) {
+        if (getMultiplayerState().origin !== "server")
+            return;
         const asBuf = pxsim.image.toBuffer(im);
-        getMultiplayerState().send(<MultiplayerImageMessage>{
+        const sb = board() as ScreenBoard;
+        throttledImgPost(<MultiplayerImageMessage>{
             content: "Image",
             image: asBuf,
-            goal
+            palette: sb?.screenState?.paletteToUint8Array(),
         });
     }
+
 
     export function getCurrentImage(): pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
@@ -14,6 +22,7 @@ namespace pxsim.multiplayer {
 
     export function setOrigin(origin: "client" | "server" | undefined) {
         getMultiplayerState().origin = origin;
+
     }
 
     export function getOrigin(): string {
@@ -41,8 +50,9 @@ namespace pxsim {
 
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
         content: "Image";
-        goal: string; // goal of message; e.g. "broadcast-screen"
         image: RefBuffer;
+        // 48bytes, [r0,g0,b0,r1,g1,b1,...]
+        palette: Uint8Array;
     }
 
     export interface MultiplayerButtonEvent extends SimulatorMultiplayerMessage {
@@ -51,12 +61,10 @@ namespace pxsim {
         state: "Pressed" | "Released" | "Held";
     }
 
-    let postScreenInterval: any;
     export class MultiplayerState {
         lastMessageId: number;
         origin: string;
         backgroundImage: RefImage;
-
 
         constructor() {
             this.lastMessageId = 0;
@@ -76,17 +84,6 @@ namespace pxsim {
         init(origin: string) {
             this.origin = origin;
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
-            if (postScreenInterval) {
-                clearInterval(postScreenInterval)
-            }
-            postScreenInterval = setInterval(() => {
-                if (this.origin === "server") {
-                    const b = board() as ScreenBoard;
-                    const screenState = b && b.screenState;
-                    const lastImage = screenState && screenState.lastImage;
-                    lastImage && pxsim.multiplayer.postImage(lastImage, "broadcast-screen");
-                }
-            }, 50);
         }
 
         setButton(key: number, isPressed: boolean) {
@@ -111,6 +108,10 @@ namespace pxsim {
                         msg.image.data = new Uint8Array(msg.image.data);
                     }
                     this.backgroundImage = pxsim.image.ofBuffer(msg.image);
+                    if (msg.palette?.length === 48) {
+                        const palBuffer = new pxsim.RefBuffer(msg.palette)
+                        pxsim.pxtcore.setPalette(palBuffer);
+                    }
                 }
             } else if (isButtonMessage(msg)) {
                 if (this.origin === "server") {

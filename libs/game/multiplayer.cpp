@@ -2,18 +2,15 @@
 
 namespace multiplayer {
     //%
-    void postImage(Image_ im, String goal) {
-        // no support >:(
+    void postImage(Image_ im) {
     }
 
     //%
     void setOrigin(String origin) {
-        // no
     }
 
     //%
     Image_ getCurrentImage() {
-        // nah
         return NULL;
     }
 

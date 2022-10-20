@@ -2,6 +2,9 @@ namespace multiplayer {
     //% shim=multiplayer::getCurrentImage
     declare function getCurrentImage(): Image;
 
+    //% shim=multiplayer::postImage
+    declare function postImage(im: Image): void;
+
     //% shim=multiplayer::setOrigin
     declare function setOrigin(origin: string): void;
 
@@ -20,5 +23,15 @@ namespace multiplayer {
             });
         });
         game.pushScene();
+    }
+
+    export function initServer() {
+        if (getOrigin() === "server") {
+            game.eventContext().registerFrameHandler(scene.MULTIPLAYER_POST_SCREEN_PRIORITY, () => {
+                if (getOrigin() === "server") {
+                    postImage(screen);
+                }
+            })
+        }
     }
 }
