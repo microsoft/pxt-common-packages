@@ -4,6 +4,8 @@ namespace pxsim.multiplayer {
     }, 50, true);
 
     export function postImage(im: pxsim.RefImage) {
+        if (getMultiplayerState().origin !== "server")
+            return;
         const asBuf = pxsim.image.toBuffer(im);
         const sb = board() as ScreenBoard;
         throttledImgPost(<MultiplayerImageMessage>{
