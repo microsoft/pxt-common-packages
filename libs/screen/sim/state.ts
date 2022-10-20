@@ -11,6 +11,13 @@ namespace pxsim {
         return new Uint32Array(ca.buffer)[0]
     }
 
+    function UInt32ToHexColorCode(col: number) {
+        const ui = new Uint32Array(1);
+        ui[0] = col;
+        const ca = new Uint8ClampedArray(ui.buffer);
+        return [ca[0], ca[1], ca[2]].reduce((acc, val) => acc + val.toString(16).padStart(2, "0"), "");
+    }
+
     export class ScreenState {
         width = 0
         height = 0
@@ -25,10 +32,8 @@ namespace pxsim {
 
         constructor(paletteSrc: string[], w = 0, h = 0) {
             if (!paletteSrc) paletteSrc = ["#000000", "#ffffff"]
-            this.palette = new Uint32Array(paletteSrc.length)
-            for (let i = 0; i < this.palette.length; ++i) {
-                this.palette[i] = htmlColorToUint32(paletteSrc[i])
-            }
+            this.palette = new Uint32Array(paletteSrc.length);
+            this.setPaletteFromHtmlColors(paletteSrc);
             if (w) {
                 this.width = w
                 this.height = h
@@ -39,6 +44,16 @@ namespace pxsim {
 
         setScreenBrightness(b: number) {
             this.brightness = b | 0;
+        }
+
+        currPaletteString() {
+            return this.palette.reduce((acc, curr) => acc + UInt32ToHexColorCode(curr), "");
+        }
+
+        setPaletteFromHtmlColors(src: string[]) {
+            for (let i = 0; i < this.palette.length; ++i) {
+                this.palette[i] = htmlColorToUint32(src[i])
+            }
         }
 
         setPalette(buf: RefBuffer) {
