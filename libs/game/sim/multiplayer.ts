@@ -6,7 +6,7 @@ namespace pxsim.multiplayer {
     export function postImage(im: pxsim.RefImage) {
         const asBuf = pxsim.image.toBuffer(im);
         const sb = board() as ScreenBoard;
-        getMultiplayerState().send(<MultiplayerImageMessage>{
+        throttledImgPost(<MultiplayerImageMessage>{
             content: "Image",
             image: asBuf,
             palette: sb?.screenState?.currPaletteString(),
