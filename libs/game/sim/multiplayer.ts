@@ -11,7 +11,7 @@ namespace pxsim.multiplayer {
         throttledImgPost(<MultiplayerImageMessage>{
             content: "Image",
             image: asBuf,
-            palette: sb?.screenState?.currPaletteString(),
+            palette: sb?.screenState?.paletteToUint8Array(),
         });
     }
 
@@ -51,8 +51,8 @@ namespace pxsim {
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
         content: "Image";
         image: RefBuffer;
-        // hex byte triplets repr e.g. 000000ffffff...
-        palette: string;
+        // 48bytes, [r0,g0,b0,r1,g1,b1,...]
+        palette: Uint8Array;
     }
 
     export interface MultiplayerButtonEvent extends SimulatorMultiplayerMessage {
@@ -65,11 +65,9 @@ namespace pxsim {
         lastMessageId: number;
         origin: string;
         backgroundImage: RefImage;
-        textEncoder: TextEncoder;
 
         constructor() {
             this.lastMessageId = 0;
-            this.textEncoder = new TextEncoder();
         }
 
         send(msg: SimulatorMultiplayerMessage) {
@@ -110,13 +108,9 @@ namespace pxsim {
                         msg.image.data = new Uint8Array(msg.image.data);
                     }
                     this.backgroundImage = pxsim.image.ofBuffer(msg.image);
-                    if (msg.palette) {
-                        const b = board() as ScreenBoard;
-                        const screenState = b && b.screenState;
-                        const splitPalette = msg.palette.match(/[0-9a-f]{6}/ig);
-                        if (splitPalette.length === 16) {
-                            screenState.setPaletteFromHtmlColors(splitPalette);
-                        }
+                    if (msg.palette?.length === 48) {
+                        const palBuffer = new pxsim.RefBuffer(msg.palette)
+                        pxsim.pxtcore.setPalette(palBuffer);
                     }
                 }
             } else if (isButtonMessage(msg)) {

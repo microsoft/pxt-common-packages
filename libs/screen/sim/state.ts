@@ -1,7 +1,6 @@
 namespace pxsim {
     function htmlColorToUint32(hexColor: string) {
         const ca = new Uint8ClampedArray(4)
-        const ui = new Uint32Array(ca.buffer)
         const v = parseInt(hexColor.replace(/#/, ""), 16)
         ca[0] = (v >> 16) & 0xff;
         ca[1] = (v >> 8) & 0xff;
@@ -11,11 +10,11 @@ namespace pxsim {
         return new Uint32Array(ca.buffer)[0]
     }
 
-    function UInt32ToHexColorCode(col: number) {
+    function UInt32ToRGB(col: number): number[] {
         const ui = new Uint32Array(1);
         ui[0] = col;
         const ca = new Uint8ClampedArray(ui.buffer);
-        return [ca[0], ca[1], ca[2]].reduce((acc, val) => acc + val.toString(16).padStart(2, "0"), "");
+        return [ca[0], ca[1], ca[2]];
     }
 
     export class ScreenState {
@@ -46,8 +45,16 @@ namespace pxsim {
             this.brightness = b | 0;
         }
 
-        currPaletteString() {
-            return this.palette.reduce((acc, curr) => acc + UInt32ToHexColorCode(curr), "");
+        paletteToUint8Array() {
+            const out = new Uint8Array(this.palette.length * 3);
+            for (let i = 0; i < this.palette.length; ++i) {
+                const [r, g, b] = UInt32ToRGB(this.palette[i]);
+                const s = 3 * i;
+                out[s] = r;
+                out[s + 1] = g;
+                out[s + 2] = b;
+            }
+            return out;
         }
 
         setPaletteFromHtmlColors(src: string[]) {
