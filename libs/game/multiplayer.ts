@@ -3,13 +3,13 @@ namespace multiplayer {
     declare function getCurrentImage(): Image;
 
     //% shim=multiplayer::postImage
-    export declare function postImage(im: Image): void;
+    declare function postImage(im: Image): void;
 
     //% shim=multiplayer::setOrigin
     declare function setOrigin(origin: string): void;
 
     //% shim=multiplayer::getOrigin
-    export declare function getOrigin(): string;
+    declare function getOrigin(): string;
 
     export function init() {
         game.addScenePushHandler(() => {
