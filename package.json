@@ -24,7 +24,7 @@
     "libs/**/*"
   ],
   "dependencies": {
-    "pxt-core": "8.2.4"
+    "pxt-core": "8.4.8"
   },
   "devDependencies": {
     "typescript": "^4.2.3"
