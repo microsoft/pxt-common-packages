@@ -8,10 +8,11 @@ namespace pxsim.multiplayer {
             return;
         const asBuf = pxsim.image.toBuffer(im);
         const sb = board() as ScreenBoard;
+        const screenState = sb && sb.screenState;
         throttledImgPost(<MultiplayerImageMessage>{
             content: "Image",
             image: asBuf,
-            palette: sb?.screenState?.paletteToUint8Array(),
+            palette: screenState && screenState.paletteToUint8Array(),
         });
     }
 
@@ -61,6 +62,12 @@ namespace pxsim {
         state: "Pressed" | "Released" | "Held";
     }
 
+    export interface MultiplayerAudioEvent extends SimulatorMultiplayerMessage {
+        content: "Audio";
+        instruction: "playinstructions" | "muteallchannels";
+        soundbuf?: Uint8Array;
+    }
+
     export class MultiplayerState {
         lastMessageId: number;
         origin: string;
@@ -84,6 +91,17 @@ namespace pxsim {
         init(origin: string) {
             this.origin = origin;
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
+            if (this.origin === "server") {
+                pxsim.AudioContextManager.soundEventCallback = (ev: "playinstructions" | "muteallchannels", data?: Uint8Array) => {
+                    this.send(<pxsim.MultiplayerAudioEvent>{
+                        content: "Audio",
+                        instruction: ev,
+                        soundbuf: data,
+                    })
+                }
+            } else {
+                pxsim.AudioContextManager.soundEventCallback = undefined;
+            }
         }
 
         setButton(key: number, isPressed: boolean) {
@@ -108,7 +126,7 @@ namespace pxsim {
                         msg.image.data = new Uint8Array(msg.image.data);
                     }
                     this.backgroundImage = pxsim.image.ofBuffer(msg.image);
-                    if (msg.palette?.length === 48) {
+                    if (msg.palette && msg.palette.length === 48) {
                         const palBuffer = new pxsim.RefBuffer(msg.palette)
                         pxsim.pxtcore.setPalette(palBuffer);
                     }
@@ -119,6 +137,14 @@ namespace pxsim {
                         msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
                         msg.state === "Pressed" || msg.state === "Held"
                     );
+                }
+            } else if (isAudioMessage(msg)) {
+                if (this.origin === "client") {
+                    if (msg.instruction === "playinstructions") {
+                        pxsim.AudioContextManager.playInstructionsAsync(msg.soundbuf)
+                    } else if (msg.instruction === "muteallchannels") {
+                        pxsim.AudioContextManager.muteAllChannels();
+                    }
                 }
             }
         }
@@ -134,5 +160,9 @@ namespace pxsim {
 
     function isButtonMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerButtonEvent {
         return msg && msg.content === "Button";
+    }
+
+    function isAudioMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerAudioEvent {
+        return msg && msg.content === "Audio";
     }
 }
