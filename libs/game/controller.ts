@@ -164,7 +164,14 @@ namespace controller {
         //% group="Multiplayer"
         //% vx.shadow="spriteSpeedPicker"
         //% vy.shadow="spriteSpeedPicker"
+        //% parts="multiplayer"
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
+            this._moveSpriteInternal(sprite, vx, vy);
+        }
+
+        // use this instead of movesprite internally to avoid adding the "multiplayer" part
+        // to the compiled program
+        _moveSpriteInternal(sprite: Sprite, vx: number = 100, vy: number = 100) {
             if (!sprite) return;
             if (!this._controlledSprites) this._controlledSprites = [];
             let cp = this._controlledSprites.find(cp => cp.s.id == sprite.id);
@@ -193,6 +200,7 @@ namespace controller {
         //% blockId=ctrlonbuttonevent block="on %controller %button **button** %event"
         //% group="Multiplayer"
         //% help=controller/on-button-event
+        //% parts="multiplayer"
         onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
         }
@@ -206,6 +214,7 @@ namespace controller {
         //% blockId=ctrlonevent block="on %controller %event"
         //% group="Multiplayer"
         //% help=controller/on-event
+        //% parts="multiplayer"
         onEvent(event: ControllerEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
@@ -227,6 +236,7 @@ namespace controller {
         //% weight=96 blockGap=8 help=controller/button/is-pressed
         //% blockId=ctrlispressed block="is %controller %button **button** pressed"
         //% group="Multiplayer"
+        //% parts="multiplayer"
         isPressed(btn: ControllerButton): boolean {
             return this.button(btn).isPressed();
         }
@@ -239,7 +249,14 @@ namespace controller {
         //% blockId=ctrldx block="%controller dx (left-right buttons)||scaled by %step"
         //% step.defl=100
         //% group="Multiplayer"
+        //% parts="multiplayer"
         dx(step: number = 100) {
+            return this._dxInternal(step);
+        }
+
+        // use this instead of dx internally to avoid adding the "multiplayer" part
+        // to the compiled program
+        _dxInternal(step: number = 100) {
             const ctx = control.eventContext();
             if (!ctx) return 0;
 
@@ -261,7 +278,14 @@ namespace controller {
         //% blockId=ctrldy block="%controller dy (up-down buttons)||scaled by %step"
         //% step.defl=100
         //% group="Multiplayer"
+        //% parts="multiplayer"
         dy(step: number = 100) {
+            return this._dyInternal(step);
+        }
+
+        // use this instead of dy internally to avoid adding the "multiplayer" part
+        // to the compiled program
+        _dyInternal(step: number = 100) {
             const ctx = control.eventContext();
             if (!ctx) return 0;
 
@@ -386,7 +410,7 @@ namespace controller {
     //% vx.shadow=spriteSpeedPicker
     //% vy.shadow=spriteSpeedPicker
     export function moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
-        _player1().moveSprite(sprite, vx, vy);
+        _player1()._moveSpriteInternal(sprite, vx, vy);
     }
 
     /**
@@ -398,7 +422,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dx(step: number = 100) {
-        return _player1().dx(step);
+        return _player1()._dxInternal(step);
     }
 
     /**
@@ -410,7 +434,7 @@ namespace controller {
     //% step.defl=100
     //% group="Single Player"
     export function dy(step: number = 100) {
-        return _player1().dy(step);
+        return _player1()._dyInternal(step);
     }
 
     class AnyButton extends Button {
