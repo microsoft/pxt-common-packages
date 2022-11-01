@@ -9,11 +9,11 @@ namespace pxsim.multiplayer {
         const asBuf = pxsim.image.toBuffer(im);
         const sb = board() as ScreenBoard;
         const screenState = sb && sb.screenState;
-        throttledImgPost(<MultiplayerImageMessage>{
+        throttledImgPost({
             content: "Image",
             image: asBuf,
             palette: screenState && screenState.paletteToUint8Array(),
-        });
+        } as pxsim.MultiplayerImageMessage);
     }
 
 
@@ -78,14 +78,14 @@ namespace pxsim {
         }
 
         send(msg: SimulatorMultiplayerMessage) {
-            Runtime.postMessage(<SimulatorMultiplayerMessage>{
+            Runtime.postMessage({
                 ...msg,
                 broadcast: true,
                 toParentIFrameOnly: true,
                 type: "multiplayer",
                 origin: this.origin,
                 id: this.lastMessageId++
-            });
+            } as SimulatorMultiplayerMessage);
         }
 
         init(origin: string) {
@@ -93,11 +93,11 @@ namespace pxsim {
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
             if (this.origin === "server") {
                 pxsim.AudioContextManager.soundEventCallback = (ev: "playinstructions" | "muteallchannels", data?: Uint8Array) => {
-                    this.send(<pxsim.MultiplayerAudioEvent>{
+                    this.send({
                         content: "Audio",
                         instruction: ev,
                         soundbuf: data,
-                    })
+                    } as pxsim.MultiplayerAudioEvent)
                 }
             } else {
                 pxsim.AudioContextManager.soundEventCallback = undefined;
@@ -106,11 +106,11 @@ namespace pxsim {
 
         setButton(key: number, isPressed: boolean) {
             if (this.origin === "client") {
-                this.send(<pxsim.MultiplayerButtonEvent>{
+                this.send({
                     content: "Button",
                     button: key,
                     state: isPressed ? "Pressed" : "Released"
-                })
+                } as pxsim.MultiplayerButtonEvent)
             }
         }
 
