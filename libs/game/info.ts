@@ -753,6 +753,94 @@ namespace info {
             }
         }
 
+        get bg(): number {
+            return this.impl.bg;
+        }
+
+        set bg(value: number) {
+            this.impl.bg = value;
+        }
+
+        get border(): number {
+            return this.impl.border;
+        }
+
+        set border(value: number) {
+            this.impl.border = value;
+        }
+
+        get fc(): number {
+            return this.impl.fc;
+        }
+
+        set fc(value: number) {
+            this.impl.fc = value;
+        }
+
+        get showScore(): boolean {
+            return this.impl.showScore;
+        }
+
+        set showScore(value: boolean) {
+            this.impl.showScore = value;
+        }
+
+        get showLife(): boolean {
+            return this.impl.showLife;
+        }
+
+        set showLife(value: boolean) {
+            this.impl.showLife = value;
+        }
+
+        get visibility(): Visibility {
+            return this.impl.visibility;
+        }
+
+        set visibility(value: Visibility) {
+            this.impl.visibility = value;
+        }
+
+        get showPlayer(): boolean {
+            return this.impl.showPlayer;
+        }
+
+        set showPlayer(value: boolean) {
+            this.impl.showPlayer = value;
+        }
+
+        get x(): number {
+            return this.impl.x;
+        }
+
+        set x(value: number) {
+            this.impl.x = value;
+        }
+
+        get y(): number {
+            return this.impl.y;
+        }
+
+        set y(value: number) {
+            this.impl.y = value;
+        }
+
+        get left(): boolean {
+            return this.impl.left;
+        }
+
+        set left(value: boolean) {
+            this.impl.left = value;
+        }
+
+        get up(): boolean {
+            return this.impl.up;
+        }
+
+        set up(value: boolean) {
+            this.impl.up = value;
+        }
+
         getState(): PlayerState {
             this.init();
             return infoState.playerStates[this._player - 1];
