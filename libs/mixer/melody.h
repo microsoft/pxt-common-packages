@@ -31,7 +31,7 @@ struct SoundInstruction {
 
 namespace music {
 
-#define MAX_SOUNDS 8
+#define MAX_SOUNDS 5
 
 STATIC_ASSERT((1 << (16 - OUTPUT_BITS)) > MAX_SOUNDS);
 

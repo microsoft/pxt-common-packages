@@ -35,11 +35,6 @@ namespace assets {
     //% pyConvertToTaggedTemplate
     //% blockIdentity="animation._animationFrames"
     export function animation(lits: any, ...args: any[]): Image[] { return null }
-
-    //% helper=getSongByName
-    //% pyConvertToTaggedTemplate
-    //% blockIdentity="music._songFieldEditor"
-    export function song(lits: any, ...args: any[]): Buffer { return null }
 }
 
 namespace helpers {
@@ -47,7 +42,6 @@ namespace helpers {
     export type ImageFactory = (name: string) => Image;
     export type TileFactory = (name: string) => Image;
     export type AnimationFactory = (name: string) => Image[];
-    export type SongFactory = (name: string) => Buffer;
 
     interface Factory {
         kind: string;
@@ -95,9 +89,5 @@ namespace helpers {
 
     export function getTileByName(name: string) {
         return _getFactoryInstance("tile", name);
-    }
-
-    export function getSongByName(name: string) {
-        return _getFactoryInstance("song", name);
     }
 }
