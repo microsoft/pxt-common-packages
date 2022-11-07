@@ -14,8 +14,6 @@
         "targetoverrides.ts",
         "music.ts",
         "soundEffect.ts",
-        "instrument.ts",
-        "sequencer.ts",
         "pxtparts.json",
         "headphone.svg"
     ],
