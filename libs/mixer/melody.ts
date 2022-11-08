@@ -313,7 +313,7 @@ namespace music {
         }
     }
 
-    function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number, endHz: number) {
+    export function addNote(sndInstr: Buffer, sndInstrPtr: number, ms: number, beg: number, end: number, soundWave: number, hz: number, volume: number, endHz: number) {
         if (ms > 0) {
             sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr, soundWave)
             sndInstr.setNumber(NumberFormat.UInt8LE, sndInstrPtr + 1, 0)
@@ -581,6 +581,34 @@ namespace music {
                 }
             }
         }
+    }
+
+    let currentSequencer: sequencer.Sequencer;
+
+    //% shim=TD_ID
+    //% blockId=music_song_field_editor
+    //% block="$song"
+    //% song.fieldEditor=musiceditor
+    export function _songFieldEditor(song: Buffer) {
+        return song;
+    }
+
+    //% blockId=music_start_song
+    //% block="start song $song looping $loop"
+    //% song.shadow=music_song_field_editor
+    export function startSong(song: Buffer, loop: boolean) {
+        if (currentSequencer) currentSequencer.stop();
+
+        currentSequencer = new sequencer.Sequencer(new sequencer.Song(song));
+        currentSequencer.start(loop);
+    }
+
+    export function playInstructions(when: number, instructions: Buffer) {
+        queuePlayInstructions(when, instructions);
+    }
+
+    export function lookupFrequency(note: number) {
+        return freqs.getNumber(NumberFormat.UInt16LE, note * 2) || 0
     }
 
     //% fixedInstance whenUsed block="ba ding"
