@@ -8,6 +8,8 @@ namespace scene {
         drawOffsetX: number;
         drawOffsetY: number;
         sprite: Sprite;
+        protected _lastUpdatedSpriteX: number;
+        protected _lastUpdatedSpriteY: number;
 
         protected shakeStartTime: number;
         protected shakeDuration: number;
@@ -75,9 +77,15 @@ namespace scene {
             }
         }
 
+        isUpdated() {
+            return !this.sprite || (this.sprite.x === this._lastUpdatedSpriteX && this.sprite.y === this._lastUpdatedSpriteY);
+        }
+
         update() {
             // if sprite, follow sprite
             if (this.sprite) {
+                this._lastUpdatedSpriteX = this.sprite.x;
+                this._lastUpdatedSpriteY = this.sprite.y;
                 this.offsetX = this.sprite.x - (screen.width >> 1);
                 this.offsetY = this.sprite.y - (screen.height >> 1);
             }
