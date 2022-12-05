@@ -195,6 +195,8 @@ namespace scene {
     //% weight=70
     export function cameraProperty(property: CameraProperty): number {
         const scene = game.currentScene();
+        if (scene.camera.sprite)
+            scene.camera.update();
         switch (property) {
             case CameraProperty.X: return scene.camera.x;
             case CameraProperty.Y: return scene.camera.y;
