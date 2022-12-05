@@ -144,6 +144,7 @@ namespace scene {
     export function cameraFollowSprite(sprite: Sprite) {
         const scene = game.currentScene();
         scene.camera.sprite = sprite;
+        scene.camera.update();
     }
 
     /**
