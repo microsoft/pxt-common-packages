@@ -1,6 +1,6 @@
 namespace game {
     export class Hitbox {
-        hash: Fx8;
+        hash: number;
         parent: Sprite;
         ox: Fx8;
         oy: Fx8;
@@ -17,11 +17,11 @@ namespace game {
         }
 
         get left() {
-            return Fx.add(this.ox, Fx.floor(this.parent._x));
+            return Fx.add(this.ox, this.parent._x);
         }
 
         get top() {
-            return Fx.add(this.oy, Fx.floor(this.parent._y));
+            return Fx.add(this.oy, this.parent._y);
         }
 
         get right() {
@@ -46,7 +46,48 @@ namespace game {
             return (x >= this.left) && (x <= this.right) && (y >= this.top) && (y <= this.bottom);
         }
 
+        updateIfInvalid() {
+            if (this.isValid())
+                return;
+
+            const newHitBox = game.calculateHitBox(this.parent);
+
+            const oMinX = this.ox;
+            const oMinY = this.oy;
+            const oMaxX = Fx.add(oMinX, this.width);
+            const oMaxY = Fx.add(oMinY, this.height);
+
+            const nMinX = newHitBox.ox;
+            const nMinY = newHitBox.oy;
+            const nMaxX = Fx.add(nMinX, newHitBox.width);
+            const nMaxY = Fx.add(nMinY, newHitBox.height);
+
+            // total diff in x / y corners between the two hitboxes
+            const xDiff = Fx.add(
+                Fx.abs(Fx.sub(oMinX, nMinX)),
+                Fx.abs(Fx.sub(oMaxX, nMaxX))
+            );
+            const yDiff = Fx.add(
+                Fx.abs(Fx.sub(oMinY, nMinY)),
+                Fx.abs(Fx.sub(oMaxY, nMaxY))
+            );
+
+            // If it's just a small change to the hitbox on one axis,
+            // don't change the dimensions to avoid random clipping
+            if (xDiff > Fx.twoFx8) {
+                this.ox = nMinX;
+                this.width = newHitBox.width;
+            }
+            if (yDiff > Fx.twoFx8) {
+                this.oy = nMinY;
+                this.height = newHitBox.height;
+            }
+            this.hash = newHitBox.hash;
+        }
+
         overlapsWith(other: Hitbox): boolean {
+            this.updateIfInvalid();
+            other.updateIfInvalid();
             if (this.contains(other.left, other.top)) return true;
             if (this.contains(other.left, other.bottom)) return true;
             if (this.contains(other.right, other.top)) return true;

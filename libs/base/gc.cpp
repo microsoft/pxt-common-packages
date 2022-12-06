@@ -455,6 +455,7 @@ static GCBlock *allocateBlockCore() {
     auto lowMem = getConfig(CFG_LOW_MEM_SIMULATION_KB, 0);
     auto sysHeapSize = getConfig(CFG_SYSTEM_HEAP_BYTES, 4 * 1024);
     auto heapSize = GC_GET_HEAP_SIZE();
+    DMESG("heap: %d (minus %d sys bytes)", heapSize, sysHeapSize);
     sz = heapSize - sysHeapSize;
     if (lowMem) {
         auto memIncrement = 32 * 1024;

@@ -20,12 +20,20 @@ namespace info {
         _ExplicitlySetLife = 1 << 7,
     }
 
+    class ScoreReachedHandler {
+        public isTriggered: boolean;
+        constructor(public score: number, public handler: () => void) {
+            this.isTriggered = false;
+        }
+    }
+
     export class PlayerState {
         public score: number;
         // undefined: not used
         // null: reached 0 and callback was invoked
         public life: number;
         public lifeZeroHandler: () => void;
+        public scoreReachedHandler: ScoreReachedHandler
 
         constructor() { }
     }
@@ -113,18 +121,18 @@ namespace info {
                     // First draw players
                     ps.forEach(p => p.drawPlayer());
                     // Then run life over events
-                    ps.forEach(p => p.raiseLifeZero(false));
+                    ps.forEach(p => p.impl.raiseLifeZero(false));
                 } else { // single player
                     // show score
                     const p = player1;
-                    if (p.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
+                    if (p.impl.hasScore() && (infoState.visibilityFlag & Visibility.Score)) {
                         p.drawScore();
                     }
                     // show life
-                    if (p.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
+                    if (p.impl.hasLife() && (infoState.visibilityFlag & Visibility.Life)) {
                         p.drawLives();
                     }
-                    p.raiseLifeZero(true);
+                    p.impl.raiseLifeZero(true);
                 }
                 // show countdown in both modes
                 if (infoState.gameEnd !== undefined && infoState.visibilityFlag & Visibility.Countdown) {
@@ -204,12 +212,25 @@ namespace info {
                 `;
     }
 
+    export function saveAllScores() {
+        const allScoresKey = "all-scores";
+        let allScores: number[];
+        if (players) {
+            allScores = players.filter(item => item.impl.hasScore()).map(item => item.impl.score());
+        }
+        else {
+            allScores = [];
+        }
+
+        settings.writeJSON(allScoresKey, allScores);
+    }
+
     export function saveHighScore() {
         if (players) {
             let hs = 0;
             players
-                .filter(p => p && p.hasScore())
-                .forEach(p => hs = Math.max(hs, p.score()));
+                .filter(p => p && p.impl.hasScore())
+                .forEach(p => hs = Math.max(hs, p.impl.score()));
             const curr = settings.readNumber("high-score")
             if (curr == null || hs > curr)
                 settings.writeNumber("high-score", hs);
@@ -224,13 +245,13 @@ namespace info {
     //% help=info/score
     //% group="Score"
     export function score() {
-        return player1.score();
+        return player1.impl.score();
     }
 
     //%
     //% group="Score"
     export function hasScore() {
-        return player1.hasScore();
+        return player1.impl.hasScore();
     }
 
     /**
@@ -252,7 +273,7 @@ namespace info {
     //% help=info/set-score
     //% group="Score"
     export function setScore(value: number) {
-        player1.setScore(value);
+        player1.impl.setScore(value);
     }
 
     /**
@@ -264,7 +285,7 @@ namespace info {
     //% help=info/change-score-by
     //% group="Score"
     export function changeScoreBy(value: number) {
-        player1.changeScoreBy(value);
+        player1.impl.changeScoreBy(value);
     }
 
     /**
@@ -275,12 +296,12 @@ namespace info {
     //% help=info/life
     //% group="Life"
     export function life() {
-        return player1.life();
+        return player1.impl.life();
     }
 
     //% group="Life"
     export function hasLife() {
-        return player1.hasLife();
+        return player1.impl.hasLife();
     }
 
     /**
@@ -292,7 +313,7 @@ namespace info {
     //% help=info/set-life
     //% group="Life"
     export function setLife(value: number) {
-        player1.setLife(value);
+        player1.impl.setLife(value);
     }
 
     /**
@@ -304,7 +325,7 @@ namespace info {
     //% help=info/change-life-by
     //% group="Life"
     export function changeLifeBy(value: number) {
-        player1.changeLifeBy(value);
+        player1.impl.changeLifeBy(value);
     }
 
     /**
@@ -316,7 +337,37 @@ namespace info {
     //% help=info/on-life-zero
     //% group="Life"
     export function onLifeZero(handler: () => void) {
-        player1.onLifeZero(handler);
+        player1.impl.onLifeZero(handler);
+    }
+
+    /**
+     * Runs code once each time the score reaches a given value. This will also
+     * run if the score "passes" the given value in either direction without ever
+     * having the exact value (e.g. if score is changed by more than 1)
+     *
+     * @param score the score to fire the event on
+     * @param handler code to run when the score reaches the given value
+     */
+    //% weight=10
+    //% blockId=gameonscore
+    //% block="on score $score"
+    //% score.defl=100
+    //% help=info/on-score
+    //% group="Score"
+    export function onScore(score: number, handler: () => void) {
+        player1.impl.onScore(score, handler);
+    }
+
+    /**
+     * Get the value of the current count down
+     */
+    //% block="countdown"
+    //% blockId=gamegetcountdown
+    //% weight=79
+    //% group="Countdown"
+    export function countdown(): number {
+        initHUD();
+        return infoState.gameEnd ? ((infoState.gameEnd - game.currentScene().millis()) / 1000) : 0;
     }
 
     /**
@@ -324,7 +375,7 @@ namespace info {
      * @param duration the duration of the countdown, eg: 10
      */
     //% blockId=gamecountdown block="start countdown %duration (s)"
-    //% help=info/start-countdown weight=79 blockGap=8
+    //% help=info/start-countdown weight=78 blockGap=8
     //% group="Countdown"
     export function startCountdown(duration: number) {
         updateFlag(Visibility.Countdown, true);
@@ -333,9 +384,21 @@ namespace info {
     }
 
     /**
+     * Change the running countdown by the given number of seconds
+     * @param seconds the number of seconds the countdown should be changed by
+     */
+    //% block="change countdown by $seconds (s)"
+    //% blockId=gamechangecountdown
+    //% weight=77
+    //% group="Countdown"
+    export function changeCountdownBy(seconds: number) {
+        startCountdown((countdown() + seconds));
+    }
+
+    /**
      * Stop the current countdown and hides the timer display
      */
-    //% blockId=gamestopcountdown block="stop countdown" weight=78
+    //% blockId=gamestopcountdown block="stop countdown" weight=76
     //% help=info/stop-countdown
     //% group="Countdown"
     export function stopCountdown() {
@@ -348,7 +411,7 @@ namespace info {
      * Run code when the countdown reaches 0. If this function
      * is not called then game.over() is called instead
      */
-    //% blockId=gamecountdownevent block="on countdown end" weight=77
+    //% blockId=gamecountdownevent block="on countdown end" weight=75
     //% help=info/on-countdown-end
     //% group="Countdown"
     export function onCountdownEnd(handler: () => void) {
@@ -501,9 +564,14 @@ namespace info {
         }
     }
 
-    //% fixedInstances
-    //% blockGap=8
-    export class PlayerInfo {
+    /**
+     * Splits the implementation of the player info from the user-facing APIs so that
+     * we can reference this internally without causing the "multiplayer" part to show
+     * up in the usedParts array of the user program's compile result. Make sure to
+     * use the APIs on this class and not the PlayerInfo to avoid false-positives when
+     * we detect if a game is multiplayer or not
+     */
+    export class PlayerInfoImpl {
         protected _player: number;
         public bg: number; // background color
         public border: number; // border color
@@ -551,9 +619,6 @@ namespace info {
                 this.left = true;
                 this.up = true;
             }
-
-            if (!players) players = [];
-            players[this._player - 1] = this;
         }
 
         private init() {
@@ -574,12 +639,6 @@ namespace info {
             return this._player;
         }
 
-        /**
-         * Get the player score
-         */
-        //% group="Multiplayer"
-        //% blockId=piscore block="%player score"
-        //% help=info/score
         score(): number {
             if (this.showScore === undefined) this.showScore = true;
             if (this.showPlayer === undefined) this.showPlayer = true;
@@ -591,13 +650,6 @@ namespace info {
             return state.score;
         }
 
-        /**
-         * Set the player score
-         */
-        //% group="Multiplayer"
-        //% blockId=pisetscore block="set %player score to %value"
-        //% value.defl=0
-        //% help=info/set-score
         setScore(value: number) {
             const state = this.getState();
             if (!(infoState.visibilityFlag & Visibility._ExplicitlySetScore)) {
@@ -605,17 +657,18 @@ namespace info {
             }
 
             this.score(); // invoked for side effects
+
+            const oldScore = state.score || 0;
             state.score = (value | 0);
+
+            if (state.scoreReachedHandler && (
+                (oldScore < state.scoreReachedHandler.score && state.score >= state.scoreReachedHandler.score) ||
+                (oldScore > state.scoreReachedHandler.score && state.score <= state.scoreReachedHandler.score)
+            )) {
+                state.scoreReachedHandler.handler();
+            }
         }
 
-        /**
-         * Change the score of a player
-         * @param value
-         */
-        //% group="Multiplayer"
-        //% blockId=pichangescore block="change %player score by %value"
-        //% value.defl=1
-        //% help=info/change-score-by
         changeScoreBy(value: number): void {
             this.setScore(this.score() + value);
         }
@@ -625,12 +678,6 @@ namespace info {
             return state.score !== undefined;
         }
 
-        /**
-         * Get the player life
-         */
-        //% group="Multiplayer"
-        //% blockid=piflife block="%player life"
-        //% help=info/life
         life(): number {
             const state = this.getState();
             if (this.showLife === undefined) this.showLife = true;
@@ -642,13 +689,6 @@ namespace info {
             return state.life || 0;
         }
 
-        /**
-         * Set the player life
-         */
-        //% group="Multiplayer"
-        //% blockId=pisetlife block="set %player life to %value"
-        //% value.defl=3
-        //% help=info/set-life
         setLife(value: number): void {
             const state = this.getState();
             if (!(infoState.visibilityFlag & Visibility._ExplicitlySetLife)) {
@@ -659,41 +699,23 @@ namespace info {
             state.life = (value | 0);
         }
 
-        /**
-         * Change the life of a player
-         * @param value
-         */
-        //% group="Multiplayer"
-        //% blockId=pichangelife block="change %player life by %value"
-        //% value.defl=-1
-        //% help=info/change-life-by
         changeLifeBy(value: number): void {
             this.setLife(this.life() + value);
         }
 
-        /**
-         * Return true if the given player currently has a value set for health,
-         * and false otherwise.
-         * @param player player to check life of
-         */
-        //% group="Multiplayer"
-        //% blockId=pihaslife block="%player has life"
-        //% help=info/has-life
         hasLife(): boolean {
             const state = this.getState();
             return state.life !== undefined && state.life !== null;
         }
 
-        /**
-         * Runs code when life reaches zero
-         * @param handler
-         */
-        //% group="Multiplayer"
-        //% blockId=playerinfoonlifezero block="on %player life zero"
-        //% help=info/on-life-zero
         onLifeZero(handler: () => void) {
             const state = this.getState();
             state.lifeZeroHandler = handler;
+        }
+
+        onScore(score: number, handler: () => void) {
+            const state = this.getState();
+            state.scoreReachedHandler = new ScoreReachedHandler(score, handler);
         }
 
         raiseLifeZero(gameOver: boolean) {
@@ -707,6 +729,246 @@ namespace info {
                 }
             }
         }
+    }
+
+    //% fixedInstances
+    //% blockGap=8
+    export class PlayerInfo {
+        protected _player: number;
+        public impl: PlayerInfoImpl;
+
+        constructor(player: number) {
+            this._player = player;
+            this.impl = new PlayerInfoImpl(player);
+
+            if (!players) players = [];
+            players[this._player - 1] = this;
+        }
+
+        private init() {
+            initHUD();
+            if (this._player > 1) initMultiHUD();
+            if (!infoState.playerStates[this._player - 1]) {
+                infoState.playerStates[this._player - 1] = new PlayerState();
+            }
+        }
+
+        get bg(): number {
+            return this.impl.bg;
+        }
+
+        set bg(value: number) {
+            this.impl.bg = value;
+        }
+
+        get border(): number {
+            return this.impl.border;
+        }
+
+        set border(value: number) {
+            this.impl.border = value;
+        }
+
+        get fc(): number {
+            return this.impl.fc;
+        }
+
+        set fc(value: number) {
+            this.impl.fc = value;
+        }
+
+        get showScore(): boolean {
+            return this.impl.showScore;
+        }
+
+        set showScore(value: boolean) {
+            this.impl.showScore = value;
+        }
+
+        get showLife(): boolean {
+            return this.impl.showLife;
+        }
+
+        set showLife(value: boolean) {
+            this.impl.showLife = value;
+        }
+
+        get visibility(): Visibility {
+            return this.impl.visibility;
+        }
+
+        set visibility(value: Visibility) {
+            this.impl.visibility = value;
+        }
+
+        get showPlayer(): boolean {
+            return this.impl.showPlayer;
+        }
+
+        set showPlayer(value: boolean) {
+            this.impl.showPlayer = value;
+        }
+
+        get x(): number {
+            return this.impl.x;
+        }
+
+        set x(value: number) {
+            this.impl.x = value;
+        }
+
+        get y(): number {
+            return this.impl.y;
+        }
+
+        set y(value: number) {
+            this.impl.y = value;
+        }
+
+        get left(): boolean {
+            return this.impl.left;
+        }
+
+        set left(value: boolean) {
+            this.impl.left = value;
+        }
+
+        get up(): boolean {
+            return this.impl.up;
+        }
+
+        set up(value: boolean) {
+            this.impl.up = value;
+        }
+
+        getState(): PlayerState {
+            this.init();
+            return infoState.playerStates[this._player - 1];
+        }
+
+        // the id numbera of the player
+        id(): number {
+            return this.impl.id();
+        }
+
+        /**
+         * Get the player score
+         */
+        //% group="Multiplayer"
+        //% blockId=piscore block="%player score"
+        //% help=info/score
+        //% parts="multiplayer"
+        score(): number {
+            return this.impl.score();
+        }
+
+        /**
+         * Set the player score
+         */
+        //% group="Multiplayer"
+        //% blockId=pisetscore block="set %player score to %value"
+        //% value.defl=0
+        //% help=info/set-score
+        //% parts="multiplayer"
+        setScore(value: number) {
+            this.impl.setScore(value);
+        }
+
+        /**
+         * Change the score of a player
+         * @param value
+         */
+        //% group="Multiplayer"
+        //% blockId=pichangescore block="change %player score by %value"
+        //% value.defl=1
+        //% help=info/change-score-by
+        //% parts="multiplayer"
+        changeScoreBy(value: number): void {
+            this.impl.changeScoreBy(value);
+        }
+
+        hasScore() {
+            return this.impl.hasScore();
+        }
+
+        /**
+         * Get the player life
+         */
+        //% group="Multiplayer"
+        //% blockid=piflife block="%player life"
+        //% help=info/life
+        //% parts="multiplayer"
+        life(): number {
+            return this.impl.life();
+        }
+
+        /**
+         * Set the player life
+         */
+        //% group="Multiplayer"
+        //% blockId=pisetlife block="set %player life to %value"
+        //% value.defl=3
+        //% help=info/set-life
+        //% parts="multiplayer"
+        setLife(value: number): void {
+            this.impl.setLife(value);
+        }
+
+        /**
+         * Change the life of a player
+         * @param value
+         */
+        //% group="Multiplayer"
+        //% blockId=pichangelife block="change %player life by %value"
+        //% value.defl=-1
+        //% help=info/change-life-by
+        //% parts="multiplayer"
+        changeLifeBy(value: number): void {
+            this.impl.changeLifeBy(value);
+        }
+
+        /**
+         * Return true if the given player currently has a value set for health,
+         * and false otherwise.
+         * @param player player to check life of
+         */
+        //% group="Multiplayer"
+        //% blockId=pihaslife block="%player has life"
+        //% help=info/has-life
+        //% parts="multiplayer"
+        hasLife(): boolean {
+            return this.impl.hasLife();
+        }
+
+        /**
+         * Runs code when life reaches zero
+         * @param handler
+         */
+        //% group="Multiplayer"
+        //% blockId=playerinfoonlifezero block="on %player life zero"
+        //% help=info/on-life-zero
+        //% parts="multiplayer"
+        onLifeZero(handler: () => void) {
+            this.impl.onLifeZero(handler);
+        }
+
+        /**
+         * Runs code once each time the score reaches a given value. This will also
+         * run if the score "passes" the given value in either direction without ever
+         * having the exact value (e.g. if score is changed by more than 1)
+         *
+         * @param score the score to fire the event on
+         * @param handler code to run when the score reaches the given value
+         */
+        //% blockId=playerinfoonscore
+        //% block="on $this score $score"
+        //% score.defl=100
+        //% help=info/on-score
+        //% group="Multiplayer"
+        //% parts="multiplayer"
+        onScore(score: number, handler: () => void) {
+            this.impl.onScore(score, handler);
+        }
 
         drawPlayer() {
             const state = this.getState();
@@ -719,8 +981,8 @@ namespace info {
             let lifeWidth = 0;
             const offsetX = 1;
             let offsetY = 2;
-            let showScore = this.showScore && state.score !== undefined;
-            let showLife = this.showLife && state.life !== undefined;
+            let showScore = this.impl.showScore && state.score !== undefined;
+            let showLife = this.impl.showLife && state.life !== undefined;
 
             if (showScore) {
                 score = "" + state.score;
@@ -740,27 +1002,27 @@ namespace info {
             // bump size for space between lines
             if (showScore && showLife) height++;
 
-            const x = this.x - (this.left ? width : 0);
-            const y = this.y - (this.up ? height : 0);
+            const x = this.impl.x - (this.impl.left ? width : 0);
+            const y = this.impl.y - (this.impl.up ? height : 0);
 
             // Bordered Box
             if (showScore || showLife) {
-                screen.fillRect(x, y, width, height, this.border);
-                screen.fillRect(x + 1, y + 1, width - 2, height - 2, this.bg);
+                screen.fillRect(x, y, width, height, this.impl.border);
+                screen.fillRect(x + 1, y + 1, width - 2, height - 2, this.impl.bg);
             }
 
             // print score
             if (showScore) {
-                const bump = this.left ? width - scoreWidth : 0;
-                screen.print(score, x + offsetX + bump + 1, y + 2, this.fc, font);
+                const bump = this.impl.left ? width - scoreWidth : 0;
+                screen.print(score, x + offsetX + bump + 1, y + 2, this.impl.fc, font);
             }
 
             // print life
             if (showLife) {
-                const xLoc = x + offsetX + (this.left ? width - lifeWidth : 0);
+                const xLoc = x + offsetX + (this.impl.left ? width - lifeWidth : 0);
 
                 let mult = infoState.multiplierImage.clone();
-                mult.replace(1, this.fc);
+                mult.replace(1, this.impl.fc);
 
                 screen.drawTransparentImage(
                     infoState.heartImage,
@@ -776,24 +1038,24 @@ namespace info {
                     life,
                     xLoc + infoState.heartImage.width + infoState.multiplierImage.width + 1,
                     y + offsetY,
-                    this.fc,
+                    this.impl.fc,
                     font
                 );
             }
 
             // print player icon
-            if (this.showPlayer) {
+            if (this.impl.showPlayer) {
                 const pNum = "" + this._player;
 
                 let iconWidth = pNum.length * font.charWidth + 1;
                 const iconHeight = Math.max(height, font.charHeight + 2);
-                let iconX = this.left ? (x - iconWidth + 1) : (x + width - 1);
+                let iconX = this.impl.left ? (x - iconWidth + 1) : (x + width - 1);
                 let iconY = y;
 
                 // adjustments when only player icon shown
                 if (!showScore && !showLife) {
-                    iconX += this.left ? -1 : 1;
-                    if (this.up) iconY -= 3;
+                    iconX += this.impl.left ? -1 : 1;
+                    if (this.impl.up) iconY -= 3;
                 }
 
                 screen.fillRect(
@@ -801,20 +1063,20 @@ namespace info {
                     iconY,
                     iconWidth,
                     iconHeight,
-                    this.border
+                    this.impl.border
                 );
                 screen.print(
                     pNum,
                     iconX + 1,
                     iconY + (iconHeight >> 1) - (font.charHeight >> 1),
-                    this.bg,
+                    this.impl.bg,
                     font
                 );
             }
         }
 
         drawScore() {
-            const s = this.score() | 0;
+            const s = this.impl.score() | 0;
 
             let font: image.Font;
             let offsetY: number;

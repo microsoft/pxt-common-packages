@@ -76,7 +76,7 @@ namespace sprites {
      * Destroys all sprites of the given kind.
      */
     //% group="Effects"
-    //% weight=79
+    //% weight=79 help=sprites/destroy-all-sprites-of-kind
     //% blockId=sprites_destroy_all_sprites_of_kind
     //% block="destroy all sprites of kind $kind || with $effect effect for $duration ms"
     //% kind.shadow=spritekind

@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "outDir": "../built",
+        "newLine": "LF",
+        "sourceMap": false,
+        "types": []
+    },
+    "include": [
+        "*.ts",
+        "../settings/*.ts",
+        "../screen/*.ts",
+        "../mixer/*.ts",
+        "../power/*.ts",
+        "../core/*.ts",
+        "../base/*.ts",
+        "../../../pxt/libs/pxt-common/*.ts"
+    ]
+}

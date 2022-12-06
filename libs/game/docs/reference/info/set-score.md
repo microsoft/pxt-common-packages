@@ -31,4 +31,5 @@ info.player2.setScore(110)
 ## See also #seealso
 
 [change score by](/reference/info/change-score-by),
-[score](/reference/info/score)
+[score](/reference/info/score),
+[on score](/reference/info/on-score)

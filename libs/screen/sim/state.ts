@@ -1,7 +1,6 @@
 namespace pxsim {
     function htmlColorToUint32(hexColor: string) {
         const ca = new Uint8ClampedArray(4)
-        const ui = new Uint32Array(ca.buffer)
         const v = parseInt(hexColor.replace(/#/, ""), 16)
         ca[0] = (v >> 16) & 0xff;
         ca[1] = (v >> 8) & 0xff;
@@ -9,6 +8,13 @@ namespace pxsim {
         ca[3] = 0xff; // alpha
         // convert to uint32 using target endian
         return new Uint32Array(ca.buffer)[0]
+    }
+
+    function UInt32ToRGB(col: number): number[] {
+        const ui = new Uint32Array(1);
+        ui[0] = col;
+        const ca = new Uint8ClampedArray(ui.buffer);
+        return [ca[0], ca[1], ca[2]];
     }
 
     export class ScreenState {
@@ -25,10 +31,8 @@ namespace pxsim {
 
         constructor(paletteSrc: string[], w = 0, h = 0) {
             if (!paletteSrc) paletteSrc = ["#000000", "#ffffff"]
-            this.palette = new Uint32Array(paletteSrc.length)
-            for (let i = 0; i < this.palette.length; ++i) {
-                this.palette[i] = htmlColorToUint32(paletteSrc[i])
-            }
+            this.palette = new Uint32Array(paletteSrc.length);
+            this.setPaletteFromHtmlColors(paletteSrc);
             if (w) {
                 this.width = w
                 this.height = h
@@ -39,6 +43,24 @@ namespace pxsim {
 
         setScreenBrightness(b: number) {
             this.brightness = b | 0;
+        }
+
+        paletteToUint8Array() {
+            const out = new Uint8Array(this.palette.length * 3);
+            for (let i = 0; i < this.palette.length; ++i) {
+                const [r, g, b] = UInt32ToRGB(this.palette[i]);
+                const s = 3 * i;
+                out[s] = r;
+                out[s + 1] = g;
+                out[s + 2] = b;
+            }
+            return out;
+        }
+
+        setPaletteFromHtmlColors(src: string[]) {
+            for (let i = 0; i < this.palette.length; ++i) {
+                this.palette[i] = htmlColorToUint32(src[i])
+            }
         }
 
         setPalette(buf: RefBuffer) {

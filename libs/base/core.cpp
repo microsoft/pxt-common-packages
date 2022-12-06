@@ -208,10 +208,10 @@ static void setupSkipList(String r, const char *data, int packed) {
     auto len = r->skip.size;
     if (data)
         memcpy(dst, data, len);
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
     dst[len] = 0;
-    #pragma GCC diagnostic pop
+#pragma GCC diagnostic pop
     const char *ptr = dst;
     auto skipEntries = PXT_NUM_SKIP_ENTRIES(r);
     auto lst = packed ? r->skip_pack.list : r->skip.list;
@@ -1504,7 +1504,19 @@ int getConfig(int key, int defl) {
         return defl;
     int *cfgData = vmImg->configData;
 #else
-    int *cfgData = bytecode ? *(int **)&bytecode[18] : NULL;
+    int *cfgData = NULL;
+    if (bytecode) {
+        cfgData = *(int **)&bytecode[18];
+    } else {
+        // This happens when getConfig() is called before the TypeScript
+        // program starts (exec_binary()). One example is overriding heap size with:
+        // namespace userconfig { export const SYSTEM_HEAP_BYTES = 10000 }
+        unsigned *pc = (unsigned *)functionsAndBytecode;
+        if (*pc++ == 0x4210) {
+            uint16_t *bcode = *((uint16_t **)pc++);
+            cfgData = *(int **)&bcode[18];
+        }
+    }
 #endif
 
     if (cfgData) {
@@ -1763,15 +1775,21 @@ void anyPrint(TValue v) {
 static void dtorDoNothing() {}
 
 #define PRIM_VTABLE(name, objectTp, tp, szexpr)                                                    \
-    static uint32_t name##_size(tp *p) { return TOWORDS(sizeof(tp) + szexpr); }                    \
+    static uint32_t name##_size(tp *p) {                                                           \
+        return TOWORDS(sizeof(tp) + szexpr);                                                       \
+    }                                                                                              \
     DEF_VTABLE(name##_vt, tp, objectTp, (void *)&dtorDoNothing, (void *)&anyPrint, 0,              \
                (void *)&name##_size)
 
 #define NOOP ((void)0)
 
 #define STRING_VT(name, fix, scan, gcsize, data, utfsize, length, dataAt)                          \
-    static uint32_t name##_gcsize(BoxedString *p) { return TOWORDS(sizeof(void *) + (gcsize)); }   \
-    static void name##_gcscan(BoxedString *p) { scan; }                                            \
+    static uint32_t name##_gcsize(BoxedString *p) {                                                \
+        return TOWORDS(sizeof(void *) + (gcsize));                                                 \
+    }                                                                                              \
+    static void name##_gcscan(BoxedString *p) {                                                    \
+        scan;                                                                                      \
+    }                                                                                              \
     static const char *name##_data(BoxedString *p) {                                               \
         fix;                                                                                       \
         return data;                                                                               \
@@ -1932,6 +1950,8 @@ void dumpPerfCounters() {
     for (uint32_t i = 0; i < info->numPerfCounters; ++i) {
         auto c = &perfCounters[i];
         DMESG("%d,%d,%s", c->numstops, c->value, info->perfCounterNames[i]);
+        c->value = 0;
+        c->numstops = 0;
     }
 }
 
@@ -1950,7 +1970,7 @@ void stopPerfCounter(PerfCounters n) {
     auto c = &perfCounters[(uint32_t)n];
     if (!c->start)
         oops(51);
-    c->value += PERF_NOW() - c->start;
+    c->value += ((PERF_NOW() - c->start) & PERF_NOW_MASK) / PERF_NOW_SCALE;
     c->start = 0;
     c->numstops++;
 }

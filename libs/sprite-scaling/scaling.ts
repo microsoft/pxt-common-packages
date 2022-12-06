@@ -1,4 +1,4 @@
-//% color="#95078E" weight=99 icon="\u2195" block="Sprite Scaling"
+//% color="#95078E" weight=99 icon="\uf338"
 namespace scaling {
     //% blockId=sprite_scale_to_percent_ex
     //% block="set $sprite=variables_get(mySprite) scale to $value percent $direction anchor $anchor"
@@ -7,7 +7,7 @@ namespace scaling {
     //% value.defl=150
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite-scaling/scale
+    //% help=sprites/scaling/scale-to-percent
     export function scaleToPercent(sprite: Sprite, value: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
         value /= 100;
         direction = direction || ScaleDirection.Uniformly;
@@ -29,7 +29,7 @@ namespace scaling {
     //% value.defl=50
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite-scaling/scale
+    //% help=sprites/scaling/scale-by-percent
     export function scaleByPercent(sprite: Sprite, value: number, direction?: ScaleDirection, anchor?: ScaleAnchor): void {
         value /= 100;
         direction = direction || ScaleDirection.Uniformly;
@@ -52,7 +52,7 @@ namespace scaling {
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
     //% proportional.defl=0
-    //% help=sprites/sprite-scaling/scale
+    //% help=sprites/scaling/scale-to-pixels
     export function scaleToPixels(sprite: Sprite, value: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
         direction = direction || ScaleDirection.Horizontally;
         anchor = anchor || ScaleAnchor.Middle;
@@ -85,7 +85,7 @@ namespace scaling {
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
     //% proportional.defl=0
-    //% help=sprites/sprite-scaling/scale
+    //% help=sprites/scaling/scale-by-pixels
     export function scaleByPixels(sprite: Sprite, value: number, direction?: ScaleDirection, anchor?: ScaleAnchor, proportional?: boolean): void {
         direction = direction || ScaleDirection.Horizontally;
         anchor = anchor || ScaleAnchor.Middle;

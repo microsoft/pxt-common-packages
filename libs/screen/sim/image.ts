@@ -163,7 +163,7 @@ namespace pxsim.ImageMethods {
         let hh = 0
         while (len--) {
             if (hh++ >= img._height) {
-                hh = 0
+                hh = 1
                 sp = ++x
             }
             dst.data[dp++] = img.data[sp]
@@ -182,7 +182,7 @@ namespace pxsim.ImageMethods {
         let hh = 0
         while (len--) {
             if (hh++ >= img._height) {
-                hh = 0
+                hh = 1
                 dp = ++x
             }
             img.data[dp] = src.data[sp++]
@@ -745,6 +745,9 @@ namespace pxsim.image {
 
 
     export function create(w: number, h: number) {
+        // truncate decimal sizes
+        w |= 0
+        h |= 0
         return new RefImage(w, h, getScreenState().bpp())
     }
 

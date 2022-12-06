@@ -265,8 +265,10 @@ static void drawPanic(int code) {
     x += 24;
 }
 
+extern "C" __attribute__((weak)) void platform_panic(int statusCode) {}
+
 extern "C" void target_panic(int statusCode) {
-    __disable_irq(); // low-level disable
+    __disable_irq();      // low-level disable
     target_disable_irq(); // make sure they stay disabled in DMESG()
 
     DMESG("*** CODAL PANIC : [%d]", statusCode);
@@ -285,6 +287,8 @@ extern "C" void target_panic(int statusCode) {
     panicMode = true;
 
     drawPanic(statusCode);
+
+    platform_panic(statusCode);
 
     auto led = LOOKUP_PIN(LED);
 

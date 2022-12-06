@@ -45,4 +45,5 @@ if (info.player2.score() > 9999) {
 ## See also #seealso
 
 [set score](/reference/info/set-score),
-[change score by](/reference/info/change-score-by)
+[change score by](/reference/info/change-score-by),
+[on score](/reference/info/on-score)

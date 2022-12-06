@@ -1,52 +1,86 @@
 # get Tiles By Type
 
-Get a list of locations in the tilemap that have the same tile image.
+Return an array of tile locations from the tilemap that contain the specified tile.
 
 ```sig
-tiles.getTilesByType(0)
+tiles.getTilesByType(null)
 ```
-
-All the locations in the tilemap with the chosen **image** are returned in an array of [tiles](/types/tile). You can use this array to change or replace the tiles as one group.
 
 ## Parameters
 
-* **image**: the chosen tile image. This function returns all locations with this image
+* **tile**: a tile [image](/types/image) to search the tilemap for.
 
 ## Returns
 
-* an [array](/types/array) of [tiles](/types/tile) from the tilemap that have the same  **image**.
+* an [array](/types/array) of tile locations from the tilemap that have the tile specified in **tile**.
 
 ## Example #example
 
-Get a list of all the tiles in the center of the tilemap. Replace all of them with the tile type used for the border.
+Make a column of tiles from top to bottom of the screen. Set a sprite in motion and set it to bounce on walls. Every `5` seconds, find the column tiles in the tilemap and set them as either wall tiles or regular tiles.
 
 ```blocks
-let image = img`
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-a a a a a a a a a a a a a a a a 
-`;
-// TODO tiles.setTilemap(tiles.createTilemap(null, 0, 8 ** 8, 9)); 
-for (let tile of tiles.getTilesByType(image)) {
-    tiles.setTileAt(tile, image)
-    pause(500)
-}
+let isWall = false
+tiles.setTilemap(tilemap`level1`)
+let mySprite = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 1 1 1 1 1 1 . . . . . 
+    . . . 1 1 2 2 2 2 2 2 1 1 . . . 
+    . . . 1 2 2 2 2 2 2 2 2 1 . . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . 1 2 2 2 2 2 2 2 2 2 2 1 . . 
+    . . . 1 2 2 2 2 2 2 2 2 1 . . . 
+    . . . 1 1 2 2 2 2 2 2 1 1 . . . 
+    . . . . . 1 1 1 1 1 1 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.Player)
+mySprite.setBounceOnWall(true)
+mySprite.vx = 80
+mySprite.vy = 70
+game.onUpdateInterval(5000, function () {
+    isWall = !(isWall)
+    for (let wallTile of tiles.getTilesByType(assets.tile`myTile`)) {
+        tiles.setWallAt(wallTile, isWall)
+    }
+})
 ```
 
 ## See also #seealso
 
-[get tile location](/reference/tiles/get-tile-location),
-[set tile at](/reference/tiles/set-tile-at)
+[get tile location](/reference/tiles/get-tile-location)
+
+```jres
+{
+    "transparency16": {
+        "data": "hwQQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true
+    },
+    "tile1": {
+        "data": "hwQQABAAAADu7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7g==",
+        "mimeType": "image/x-mkcd-f4",
+        "tilemapTile": true,
+        "displayName": "myTile"
+    },
+    "level1": {
+        "id": "level1",
+        "mimeType": "application/mkcd-tilemap",
+        "data": "MTAwYTAwMDgwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMTAwMDAwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDEwMDAwMDAwMDAwMDAwMDAwMDAwMDAxMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==",
+        "tileset": [
+            "myTiles.transparency16",
+            "myTiles.tile1"
+        ],
+        "displayName": "level1"
+    },
+    "*": {
+        "mimeType": "image/x-mkcd-f4",
+        "dataEncoding": "base64",
+        "namespace": "myTiles"
+    }
+}
+```

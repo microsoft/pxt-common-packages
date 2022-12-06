@@ -319,7 +319,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Image"
     //% blockId=spriteimage block="%sprite(mySprite) image"
-    //% weight=8
+    //% weight=8 help=sprites/sprite/image
     get image(): Image {
         return this._image;
     }
@@ -337,7 +337,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     calcDimensionalHash() {
-        return Fx.mul(Fx.mul(this._width, this._height), Fx8(this._image.revision()));
+        return this._image.revision() + Fx.toIntShifted(this._width, 8) + Fx.toIntShifted(this._height, 16);
     }
 
     resetHitbox() {
@@ -346,43 +346,10 @@ class Sprite extends sprites.BaseSprite {
     }
 
     setHitbox() {
-        const newHitBox = game.calculateHitBox(this);
-
-        if (!this._hitbox || this._hitbox.isValid()) {
-            this._hitbox = newHitBox;
-            return;
-        }
-
-        const oMinX = this._hitbox.ox;
-        const oMinY = this._hitbox.oy;
-        const oMaxX = Fx.add(oMinX, this._hitbox.width);
-        const oMaxY = Fx.add(oMinY, this._hitbox.height);
-
-        const nMinX = newHitBox.ox;
-        const nMinY = newHitBox.oy;
-        const nMaxX = Fx.add(nMinX, newHitBox.width);
-        const nMaxY = Fx.add(nMinY, newHitBox.height);
-
-        // total diff in x / y corners between the two hitboxes
-        const xDiff = Fx.add(
-            Fx.abs(Fx.sub(oMinX, nMinX)),
-            Fx.abs(Fx.sub(oMaxX, nMaxX))
-        );
-        const yDiff = Fx.add(
-            Fx.abs(Fx.sub(oMinY, nMinY)),
-            Fx.abs(Fx.sub(oMaxY, nMaxY))
-        );
-
-        // If it's just a small change to the hitbox on one axis,
-        // don't change the dimensions to avoid random clipping
-        this._hitbox = newHitBox;
-        if (xDiff <= Fx.twoFx8) {
-            this._hitbox.ox = oMinX;
-            this._hitbox.width = Fx.sub(oMaxX, oMinX);
-        }
-        if (yDiff <= Fx.twoFx8) {
-            this._hitbox.oy = oMinY;
-            this._hitbox.height = Fx.sub(oMaxY, oMinY);
+        if (this._hitbox) {
+            this._hitbox.updateIfInvalid();
+        } else {
+            this._hitbox = game.calculateHitBox(this);
         }
     }
 
@@ -394,7 +361,7 @@ class Sprite extends sprites.BaseSprite {
         return !(this.flags & SpriteFlag.Invisible);
     }
 
-    private recalcSize(): void {
+    protected recalcSize(): void {
         this._width = Fx8(this._image.width * this.sx);
         this._height = Fx8(this._image.height * this.sy);
         this.resetHitbox();
@@ -645,21 +612,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     __drawCore(camera: scene.Camera) {
-        if (this.sayRenderer) {
-            if (this.sayEndTime !== undefined) {
-                if (control.millis() < this.sayEndTime) {
-                    this.sayRenderer.draw(screen, camera, this);
-                }
-                else {
-                    this.sayRenderer.destroy();
-                    this.sayRenderer = undefined;
-                    this.sayEndTime = undefined;
-                }
-            }
-            else {
-                this.sayRenderer.draw(screen, camera, this)
-            }
-        }
+        this.drawSay(camera);
 
         if (this.isOutOfScreen(camera)) return;
 
@@ -669,47 +622,8 @@ class Sprite extends sprites.BaseSprite {
         const l = Math.floor(this.left - ox);
         const t = Math.floor(this.top - oy);
 
-        if (!this.isScaled())
-            screen.drawTransparentImage(this._image, l, t);
-        else
-            screen.blit(
-                // dst rect in screen
-                l, t,
-                this.width,
-                this.height,
-                // src rect in sprite image
-                this._image,
-                0, 0,
-                this._image.width, this._image.height,
-                true, false);
-
-        if (this.flags & SpriteFlag.ShowPhysics) {
-            const font = image.font5;
-            const margin = 2;
-            let tx = l;
-            let ty = t + this.height + margin;
-            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
-            tx -= font.charWidth;
-            if (this.vx || this.vy) {
-                ty += font.charHeight + margin;
-                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
-            }
-            if (this.ax || this.ay) {
-                ty += font.charHeight + margin;
-                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
-            }
-        }
-
-        // debug info
-        if (game.debug) {
-            screen.drawRect(
-                Fx.toInt(this._hitbox.left) - ox,
-                Fx.toInt(this._hitbox.top) - oy,
-                Fx.toInt(this._hitbox.width),
-                Fx.toInt(this._hitbox.height),
-                1
-            );
-        }
+        this.drawSprite(l, t);
+        this.drawDebug(l, t, ox, oy);
     }
 
     __update(camera: scene.Camera, dt: number) {
@@ -723,28 +637,6 @@ class Sprite extends sprites.BaseSprite {
         if ((this.flags & sprites.Flag.AutoDestroy)
             && this.isOutOfScreen(camera)) {
             this.destroy()
-        }
-
-        const bounce = this.flags & sprites.Flag.BounceOnWall;
-        const tm = game.currentScene().tileMap;
-        if (this.flags & sprites.Flag.StayInScreen || (bounce && !tm)) {
-            if (this.left < camera.offsetX) {
-                this.left = camera.offsetX;
-                if (bounce) this.vx = -this.vx;
-            }
-            else if (this.right > camera.offsetX + screen.width) {
-                this.right = camera.offsetX + screen.width;
-                if (bounce) this.vx = -this.vx;
-            }
-
-            if (this.top < camera.offsetY) {
-                this.top = camera.offsetY;
-                if (bounce) this.vy = -this.vy;
-            }
-            else if (this.bottom > camera.offsetY + screen.height) {
-                this.bottom = camera.offsetY + screen.height;
-                if (bounce) this.vy = -this.vy;
-            }
         }
 
         if (this.sayRenderer) this.sayRenderer.update(dt, camera, this);
@@ -910,6 +802,7 @@ class Sprite extends sprites.BaseSprite {
     //% this.shadow=variables_get
     //% this.defl=mySprite
     //% blockNamespace="scene" group="Locations" weight=90
+    //% help=scene/tilemap-location
     tilemapLocation(): tiles.Location {
         const scene = game.currentScene();
         if (!scene.tileMap) return undefined;
@@ -998,6 +891,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" weight=10
     //% blockId=spriteFollowOtherSprite
     //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
+    //% help=sprites/sprite/follow
     follow(target: Sprite, speed = 100, turnRate = 400) {
         if (target === this) return;
 
@@ -1131,7 +1025,7 @@ class Sprite extends sprites.BaseSprite {
     //% inlineInputMode=inline
     //% value.defl=1
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/scale
+    //% help=sprites/sprite/set-scale
     //% group="Scale" weight=90
     setScale(value: number, anchor?: ScaleAnchor): void {
         const direction = ScaleDirection.Uniformly;
@@ -1152,7 +1046,7 @@ class Sprite extends sprites.BaseSprite {
     //% inlineInputMode=inline
     //% value.defl=1
     //% anchor.defl=ScaleAnchor.Middle
-    //% help=sprites/sprite/scale
+    //% help=sprites/sprite/change-scale
     //% group="Scale" weight=90
     changeScale(value: number, anchor?: ScaleAnchor): void {
         const direction = ScaleDirection.Uniformly;
@@ -1169,5 +1063,69 @@ class Sprite extends sprites.BaseSprite {
 
     toString() {
         return `${this.id}(${this.x},${this.y})->(${this.vx},${this.vy})`;
+    }
+
+    protected drawSay(camera: scene.Camera) {
+        if (this.sayRenderer) {
+            if (this.sayEndTime !== undefined) {
+                if (control.millis() < this.sayEndTime) {
+                    this.sayRenderer.draw(screen, camera, this);
+                }
+                else {
+                    this.sayRenderer.destroy();
+                    this.sayRenderer = undefined;
+                    this.sayEndTime = undefined;
+                }
+            }
+            else {
+                this.sayRenderer.draw(screen, camera, this)
+            }
+        }
+    }
+
+    protected drawDebug(left: number, top: number, offsetX: number, offsetY: number) {
+        if (this.flags & SpriteFlag.ShowPhysics) {
+            const font = image.font5;
+            const margin = 2;
+            let tx = left;
+            let ty = top + this.height + margin;
+            screen.print(`${this.x >> 0},${this.y >> 0}`, tx, ty, 1, font);
+            tx -= font.charWidth;
+            if (this.vx || this.vy) {
+                ty += font.charHeight + margin;
+                screen.print(`v${this.vx >> 0},${this.vy >> 0}`, tx, ty, 1, font);
+            }
+            if (this.ax || this.ay) {
+                ty += font.charHeight + margin;
+                screen.print(`a${this.ax >> 0},${this.ay >> 0}`, tx, ty, 1, font);
+            }
+        }
+
+        // debug info
+        if (game.debug) {
+            screen.drawRect(
+                Fx.toInt(this._hitbox.left) - offsetX,
+                Fx.toInt(this._hitbox.top) - offsetY,
+                Fx.toInt(this._hitbox.width),
+                Fx.toInt(this._hitbox.height),
+                1
+            );
+        }
+    }
+
+    protected drawSprite(drawLeft: number, drawTop: number) {
+        if (!this.isScaled())
+            screen.drawTransparentImage(this._image, drawLeft, drawTop);
+        else
+            screen.blit(
+                // dst rect in screen
+                drawLeft, drawTop,
+                this.width,
+                this.height,
+                // src rect in sprite image
+                this._image,
+                0, 0,
+                this._image.width, this._image.height,
+                true, false);
     }
 }
