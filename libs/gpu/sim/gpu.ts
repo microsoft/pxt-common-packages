@@ -67,9 +67,6 @@ namespace pxsim.gpu {
     const fxOne = ops.toFixed(1);
     const fxHalf = ops.toFixed(0.5);
 
-    // Workaround for the visible seam that sometimes appears on the shared diagonal edge between triangles.
-    const w1Fudge = ops.toFixed(0); // If negative, the sampling will overlap the diagonal edge by that amount.
-
     function edge(a: V2, b: V2, c: V2): number {
         return ops.mul(b.y - a.y, c.x - a.x) - ops.mul(b.x - a.x, c.y - a.y);
     }
@@ -157,6 +154,9 @@ namespace pxsim.gpu {
         const p0 = v0.pos;
         const p1 = v1.pos;
         const p2 = v2.pos;
+        const c0 = v0.uv;
+        const c1 = v1.uv;
+        const c2 = v2.uv;
 
         const area = edge(p0, p1, p2);
         if (area <= 0) return;
@@ -187,6 +187,13 @@ namespace pxsim.gpu {
         const B12 = p1.x - p2.x;
         const A20 = p0.y - p2.y;
         const B20 = p2.x - p0.x;
+
+        const U01 = c1.x - c0.x;
+        const V01 = c1.y - c0.y;
+        const U12 = c2.x - c1.x;
+        const V12 = c2.y - c1.y;
+        const U20 = c0.x - c2.x;
+        const V20 = c0.y - c2.y;
 
         const pbounds: Bounds = {
             left: clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth) + fxHalf,
@@ -230,7 +237,7 @@ namespace pxsim.gpu {
             let w1 = w1_row;
             let w2 = w2_row;
             for (p.x = pbounds.left; p.x <= pbounds.right; p.x += fxOne) {
-                if (w0 >= 0 && w1 >= w1Fudge && w2 >= 0) {
+                if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
                     const color = shadeTexturedPixel(w0, w1, w2);
                     if (color) {
                         ImageMethods.setPixel(
