@@ -1,8 +1,7 @@
 namespace sprites.multiplayer {
     //% blockId=mp_setPlayerSprite
-    //% block="set $player sprite to $sprite"
+    //% block="set $player sprite to $sprite=variables_get(mySprite)"
     //% player.shadow=mp_playernumber
-    //% sprite.shadow=spritescreate
     //% weight=75
     //% blockGap=8
     //% group="Multiplayer"
