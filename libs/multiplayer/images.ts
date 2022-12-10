@@ -1,4 +1,4 @@
-namespace mp {
+namespace multiplayer {
     export function _indicatorForPlayer(player: number, direction: number) {
         switch (direction) {
             case CollisionDirection.Top:
