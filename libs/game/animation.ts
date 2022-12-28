@@ -152,8 +152,7 @@ namespace animation {
             }
         }
 
-        public run(interval: number, target: Sprite, startedAt: number): boolean {
-            const runningTime = control.millis() - startedAt; // The time since the start of the path
+        public run(interval: number, target: Sprite, runningTime: number): boolean {
             const nodeIndex = Math.floor(runningTime / interval); // The current node
             const nodeTime = runningTime % interval; // The time the current node has been animating
 
@@ -487,9 +486,10 @@ namespace animation {
     }
 
     export abstract class SpriteAnimation {
-        protected startedAt: number;
+        protected elapsedTime: number;
 
         constructor(public sprite: Sprite, protected loop: boolean) {
+            this.elapsedTime = 0;
         }
 
         public init() {
@@ -535,10 +535,9 @@ namespace animation {
         }
 
         public update(): boolean {
-            if (this.startedAt == null)
-                this.startedAt = control.millis();
-            const runningTime = control.millis() - this.startedAt;
-            const frameIndex = Math.floor(runningTime / this.frameInterval);
+            this.elapsedTime += game.eventContext().deltaTimeMillis;
+
+            const frameIndex = Math.floor(this.elapsedTime / this.frameInterval);
 
             if (this.lastFrame != frameIndex && this.frames.length) {
                 if (!this.loop && frameIndex >= this.frames.length) {
@@ -562,15 +561,16 @@ namespace animation {
             super(sprite, loop);
             this.startX = sprite.x;
             this.startY = sprite.y;
+            this.elapsedTime = 0;
         }
 
         public update(): boolean {
-            if (this.startedAt == null) this.startedAt = control.millis();
+            this.elapsedTime += game.eventContext().deltaTimeMillis;
 
-            let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
+            let result = this.path.run(this.nodeInterval, this.sprite, this.elapsedTime);
             if (result) {
                 if (!this.loop) return true;
-                this.startedAt = control.millis();
+                this.elapsedTime = 0;
                 this.path.reset();
                 this.sprite.x = this.startX;
                 this.sprite.y = this.startY;
