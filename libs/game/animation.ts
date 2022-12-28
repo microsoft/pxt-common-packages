@@ -95,14 +95,10 @@ namespace animation {
             this.commandIndex = 0;
         }
 
-        protected eatWhitespace() {
+        protected readNextToken() {
             while (this.path.charCodeAt(this.strIndex) === 32 && this.strIndex < this.path.length) {
                 this.strIndex ++;
             }
-        }
-
-        protected readNextToken() {
-            this.eatWhitespace();
 
             if (this.strIndex >= this.path.length) return undefined;
 
