@@ -195,7 +195,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap);
                 }
-                
+
                 // check for screen edge collisions
                 const bounce = s.flags & sprites.Flag.BounceOnWall;
                 if (s.flags & sprites.Flag.StayInScreen || (bounce && !tileMap)) {
@@ -356,6 +356,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     protected screenEdgeCollisions(movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
         let s = movingSprite.sprite;
         if (!s.isStatic()) s.setHitbox();
+        if (!camera.isUpdated()) camera.update();
 
         let offset = Fx.toFloat(s._hitbox.left) - camera.offsetX;
         if (offset < 0) {
