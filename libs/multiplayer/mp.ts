@@ -1,3 +1,4 @@
+const postPresence = multiplayer.postPresenceIcon;
 namespace sprites.multiplayer {
     //% blockId=mp_setPlayerSprite
     //% block="set $player sprite to $sprite=variables_get(mySprite)"
@@ -7,6 +8,24 @@ namespace sprites.multiplayer {
     //% group="Multiplayer"
     //% parts="multiplayer"
     export function setPlayerSprite(player: number, sprite: Sprite) {
+        if (sprite && sprite.image) {
+            // Passing 'implicit' flag so we don't override icons that
+            // user has explicitly defined.
+            postPresence(
+                player,
+                sprite.image,
+                /** implicit **/ true
+            );
+        } else {
+            // Passing 'implicit' flag so we don't override icons that
+            // user has explicitly defined.
+            postPresence(
+                player,
+                undefined,
+                /** implicit **/ true
+            );
+
+        }
         mp._state().setPlayerSprite(player, sprite);
     }
 

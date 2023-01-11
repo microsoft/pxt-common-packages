@@ -4,6 +4,9 @@ namespace multiplayer {
     //%
     void postImage(Image_ im) {
     }
+    //%
+    void postIcon(int type, int icon, Image_ im) {
+    }
 
     //%
     void setOrigin(String origin) {

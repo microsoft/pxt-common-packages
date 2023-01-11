@@ -1,9 +1,17 @@
 namespace multiplayer {
+    enum IconType {
+        Player = 0,
+        Reaction = 1,
+    }
+
     //% shim=multiplayer::getCurrentImage
     declare function getCurrentImage(): Image;
 
     //% shim=multiplayer::postImage
     declare function postImage(im: Image): void;
+
+    //% shim=multiplayer::postIcon
+    declare function postIcon(type: IconType, slot: number, im: Image): void;
 
     //% shim=multiplayer::setOrigin
     declare function setOrigin(origin: string): void;
@@ -33,5 +41,42 @@ namespace multiplayer {
                 }
             })
         }
+    }
+
+    export function postPresenceIcon(slot: number, im: Image, implicit?: boolean) {
+        initIconState();
+        if (slot < 1 || slot > 4)
+            return;
+
+        const presenceSetExplicitly = explicitlySetIcons[IconType.Player];
+        if (implicit && presenceSetExplicitly[slot])
+            return;
+        if (!implicit)
+            presenceSetExplicitly[slot] = true;
+
+        postIcon(IconType.Player, slot, im);
+    }
+
+    export function postReactionIcon(slot: number, im: Image, implicit?: boolean) {
+        initIconState();
+        if (slot < 1 || slot > 6)
+            return;
+
+        const reactionsSetExplicitly = explicitlySetIcons[IconType.Reaction];
+        if (implicit && reactionsSetExplicitly[slot])
+            return;
+        if (!implicit)
+            reactionsSetExplicitly[slot] = true;
+
+        postIcon(IconType.Reaction, slot, im);
+    }
+
+    let explicitlySetIcons: boolean[][];
+    function initIconState() {
+        if (explicitlySetIcons)
+            return;
+        explicitlySetIcons = [];
+        explicitlySetIcons[IconType.Player] = [];
+        explicitlySetIcons[IconType.Reaction] = [];
     }
 }
