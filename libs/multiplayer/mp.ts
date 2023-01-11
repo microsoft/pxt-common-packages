@@ -1,5 +1,4 @@
-const postPresence = multiplayer.postPresenceIcon;
-namespace sprites.multiplayer {
+namespace sprites.mp {
     //% blockId=mp_setPlayerSprite
     //% block="set $player sprite to $sprite=variables_get(mySprite)"
     //% player.shadow=mp_playernumber
@@ -11,7 +10,7 @@ namespace sprites.multiplayer {
         if (sprite && sprite.image) {
             // Passing 'implicit' flag so we don't override icons that
             // user has explicitly defined.
-            postPresence(
+            multiplayer.postPresenceIcon(
                 player,
                 sprite.image,
                 /** implicit **/ true
@@ -19,14 +18,14 @@ namespace sprites.multiplayer {
         } else {
             // Passing 'implicit' flag so we don't override icons that
             // user has explicitly defined.
-            postPresence(
+            multiplayer.postPresenceIcon(
                 player,
                 undefined,
                 /** implicit **/ true
             );
 
         }
-        mp._state().setPlayerSprite(player, sprite);
+        multiplayer._state().setPlayerSprite(player, sprite);
     }
 
     //% blockId=mp_getPlayerSprite
@@ -37,7 +36,7 @@ namespace sprites.multiplayer {
     //% group="Multiplayer"
     //% parts="multiplayer"
     export function getPlayerSprite(player: number): Sprite {
-        return mp._state().getPlayerSprite(player);
+        return multiplayer._state().getPlayerSprite(player);
     }
 
     //% blockId=mp_isPlayerSprite
@@ -53,7 +52,7 @@ namespace sprites.multiplayer {
     }
 }
 
-namespace controller.multiplayer {
+namespace controller.mp {
     //% blockId=mp_moveWithButtons
     //% block="$player move $sprite with buttons||vx $vx vy $vy"
     //% player.shadow=mp_playernumber
@@ -74,7 +73,7 @@ namespace controller.multiplayer {
         vx?: number,
         vy?: number
     ) {
-        mp.getController(player).moveSprite(sprite, vx, vy);
+        multiplayer.getController(player).moveSprite(sprite, vx, vy);
     }
 
     //% blockId=mp_onButtonEvent
@@ -84,11 +83,11 @@ namespace controller.multiplayer {
     //% parts="multiplayer"
     //% weight=90
     export function onButtonEvent(
-        button: mp.MultiplayerButton,
+        button: multiplayer.MultiplayerButton,
         event: ControllerButtonEvent,
         handler: (player: number) => void
     ) {
-        mp._state().onButtonEvent(button, event, handler);
+        multiplayer._state().onButtonEvent(button, event, handler);
     }
 
     //% blockId=mp_isButtonPressed
@@ -100,13 +99,13 @@ namespace controller.multiplayer {
     //% blockGap=8
     export function isButtonPressed(
         player: number,
-        button: mp.MultiplayerButton
+        button: multiplayer.MultiplayerButton
     ): boolean {
-        return mp.getButton(mp.getController(player), button).isPressed();
+        return multiplayer.getButton(multiplayer.getController(player), button).isPressed();
     }
 }
 
-namespace info.multiplayer {
+namespace info.mp {
     //% blockId=mp_getPlayerState
     //% block="$player $state"
     //% player.shadow=mp_playernumber
@@ -117,12 +116,12 @@ namespace info.multiplayer {
     //% blockGap=8
     export function getPlayerState(player: number, state: number): number {
         if (state === MultiplayerState.Score) {
-            return mp.getInfo(player).score();
+            return multiplayer.getInfo(player).score();
         } else if (state === MultiplayerState.Lives) {
-            return mp.getInfo(player).life();
+            return multiplayer.getInfo(player).life();
         }
 
-        return mp._state().getPlayerState(player, state);
+        return multiplayer._state().getPlayerState(player, state);
     }
 
     //% blockId=mp_setPlayerState
@@ -139,12 +138,12 @@ namespace info.multiplayer {
         value: number
     ) {
         if (state === MultiplayerState.Score) {
-            return mp.getInfo(player).setScore(value);
+            return multiplayer.getInfo(player).setScore(value);
         } else if (state === MultiplayerState.Lives) {
-            return mp.getInfo(player).setLife(value);
+            return multiplayer.getInfo(player).setLife(value);
         }
 
-        mp._state().setPlayerState(player, state, value);
+        multiplayer._state().setPlayerState(player, state, value);
     }
 
     //% blockId=mp_changePlayerStateBy
@@ -176,7 +175,7 @@ namespace info.multiplayer {
     //% weight=70
     //% blockGap=8
     export function onScore(score: number, handler: (player: number) => void) {
-        mp._state().onReachedScore(score, handler);
+        multiplayer._state().onReachedScore(score, handler);
     }
 
     //% blockId=mp_onLifeZero
@@ -186,14 +185,14 @@ namespace info.multiplayer {
     //% parts="multiplayer"
     //% weight=60
     export function onLifeZero(handler: (player: number) => void) {
-        mp._state().onLifeZero(handler);
+        multiplayer._state().onLifeZero(handler);
     }
 }
 
 //% icon="\uf0c0"
 //% block="Multiplayer"
 //% color="#207a77"
-namespace mp {
+namespace multiplayer {
     export enum PlayerNumber {
         //% block="1"
         One = 1,
@@ -228,7 +227,7 @@ namespace mp {
     //% parts="multiplayer"
     //% weight=100
     export function setPlayerIndicatorsVisible(visible: boolean) {
-        mp._state().setPlayerIndicatorsVisible(visible);
+        multiplayer._state().setPlayerIndicatorsVisible(visible);
     }
 
     //% blockId=mp_isPlayer
@@ -328,7 +327,7 @@ namespace mp {
 
     class ButtonHandler {
         constructor(
-            public button: mp.MultiplayerButton,
+            public button: multiplayer.MultiplayerButton,
             public event: ControllerButtonEvent,
             public handler: (player: number) => void
         ) {}
@@ -404,7 +403,7 @@ namespace mp {
         }
 
         onButtonEvent(
-            button: mp.MultiplayerButton,
+            button: multiplayer.MultiplayerButton,
             event: ControllerButtonEvent,
             handler: (playerNumber: number) => void
         ) {
@@ -418,7 +417,7 @@ namespace mp {
             this.buttonHandlers.push(new ButtonHandler(button, event, handler));
 
             const registerHandler = (p: number) => {
-                mp.getButton(mp.getController(p), button).onEvent(event, () => {
+                multiplayer.getButton(multiplayer.getController(p), button).onEvent(event, () => {
                     this.getButtonHandler(button, event).handler(p);
                 });
             };
@@ -439,7 +438,7 @@ namespace mp {
             this.scoreHandlers.push(new ScoreHandler(score, handler));
 
             const registerHandler = (p: number) => {
-                mp.getInfo(p).onScore(score, () => {
+                multiplayer.getInfo(p).onScore(score, () => {
                     this.getScoreHandler(score).handler(p);
                 });
             };
@@ -452,7 +451,7 @@ namespace mp {
         onLifeZero(handler: (playerNumber: number) => void) {
             if (!this.lifeZeroHandler) {
                 const registerHandler = (p: number) => {
-                    mp.getInfo(p).onLifeZero(() => {
+                    multiplayer.getInfo(p).onLifeZero(() => {
                         this.lifeZeroHandler(p);
                     });
                 };
@@ -515,7 +514,7 @@ namespace mp {
         }
 
         protected getButtonHandler(
-            button: mp.MultiplayerButton,
+            button: multiplayer.MultiplayerButton,
             event: ControllerButtonEvent
         ) {
             for (const bHandler of this.buttonHandlers) {
