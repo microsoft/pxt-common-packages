@@ -1,4 +1,4 @@
-namespace mp {
+namespace multiplayer {
     /**
      * A type of state to get for a player
      */

@@ -16,6 +16,25 @@ namespace pxsim.multiplayer {
         } as pxsim.MultiplayerImageMessage);
     }
 
+    export function postIcon(iconType: IconType, slot: number, im: pxsim.RefImage) {
+        if (getMultiplayerState().origin !== "server")
+            return;
+        if (im._width * im._height > 64 * 64) {
+            // setting 64x64 as max size for icon for now
+            return;
+        }
+        const asBuf = pxsim.image.toBuffer(im);
+        const sb = board() as ScreenBoard;
+        const screenState = sb && sb.screenState;
+        getMultiplayerState().send({
+            content: "Icon",
+            slot: slot,
+            icon: asBuf,
+            iconType: iconType,
+            palette: screenState.paletteToUint8Array(),
+        } as pxsim.MultiplayerIconMessage);
+    }
+
 
     export function getCurrentImage(): pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
@@ -52,6 +71,19 @@ namespace pxsim {
     export interface MultiplayerImageMessage extends SimulatorMultiplayerMessage {
         content: "Image";
         image: RefBuffer;
+        // 48bytes, [r0,g0,b0,r1,g1,b1,...]
+        palette: Uint8Array;
+    }
+
+    export enum IconType {
+        Player = 0,
+        Reaction = 1,
+    }
+    export interface MultiplayerIconMessage extends SimulatorMultiplayerMessage {
+        content: "Icon";
+        icon: RefBuffer;
+        slot: number;
+        iconType: IconType;
         // 48bytes, [r0,g0,b0,r1,g1,b1,...]
         palette: Uint8Array;
     }
