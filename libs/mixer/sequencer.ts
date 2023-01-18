@@ -65,7 +65,7 @@ namespace music.sequencer {
                     0,
                     renderInstrument(
                         track.instrument,
-                        lookupFrequency(track.currentNoteEvent.getNote(i)),
+                        lookupFrequency(track.currentNoteEvent.getNote(i, track.instrument.octave)),
                         this.tickToMs(track.currentNoteEvent.endTick - track.currentNoteEvent.startTick),
                         music.volume()
                     )
@@ -78,7 +78,7 @@ namespace music.sequencer {
                 playInstructions(
                     0,
                     renderDrumInstrument(
-                        track.drums[track.currentNoteEvent.getNote(i)],
+                        track.drums[track.currentNoteEvent.getNote(i, undefined)],
                         music.volume()
                     )
                 );

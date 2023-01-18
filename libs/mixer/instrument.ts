@@ -22,7 +22,7 @@ namespace music.sequencer {
      *     notes byte length
      *     ...note events
      *
-     * instrument(27 bytes)
+     * instrument(28 bytes)
      *     0 waveform
      *     1 amp attack
      *     3 amp decay
@@ -38,6 +38,7 @@ namespace music.sequencer {
      *     22 amp lfo amp
      *     24 pitch lfo freq
      *     25 pitch lfo amp
+     *     27 octave
      *
      * drum(5 + 7 * steps bytes)
      *     0 steps
@@ -57,6 +58,12 @@ namespace music.sequencer {
      *     4 polyphony
      *     5...notes(1 byte each)
      *
+     * note (1 byte)
+     *     lower six bits = note - (instrumentOctave - 2) * 12
+     *     upper two bits are the enharmonic spelling:
+     *          0 = normal
+     *          1 = flat
+     *          2 = sharp
      */
 
     export class Song {
@@ -239,8 +246,12 @@ namespace music.sequencer {
             return this.polyphony + 5;
         }
 
-        getNote(offset: number) {
-            return this.buf[this.offset + offset + 5];
+        getNote(offset: number, octave?: number) {
+            const value = this.buf[this.offset + offset + 5] & 0x3f;
+            if (octave !== undefined) {
+                return value + (octave - 2) * 12
+            }
+            return value
         }
 
         protected getValue(offset: number) {
@@ -365,6 +376,14 @@ namespace music.sequencer {
 
         set waveform(value: number) {
             this.buf[this.offset] = value;
+        }
+
+        get octave(): number {
+            return this.buf[this.offset + 27]
+        }
+
+        set octave(value: number) {
+            this.buf[this.offset + 27] = value;
         }
     }
 
