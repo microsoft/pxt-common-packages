@@ -78,6 +78,10 @@ namespace mp {
             return this._data;
         }
 
+        set data(value: any) {
+            this._data = value;
+        }
+
         getProperty(prop: PlayerProperty): number {
             switch (prop) {
                 case PlayerProperty.Index: return this.index;
