@@ -121,20 +121,20 @@ namespace mp {
         }
 
         getState(key: number): number {
-            if (key === MultiplayerState.Score) {
+            if (key === MultiplayerState.score) {
                 return this._getInfo().score();
             }
-            if (key === MultiplayerState.Life) {
+            if (key === MultiplayerState.life) {
                 return this._getInfo().life();
             }
             return this._getState(key);
         }
 
         setState(key: number, val: number) {
-            if (key === MultiplayerState.Score) {
+            if (key === MultiplayerState.score) {
                 this._getInfo().setScore(val);
             }
-            if (key === MultiplayerState.Life) {
+            if (key === MultiplayerState.life) {
                 this._getInfo().setLife(val);
             }
             this._setState(key, val);
