@@ -165,6 +165,7 @@ namespace controller {
         //% vx.shadow="spriteSpeedPicker"
         //% vy.shadow="spriteSpeedPicker"
         //% parts="multiplayer"
+        //% deprecated=true
         moveSprite(sprite: Sprite, vx: number = 100, vy: number = 100) {
             this._moveSpriteInternal(sprite, vx, vy);
         }
@@ -201,6 +202,7 @@ namespace controller {
         //% group="Multiplayer"
         //% help=controller/on-button-event
         //% parts="multiplayer"
+        //% deprecated=true
         onButtonEvent(btn: ControllerButton, event: ControllerButtonEvent, handler: () => void) {
             this.button(btn).onEvent(event, handler);
         }
@@ -215,6 +217,7 @@ namespace controller {
         //% group="Multiplayer"
         //% help=controller/on-event
         //% parts="multiplayer"
+        //% deprecated=true
         onEvent(event: ControllerEvent, handler: () => void) {
             control.onEvent(this.id, event, handler);
         }
@@ -237,6 +240,7 @@ namespace controller {
         //% blockId=ctrlispressed block="is %controller %button **button** pressed"
         //% group="Multiplayer"
         //% parts="multiplayer"
+        //% deprecated=true
         isPressed(btn: ControllerButton): boolean {
             return this.button(btn).isPressed();
         }
@@ -250,6 +254,7 @@ namespace controller {
         //% step.defl=100
         //% group="Multiplayer"
         //% parts="multiplayer"
+        //% deprecated=true
         dx(step: number = 100) {
             return this._dxInternal(step);
         }
@@ -279,6 +284,7 @@ namespace controller {
         //% step.defl=100
         //% group="Multiplayer"
         //% parts="multiplayer"
+        //% deprecated=true
         dy(step: number = 100) {
             return this._dyInternal(step);
         }
