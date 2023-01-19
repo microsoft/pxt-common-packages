@@ -537,7 +537,7 @@ namespace mp {
     //% block="change $player $state by $delta"
     //% player.shadow=mp_getPlayerBySlot
     //% state.shadow=mp_multiplayerstate
-    //% deltaValue.defl=1
+    //% delta.defl=1
     //% group=Info
     //% weight=80
     //% blockGap=8
