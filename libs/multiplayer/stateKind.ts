@@ -7,8 +7,8 @@ namespace MultiplayerState {
     }
 
     //% isKind
-    export const Score = create();
+    export const score = create();
 
     //% isKind
-    export const Life = create();
+    export const life = create();
 }
