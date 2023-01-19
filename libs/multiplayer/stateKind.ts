@@ -10,5 +10,5 @@ namespace MultiplayerState {
     export const Score = create();
 
     //% isKind
-    export const Lives = create();
+    export const Life = create();
 }
