@@ -400,6 +400,7 @@ namespace mp {
     //% group=Sprites
     //% weight=100
     //% blockGap=8
+    //% help=multiplayer/get-player-sprite
     //% parts="multiplayer"
     export function getPlayerSprite(player: Player): Sprite {
         return player.getSprite();
@@ -417,6 +418,7 @@ namespace mp {
     //% group=Sprites
     //% weight=100
     //% blockGap=8
+    //% help=multiplayer/set-player-sprite
     //% parts="multiplayer"
     export function setPlayerSprite(player: Player, sprite: Sprite) {
         player.setSprite(sprite);
@@ -440,6 +442,7 @@ namespace mp {
     //% group=Controller
     //% weight=100
     //% blockGap=8
+    //% help=controller/move-sprite
     //% parts="multiplayer"
     export function moveWithButtons(player: Player, vx?: number, vy?: number) {
         player.moveWithButtons(vx, vy);
@@ -457,6 +460,7 @@ namespace mp {
     //% group=Controller
     //% weight=90
     //% blockGap=8
+    //% help=controller/on-button-event
     //% parts="multiplayer"
     export function onButtonEvent(button: MultiplayerButton, event: ControllerButtonEvent, handler: (player: Player) => void) {
         _mpstate().onButtonEvent(button, event, handler);
@@ -474,6 +478,7 @@ namespace mp {
     //% group=Controller
     //% weight=80
     //% blockGap=8
+    //% help=controller/button/is-pressed
     //% parts="multiplayer"
     export function isButtonPressed(player: Player, button: MultiplayerButton): boolean {
         return getButton(player._getController(), button).isPressed();
@@ -490,6 +495,7 @@ namespace mp {
     //% group=Controller
     //% weight=70
     //% blockGap=8
+    //% help=controller/on-event
     //% parts="multiplayer"
     export function onControllerEvent(event: ControllerEvent, handler: (player: Player) => void) {
         _mpstate().onControllerEvent(event, handler);
@@ -508,6 +514,7 @@ namespace mp {
     //% group=Info
     //% weight=100
     //% blockGap=8
+    //% help=multiplayer/get-player-state
     //% parts="multiplayer"
     export function getPlayerState(player: Player, state: number): number {
         return player.getState(state);
@@ -526,6 +533,7 @@ namespace mp {
     //% group=Info
     //% weight=90
     //% blockGap=8
+    //% help=multiplayer/set-player-state
     //% parts="multiplayer"
     export function setPlayerState(player: Player, state: number, value: number) {
         player.setState(state, value);
@@ -545,6 +553,7 @@ namespace mp {
     //% group=Info
     //% weight=80
     //% blockGap=8
+    //% help=multiplayer/change-player-state-by
     //% parts="multiplayer"
     export function changePlayerStateBy(player: Player, state: number, delta: number) {
         player.setState(state, player.getState(state) + delta);
@@ -562,6 +571,7 @@ namespace mp {
     //% group=Info
     //% weight=100
     //% blockGap=8
+    //% help=multiplayer/get-player-property
     //% parts="multiplayer"
     export function getPlayerProperty(player: Player, prop: PlayerProperty): number {
         return player.getProperty(prop);
@@ -579,6 +589,7 @@ namespace mp {
     //% group=Info
     //% weight=70
     //% blockGap=8
+    //% help=info/on-score
     //% parts="multiplayer"
     export function onScore(score: number, handler: (player: Player) => void) {
         _mpstate().onReachedScore(score, handler);
@@ -594,6 +605,7 @@ namespace mp {
     //% group=Info
     //% weight=60
     //% blockGap=8
+    //% help=info/on-life-zero
     //% parts="multiplayer"
     export function onLifeZero(handler: (player: Player) => void) {
         _mpstate().onLifeZero(handler);
@@ -611,6 +623,7 @@ namespace mp {
     //% group=Utility
     //% weight=80
     //% blockGap=8
+    //% help=multiplayer/get-player-by-number
     //% parts="multiplayer"
     export function getPlayerByNumber(number: number): Player {
         const index = number - 1;
@@ -629,6 +642,7 @@ namespace mp {
     //% group=Utility
     //% weight=80
     //% blockGap=8
+    //% help=multiplayer/get-player-by-index
     //% parts="multiplayer"
     export function getPlayerByIndex(index: number): Player {
         if (index < 0 || index >= MAX_PLAYERS) return undefined;
@@ -645,6 +659,7 @@ namespace mp {
     //% group=Utility
     //% weight=80
     //% blockGap=8
+    //% help=multiplayer/player-selector
     //% parts="multiplayer"
     export function playerSelector(number: PlayerNumber): Player {
         const index = number - 1;
@@ -663,6 +678,7 @@ namespace mp {
     //% group=Sprites
     //% weight=90
     //% blockGap=8
+    //% help=multiplayer/get-player-by-sprite
     //% parts="multiplayer"
     export function getPlayerBySprite(sprite: Sprite): Player {
         for (const player of _mpstate().players) {
@@ -682,9 +698,9 @@ namespace mp {
     //% group=Utility
     //% weight=100
     //% blockGap=8
+    //% help=multiplayer/set-player-indicators-visible
     //% parts="multiplayer"
     export function setPlayerIndicatorsVisible(visible: boolean) {
         _mpstate().setPlayerIndicatorsVisible(visible);
     }
 }
-
