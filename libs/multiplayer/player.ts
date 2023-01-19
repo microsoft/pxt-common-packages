@@ -4,22 +4,22 @@
 namespace mp {
     const MAX_PLAYERS = 4;
 
-    export enum PlayerSlot {
-        //% block="player 1"
+    export enum PlayerNumber {
+        //% block="1"
         One = 1,
-        //% block="player 2"
+        //% block="2"
         Two = 2,
-        //% block="player 3"
+        //% block="3"
         Three = 3,
-        //% block="player 4"
+        //% block="4"
         Four = 4
     }
 
     export enum PlayerProperty {
         //% block="index"
         Index = 1,
-        //% block="slot"
-        Slot = 2
+        //% block="number"
+        Number = 2
     }
 
     export enum MultiplayerButton {
@@ -69,7 +69,7 @@ namespace mp {
             return this._index;
         }
 
-        get slot(): number {
+        get number(): number {
             return this._index + 1;
         }
 
@@ -85,7 +85,7 @@ namespace mp {
         getProperty(prop: PlayerProperty): number {
             switch (prop) {
                 case PlayerProperty.Index: return this.index;
-                case PlayerProperty.Slot: return this.slot;
+                case PlayerProperty.Number: return this.number;
                 default: return 0;
             }
         }
@@ -99,7 +99,7 @@ namespace mp {
                 // Passing 'implicit' flag so we don't override icons that
                 // user has explicitly defined.
                 multiplayer.postPresenceIcon(
-                    this.slot,
+                    this.number,
                     sprite.image,
                     /** implicit **/ true
                 );
@@ -107,7 +107,7 @@ namespace mp {
                 // Passing 'implicit' flag so we don't override icons that
                 // user has explicitly defined.
                 multiplayer.postPresenceIcon(
-                    this.slot,
+                    this.number,
                     undefined,
                     /** implicit **/ true
                 );
@@ -124,7 +124,7 @@ namespace mp {
             if (key === MultiplayerState.Score) {
                 return this._getInfo().score();
             }
-            if (key === MultiplayerState.Lives) {
+            if (key === MultiplayerState.Life) {
                 return this._getInfo().life();
             }
             return this._getState(key);
@@ -134,7 +134,7 @@ namespace mp {
             if (key === MultiplayerState.Score) {
                 this._getInfo().setScore(val);
             }
-            if (key === MultiplayerState.Lives) {
+            if (key === MultiplayerState.Life) {
                 this._getInfo().setLife(val);
             }
             this._setState(key, val);
@@ -312,7 +312,7 @@ namespace mp {
                 }
 
                 if (left < 0) {
-                    const indicator = _indicatorForPlayer(player.slot, CollisionDirection.Right);
+                    const indicator = _indicatorForPlayer(player.number, CollisionDirection.Right);
                     target.drawTransparentImage(
                         indicator,
                         Math.max(right + 2, 0),
@@ -326,7 +326,7 @@ namespace mp {
                     )
                 }
                 else if (right > 160) {
-                    const indicator = _indicatorForPlayer(player.slot, CollisionDirection.Left);
+                    const indicator = _indicatorForPlayer(player.number, CollisionDirection.Left);
                     target.drawTransparentImage(
                         indicator,
                         Math.min(left - indicator.width - 2, screen.width - indicator.width),
@@ -340,7 +340,7 @@ namespace mp {
                     )
                 }
                 else if (top < 18) {
-                    const indicator = _indicatorForPlayer(player.slot, CollisionDirection.Bottom);
+                    const indicator = _indicatorForPlayer(player.number, CollisionDirection.Bottom);
                     target.drawTransparentImage(
                         indicator,
                         (left + ((right - left) >> 1) - (indicator.width >> 1)),
@@ -348,7 +348,7 @@ namespace mp {
                     )
                 }
                 else {
-                    const indicator = _indicatorForPlayer(player.slot, CollisionDirection.Top);
+                    const indicator = _indicatorForPlayer(player.number, CollisionDirection.Top);
                     target.drawTransparentImage(
                         indicator,
                         (left + ((right - left) >> 1) - (indicator.width >> 1)),
@@ -396,7 +396,7 @@ namespace mp {
      */
     //% blockId=mp_getPlayerSprite
     //% block="$player sprite"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% group=Sprites
     //% weight=100
     //% blockGap=8
@@ -412,7 +412,7 @@ namespace mp {
      */
     //% blockId=mp_setPlayerSprite
     //% block="set $player sprite to $sprite"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% sprite.shadow=spritescreate
     //% group=Sprites
     //% weight=100
@@ -430,7 +430,7 @@ namespace mp {
      */
     //% blockId=mp_moveWithButtons
     //% block="move $player with buttons||vx $vx vy $vy"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% vx.defl=100
     //% vy.defl=100
     //% vx.shadow="spriteSpeedPicker"
@@ -470,7 +470,7 @@ namespace mp {
      */
     //% blockId=mp_isButtonPressed
     //% block="is $player $button button pressed"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% group=Controller
     //% weight=80
     //% blockGap=8
@@ -503,7 +503,7 @@ namespace mp {
      */
     //% blockId=mp_getPlayerState
     //% block="$player $state"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% state.shadow=mp_multiplayerstate
     //% group=Info
     //% weight=100
@@ -521,7 +521,7 @@ namespace mp {
      */
     //% blockId=mp_setPlayerState
     //% block="set $player $state to $value"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% state.shadow=mp_multiplayerstate
     //% group=Info
     //% weight=90
@@ -539,7 +539,7 @@ namespace mp {
      */
     //% blockId=mp_changePlayerStateBy
     //% block="change $player $state by $delta"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% state.shadow=mp_multiplayerstate
     //% delta.defl=1
     //% group=Info
@@ -558,7 +558,7 @@ namespace mp {
      */
     //% blockId=mp_getPlayerProperty
     //% block="$player $prop"
-    //% player.shadow=mp_getPlayerBySlot
+    //% player.shadow=mp_playerSelector
     //% group=Info
     //% weight=100
     //% blockGap=8
@@ -600,18 +600,20 @@ namespace mp {
     }
 
     /**
-     * Gets the player by slot
-     * @param slot The one-based slot number
-     * @returns The player
+     * Gets the player by number
+     * @param number The one-based number of the player
+     * @returns Player, or undefined if not found
      */
-    //% blockId=mp_getPlayerBySlot
-    //% block="$slot"
+    //% blockId=mp_getPlayerByNumber
+    //% block="player $number"
+    //% number.shadow=variables_get
+    //% number.defl=number
     //% group=Utility
     //% weight=80
     //% blockGap=8
     //% parts="multiplayer"
-    export function getPlayerBySlot(slot: PlayerSlot): Player {
-        const index = slot - 1;
+    export function getPlayerByNumber(number: number): Player {
+        const index = number - 1;
         return getPlayerByIndex(index);
     }
 
@@ -631,6 +633,22 @@ namespace mp {
     export function getPlayerByIndex(index: number): Player {
         if (index < 0 || index >= MAX_PLAYERS) return undefined;
         return _mpstate().players[index];
+    }
+
+    /**
+     * Selects one of the players by number
+     * @param number The player number
+     * @returns The player
+     */
+    //% blockId=mp_playerSelector
+    //% block="player $number"
+    //% group=Utility
+    //% weight=80
+    //% blockGap=8
+    //% parts="multiplayer"
+    export function playerSelector(number: PlayerNumber): Player {
+        const index = number - 1;
+        return getPlayerByIndex(index);
     }
 
     /**
