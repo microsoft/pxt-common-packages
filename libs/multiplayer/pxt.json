@@ -5,7 +5,7 @@
         "README.md",
         "fieldEditors.ts",
         "images.ts",
-        "mp.ts",
+        "player.ts",
         "stateKind.ts",
         "targetoverrides.ts"
     ],

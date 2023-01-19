@@ -1,4 +1,4 @@
-namespace multiplayer {
+namespace mp {
     /**
      * A type of state to get for a player
      */
@@ -11,13 +11,5 @@ namespace multiplayer {
     //% blockHidden
     export function _multiplayerState(kind: number): number {
         return kind;
-    }
-
-    //% shim=TD_ID
-    //% blockId=mp_playernumber
-    //% block="player $num"
-    //% blockHidden
-    export function _playerNumber(num: PlayerNumber): number {
-        return num;
     }
 }
