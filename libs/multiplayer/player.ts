@@ -385,6 +385,11 @@ namespace mp {
         }
     }
 
+    /**
+     * Gets the sprite of the player
+     * @param player The player to get the sprite of
+     * @returns The sprite of the player, or undefined if the player has no assigned sprite
+     */
     //% blockId=mp_getPlayerSprite
     //% block="$player sprite"
     //% player.shadow=mp_getPlayerBySlot
@@ -396,6 +401,11 @@ namespace mp {
         return player.getSprite();
     }
 
+    /**
+     * Sets the sprite of the player
+     * @param player The player to set the sprite for
+     * @param sprite The sprite to set
+     */
     //% blockId=mp_setPlayerSprite
     //% block="set $player sprite to $sprite"
     //% player.shadow=mp_getPlayerBySlot
@@ -408,6 +418,12 @@ namespace mp {
         player.setSprite(sprite);
     }
 
+    /**
+     * Control a player's sprite with directional buttons
+     * @param player The player to control
+     * @param vx The horizontal velocity of the sprite (optional)
+     * @param vy The vertical velocity of the sprite (optional)
+     */
     //% blockId=mp_moveWithButtons
     //% block="move $player with buttons||vx $vx vy $vy"
     //% player.shadow=mp_getPlayerBySlot
@@ -425,6 +441,12 @@ namespace mp {
         player.moveWithButtons(vx, vy);
     }
 
+    /**
+     * Runs code when a button on any controller is pressed, released, or held
+     * @param button The button to listen for
+     * @param event The event to listen for (pressed, released, or held)
+     * @param handler The code to run when the button is pressed, released, or held
+     */
     //% blockId=mp_onButtonEvent
     //% block="on $button button $event for $player"
     //% draggableParameters=reporter
@@ -436,6 +458,12 @@ namespace mp {
         _mpstate().onButtonEvent(button, event, handler);
     }
 
+    /**
+     * Queries the state of a button on a controller
+     * @param player The player to query
+     * @param button The button to query
+     * @returns true if the button is pressed
+     */
     //% blockId=mp_isButtonPressed
     //% block="is $player $button button pressed"
     //% player.shadow=mp_getPlayerBySlot
@@ -447,6 +475,11 @@ namespace mp {
         return getButton(player._getController(), button).isPressed();
     }
 
+    /**
+     * Runs code when a controller is connected or disconnected
+     * @param event The event to listen for (controller connected or disconnected)
+     * @param handler Code to run when the event is raised
+     */
     //% blockId=mp_onControllerEvent
     //% block="on $player $event"
     //% draggableParameters=reporter
@@ -458,6 +491,12 @@ namespace mp {
         _mpstate().onControllerEvent(event, handler);
     }
 
+    /**
+     * Gets the value of the specified player state
+     * @param player The player to get the state for
+     * @param state The state to get
+     * @returns The value of the state
+     */
     //% blockId=mp_getPlayerState
     //% block="$player $state"
     //% player.shadow=mp_getPlayerBySlot
@@ -470,6 +509,12 @@ namespace mp {
         return player.getState(state);
     }
 
+    /**
+     * Sets the value of the specified player state
+     * @param player The player to set the state for
+     * @param state The state to set
+     * @param value The value to set the state to
+     */
     //% blockId=mp_setPlayerState
     //% block="set $player $state to $value"
     //% player.shadow=mp_getPlayerBySlot
@@ -482,6 +527,12 @@ namespace mp {
         player.setState(state, value);
     }
 
+    /**
+     * Changes the value of the specified player state
+     * @param player The player to change the state for
+     * @param state The state to change
+     * @param delta The amount to change the state by
+     */
     //% blockId=mp_changePlayerStateBy
     //% block="change $player $state by $delta"
     //% player.shadow=mp_getPlayerBySlot
@@ -495,6 +546,12 @@ namespace mp {
         player.setState(state, player.getState(state) + delta);
     }
 
+    /**
+     * Gets a property of the player
+     * @param player The player to get the property of
+     * @param prop The property to get
+     * @returns The value of the property
+     */
     //% blockId=mp_getPlayerProperty
     //% block="$player $prop"
     //% player.shadow=mp_getPlayerBySlot
@@ -506,6 +563,11 @@ namespace mp {
         return player.getProperty(prop);
     }
 
+    /**
+     * Runs code once each time a player's score reaches a given value.
+     * @param score The score to check for, eg: 100
+     * @param handler The code to run when the score is reached
+     */
     //% blockId=mp_onScore
     //% block="on score $score for $player"
     //% score.defl=100
@@ -518,6 +580,10 @@ namespace mp {
         _mpstate().onReachedScore(score, handler);
     }
 
+    /**
+     * Runs code when a player's number of lives reaches zero
+     * @param handler The code to run when the lives reach zero
+     */
     //% blockId=mp_onLifeZero
     //% block="on life zero for $player"
     //% draggableParameters=reporter
@@ -529,6 +595,11 @@ namespace mp {
         _mpstate().onLifeZero(handler);
     }
 
+    /**
+     * Gets the player by slot
+     * @param slot The one-based slot number
+     * @returns The player
+     */
     //% blockId=mp_getPlayerBySlot
     //% block="$slot"
     //% group=Utility
@@ -540,6 +611,11 @@ namespace mp {
         return getPlayerByIndex(index);
     }
 
+    /**
+     * Gets the player by index
+     * @param index The zero-based index of the player
+     * @returns Player, or undefined if not found
+     */
     //% blockId=mp_getPlayerByIndex
     //% block="player at $index"
     //% index.shadow=variables_get
@@ -554,8 +630,9 @@ namespace mp {
     }
 
     /**
-     * Returns the player the sprite is assigned to, or null
+     * Gets the player the sprite is assigned to
      * @param sprite the sprite
+     * @returns Player, or undefined if not found
      */
     //% blockId=mp_getPlayerBySprite
     //% block="$sprite player"
