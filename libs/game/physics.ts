@@ -466,7 +466,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
                         s.destroy();
-                    } else if (s._vx === movingSprite.cachedVx) {
+                    } else if (s._vx === movingSprite.cachedVx && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
                         if (s.flags & sprites.Flag.BounceOnWall) {
@@ -547,7 +547,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
                         s.destroy();
-                    } else if (s._vy === movingSprite.cachedVy) {
+                    } else if (s._vy === movingSprite.cachedVy && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
                         if (s.flags & sprites.Flag.BounceOnWall) {
