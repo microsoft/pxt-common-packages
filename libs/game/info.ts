@@ -858,7 +858,6 @@ namespace info {
         //% blockId=piscore block="%player score"
         //% help=info/score
         //% parts="multiplayer"
-        //% deprecated=true
         score(): number {
             return this.impl.score();
         }
@@ -871,7 +870,6 @@ namespace info {
         //% value.defl=0
         //% help=info/set-score
         //% parts="multiplayer"
-        //% deprecated=true
         setScore(value: number) {
             this.impl.setScore(value);
         }
@@ -885,7 +883,6 @@ namespace info {
         //% value.defl=1
         //% help=info/change-score-by
         //% parts="multiplayer"
-        //% deprecated=true
         changeScoreBy(value: number): void {
             this.impl.changeScoreBy(value);
         }
@@ -901,7 +898,6 @@ namespace info {
         //% blockid=piflife block="%player life"
         //% help=info/life
         //% parts="multiplayer"
-        //% deprecated=true
         life(): number {
             return this.impl.life();
         }
@@ -914,7 +910,6 @@ namespace info {
         //% value.defl=3
         //% help=info/set-life
         //% parts="multiplayer"
-        //% deprecated=true
         setLife(value: number): void {
             this.impl.setLife(value);
         }
@@ -928,7 +923,6 @@ namespace info {
         //% value.defl=-1
         //% help=info/change-life-by
         //% parts="multiplayer"
-        //% deprecated=true
         changeLifeBy(value: number): void {
             this.impl.changeLifeBy(value);
         }
@@ -942,7 +936,6 @@ namespace info {
         //% blockId=pihaslife block="%player has life"
         //% help=info/has-life
         //% parts="multiplayer"
-        //% deprecated=true
         hasLife(): boolean {
             return this.impl.hasLife();
         }
@@ -955,7 +948,6 @@ namespace info {
         //% blockId=playerinfoonlifezero block="on %player life zero"
         //% help=info/on-life-zero
         //% parts="multiplayer"
-        //% deprecated=true
         onLifeZero(handler: () => void) {
             this.impl.onLifeZero(handler);
         }
@@ -974,7 +966,6 @@ namespace info {
         //% help=info/on-score
         //% group="Multiplayer"
         //% parts="multiplayer"
-        //% deprecated=true
         onScore(score: number, handler: () => void) {
             this.impl.onScore(score, handler);
         }
