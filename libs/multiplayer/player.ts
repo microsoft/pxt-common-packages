@@ -98,7 +98,7 @@ namespace mp {
             if (sprite && sprite.image) {
                 // Passing 'implicit' flag so we don't override icons that
                 // user has explicitly defined.
-                multiplayer.postPresenceIcon(
+                mp.postPresenceIcon(
                     this.number,
                     sprite.image,
                     /** implicit **/ true
@@ -106,12 +106,12 @@ namespace mp {
             } else {
                 // Passing 'implicit' flag so we don't override icons that
                 // user has explicitly defined.
-                multiplayer.postPresenceIcon(
+                mp.postPresenceIcon(
                     this.number,
                     undefined,
                     /** implicit **/ true
                 );
-    
+
             }
             this._sprite = sprite;
         }

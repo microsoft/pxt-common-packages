@@ -1,17 +1,9 @@
 namespace multiplayer {
-    enum IconType {
-        Player = 0,
-        Reaction = 1,
-    }
-
     //% shim=multiplayer::getCurrentImage
     declare function getCurrentImage(): Image;
 
     //% shim=multiplayer::postImage
     declare function postImage(im: Image): void;
-
-    //% shim=multiplayer::postIcon
-    declare function postIcon(type: IconType, slot: number, im: Image): void;
 
     //% shim=multiplayer::setOrigin
     declare function setOrigin(origin: string): void;
@@ -42,6 +34,15 @@ namespace multiplayer {
             })
         }
     }
+}
+
+namespace mp {
+    enum IconType {
+        Player = 0,
+        Reaction = 1,
+    }
+    //% shim=multiplayer::postIcon
+    declare function postIcon(type: IconType, slot: number, im: Image): void;
 
     export function postPresenceIcon(slot: number, im: Image, implicit?: boolean) {
         initIconState();
