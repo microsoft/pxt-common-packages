@@ -259,30 +259,14 @@ namespace info {
         const pws = playersWithScores();
         if (pws) {
             const goc = game.gameOverConfig();
-            switch (goc.scoringType) {
-                case game.ScoringType.HighScore: {
-                    let hs = -Infinity;
-                    pws.forEach(p => {
-                        const s = p.impl.score();
-                        if (s > hs) {
-                            hs = s;
-                            winner = p;
-                        }
-                    });
-                    break;
+            let hs: number = null;
+            pws.forEach(p => {
+                const s = p.impl.score();
+                if (isBetterScore(s, hs)) {
+                    hs = s;
+                    winner = p;
                 }
-                case game.ScoringType.LowScore: {
-                    let hs = Infinity;
-                    pws.forEach(p => {
-                        const s = p.impl.score();
-                        if (s < hs) {
-                            hs = s;
-                            winner = p;
-                        }
-                    });
-                    break;
-                }
-            }
+            });
         }
         return winner;
     }
