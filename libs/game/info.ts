@@ -35,7 +35,17 @@ namespace info {
         public lifeZeroHandler: () => void;
         public scoreReachedHandler: ScoreReachedHandler
 
-        constructor() { }
+        public showScore?: boolean;
+        public showLife?: boolean;
+        public visibility: Visibility;
+        public showPlayer?: boolean;
+
+        constructor() {
+            this.visibility = Visibility.None;
+            this.showScore = undefined;
+            this.showLife = undefined;
+            this.showPlayer = undefined;
+        }
     }
 
     class InfoState {
@@ -148,7 +158,11 @@ namespace info {
                             if (infoState.countdownEndHandler) {
                                 infoState.countdownEndHandler();
                             } else {
-                                game.over();
+                                // Clear effect and sound, unless set by user
+                                const goc = game.gameOverConfig();
+                                goc.setEffect(false, null, false);
+                                goc.setSound(false, null, false);
+                                game.gameOver(false);
                             }
                         }
                     }
@@ -212,11 +226,26 @@ namespace info {
                 `;
     }
 
+    export function multiplayerScoring() {
+        const pws = playersWithScores();
+        for (const p of pws) {
+            if (p.number > 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    export function playersWithScores(): PlayerInfo[] {
+        return players ? players.filter(item => item.impl.hasScore()) : [];
+    }
+
     export function saveAllScores() {
         const allScoresKey = "all-scores";
         let allScores: number[];
-        if (players) {
-            allScores = players.filter(item => item.impl.hasScore()).map(item => item.impl.score());
+        const pws = playersWithScores();
+        if (pws) {
+            allScores = pws.map(item => item.impl.score());
         }
         else {
             allScores = [];
@@ -225,15 +254,44 @@ namespace info {
         settings.writeJSON(allScoresKey, allScores);
     }
 
+    export function winningPlayer(): PlayerInfo {
+        let winner: PlayerInfo = null;
+        const pws = playersWithScores();
+        if (pws) {
+            const goc = game.gameOverConfig();
+            let hs: number = null;
+            pws.forEach(p => {
+                const s = p.impl.score();
+                if (isBetterScore(s, hs)) {
+                    hs = s;
+                    winner = p;
+                }
+            });
+        }
+        return winner;
+    }
+
+    export function isBetterScore(newScore: number, prevScore: number): boolean {
+        const goc = game.gameOverConfig();
+        switch (goc.scoringType) {
+            case game.ScoringType.HighScore: {
+                return prevScore == null || newScore > prevScore;
+            }
+            case game.ScoringType.LowScore: {
+                return prevScore == null || newScore < prevScore;
+            }
+        }
+        return false;
+    }
+
     export function saveHighScore() {
-        if (players) {
-            let hs = 0;
-            players
-                .filter(p => p && p.impl.hasScore())
-                .forEach(p => hs = Math.max(hs, p.impl.score()));
-            const curr = settings.readNumber("high-score")
-            if (curr == null || hs > curr)
+        const winner = winningPlayer();
+        if (winner) {
+            let hs = winner.impl.score();
+            let curr = settings.readNumber("high-score");
+            if (isBetterScore(hs, curr)) {
                 settings.writeNumber("high-score", hs);
+            }
         }
     }
 
@@ -576,10 +634,6 @@ namespace info {
         public bg: number; // background color
         public border: number; // border color
         public fc: number; // font color
-        public showScore?: boolean;
-        public showLife?: boolean;
-        public visibility: Visibility;
-        public showPlayer?: boolean;
         public x?: number;
         public y?: number;
         public left?: boolean; // if true banner goes from x to the left, else goes rightward
@@ -589,10 +643,6 @@ namespace info {
             this._player = player;
             this.border = 1;
             this.fc = 1;
-            this.visibility = Visibility.None;
-            this.showScore = undefined;
-            this.showLife = undefined;
-            this.showPlayer = undefined;
             this.left = undefined;
             this.up = undefined;
             if (this._player === 1) {
@@ -640,10 +690,10 @@ namespace info {
         }
 
         score(): number {
-            if (this.showScore === undefined) this.showScore = true;
-            if (this.showPlayer === undefined) this.showPlayer = true;
-
             const state = this.getState();
+
+            if (state.showScore === undefined) state.showScore = true;
+            if (state.showPlayer === undefined) state.showPlayer = true;
 
             if (state.score == null)
                 state.score = 0;
@@ -680,8 +730,9 @@ namespace info {
 
         life(): number {
             const state = this.getState();
-            if (this.showLife === undefined) this.showLife = true;
-            if (this.showPlayer === undefined) this.showPlayer = true;
+
+            if (state.showLife === undefined) state.showLife = true;
+            if (state.showPlayer === undefined) state.showPlayer = true;
 
             if (state.life === undefined) {
                 state.life = 3;
@@ -725,7 +776,11 @@ namespace info {
                 if (state.lifeZeroHandler) {
                     state.lifeZeroHandler();
                 } else if (gameOver) {
-                    game.over();
+                    // Clear effect and sound, unless set by user
+                    const goc = game.gameOverConfig();
+                    goc.setEffect(false, null, false);
+                    goc.setSound(false, null, false);
+                    game.gameOver(false);
                 }
             }
         }
@@ -753,6 +808,13 @@ namespace info {
             }
         }
 
+        /**
+         * Returns the one-based number of the player
+         */
+        get number() {
+            return this._player;
+        }
+
         get bg(): number {
             return this.impl.bg;
         }
@@ -778,35 +840,35 @@ namespace info {
         }
 
         get showScore(): boolean {
-            return this.impl.showScore;
+            return this.impl.getState().showScore;
         }
 
         set showScore(value: boolean) {
-            this.impl.showScore = value;
+            this.impl.getState().showScore = value;
         }
 
         get showLife(): boolean {
-            return this.impl.showLife;
+            return this.impl.getState().showLife;
         }
 
         set showLife(value: boolean) {
-            this.impl.showLife = value;
+            this.impl.getState().showLife = value;
         }
 
         get visibility(): Visibility {
-            return this.impl.visibility;
+            return this.impl.getState().visibility;
         }
 
         set visibility(value: Visibility) {
-            this.impl.visibility = value;
+            this.impl.getState().visibility = value;
         }
 
         get showPlayer(): boolean {
-            return this.impl.showPlayer;
+            return this.impl.getState().showPlayer;
         }
 
         set showPlayer(value: boolean) {
-            this.impl.showPlayer = value;
+            this.impl.getState().showPlayer = value;
         }
 
         get x(): number {
@@ -981,8 +1043,8 @@ namespace info {
             let lifeWidth = 0;
             const offsetX = 1;
             let offsetY = 2;
-            let showScore = this.impl.showScore && state.score !== undefined;
-            let showLife = this.impl.showLife && state.life !== undefined;
+            let showScore = state.showScore && state.score !== undefined;
+            let showLife = state.showLife && state.life !== undefined;
 
             if (showScore) {
                 score = "" + state.score;
@@ -1044,7 +1106,7 @@ namespace info {
             }
 
             // print player icon
-            if (this.impl.showPlayer) {
+            if (state.showPlayer) {
                 const pNum = "" + this._player;
 
                 let iconWidth = pNum.length * font.charWidth + 1;
