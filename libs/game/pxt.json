@@ -2,6 +2,7 @@
     "name": "game",
     "description": "The game and sprite library - beta",
     "files": [
+        "ns.ts",
         "gameoverrides.ts",
         "basesprite.ts",
         "constants.ts",

@@ -5,7 +5,6 @@ namespace game {
      * @param message The message to display on the text-entry screen
      * @param answerLength The maximum number of digits the user can enter (1 - 10)
      */
-    //% group="Gameplay"
     //% weight=10 help=game/ask-for-number
     //% blockId=gameaskfornumber block="ask for number %message || and max length %answerLength"
     //% message.shadow=text
