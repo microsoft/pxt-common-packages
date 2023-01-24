@@ -337,4 +337,34 @@ namespace effects {
         source.z = -2;
         return source;
     });
+
+    //% fixedInstance whenUsed block="none"
+    export const none = new ScreenEffect(0, 0, 0, function (anchor: particles.ParticleAnchor, particlesPerSecond: number) {
+        class NullParticleSource extends particles.ParticleSource {
+            constructor() {
+                super(null, 0);
+                this._prune();
+            }
+
+            __draw(camera: scene.Camera) {}
+
+            _update(dt: number) {}
+
+            // remove self at next opportunity
+            _prune() {
+                const scene = game.currentScene();
+                if (!scene)
+                    return;
+                scene.allSprites.removeElement(this);
+                const sources = scene.particleSources;
+                if (sources && sources.length)
+                    sources.removeElement(this);
+            }
+            destroy() { this._prune(); }
+            clear() { this.head = undefined; }
+        }
+        const source = new NullParticleSource();
+
+        return source;
+    });
 }
