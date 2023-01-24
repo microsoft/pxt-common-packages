@@ -360,7 +360,7 @@ namespace effects {
                 if (sources && sources.length)
                     sources.removeElement(this);
             }
-            destroy() { this._prune();}
+            destroy() { this._prune(); }
             clear() { this.head = undefined; }
         }
         const source = new NullParticleSource();
