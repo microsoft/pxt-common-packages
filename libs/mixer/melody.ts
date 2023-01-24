@@ -595,6 +595,8 @@ namespace music {
 
     //% blockId=music_start_song
     //% block="start song $song looping $loop"
+    //% song.snippet="hex``"
+    //% song.pySnippet='hex(""" """)'
     //% song.shadow=music_song_field_editor
     export function startSong(song: Buffer, loop: boolean) {
         if (currentSequencer) currentSequencer.stop();
