@@ -119,7 +119,7 @@ namespace music {
     //% group="Sounds"
     //% duplicateShadowOnDrag
     //% blockHidden
-    export function melodyPlayable(melody: Melody) {
+    export function melodyPlayable(melody: Melody): Playable {
         return new MelodyPlayable(melody);
     }
 
@@ -135,7 +135,7 @@ namespace music {
     //% melody.shadow=melody_editor
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
-    export function stringPlayable(melody: string, tempo: number) {
+    export function stringPlayable(melody: string, tempo: number): Playable {
         let notes: string[] = melody.split(" ").filter(n => !!n);
         let formattedMelody = "";
         let newOctave = false;
@@ -171,7 +171,7 @@ namespace music {
     //% note.shadow=device_note
     //% duration.shadow=device_beat
     //% parts="headphone"
-    export function tonePlayable(note: number, duration: number) {
+    export function tonePlayable(note: number, duration: number): Playable {
         return new TonePlayable(note, duration);
     }
 

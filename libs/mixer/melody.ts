@@ -597,7 +597,7 @@ namespace music {
     //% toolboxParent=music_playable_play
     //% toolboxParentArgument=toPlay
     //% group="Songs"
-    export function createSong(song: Buffer) {
+    export function createSong(song: Buffer): Playable {
         return new sequencer.Song(song);
     }
 
