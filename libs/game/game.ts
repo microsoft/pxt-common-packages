@@ -219,8 +219,9 @@ namespace game {
      * @param effect
      */
     //% blockId=game_setgameovereffect
-    //% block="use effect $effect for $win=toggleWinLose"
+    //% block="use effect $effect for $win"
     //% effect.defl=effects.confetti
+    //% win.shadow=toggleWinLose
     //% win.defl=true
     //% group="Game Over"
     //% weight=80
@@ -238,8 +239,9 @@ namespace game {
      * @param effect
      */
     //% blockId=game_setgameoversound
-    //% block="use sound $sound for $win=toggleWinLose"
+    //% block="use sound $sound for $win"
     //% sound.defl=music.powerUp
+    //% win.shadow=toggleWinLose
     //% win.defl=true
     //% group="Game Over"
     //% weight=80
@@ -257,8 +259,9 @@ namespace game {
      * @param message 
      */
     //% blockId=game_setgameovermessage
-    //% block="use message $message for $win=toggleWinLose"
+    //% block="use message $message for $win"
     //% message.defl="GAME OVER!"
+    //% win.shadow=toggleWinLose
     //% win.defl=true
     //% group="Game Over"
     //% weight=80
@@ -310,7 +313,8 @@ namespace game {
         _gameOverImpl(win);
     }
 
-    //% blockId=gameOver2 block="game over $win=toggleWinLose"
+    //% blockId=gameOver2 block="game over $win"
+    //% win.shadow=toggleWinLose
     //% win.defl=true
     //% weight=80
     //% blockGap=8
