@@ -563,6 +563,7 @@ namespace game {
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
             } else {
+                // No score, no win, show a generic game over icon (sleepy sim)
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
             }
