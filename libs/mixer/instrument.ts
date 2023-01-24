@@ -1,6 +1,8 @@
 namespace music.sequencer {
     const BUFFER_SIZE = 12;
 
+    let currentSequencer: sequencer.Sequencer;
+
     /**
      * Byte encoding format for songs
      * FIXME: should this all be word aligned?
@@ -66,10 +68,11 @@ namespace music.sequencer {
      *          2 = sharp
      */
 
-    export class Song {
+    export class Song extends Playable {
         tracks: Track[];
 
         constructor(public buf: Buffer) {
+            super();
             this.tracks = [];
 
             let currentOffset = 7;
@@ -127,6 +130,22 @@ namespace music.sequencer {
 
         get numberOfTracks(): number {
             return this.buf[6];
+        }
+
+        play(playbackMode: PlaybackMode) {
+            if (currentSequencer) currentSequencer.stop();
+            currentSequencer = new sequencer.Sequencer(this);
+
+            if (playbackMode === PlaybackMode.UntilDone) {
+                currentSequencer.start(false);
+                pause(this.measures * this.beatsPerMeasure * this.beatsPerMinute * 60 * 1000)
+            }
+            else if (playbackMode === PlaybackMode.InBackground) {
+                currentSequencer.start(false);
+            }
+            else {
+                currentSequencer.start(true);
+            }
         }
     }
 

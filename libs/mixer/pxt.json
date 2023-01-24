@@ -16,6 +16,7 @@
         "soundEffect.ts",
         "instrument.ts",
         "sequencer.ts",
+        "playable.ts",
         "pxtparts.json",
         "headphone.svg"
     ],
