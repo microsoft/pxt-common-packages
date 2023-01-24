@@ -353,9 +353,10 @@ namespace effects {
             // remove self at next opportunity
             _prune() {
                 const scene = game.currentScene();
-                if (scene)
-                    scene.allSprites.removeElement(this);
-                const sources = game.currentScene().particleSources;
+                if (!scene)
+                    return;
+                scene.allSprites.removeElement(this);
+                const sources = scene.particleSources;
                 if (sources && sources.length)
                     sources.removeElement(this);
             }
