@@ -81,6 +81,7 @@ namespace music {
     //% blockNamespace=music
     //% weight=76 blockGap=8
     //% group="Tone"
+    //% deprecated=1
     export function playTone(frequency: number, ms: number): void {
         if (ms == 0)
             ms = 86400000 // 1 day
@@ -123,6 +124,7 @@ namespace music {
     //% melody.shadow="melody_editor"
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
+    //% deprecated=1
     export function playMelody(melody: string, tempo: number) {
         let notes: string[] = melody.split(" ").filter(n => !!n);
         let formattedMelody = "";
@@ -181,6 +183,7 @@ namespace music {
     export function stopAllSounds() {
         Melody.stopAll();
         stopPlaying();
+        _stopPlayables();
     }
 
     //% fixedInstances
@@ -213,6 +216,7 @@ namespace music {
         //% parts="headphone"
         //% weight=92 blockGap=8
         //% group="Sounds"
+        //% deprecated=1
         stop() {
             if (this._player) {
                 this._player.stop()
@@ -270,6 +274,7 @@ namespace music {
         //% parts="headphone"
         //% weight=93 blockGap=8
         //% group="Sounds"
+        //% deprecated=1
         loop(volume = 255) {
             this.playCore(volume, true)
         }
@@ -283,6 +288,7 @@ namespace music {
         //% parts="headphone"
         //% weight=95 blockGap=8
         //% group="Sounds"
+        //% deprecated=1
         play(volume = 255) {
             this.playCore(volume, false)
         }
@@ -297,6 +303,7 @@ namespace music {
         //% parts="headphone"
         //% weight=94 blockGap=8
         //% group="Sounds"
+        //% deprecated=1
         playUntilDone(volume = 255) {
             this.stop()
             const p = this._player = new MelodyPlayer(this)
@@ -583,26 +590,15 @@ namespace music {
         }
     }
 
-    let currentSequencer: sequencer.Sequencer;
-
     //% shim=TD_ID
     //% blockId=music_song_field_editor
-    //% block="$song"
+    //% block="song $song"
     //% song.fieldEditor=musiceditor
-    export function _songFieldEditor(song: Buffer) {
-        return song;
-    }
-
-    //% blockId=music_start_song
-    //% block="start song $song looping $loop"
-    //% song.snippet="hex``"
-    //% song.pySnippet='hex(""" """)'
-    //% song.shadow=music_song_field_editor
-    export function startSong(song: Buffer, loop: boolean) {
-        if (currentSequencer) currentSequencer.stop();
-
-        currentSequencer = new sequencer.Sequencer(new sequencer.Song(song));
-        currentSequencer.start(loop);
+    //% toolboxParent=music_playable_play
+    //% toolboxParentArgument=toPlay
+    //% group="Songs"
+    export function createSong(song: Buffer): Playable {
+        return new sequencer.Song(song);
     }
 
     export function playInstructions(when: number, instructions: Buffer) {
