@@ -161,7 +161,7 @@ namespace info {
                                 // Clear effect and sound, unless set by user
                                 const goc = game.gameOverConfig();
                                 goc.setEffect(false, null, false);
-                                goc.setSound(false, null, false);
+                                goc.setSound(false, null, false, false);
                                 game.gameOver(false);
                             }
                         }
@@ -779,7 +779,7 @@ namespace info {
                     // Clear effect and sound, unless set by user
                     const goc = game.gameOverConfig();
                     goc.setEffect(false, null, false);
-                    goc.setSound(false, null, false);
+                    goc.setSound(false, null, false, false);
                     game.gameOver(false);
                 }
             }
