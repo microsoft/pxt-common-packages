@@ -82,10 +82,10 @@ namespace game {
             else this.loseMessage = message;
             if (explicit) this.messageSetByUser = true;
         }
-        getMessage(win: boolean) {
+        getMessage(win: boolean, preferMultiplayer?: boolean) {
             if (this.messageSetByUser)
                 return win ? this.winMessage : this.loseMessage;
-            else if (info.multiplayerScoring() && this.scoringType !== ScoringType.None)
+            else if (preferMultiplayer)
                 return win ? this.winMessageMultiplayer : this.loseMessage;
             else
                 return win ? this.winMessage : this.loseMessage;
@@ -322,7 +322,11 @@ namespace game {
         _gameOverImpl(win);
     }
 
-    function _gameOverImpl(win: boolean) {
+    export function gameOverPlayerWin(player: number) {
+        _gameOverImpl(true, player);
+    }
+
+    function _gameOverImpl(win: boolean, winnerOverride?: number) {
         init();
         if (__isOver) return;
         __isOver = true;
@@ -332,19 +336,20 @@ namespace game {
         } else {
             const goc = game.gameOverConfig();
 
-            const judged = goc.scoringType !== ScoringType.None;
+            const judged = !winnerOverride && goc.scoringType !== ScoringType.None;
             const playersWithScores = info.playersWithScores();
             const prevBestScore = judged && info.highScore();
             const winner = judged && win && info.winningPlayer();
             const scores = playersWithScores.map(player => new GameOverPlayerScore(player.number, player.impl.score(), player === winner));
 
-            // Save all scores as relevant to the game.
-            if (winner) {
+            // Save scores if this was a judged game and there was a winner (don't save in the LOSE case).
+            if (judged && winner) {
                 info.saveAllScores();
                 info.saveHighScore();
             }
 
-            const message = goc.getMessage(win);
+            const preferMultiplayer = !!winnerOverride || (judged && info.multiplayerScoring());
+            const message = goc.getMessage(win, preferMultiplayer);
             const effect = goc.getEffect(win);
             const sound = goc.getSound(win);
 
@@ -362,7 +367,7 @@ namespace game {
 
             pause(400);
 
-            const overDialog = new GameOverDialog(win, message, judged, scores, prevBestScore);
+            const overDialog = new GameOverDialog(win, message, judged, scores, prevBestScore, winnerOverride);
             scene.createRenderable(scene.HUD_Z, target => {
                 overDialog.update();
                 target.drawTransparentImage(

@@ -1,6 +1,3 @@
-//% color="#207a77"
-//% icon="\uf0c0"
-//% block="Multiplayer"
 namespace mp {
     const MAX_PLAYERS = 4;
 
@@ -403,6 +400,7 @@ namespace mp {
     //% help=multiplayer/get-player-sprite
     //% parts="multiplayer"
     export function getPlayerSprite(player: Player): Sprite {
+        if (!player) return undefined;
         return player.getSprite();
     }
 
@@ -421,6 +419,7 @@ namespace mp {
     //% help=multiplayer/set-player-sprite
     //% parts="multiplayer"
     export function setPlayerSprite(player: Player, sprite: Sprite) {
+        if (!player) return;
         player.setSprite(sprite);
     }
 
@@ -445,6 +444,7 @@ namespace mp {
     //% help=controller/move-sprite
     //% parts="multiplayer"
     export function moveWithButtons(player: Player, vx?: number, vy?: number) {
+        if (!player) return;
         player.moveWithButtons(vx, vy);
     }
 
@@ -481,6 +481,7 @@ namespace mp {
     //% help=controller/button/is-pressed
     //% parts="multiplayer"
     export function isButtonPressed(player: Player, button: MultiplayerButton): boolean {
+        if (!player) return false;
         return getButton(player._getController(), button).isPressed();
     }
 
@@ -517,6 +518,7 @@ namespace mp {
     //% help=multiplayer/get-player-state
     //% parts="multiplayer"
     export function getPlayerState(player: Player, state: number): number {
+        if (!player) return 0;
         return player.getState(state);
     }
 
@@ -536,6 +538,7 @@ namespace mp {
     //% help=multiplayer/set-player-state
     //% parts="multiplayer"
     export function setPlayerState(player: Player, state: number, value: number) {
+        if (!player) return;
         player.setState(state, value);
     }
 
@@ -556,6 +559,7 @@ namespace mp {
     //% help=multiplayer/change-player-state-by
     //% parts="multiplayer"
     export function changePlayerStateBy(player: Player, state: number, delta: number) {
+        if (!player) return;
         player.setState(state, player.getState(state) + delta);
     }
 
@@ -574,6 +578,7 @@ namespace mp {
     //% help=multiplayer/get-player-property
     //% parts="multiplayer"
     export function getPlayerProperty(player: Player, prop: PlayerProperty): number {
+        if (!player) return 0;
         return player.getProperty(prop);
     }
 
@@ -609,6 +614,19 @@ namespace mp {
     //% parts="multiplayer"
     export function onLifeZero(handler: (player: Player) => void) {
         _mpstate().onLifeZero(handler);
+    }
+
+    //% blockId=mp_gameOverPlayerWin
+    //% block="game over $player wins"
+    //% player.shadow=mp_playerSelector
+    //% group=Game
+    //% weight=100
+    //% blockGap=8
+    //% help=multiplayer/game-over-player-win
+    //% parts="multiplayer"
+    export function gameOverPlayerWin(player: Player) {
+        if (!player) return;
+        game.gameOverPlayerWin(player.number);
     }
 
     /**
