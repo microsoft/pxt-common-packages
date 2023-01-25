@@ -158,6 +158,7 @@ namespace music {
     //% toolboxParentArgument=toPlay
     //% weight=20
     //% group="Sounds"
+    //% duplicateShadowOnDrag
     export function createSoundEffect(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): SoundEffect {
         const result = new SoundEffect();
 

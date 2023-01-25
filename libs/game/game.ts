@@ -21,8 +21,10 @@ namespace game {
         scoringType: ScoringType;
         winEffect: effects.BackgroundEffect;
         loseEffect: effects.BackgroundEffect;
-        loseSound: music.Melody;
-        winSound: music.Melody;
+        loseSound: music.Playable;
+        winSound: music.Playable;
+        loseSoundLooping: boolean;
+        winSoundLooping: boolean;
         winMessage: string;
         winMessageMultiplayer: string;
         loseMessage: string;
@@ -39,8 +41,10 @@ namespace game {
             this.scoringType = ScoringType.HighScore;
             this.winEffect = effects.confetti;
             this.loseEffect = effects.melt;
-            this.winSound = music.powerUp;
-            this.loseSound = music.wawawawaa;
+            this.winSound = music.melodyPlayable(music.powerUp);
+            this.loseSound = music.melodyPlayable(music.wawawawaa);
+            this.winSoundLooping = false;
+            this.loseSoundLooping  = false;
             this.winMessage = "YOU WIN!";
             this.winMessageMultiplayer = "${WINNER} WINS!";
             this.loseMessage = "GAME OVER";
@@ -50,13 +54,13 @@ namespace game {
             this.scoringTypeSetByUser = false;
         }
 
-        setScoringType(type: ScoringType, explicit?: boolean) {
+        setScoringType(type: ScoringType, explicit: boolean) {
             if (!explicit && this.scoringTypeSetByUser) return;
             this.scoringType = type;
             if (explicit) this.scoringTypeSetByUser = true;
         }
 
-        setEffect(win: boolean, effect: effects.BackgroundEffect, explicit?: boolean) {
+        setEffect(win: boolean, effect: effects.BackgroundEffect, explicit: boolean) {
             if (!explicit && this.effectSetByUser) return;
             if (win) this.winEffect = effect;
             else this.loseEffect = effect;
@@ -66,17 +70,25 @@ namespace game {
             return win ? this.winEffect : this.loseEffect;
         }
 
-        setSound(win: boolean, sound: music.Melody, explicit?: boolean) {
+        setSound(win: boolean, sound: music.Playable, looping: boolean, explicit: boolean) {
             if (!explicit && this.soundSetByUser) return;
-            if (win) this.winSound = sound;
-            else this.loseSound = sound;
+            if (win) {
+                this.winSound = sound;
+                this.winSoundLooping = looping;
+            } else {
+                this.loseSound = sound;
+                this.loseSoundLooping = looping;
+            }
             if (explicit) this.soundSetByUser = true;
         }
         getSound(win: boolean) {
             return win ? this.winSound : this.loseSound;
         }
+        getSoundLooping(win: boolean) {
+            return win ? this.winSoundLooping : this.loseSoundLooping;
+        }
 
-        setMessage(win: boolean, message: string, explicit?: boolean) {
+        setMessage(win: boolean, message: string, explicit: boolean) {
             if (!explicit && this.messageSetByUser) return;
             if (win) this.winMessage = message;
             else this.loseMessage = message;
@@ -222,7 +234,7 @@ namespace game {
     //% win.shadow=toggleWinLose
     //% win.defl=true
     //% group="Game Over"
-    //% weight=80
+    //% weight=90
     //% blockGap=8
     //% help=game/set-game-over-effect
     export function setGameOverEffect(win: boolean, effect: effects.BackgroundEffect) {
@@ -237,18 +249,21 @@ namespace game {
      * @param effect
      */
     //% blockId=game_setgameoversound
-    //% block="use sound $sound for $win"
+    //% block="use $sound looping $looping for $win"
+    //% sound.shadow=music_melody_playable
     //% sound.defl=music.powerUp
+    //% looping.shadow=toggleOnOff
+    //% looping.defl=false
     //% win.shadow=toggleWinLose
     //% win.defl=true
     //% group="Game Over"
     //% weight=80
     //% blockGap=8
     //% help=game/set-game-over-sound
-    export function setGameOverSound(win: boolean, sound: music.Melody) {
+    export function setGameOverSound(win: boolean, sound: music.Playable, looping: boolean) {
         init();
         const goc = game.gameOverConfig();
-        goc.setSound(win, sound, true);
+        goc.setSound(win, sound, looping, true);
     }
 
     /**
@@ -262,7 +277,7 @@ namespace game {
     //% win.shadow=toggleWinLose
     //% win.defl=true
     //% group="Game Over"
-    //% weight=80
+    //% weight=70
     //% blockGap=8
     //% help=game/set-game-over-message
     export function setGameOverMessage(win: boolean, message: string) {
@@ -279,7 +294,7 @@ namespace game {
     //% block="use $type as best score"
     //% type.defl=ScoringType.HighScore
     //% group="Game Over"
-    //% weight=80
+    //% weight=60
     //% blockGap=8
     //% help=game/set-game-over-scoring-type
     export function setGameOverScoringType(type: ScoringType) {
@@ -314,7 +329,7 @@ namespace game {
     //% blockId=gameOver2 block="game over $win"
     //% win.shadow=toggleWinLose
     //% win.defl=true
-    //% weight=80
+    //% weight=100
     //% blockGap=8
     //% help=game/over
     //% group="Game Over"
@@ -352,6 +367,8 @@ namespace game {
             const message = goc.getMessage(win, preferMultiplayer);
             const effect = goc.getEffect(win);
             const sound = goc.getSound(win);
+            const looping = goc.getSoundLooping(win);
+            const playbackMode = looping ? music.PlaybackMode.LoopingInBackground : music.PlaybackMode.InBackground;
 
             // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
             // or screen will be cleared on the new frame and will not appear as background in the game over screen.
@@ -362,7 +379,7 @@ namespace game {
             pushScene();
             scene.setBackgroundImage(screen.clone());
 
-            if (sound) sound.play();
+            if (sound) music.play(sound, playbackMode);
             if (effect) effect.startScreenEffect();
 
             pause(400);

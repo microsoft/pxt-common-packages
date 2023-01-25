@@ -590,13 +590,13 @@ namespace music {
         }
     }
 
-    //% shim=TD_ID
     //% blockId=music_song_field_editor
     //% block="song $song"
     //% song.fieldEditor=musiceditor
     //% toolboxParent=music_playable_play
     //% toolboxParentArgument=toPlay
     //% group="Songs"
+    //% duplicateShadowOnDrag
     export function createSong(song: Buffer): Playable {
         return new sequencer.Song(song);
     }
