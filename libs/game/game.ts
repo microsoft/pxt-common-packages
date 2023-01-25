@@ -343,7 +343,7 @@ namespace game {
             const scores = playersWithScores.map(player => new GameOverPlayerScore(player.number, player.impl.score(), player === winner));
 
             // Save scores if this was a judged game and there was a winner (don't save in the LOSE case).
-                if (judged && winner) {
+            if (judged && winner) {
                 info.saveAllScores();
                 info.saveHighScore();
             }
