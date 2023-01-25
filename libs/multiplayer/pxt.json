@@ -3,6 +3,7 @@
     "description": "Additional blocks for building multiplayer games",
     "files": [
         "README.md",
+        "ns.ts",
         "fieldEditors.ts",
         "images.ts",
         "player.ts",
