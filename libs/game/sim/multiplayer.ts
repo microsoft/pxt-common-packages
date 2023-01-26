@@ -17,8 +17,6 @@ namespace pxsim.multiplayer {
     }
 
     export function postIcon(iconType: IconType, slot: number, im: pxsim.RefImage) {
-        if (getMultiplayerState().origin !== "server")
-            return;
         if (im._width * im._height > 64 * 64) {
             // setting 64x64 as max size for icon for now
             return;
