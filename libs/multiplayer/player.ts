@@ -114,8 +114,8 @@ namespace mp {
 
             }
 
-            if (this._sprite) {
-                this._sprite.destroy();
+            if (this._sprite && this._mwb) {
+                this._getController().stopControllingSprite(this._sprite);
             }
 
             this._sprite = sprite;

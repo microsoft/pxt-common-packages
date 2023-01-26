@@ -169,6 +169,11 @@ namespace controller {
             this._moveSpriteInternal(sprite, vx, vy);
         }
 
+        stopControllingSprite(sprite: Sprite) {
+            if (!sprite) return;
+            this._controlledSprites = this._controlledSprites.filter(s => s.s.id !== sprite.id);
+        }
+
         // use this instead of movesprite internally to avoid adding the "multiplayer" part
         // to the compiled program
         _moveSpriteInternal(sprite: Sprite, vx: number = 100, vy: number = 100) {
