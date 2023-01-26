@@ -57,6 +57,9 @@ namespace mp {
         _state: number[];
         _index: number;
         _data: any;
+        _mwb: boolean;
+        _vx: number;
+        _vy: number;
 
         constructor(index: number) {
             this._index = index;
@@ -110,10 +113,22 @@ namespace mp {
                 );
 
             }
+
+            if (this._sprite) {
+                this._sprite.destroy();
+            }
+
             this._sprite = sprite;
+
+            if (this._sprite && this._mwb) {
+                this._getController().moveSprite(this.getSprite(), this._vx, this._vy);
+            }
         }
 
         moveWithButtons(vx?: number, vy?: number) {
+            this._mwb = true;
+            this._vx = vx;
+            this._vy = vy;
             this._getController().moveSprite(this.getSprite(), vx, vy);
         }
 
