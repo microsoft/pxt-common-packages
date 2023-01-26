@@ -121,7 +121,7 @@ namespace mp {
             this._sprite = sprite;
 
             if (this._sprite && this._mwb) {
-                this._getController().moveSprite(this.getSprite(), this._vx, this._vy);
+                this._getController().moveSprite(this._sprite, this._vx, this._vy);
             }
         }
 
