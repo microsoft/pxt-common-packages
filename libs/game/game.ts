@@ -248,7 +248,7 @@ namespace game {
      * @param win whether the sound should play on a win (true) or lose (false)
      * @param effect
      */
-    //% blockId=game_setgameoversound
+    //% blockId=game_setgameoverplayable
     //% block="use $sound looping $looping for $win"
     //% sound.shadow=music_melody_playable
     //% sound.defl=music.powerUp
@@ -260,10 +260,17 @@ namespace game {
     //% weight=80
     //% blockGap=8
     //% help=game/set-game-over-sound
-    export function setGameOverSound(win: boolean, sound: music.Playable, looping: boolean) {
+    export function setGameOverPlayable(win: boolean, sound: music.Playable, looping: boolean) {
         init();
         const goc = game.gameOverConfig();
         goc.setSound(win, sound, looping, true);
+    }
+
+    // Legacy api. Older extensions may still use this.
+    export function setGameOverSound(win: boolean, sound: music.Melody) {
+        init();
+        const goc = game.gameOverConfig();
+        goc.setSound(win, music.melodyPlayable(sound), false, true);
     }
 
     /**
