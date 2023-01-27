@@ -17,11 +17,14 @@ namespace pxsim.multiplayer {
     }
 
     export function postIcon(iconType: IconType, slot: number, im: pxsim.RefImage) {
-        if (im._width * im._height > 64 * 64) {
+        if (im && (im._width * im._height > 64 * 64)) {
             // setting 64x64 as max size for icon for now
             return;
         }
-        const asBuf = pxsim.image.toBuffer(im);
+
+        // treat empty icon as transparency
+        const asBuf = (im && im.data.some(pixel => pixel != 0))
+            ? pxsim.image.toBuffer(im) : undefined;
         const sb = board() as ScreenBoard;
         const screenState = sb && sb.screenState;
         getMultiplayerState().send({
