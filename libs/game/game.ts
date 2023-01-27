@@ -260,10 +260,17 @@ namespace game {
     //% weight=80
     //% blockGap=8
     //% help=game/set-game-over-sound
-    export function setGameOverSound(win: boolean, sound: music.Playable, looping: boolean) {
+    export function setGameOverSound2(win: boolean, sound: music.Playable, looping: boolean) {
         init();
         const goc = game.gameOverConfig();
         goc.setSound(win, sound, looping, true);
+    }
+
+    // Legacy api. Older extensions may still use this.
+    export function setGameOverSound(win: boolean, sound: music.Melody) {
+        init();
+        const goc = game.gameOverConfig();
+        goc.setSound(win, music.melodyPlayable(sound), false, true);
     }
 
     /**
