@@ -25,6 +25,8 @@ namespace multiplayer {
         game.pushScene();
     }
 
+    const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
+    const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
     export function initServer() {
         if (getOrigin() === "server") {
             game.eventContext().registerFrameHandler(scene.MULTIPLAYER_POST_SCREEN_PRIORITY, () => {
@@ -32,7 +34,44 @@ namespace multiplayer {
                     postImage(screen);
                 }
             })
+
+            for (let p = 1; p <= 4; p++) {
+                registerPlayerConnectionListeners(p);
+            }
         }
+    }
+
+    function registerPlayerConnectionListeners(playerNumber: number) {
+        control.onEvent(
+            MULTIPLAYER_PLAYER_JOINED_ID,
+            playerNumber,
+            () => receiveConnectionChangedEvent(playerNumber, true)
+        );
+        control.onEvent(
+            MULTIPLAYER_PLAYER_LEFT_ID,
+            playerNumber,
+            () => receiveConnectionChangedEvent(playerNumber, false)
+        );
+    }
+
+    function receiveConnectionChangedEvent(playerNumber: number, connected: boolean) {
+        let c: controller.Controller;
+        switch (playerNumber) {
+            case 1:
+                c = controller.player1;
+                break;
+            case 2:
+                c = controller.player2;
+                break;
+            case 3:
+                c = controller.player3;
+                break;
+            case 4:
+                c = controller.player4;
+                break;
+        }
+        if (c)
+            c.connected = connected;
     }
 }
 
