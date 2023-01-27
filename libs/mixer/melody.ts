@@ -184,6 +184,7 @@ namespace music {
         Melody.stopAll();
         stopPlaying();
         _stopPlayables();
+        sequencer._stopAllSongs();
     }
 
     //% fixedInstances

@@ -811,4 +811,11 @@ namespace music.sequencer {
         // Use cosine to smooth out the value somewhat
         return Math.cos(((time / 1000) * lfo.frequency) * 2 * Math.PI) * lfo.amplitude
     }
+
+    export function _stopAllSongs() {
+        if (currentSequencer) {
+            currentSequencer.stop();
+            currentSequencer = undefined;
+        }
+    }
 }
