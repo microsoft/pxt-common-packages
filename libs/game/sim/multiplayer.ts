@@ -22,7 +22,7 @@ namespace pxsim.multiplayer {
             return;
         }
 
-        // treat empty icon as transparency
+        // treat empty icon as undefined
         const asBuf = (im && im.data.some(pixel => pixel != 0))
             ? pxsim.image.toBuffer(im) : undefined;
         const sb = board() as ScreenBoard;
