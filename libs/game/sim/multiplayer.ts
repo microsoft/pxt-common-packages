@@ -98,6 +98,15 @@ namespace pxsim {
         soundbuf?: Uint8Array;
     }
 
+    export interface MultiplayerConnectionEvent extends SimulatorMultiplayerMessage {
+        content: "Connection";
+        slot: number;
+        connected: boolean;
+    }
+
+    const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
+    const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
+
     export class MultiplayerState {
         lastMessageId: number;
         origin: string;
@@ -144,6 +153,12 @@ namespace pxsim {
             }
         }
 
+        registerConnectionState(player: number, connected: boolean) {
+            const evId = connected ? MULTIPLAYER_PLAYER_JOINED_ID : MULTIPLAYER_PLAYER_LEFT_ID;
+            const b = board();
+            b.bus.queue(evId, player);
+        }
+
         protected messageHandler(msg: SimulatorMessage) {
             if (!isMultiplayerMessage(msg)) {
                 return;
@@ -176,6 +191,10 @@ namespace pxsim {
                         pxsim.AudioContextManager.muteAllChannels();
                     }
                 }
+            } else if (isConnectionMessage(msg)) {
+                if (this.origin === "server") {
+                    this.registerConnectionState(msg.slot, msg.connected);
+                }
             }
         }
     }
@@ -194,5 +213,9 @@ namespace pxsim {
 
     function isAudioMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerAudioEvent {
         return msg && msg.content === "Audio";
+    }
+
+    function isConnectionMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerConnectionEvent {
+        return msg && msg.content === "Connection";
     }
 }
