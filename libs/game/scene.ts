@@ -94,6 +94,7 @@ namespace scene {
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
+        controllerConnectionState: boolean[]
         followingSprites: sprites.FollowingSprite[];
         buttonEventHandlers: controller.ButtonEventHandlerState[];
 
