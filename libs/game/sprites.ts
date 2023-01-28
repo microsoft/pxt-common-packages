@@ -62,7 +62,9 @@ namespace sprites {
 
     //% group="Effects"
     //% weight=80
-    //% blockId=spritedestroy2 block="destroy $sprite=variables_get(mySprite) || with $effect effect for $duration ms"
+    //% blockId=spritedestroy2 block="destroy $sprite || with $effect effect for $duration ms"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=mySprite
     //% duration.shadow=timePicker
     //% expandableArgumentMode="toggle"
     //% help=sprites/sprite/destroy
