@@ -1,22 +1,32 @@
 # get Player By Sprite
 
-Return the player assigned to a sprite.
+Get the Player that has this character sprite.
 
 ```sig
 mp.getPlayerBySprite(null)
 ```
+
 ## Parameters
 
-* **sprite**: the player whose player will be returned.
+* **sprite**: the character sprite whose [Player](/types/player) is returned.
 
 ## Returns
 
-* the player that is assigned to the **sprite**.
+* the [Player](/types/player) that is assigned this **sprite**.
 
 ## Example
 
+Send 2 player sprites moving around the screen. When they overlap the hamburger sprite, make one player say that they like the hamburger and they other say that they don't.
+
 ```blocks
-let mySprite = sprites.create(img`
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Food, function (sprite, otherSprite) {
+    if (mp.getPlayerProperty(mp.getPlayerBySprite(sprite), mp.PlayerProperty.Number) == 1) {
+        sprite.sayText("Yum, burger!", 100, false)
+    } else {
+        sprite.sayText("Hate, burgers!", 100, false)
+    }
+})
+let burger = sprites.create(img`
     ...........ccccc66666...........
     ........ccc4444444444666........
     ......cc444444444bb4444466......
@@ -49,9 +59,45 @@ let mySprite = sprites.create(img`
     ......ffebbbbbb44444444eee......
     .........fffffffcccccee.........
     ................................
-    `, SpriteKind.Player)
-mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.One), mySprite)
-let playerID = mp.getPlayerBySprite(mySprite)
+    `, SpriteKind.Food)
+mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.One), sprites.create(img`
+    . . 4 4 4 . . . . 4 4 4 . . . . 
+    . 4 5 5 5 e . . e 5 5 5 4 . . . 
+    4 5 5 5 5 5 e e 5 5 5 5 5 4 . . 
+    4 5 5 4 4 5 5 5 5 4 4 5 5 4 . . 
+    e 5 4 4 5 5 5 5 5 5 4 4 5 e . . 
+    . e e 5 5 5 5 5 5 5 5 e e . . . 
+    . . e 5 f 5 5 5 5 f 5 e . . . . 
+    . . f 5 5 5 4 4 5 5 5 f . . f f 
+    . . f 4 5 5 f f 5 5 6 f . f 5 f 
+    . . . f 6 6 6 6 6 6 4 4 f 5 5 f 
+    . . . f 4 5 5 5 5 5 5 4 4 5 f . 
+    . . . f 5 5 5 5 5 4 5 5 f f . . 
+    . . . f 5 f f f 5 f f 5 f . . . 
+    . . . f f . . f f . . f f . . . 
+    `, SpriteKind.Player))
+mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two), sprites.create(img`
+    . . . . f f f f f . . . . . . . 
+    . . . f e e e e e f f f . . . . 
+    . . f d d d e e e e d d f . . . 
+    . c d d d d d e e e b d c . . . 
+    . c d d d d d d e e b d c . . . 
+    c d d f d d f d e e f c . f f . 
+    c d d f d d f d e e f . . f e f 
+    c d e e d d d d e e f . . f e f 
+    . f d d d c d e e f f . . f e f 
+    . . f f f d e e e e e f . f e f 
+    . . . . f e e e e e e e f f f . 
+    . . . . f f e e e e e b f f . . 
+    . . . f e f f e e c d d f f . . 
+    . . f d d b d d c f f f . . . . 
+    . . f d d c d d d f f . . . . . 
+    . . . f f f f f f f . . . . . . 
+    `, SpriteKind.Player))
+mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).setVelocity(60, 50)
+mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).setBounceOnWall(true)
+mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setVelocity(50, -50)
+mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setBounceOnWall(true)
 ```
 
 ## See also
