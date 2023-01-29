@@ -458,14 +458,14 @@ namespace mp {
     /**
      * Returns an array of all players
      */
-    //% blockId=mp_getAllPlayers
+    //% blockId=mp_allPlayers
     //% block="array of all players"
     //% group=Player
     //% weight=90
     //% blockGap=8
     //% help=multiplayer/get-all-players
     //% parts="multiplayer"
-    export function getAllPlayers(): Player[] {
+    export function allPlayers(): Player[] {
         return _mpstate().players;
     }
 
