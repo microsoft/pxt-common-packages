@@ -60,6 +60,19 @@ namespace sprites {
         return sprites.create(img, kind);
     }
 
+    //% group="Effects"
+    //% weight=80
+    //% blockId=spritedestroy2 block="destroy $sprite || with $effect effect for $duration ms"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=mySprite
+    //% duration.shadow=timePicker
+    //% expandableArgumentMode="toggle"
+    //% help=sprites/sprite/destroy
+    export function destroy(sprite: Sprite, effect?: effects.ParticleEffect, duration?: number) {
+        if (!sprite) return;
+        sprite.destroy(effect, duration);
+    }
+
     /**
      * Return an array of all sprites of the given kind.
      * @param kind the target kind
