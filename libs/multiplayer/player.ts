@@ -409,8 +409,8 @@ namespace mp {
     //% blockId=mp_getPlayerSprite
     //% block="$player sprite"
     //% player.shadow=mp_playerSelector
-    //% group=Sprites
-    //% weight=100
+    //% group=Player
+    //% weight=80
     //% blockGap=8
     //% help=multiplayer/get-player-sprite
     //% parts="multiplayer"
@@ -428,14 +428,66 @@ namespace mp {
     //% block="set $player sprite to $sprite"
     //% player.shadow=mp_playerSelector
     //% sprite.shadow=spritescreate
-    //% group=Sprites
-    //% weight=100
+    //% group=Player
+    //% weight=120
     //% blockGap=8
     //% help=multiplayer/set-player-sprite
     //% parts="multiplayer"
     export function setPlayerSprite(player: Player, sprite: Sprite) {
         if (!player) return;
         player.setSprite(sprite);
+    }
+
+    /**
+     * Selects one of the players by number
+     * @param number The player number
+     * @returns The player
+     */
+    //% blockId=mp_playerSelector
+    //% block="player $number"
+    //% group=Player
+    //% weight=100
+    //% blockGap=8
+    //% help=multiplayer/player-selector
+    //% parts="multiplayer"
+    export function playerSelector(number: PlayerNumber): Player {
+        const index = number - 1;
+        return getPlayerByIndex(index);
+    }
+
+    /**
+     * Returns an array of all players
+     */
+    //% blockId=mp_getAllPlayers
+    //% block="array of all players"
+    //% group=Player
+    //% weight=90
+    //% blockGap=8
+    //% help=multiplayer/get-all-players
+    //% parts="multiplayer"
+    export function getAllPlayers(): Player[] {
+        return _mpstate().players;
+    }
+
+    /**
+     * Gets the player the sprite is assigned to
+     * @param sprite the sprite
+     * @returns Player, or undefined if not found
+     */
+    //% blockId=mp_getPlayerBySprite
+    //% block="$sprite player"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=mySprite
+    //% group=Player
+    //% weight=70
+    //% blockGap=8
+    //% help=multiplayer/get-player-by-sprite
+    //% parts="multiplayer"
+    export function getPlayerBySprite(sprite: Sprite): Player {
+        for (const player of _mpstate().players) {
+            if (player.getSprite() === sprite) return player;
+        }
+        return undefined;
     }
 
     /**
@@ -680,44 +732,6 @@ namespace mp {
     export function getPlayerByIndex(index: number): Player {
         if (index < 0 || index >= MAX_PLAYERS) return undefined;
         return _mpstate().players[index];
-    }
-
-    /**
-     * Selects one of the players by number
-     * @param number The player number
-     * @returns The player
-     */
-    //% blockId=mp_playerSelector
-    //% block="player $number"
-    //% group=Utility
-    //% weight=80
-    //% blockGap=8
-    //% help=multiplayer/player-selector
-    //% parts="multiplayer"
-    export function playerSelector(number: PlayerNumber): Player {
-        const index = number - 1;
-        return getPlayerByIndex(index);
-    }
-
-    /**
-     * Gets the player the sprite is assigned to
-     * @param sprite the sprite
-     * @returns Player, or undefined if not found
-     */
-    //% blockId=mp_getPlayerBySprite
-    //% block="$sprite player"
-    //% sprite.shadow=variables_get
-    //% sprite.defl=mySprite
-    //% group=Sprites
-    //% weight=90
-    //% blockGap=8
-    //% help=multiplayer/get-player-by-sprite
-    //% parts="multiplayer"
-    export function getPlayerBySprite(sprite: Sprite): Player {
-        for (const player of _mpstate().players) {
-            if (player.getSprite() === sprite) return player;
-        }
-        return undefined;
     }
 
     /**
