@@ -33,6 +33,12 @@ game.onUpdateInterval(500, function () {
 })
 ```
 
+## See also
+
+[on button pressed](/reference/multiplayer/on-button-pressed),
+[move with buttons](/reference/multiplayer/move-with-buttons)
+
+
 ```package
 multiplayer
 ```
