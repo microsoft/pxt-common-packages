@@ -13,7 +13,7 @@ The sprite that is set for a [Player](/types/player) is moved when controller bu
 * **player**: the [Player](/types/player) to assing a sprite to.
 * **sprite**: the sprite to set as the character sprite for **player**.
 
-## Example
+## Example #example
 
 Set a character sprite for `player 2` and make it move with the controller buttons.
 
@@ -40,7 +40,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two), sprites.create(img`
 mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.Two))
 ```
 
-## See also
+## See also #seealso
 
 [get player sprite](/reference/multiplayer/get-player-sprite),
 [set player indicators visible](/reference/multiplayer/set-player-indicators-visible)

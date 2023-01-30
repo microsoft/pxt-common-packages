@@ -10,7 +10,7 @@ mp.gameOverPlayerWin(mp.playerSelector(mp.PlayerNumber.One))
 
 * **player**: the [player](/types/player) set to win the game.
 
-## Example
+## Example #example
 
 Send two player sprites moving around the screen. Place a food (donut) sprite at the left side of the screen. When a player sprite reaches the donut, that player wins the game.
 
@@ -79,7 +79,7 @@ mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setBounceOnWall(true)
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setVelocity(50, 40)
 ```
 
-## See also
+## See also #seealso
 
 [get player by sprite](/reference/multiplayer/get-player-by-sprite)
 

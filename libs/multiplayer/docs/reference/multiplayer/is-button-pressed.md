@@ -15,7 +15,7 @@ mp.isButtonPressed(mp.playerSelector(mp.PlayerNumber.One), mp.MultiplayerButton.
 
 * a [boolean](/types/boolean) value for the state of the **button** for the **player**. It is `true` if the button is pressed and `false` if the button is not pressed.
 
-## Example
+## Example #example
 
 If `player 2` is pressing the up arrow button for too long, then`player 1` wins.
 
@@ -33,7 +33,7 @@ game.onUpdateInterval(500, function () {
 })
 ```
 
-## See also
+## See also #seealso
 
 [on button pressed](/reference/multiplayer/on-button-pressed),
 [move with buttons](/reference/multiplayer/move-with-buttons)

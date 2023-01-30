@@ -19,7 +19,7 @@ let myPlayer: mp.Player = null
 myPlayer = mp.playerSelector(mp.PlayerNumber.One)
 ```
 
-## Example
+## Example #example
 
 ```blocks
 namespace MultiplayerState {
@@ -73,7 +73,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two), sprites.create(img`
 mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.Two))
 ```
 
-# See also
+# See also #seealso
 
 [multiplayer](/reference/multiplayer)
 

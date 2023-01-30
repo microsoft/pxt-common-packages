@@ -16,7 +16,7 @@ You can get a [Player](/types/player) object from the multiplayer using an index
 
 * the [Player](/types/player) in the multiplayer list at location **index**.
 
-## Example
+## Example #example
 
 Find all the players that have a score greater than `20` and give them a bonus of `5` points.
 
@@ -30,7 +30,7 @@ for (let index = 0; index <= 3; index++) {
 }
 ```
 
-## See also
+## See also #seealso
 
 [player selector](/reference/multiplayer/player-selector),
 [get player by number](/reference/multiplayer/get-player-by-number)

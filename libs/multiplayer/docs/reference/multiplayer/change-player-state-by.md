@@ -13,7 +13,7 @@ A [Player](/types/player) state value is changed by adding or subtracting some a
 * **state**: the [state item](/reference/multiplayer/multiplayer-state) to change, such as `score` or `life`.
 * **delta**: the amount to change the **state** value by.
 
-## Example
+## Example #example
 
 Set `player 1` score state to `0`. Send the player's shark sprite across the screen to eat a goldfish on the opposite side. When the shark overlaps the goldfish, add `1` to `player 1` score state.
 
@@ -111,7 +111,7 @@ game.onUpdateInterval(500, function () {
 })
 ```
 
-## See also
+## See also #seealso
 
 [set player state](/reference/multiplayer/set-player-state),
 [get player state](/reference/multiplayer/get-player-state)

@@ -14,7 +14,7 @@ A player's sprite will move vertically or horizontally with the controller's arr
 * **vx**: an optional velocity (speed) to move the player in the left or right direction. The default value is `100`.
 * **vy**: an optional velocity (speed) to move the player the up or down direction. The default value is `100`.
 
-## Example
+## Example #example
 
 Set a character sprite for `player 2` and make it move with the controller buttons.
 
@@ -41,7 +41,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two), sprites.create(img`
 mp.moveWithButtons(mp.playerSelector(mp.PlayerNumber.Two))
 ```
 
-## See also
+## See also #seealso
 
 [is button pressed](/reference/multiplayer/is-button-pressed)
 

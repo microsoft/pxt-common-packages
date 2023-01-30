@@ -16,7 +16,7 @@ Players in a multiplayer game are represented by the [Player](/types/player) gam
 
 * the [Player](/types/player) chosen by the selector in **player**.
 
-## Example
+## Example #example
 
 Set a character sprite for the player selected by ``||mp:player 2||``.
 
@@ -41,7 +41,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two), sprites.create(img`
     `, SpriteKind.Player))
 ```
 
-## See also
+## See also #seealso
 
 [get player by number](/reference/multiplayer/get-player-by-number),
 [get player by index](/reference/multiplayer/get-player-by-index)

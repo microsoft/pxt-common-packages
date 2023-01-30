@@ -14,7 +14,7 @@ mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One))
 
 * the [sprite](/reference/types/sprite) that is assigned to the **player**.
 
-## Example
+## Example #example
 
 Make a player sprite move across the screen. When the sprite reaches the edge of the screen, send the sprite back in the opposite direction and flip the image of the sprite.
 
@@ -49,7 +49,7 @@ game.onUpdateInterval(500, function () {
 })
 ```
 
-## See also
+## See also #seealso
 
 [set player sprite](/reference/multiplayer/set-player-sprite),
 [get player by sprite](/reference/multiplayer/get-player-by-sprite)

@@ -31,7 +31,7 @@ namespace MultiplayerState {
 * **state**: the [state item](/reference/multiplayer/multiplayer-state) to set a **value** to, such as `score` or `life`.
 * **value**: a [number](/types/number) which is the new value for the **state**.
 
-## Example
+## Example #example
 
 Set `player 1` score state to `0`. Send the player's shark sprite across the screen to eat a goldfish on the opposite side. When the shark overlaps the goldfish, add `1` to `player 1` score state.
 
@@ -129,7 +129,7 @@ game.onUpdateInterval(500, function () {
 })
 ```
 
-## See also
+## See also #seealso
 
 [get player state](/reference/multiplayer/get-player-state),
 [change player state by](/reference/multiplayer/change-player-state-by)

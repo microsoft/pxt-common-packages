@@ -14,7 +14,7 @@ mp.getPlayerBySprite(null)
 
 * the [Player](/types/player) that is assigned this **sprite**.
 
-## Example
+## Example #example
 
 Send 2 player sprites moving around the screen. When they overlap the hamburger sprite, make one player say that they like the hamburger and they other say that they don't.
 
@@ -100,7 +100,7 @@ mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setVelocity(50, -50)
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setBounceOnWall(true)
 ```
 
-## See also
+## See also #seealso
 
 [get player sprite](/reference/multiplayer/get-player-sprite)
 

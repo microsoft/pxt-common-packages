@@ -6,7 +6,7 @@ Get the value of a player state identifier.
 mp._multiplayerState(0)
 ```
 
-To keep track of different types of multiplayer states, a _kind_ is assigned to them. This is a value that identifies one of the states set for a [Player](/types/player). The multiplayer state values in your game might be defined like this:
+To keep track of different multiplayer states, a _kind_ is assigned to them. This is a value that identifies one of the states set for a [Player](/types/player). The multiplayer state values in your game might be defined like this:
 
 ```typescript-ignore
 namespace MultiplayerState {

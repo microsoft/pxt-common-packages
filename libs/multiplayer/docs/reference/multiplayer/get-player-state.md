@@ -17,7 +17,7 @@ Information like the player's score and life count is contained with the [Player
 
 * **value**: a [number](/types/number) which is the value for **state**.
 
-## Example
+## Example #example
 
 Get the ``||mp:number||`` property  for `player 3`.
 
@@ -44,7 +44,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.One), sprites.create(img`
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).sayText("I'm player " + mp.getPlayerProperty(mp.playerSelector(mp.PlayerNumber.One), mp.PlayerProperty.Number))
 ```
 
-## See also
+## See also #seealso
 
 [set player state](/refernece/multiplayer/set-player-state),
 [change player state by](/reference/multiplayer/change-player-state-by),

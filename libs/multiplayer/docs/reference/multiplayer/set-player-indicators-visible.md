@@ -12,7 +12,7 @@ When set as visible, player indicators are displayed on the screen next to the p
 
 * **visible**: a [boolean](/types/boolean) value that when set `true` all player's indicators are visible on the screen to every player. Otherwise, if set `false`, the indicators aren't displayed on any player's screen.
 
-## Example
+## Example #example
 
 Set sprites for both `player 1` and `player 2`. Send them moving around the screen. Turn the visibility of the indicators on so that each player sprite is identified.
 
@@ -60,7 +60,7 @@ mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setBounceOnWall(true)
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.Two)).setVelocity(50, 40)
 ```
 
-## See also
+## See also #seealso
 
 [set player sprite](/reference/multiplayer/set-player-sprite)
 

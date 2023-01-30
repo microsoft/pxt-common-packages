@@ -11,7 +11,7 @@ mp.onScore(100, function (player) {})
 * **score**: a [number](/types/number) that is the score value to trigger the event.
 * **handler**: the code to run when any player's score reaches the value in **score**.
 
-## Example
+## Example #example
 
 Reward each player that reaches a score of `100` with `1` more life point.
 
@@ -21,7 +21,7 @@ mp.onScore(100, function (player) {
 })
 ```
 
-## See also
+## See also #seealso
 
 [on life zero](/reference/multiplayer/on-life-zero)
 

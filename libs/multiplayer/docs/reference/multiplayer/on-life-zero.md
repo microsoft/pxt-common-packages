@@ -10,7 +10,7 @@ mp.onLifeZero(function (player) {})
 
 * **handler**: the code to run when any player's life points reach the value of `0`.
 
-## Example
+## Example #example
 
 Make the player's sprite put up an emergency message when their life points get to zero.
 
@@ -19,7 +19,7 @@ mp.onLifeZero(function (player) {
     mp.getPlayerSprite(player).sayText("Medic, help!!!")
 })
 ```
-## See also
+## See also #seealso
 
 [on score](/reference/multiplayer/on-score)
 

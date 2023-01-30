@@ -23,7 +23,7 @@ You can detect a controller button action on a player's controller and run some 
 > * `repeat`: a button or arrow key is press quickly, multiple times
 * **handler**: the code to run the button event happens.
 
-## Example
+## Example #example
 
 ```blocks
 mp.onButtonEvent(mp.MultiplayerButton.A, ControllerButtonEvent.Pressed, function (player2) {
@@ -50,6 +50,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.One), sprites.create(img`
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).setBounceOnWall(true)
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).setVelocity(40, -30)
 ```
+## See also #seealso
 
 [is button pressed](/reference/multiplayer/is-button-pressed),
 [move with buttons](/reference/multiplayer/move-with-buttons)

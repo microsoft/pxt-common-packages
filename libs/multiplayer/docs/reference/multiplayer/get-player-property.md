@@ -19,7 +19,7 @@ Player properties contain identity information. These are set for a [Player](/ty
 
 * a [number](/types/number) which is the value for the property.
 
-## Example
+## Example #example
 
 Get the player number property for `player 1` and display it with its character sprite. 
 
@@ -46,7 +46,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.One), sprites.create(img`
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).sayText("I'm player " + mp.getPlayerProperty(mp.playerSelector(mp.PlayerNumber.One), mp.PlayerProperty.Number))
 ```
 
-## See also
+## See also #example
 
 [get player state](/reference/multiplayer/get-player-state)
 
