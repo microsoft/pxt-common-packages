@@ -466,7 +466,7 @@ namespace mp {
     //% help=multiplayer/get-all-players
     //% parts="multiplayer"
     export function allPlayers(): Player[] {
-        return _mpstate().players;
+        return _mpstate().players.slice();
     }
 
     /**
