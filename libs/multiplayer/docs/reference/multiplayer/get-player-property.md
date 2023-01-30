@@ -46,7 +46,7 @@ mp.setPlayerSprite(mp.playerSelector(mp.PlayerNumber.One), sprites.create(img`
 mp.getPlayerSprite(mp.playerSelector(mp.PlayerNumber.One)).sayText("I'm player " + mp.getPlayerProperty(mp.playerSelector(mp.PlayerNumber.One), mp.PlayerProperty.Number))
 ```
 
-## See also #example
+## See also #seealso
 
 [get player state](/reference/multiplayer/get-player-state)
 
