@@ -1,12 +1,12 @@
 # multiplayer State
 
-Get a multiplayer state object for a multiplayer state identifier.
+Get the value of a player state identifier.
 
 ```sig
 mp._multiplayerState(0)
 ```
 
-To keep track of different types of sprites, a _kind_ is assigned to them. This is a value that will help identify them and decide what actions to take when events happen in the game. The sprite kinds in your game might be defined like this:
+To keep track of different types of multiplayer states, a _kind_ is assigned to them. This is a value that identifies one of the states set for a [Player](/types/player). The multiplayer state values in your game might be defined like this:
 
 ```typescript-ignore
 namespace MultiplayerState {
@@ -15,7 +15,7 @@ namespace MultiplayerState {
 }
 ```
 
-In blocks, a sprite kind identifier is used to make a sprite kind item that can be assigned to a variable or used as a parameter:
+In blocks, a multiplayer state kind identifier is used to make a state kind item that can be assigned to a variable or used as a parameter:
 
 ```block
 let lifeState = MultiplayerState.life
@@ -40,16 +40,15 @@ mp.setPlayerState(mp.playerSelector(mp.PlayerNumber.One), MultiplayerState.gems,
 
 ## Parameters
 
-* **kind**: the multiplayer state identifier to get the state object for.
+* **kind**: the multiplayer state identifier to get the state value for.
 
 ## Returns
 
-* a multiplayer state object for a multiplayer state identifer.
+* a value for a player state identifier.
 
 ## See also #seealso
 
 [set player state](/reference/multiplayer/set-player-state)
-
 
 ```package
 multiplayer
