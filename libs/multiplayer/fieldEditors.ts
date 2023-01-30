@@ -9,6 +9,7 @@ namespace mp {
     //% kindMemberName=value
     //% kindPromptHint="e.g. Cooldown, Speed, Attack..."
     //% blockHidden
+    //% help=multiplayer/multiplayer-state
     export function _multiplayerState(kind: number): number {
         return kind;
     }
