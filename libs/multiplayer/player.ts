@@ -508,7 +508,7 @@ namespace mp {
     //% group=Controller
     //% weight=100
     //% blockGap=8
-    //% help=controller/move-sprite
+    //% help=multiplayer/move-with-buttons
     //% parts="multiplayer"
     export function moveWithButtons(player: Player, vx?: number, vy?: number) {
         if (!player) return;
@@ -527,7 +527,7 @@ namespace mp {
     //% group=Controller
     //% weight=90
     //% blockGap=8
-    //% help=controller/on-button-event
+    //% help=multiplayer/on-button-event
     //% parts="multiplayer"
     export function onButtonEvent(button: MultiplayerButton, event: ControllerButtonEvent, handler: (player: Player) => void) {
         _mpstate().onButtonEvent(button, event, handler);
@@ -545,7 +545,7 @@ namespace mp {
     //% group=Controller
     //% weight=80
     //% blockGap=8
-    //% help=controller/button/is-pressed
+    //% help=multiplayer/is-button-pressed
     //% parts="multiplayer"
     export function isButtonPressed(player: Player, button: MultiplayerButton): boolean {
         if (!player) return false;
@@ -563,7 +563,7 @@ namespace mp {
     //% group=Controller
     //% weight=70
     //% blockGap=8
-    //% help=controller/on-event
+    //% help=multiplayer/on-controller-event
     //% parts="multiplayer"
     export function onControllerEvent(event: ControllerEvent, handler: (player: Player) => void) {
         _mpstate().onControllerEvent(event, handler);
@@ -679,7 +679,7 @@ namespace mp {
     //% group=Info
     //% weight=70
     //% blockGap=8
-    //% help=info/on-score
+    //% help=multiplayer/on-score
     //% parts="multiplayer"
     export function onScore(score: number, handler: (player: Player) => void) {
         _mpstate().onReachedScore(score, handler);
@@ -695,7 +695,7 @@ namespace mp {
     //% group=Info
     //% weight=60
     //% blockGap=8
-    //% help=info/on-life-zero
+    //% help=multiplayer/on-life-zero
     //% parts="multiplayer"
     export function onLifeZero(handler: (player: Player) => void) {
         _mpstate().onLifeZero(handler);
