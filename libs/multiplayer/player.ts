@@ -518,6 +518,24 @@ namespace mp {
     }
 
     /**
+     * Queries the connected state of the player
+     * @param player The player to query
+     * @returns true if the player is connected
+     */
+    //% blockId=mp_isConnected
+    //% block="$player connected"
+    //% player.shadow=mp_playerSelector
+    //% group=Controller
+    //% weight=60
+    //% blockGap=8
+    //% help=multiplayer/is-connected
+    //% parts="multiplayer"
+    export function isConnected(player: Player): boolean {
+        if (!player) return false;
+        return player._getController().connected;
+    }
+
+    /**
      * Gets the value of the specified player state
      * @param player The player to get the state for
      * @param state The state to get
