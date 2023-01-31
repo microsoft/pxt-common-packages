@@ -195,9 +195,7 @@ namespace pxsim {
                     }
                 }
             } else if (isConnectionMessage(msg)) {
-                if (this.origin === "server") {
-                    this.registerConnectionState(msg.slot, msg.connected);
-                }
+                this.registerConnectionState(msg.slot, msg.connected);
             }
         }
     }
