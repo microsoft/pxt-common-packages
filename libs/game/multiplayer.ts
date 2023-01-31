@@ -34,10 +34,12 @@ namespace multiplayer {
                     postImage(screen);
                 }
             })
+        }
+    }
 
-            for (let p = 1; p <= 4; p++) {
-                registerPlayerConnectionListeners(p);
-            }
+    export function initPlayerConnectionListeners() {
+        for (let p = 1; p <= 4; p++) {
+            registerPlayerConnectionListeners(p);
         }
     }
 
