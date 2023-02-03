@@ -39,7 +39,7 @@ namespace assets {
     //% helper=getSongByName
     //% pyConvertToTaggedTemplate
     //% blockIdentity="music._songFieldEditor"
-    export function song(lits: any, ...args: any[]): Buffer { return null }
+    export function song(lits: any, ...args: any[]): music.sequencer.Song { return null }
 }
 
 namespace helpers {
@@ -47,7 +47,7 @@ namespace helpers {
     export type ImageFactory = (name: string) => Image;
     export type TileFactory = (name: string) => Image;
     export type AnimationFactory = (name: string) => Image[];
-    export type SongFactory = (name: string) => Buffer;
+    export type SongFactory = (name: string) => music.sequencer.Song;
 
     interface Factory {
         kind: string;
