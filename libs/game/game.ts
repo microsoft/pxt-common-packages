@@ -364,9 +364,11 @@ namespace game {
             const winner = judged && win && info.winningPlayer();
             const scores = playersWithScores.map(player => new GameOverPlayerScore(player.number, player.impl.score(), player === winner));
 
-            // Save scores if this was a judged game and there was a winner (don't save in the LOSE case).
+            // Save all scores. Dependency Note: this action triggers Kiosk to exit the simulator and show the high score screen.
+            info.saveAllScores();
+
+            // Save high score if this was a judged game and there was a winner (don't save in the LOSE case).
             if (judged && winner) {
-                info.saveAllScores();
                 info.saveHighScore();
             }
 
