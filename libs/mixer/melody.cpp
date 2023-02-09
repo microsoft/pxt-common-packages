@@ -426,6 +426,49 @@ WSynthesizer::WSynthesizer() : upstream(NULL), out(*this) {
     PXT_REGISTER_RESET(stopPlaying);
 }
 
+//% promise
+int _createSequencer() {
+    return 0;
+}
+
+//%
+String _sequencerState(int id) {
+    return NULL;
+}
+
+//%
+int _sequencerCurrentTick(int id) {
+    return 0;
+}
+
+//%
+void _sequencerPlaySong(int id, Buffer buf, bool loop) {
+}
+
+//%
+void _sequencerStop(int id) {
+}
+
+//%
+void _sequencerSetVolume(int id, int volume) {
+}
+
+//%
+void _sequencerSetVolumeForAll(int volume) {
+}
+
+//%
+void _sequencerSetTrackVolume(int id, int trackIndex, int volume) {
+}
+
+//%
+void _sequencerSetDrumTrackVolume(int id, int trackIndex, int drumIndex, int volume) {
+}
+
+//%
+void _sequencerDispose(int id) {
+}
+
 } // namespace music
 
 namespace pxt {
