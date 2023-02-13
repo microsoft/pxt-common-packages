@@ -598,6 +598,7 @@ namespace music {
     //% toolboxParentArgument=toPlay
     //% group="Songs"
     //% duplicateShadowOnDrag
+    //% help=music/create-song
     export function createSong(song: Buffer): Playable {
         return new sequencer.Song(song);
     }
