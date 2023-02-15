@@ -6,7 +6,7 @@ Change a tile in the tilemap to another tile.
 scene.setTileAt(null, 0)
 ```
 
-A tile from the tile map has the [tile](/reference/color-coded-tilemap/tile) type. You can change that tile by using it's object type, [tile](/reference/color-coded-tilemap/tile), and the index of a different tile. The tile map is changed to have the new tile take the position in the tilemap where this one was.
+A tile from the tile map has the [tile](/reference/color-coded-tilemap/tile) type. You can change that tile by using its object type, [tile](/reference/color-coded-tilemap/tile), and the index of a different tile. The tile map is changed to have the new tile take the position in the tilemap where this one was.
 
 ## Parameters
 
