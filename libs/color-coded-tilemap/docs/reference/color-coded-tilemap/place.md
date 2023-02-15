@@ -6,7 +6,7 @@ Move a sprite's position to the center of a tile in the scene.
 scene.getTile(0, 0).place(null)
 ```
 
-You a can make a sprite to locate itself right on top of a tile. If you have a [tile](/reference/color-coded-tilemap/tile) object from the tilemap, just use **place** to put a sprite on top of it.
+You can make a sprite locate itself right on top of a tile. If you have a [tile](/reference/color-coded-tilemap/tile) object from the tilemap, just use **place** to put a sprite on top of it.
 
 ## Parameters
 
