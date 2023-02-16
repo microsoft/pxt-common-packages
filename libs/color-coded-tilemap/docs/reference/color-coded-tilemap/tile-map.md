@@ -167,8 +167,8 @@ scene.setTileMap(img`
 
 ## See also #seealso
 
-[set tile](/reference/scene/set-tile),
-[set tile map](/reference/scene/set-tile-map)
+[set tile](/reference/color-coded-tilemap/set-tile),
+[set tile map](/reference/color-coded-tilemap/set-tile-map)
 
 ```package
 color-coded-tilemap

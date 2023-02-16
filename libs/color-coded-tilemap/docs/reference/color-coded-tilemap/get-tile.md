@@ -13,7 +13,7 @@ scene.getTile(0, 0)
 
 ## Returns
 
-* a [tile](/types/tile) from a location in the tilemap.
+* a [tile](/reference/color-coded-tilemap/tile) from a location in the tilemap.
 
 ## Example #example
 
@@ -56,8 +56,8 @@ scene.setTileAt(scene.getTile(5, 3), 2)
 
 ## See also #seealso
 
-[set tile](/reference/scene/set-tile),
-[set tile at](/reference/scene/set-tile-at)
+[set tile](/reference/color-coded-tilemap/set-tile),
+[set tile at](/reference/color-coded-tilemap/set-tile-at)
 
 ```package
 color-coded-tilemap

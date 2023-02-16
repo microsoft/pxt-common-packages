@@ -12,7 +12,7 @@ namespace scene {
     //% blockId=gamesettilemap block="set tile map to %map=tilemap_image_picker || with %scale pixel tiles"
     //% scale.defl=TileScale.Sixteen
     //% group="Color-coded Tilemap"
-    //% help=scene/set-tile-map
+    //% help=color-coded-tilemap/set-tile-map
     export function setTileMap(map: Image, scale = TileScale.Sixteen) {
         const scene = game.currentScene();
         if (!scene.tileMap || !(scene.tileMap as tiles.legacy.LegacyTilemap).isLegacy) {
@@ -29,7 +29,7 @@ namespace scene {
      */
     //% blockId=gamesettile block="set tile %index=colorindexpicker to %img=tile_image_picker with wall %wall=toggleOnOff"
     //% group="Color-coded Tilemap"
-    //% help=scene/set-tile
+    //% help=color-coded-tilemap/set-tile
     export function setTile(index: number, img: Image, wall?: boolean) {
         const scene = game.currentScene();
         if (!scene.tileMap || !(scene.tileMap as tiles.legacy.LegacyTilemap).isLegacy) {
@@ -45,7 +45,7 @@ namespace scene {
      */
     //% blockId=gamegettile block="tile col %col row %row"
     //% group="Color-coded Tilemap" blockSetVariable="myTile"
-    //% help=scene/get-tile
+    //% help=color-coded-tilemap/get-tile
     export function getTile(col: number, row: number): tiles.Tile {
         const scene = game.currentScene();
         if (!scene.tileMap || !(scene.tileMap as tiles.legacy.LegacyTilemap).isLegacy) {
@@ -60,7 +60,7 @@ namespace scene {
      */
     //% blockId=gamegettilestype block="array of all %index=colorindexpicker tiles"
     //% group="Color-coded Tilemap" blockSetVariable="tile list"
-    //% help=scene/get-tiles-by-type
+    //% help=color-coded-tilemap/get-tiles-by-type
     export function getTilesByType(index: number): tiles.Tile[] {
         const scene = game.currentScene();
         if (!scene.tileMap || !(scene.tileMap as tiles.legacy.LegacyTilemap).isLegacy) {
@@ -77,7 +77,7 @@ namespace scene {
     //% blockId=gameplaceonrandomtile block="place %sprite=variables_get(mySprite) on top of random $color tile"
     //% group="Color-coded Tilemap"
     //% color.shadow="colorindexpicker"
-    //% help=scene/place-on-random-tile
+    //% help=color-coded-tilemap/place-on-random-tile
     export function placeOnRandomTile(sprite: Sprite, color: number): void {
         if (!sprite || !game.currentScene().tileMap) return;
         const tiles = getTilesByType(color);
@@ -92,7 +92,7 @@ namespace scene {
      */
     //% blockId=gamesettileat block="set %tile=gamegettile to %index=colorindexpicker"
     //% group="Color-coded Tilemap"
-    //% help=scene/set-tile-at
+    //% help=color-coded-tilemap/set-tile-at
     export function setTileAt(tile: tiles.Tile, index: number) {
         const scene = game.currentScene();
         if (!scene.tileMap || !(scene.tileMap as tiles.legacy.LegacyTilemap).isLegacy) {
@@ -125,7 +125,7 @@ namespace scene {
     //% group="Color-coded Tilemap"
     //% draggableParameters="reporter"
     //% blockId=spritesollisions block="on $sprite of kind $kind=spritekind hits wall $tile=colorindexpicker"
-    //% help=scene/on-hit-tile
+    //% help=color-coded-tilemap/on-hit-tile
     export function onHitTile(kind: number, tile: number, handler: (sprite: Sprite) => void) {
         if (kind == undefined || tile < 0 || tile > 0xF || !handler) return;
 

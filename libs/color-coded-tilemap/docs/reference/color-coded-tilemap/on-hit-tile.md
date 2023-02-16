@@ -26,9 +26,9 @@ A a sprite hitting a wall is dectected when the outside edges of their images ma
 Build a brick wall of tiles in the scene. Use the **A** to send a ``Ghost`` sprite toward the wall and watch it stop.  When button **B** is pressed, switch the value of the ``ghost`` flag and see if the ghost sprite hits the wall or goes through.
 
 ```blocks
-enum SpriteKind {
-    Ghost,
-    Ball
+namespace SpriteKind {
+    export const Ghost = SpriteKind.create()
+    export const Ball = SpriteKind.create()
 }
 let ghost: Sprite = null
 scene.setTile(2, img`
