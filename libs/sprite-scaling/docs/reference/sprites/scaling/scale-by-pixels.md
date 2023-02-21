@@ -137,7 +137,7 @@ info.setScore(mySprite.width)
 
 ## See also #seealso
 
-[scale by pixels](/reference/sprites/scaling/scale-by-pixels)
+[scale to pixels](/reference/sprites/scaling/scale-to-pixels)
 
 ```package
 sprite-scaling
