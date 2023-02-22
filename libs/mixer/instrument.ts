@@ -133,18 +133,36 @@ namespace music.sequencer {
         }
 
         play(playbackMode: PlaybackMode) {
-            if (currentSequencer) currentSequencer.stop();
-            currentSequencer = new sequencer.Sequencer(this);
+            if (control.deviceDalVersion() === "sim") {
+                const seq = new _SimulatorSequencer();
 
-            if (playbackMode === PlaybackMode.UntilDone) {
-                currentSequencer.start(false);
-                pause(this.measures * this.beatsPerMeasure * this.beatsPerMinute * 60 * 1000)
-            }
-            else if (playbackMode === PlaybackMode.InBackground) {
-                currentSequencer.start(false);
+                if (playbackMode === PlaybackMode.UntilDone) {
+                    seq.play(this.buf, false);
+
+                    pauseUntil(() => seq.state() === "stop");
+                }
+                else if (playbackMode === PlaybackMode.InBackground) {
+                    seq.play(this.buf, false);
+                }
+                else {
+                    seq.play(this.buf, true);
+                }
             }
             else {
-                currentSequencer.start(true);
+                if (currentSequencer) currentSequencer.stop();
+                currentSequencer = new sequencer.Sequencer(this);
+
+                if (playbackMode === PlaybackMode.UntilDone) {
+                    let seq = currentSequencer;
+                    currentSequencer.start(false);
+                    pauseUntil(() => !seq.isRunning);
+                }
+                else if (playbackMode === PlaybackMode.InBackground) {
+                    currentSequencer.start(false);
+                }
+                else {
+                    currentSequencer.start(true);
+                }
             }
         }
     }
@@ -817,5 +835,6 @@ namespace music.sequencer {
             currentSequencer.stop();
             currentSequencer = undefined;
         }
+        _stopAllSimSequencers();
     }
 }
