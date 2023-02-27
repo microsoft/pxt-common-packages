@@ -246,6 +246,7 @@ namespace mp {
         onReachedScore(score: number, handler: (player: Player) => void) {
             const existing = this.getScoreHandler(score);
 
+            // Overwrite the existing handler for this score. Last one wins.
             if (existing) {
                 existing.handler = handler;
                 return;
