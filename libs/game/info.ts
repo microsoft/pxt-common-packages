@@ -712,15 +712,12 @@ namespace info {
             const oldScore = state.score || 0;
             state.score = (value | 0);
 
-            if (state.scoreReachedHandler) {
-                state.scoreReachedHandler.forEach(srh => {
-                    if ((oldScore < srh.score && state.score >= srh.score) ||
-                        (oldScore > srh.score && state.score <= srh.score)) {
-                        srh.handler();
-                    }
-                });
-            }
-
+            state?.scoreReachedHandler.forEach(srh => {
+                if ((oldScore < srh.score && state.score >= srh.score) ||
+                    (oldScore > srh.score && state.score <= srh.score)) {
+                    srh.handler();
+                }
+            });
         }
 
         changeScoreBy(value: number): void {
@@ -770,14 +767,14 @@ namespace info {
 
         onScore(score: number, handler: () => void) {
             const state = this.getState();
-            state.scoreReachedHandler.forEach(element => {
+            state.scoreReachedHandler?.forEach(element => {
                 if (element.score === score) {
                     // Score handlers are implemented as "last one wins."
                     element.handler = handler;
                     return;
                 }
             });
-            state.scoreReachedHandler.push(new ScoreReachedHandler(score, handler));
+            state.scoreReachedHandler?.push(new ScoreReachedHandler(score, handler));
         }
 
         raiseLifeZero(gameOver: boolean) {
