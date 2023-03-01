@@ -108,6 +108,7 @@ namespace music {
     //% block="play $toPlay $playbackMode"
     //% toPlay.shadow=music_melody_playable
     //% group="Sounds"
+    //% help="music/play"
     export function play(toPlay: Playable, playbackMode: PlaybackMode) {
         toPlay.play(playbackMode);
     }
@@ -119,6 +120,7 @@ namespace music {
     //% group="Sounds"
     //% duplicateShadowOnDrag
     //% blockHidden
+    //% help=music/melody-playable
     export function melodyPlayable(melody: Melody): Playable {
         return new MelodyPlayable(melody);
     }
@@ -135,6 +137,7 @@ namespace music {
     //% melody.shadow=melody_editor
     //% tempo.min=40 tempo.max=500
     //% tempo.defl=120
+    //% help=music/string-playable
     export function stringPlayable(melody: string, tempo: number): Playable {
         let notes: string[] = melody.split(" ").filter(n => !!n);
         let formattedMelody = "";
@@ -171,6 +174,7 @@ namespace music {
     //% note.shadow=device_note
     //% duration.shadow=device_beat
     //% parts="headphone"
+    //% help=music/tone-playable
     export function tonePlayable(note: number, duration: number): Playable {
         return new TonePlayable(note, duration);
     }
