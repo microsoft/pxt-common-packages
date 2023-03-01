@@ -35,6 +35,14 @@ music.play(music.createSong(hex`0078000408020200001c00010a006400f401640000040000
 >* `in background`: play the music source in **toPlay** but continue with the rest of the program before music play is done.
 >* `in background looping`: play the music source in **toPlay** but continue with the rest of the program before music play is done. The music will remain playing, returning to the first note of the music after its duration.
 
+### ~ hint
+
+#### Stop the music!
+
+You can stop any music currently playing with the ``||music:stop all sounds||`` block. This is useful if **playbackMode** is set to `in background looping` and you wish to stop the music for a scene change or respond to an event with a different sound.
+
+### ~
+
 ## Examples #example
 
 ### Play a melody
@@ -62,9 +70,62 @@ for (let someMusic of playables) {
 }
 ```
 
+### Looping music play
+
+Play a simple song in the background while a monkey moves around the screen. When the monkey hits the bubble in the middle of the screen, stop the song and play a bursting sound.
+
+```blocks
+let bubble = sprites.create(img`
+    . . . . . b b b b b b . . . . . 
+    . . . b b 9 9 9 9 9 9 b b . . . 
+    . . b b 9 9 9 9 9 9 9 9 b b . . 
+    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+    . . b d 5 d 3 3 3 3 5 5 b b . . 
+    . . . b b 5 5 5 5 5 5 b b . . . 
+    . . . . . b b b b b b . . . . . 
+    `, SpriteKind.Player)
+let monkey = sprites.create(img`
+    . . . . f f f f f . . . . . . . 
+    . . . f e e e e e f . . . . . . 
+    . . f d d d d e e e f . . . . . 
+    . c d f d d f d e e f f . . . . 
+    . c d f d d f d e e d d f . . . 
+    c d e e d d d d e e b d c . . . 
+    c d d d d c d d e e b d c . f f 
+    c c c c c d d d e e f c . f e f 
+    . f d d d d d e e f f . . f e f 
+    . . f f f f f e e e e f . f e f 
+    . . . . f e e e e e e e f f e f 
+    . . . f e f f e f e e e e f f . 
+    . . . f e f f e f e e e e f . . 
+    . . . f d b f d b f f e f . . . 
+    . . . f d d c d d b b d f . . . 
+    . . . . f f f f f f f f f . . . 
+    `, SpriteKind.Enemy)
+monkey.setBounceOnWall(true)
+monkey.x = scene.screenWidth()
+monkey.setVelocity(50, 40)
+music.play(music.stringPlayable("C5 A B G A F A C5 ", 120), music.PlaybackMode.LoopingInBackground)
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    music.stopAllSounds()
+    sprites.destroy(sprite, effects.blizzard, 500)
+    music.play(music.melodyPlayable(music.zapped), music.PlaybackMode.UntilDone)
+})
+```
+
 ## See also #seealso
 
 [tone playable](/reference/music/tone-playable),
 [string playable](/reference/music/string-playable),
 [melody playable](/reference/music/melody-playable),
-[create song](/reference/music/create-song)
+[create song](/reference/music/create-song),
+[stop all sounds](/reference/music/stop-all-sounds)
