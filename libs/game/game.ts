@@ -17,6 +17,25 @@ namespace game {
         None
     }
 
+    export enum Color {
+        transparent = 0,
+        white = 1,
+        red = 2,
+        pink = 3,
+        orange = 4,
+        yellow = 5,
+        teal = 6,
+        green = 7,
+        blue = 8,
+        lightblue = 9,
+        purple = 0xa,
+        lightpurple = 0xb,
+        darkpurple = 0xc,
+        tan = 0xd,
+        brown = 0xe,
+        black = 0xf
+    }
+
     export class GameOverConfig {
         scoringType: ScoringType;
         winEffect: effects.BackgroundEffect;
