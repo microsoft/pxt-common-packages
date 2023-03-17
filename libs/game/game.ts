@@ -22,22 +22,22 @@ namespace game {
      * NOTE: If the color pallette is changed, these values will change along with it.
      */
     export enum Color {
-        transparent = 0,
-        white = 1,
-        red = 2,
-        pink = 3,
-        orange = 4,
-        yellow = 5,
-        teal = 6,
-        green = 7,
-        blue = 8,
-        lightblue = 9,
-        purple = 0xa,
-        lightpurple = 0xb,
-        darkpurple = 0xc,
-        tan = 0xd,
-        brown = 0xe,
-        black = 0xf
+        Transparent = 0,
+        White = 1,
+        Red = 2,
+        Pink = 3,
+        Orange = 4,
+        Yellow = 5,
+        Teal = 6,
+        Green = 7,
+        Blue = 8,
+        LightBlue = 9,
+        Purple = 0xa,
+        LightPurple = 0xb,
+        DarkPurple = 0xc,
+        Tan = 0xd,
+        Brown = 0xe,
+        Black = 0xf
     }
 
     export class GameOverConfig {
