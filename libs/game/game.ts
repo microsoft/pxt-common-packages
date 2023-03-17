@@ -17,6 +17,10 @@ namespace game {
         None
     }
 
+    /**
+     * The available colors for Arcade.
+     * NOTE: If the color pallette is changed, these values will change along with it.
+     */
     export enum Color {
         transparent = 0,
         white = 1,
