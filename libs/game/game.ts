@@ -17,11 +17,11 @@ namespace game {
         None
     }
 
+    // To stay synchronized with https://github.com/microsoft/pxt/blob/stable8.5/webapp/src/components/ImageEditor/sprite/Palette.tsx#L98.
     /**
      * The available colors for Arcade.
-     * To stay synchronized with https://github.com/microsoft/pxt/blob/stable8.5/webapp/src/components/ImageEditor/sprite/Palette.tsx#L98.
-     * NOTE: If the color pallette is changed, these values will change along with it.
-     */
+     * NOTE: If the color palette is changed, these values will change along with it.
+     **/
     export enum Color {
         Transparent = 0,
         White = 1,
