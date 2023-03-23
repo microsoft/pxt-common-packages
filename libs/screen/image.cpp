@@ -1159,6 +1159,15 @@ void _fillCircle(Image_ img, int cxy, int r, int c) {
     fillCircle(img, XX(cxy), YY(cxy), r, c);
 }
 
+void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
+    // Fill triangle here!
+}
+
+//%
+void _fillTriangle(Image_ img, int xy0, int xy1, int xy2, int c) {
+    fillTriangle(img, XX(xy0), YY(xy0), XX(xy1), YY(xy1), XX(xy2), YY(xy2), c);
+}
+
 } // namespace ImageMethods
 
 namespace image {

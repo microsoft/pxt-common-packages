@@ -68,6 +68,12 @@ interface Image {
     fillCircle(cx: number, cy: number, r: number, c: color): void;
 
     /**
+     * Fills a triangle
+     */
+    //% helper=imageFillTriangle
+    fillCircle(cx: number, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, col: number): void;
+
+    /**
      * Returns an image rotated by -90, 0, 90, 180, 270 deg clockwise
      */
     //% helper=imageRotated
@@ -127,6 +133,9 @@ namespace helpers {
 
     //% shim=ImageMethods::_blit
     declare function _blit(img: Image, src: Image, args: number[]): boolean;
+
+    //% shim=ImageMethods::_blit
+    declare function _fillTriangle(img: Image, xy0: number, xy1: number, xy2: number, c: color): void;
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
@@ -209,6 +218,10 @@ namespace helpers {
 
     export function imageFillCircle(img: Image, cx: number, cy: number, r: number, col: number) {
         _fillCircle(img, pack(cx, cy), r, col);
+    }
+
+    export function imageFillTriangle(img: Image, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, col: number) {
+        _fillTriangle(img, pack(x0, y0), pack(x1, y1), pack(x2, y2), col);
     }
 
     /**

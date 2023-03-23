@@ -612,6 +612,14 @@ namespace pxsim.ImageMethods {
         fillCircle(img, XX(cxy), YY(cxy), r, c);
     }
 
+    export function fillTriangle(img: RefImage, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, c: number) {
+        // Simulator implementation of fill triangle
+    }
+
+    export function _fillTriangle(img: RefImage, xy0: number, xy1: number, xy2: number, c: number) {
+        fillTriangle(img, XX(xy0), YY(xy0), XX(xy1), YY(xy1), XX(xy2), YY(xy2), c);
+    }
+
     export function _blitRow(img: RefImage, xy: number, from: RefImage, xh: number) {
         blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh))
     }
