@@ -71,7 +71,7 @@ interface Image {
      * Fills a triangle
      */
     //% helper=imageFillTriangle
-    fillCircle(cx: number, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, col: number): void;
+    fillTriangle(cx: number, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, col: number): void;
 
     /**
      * Returns an image rotated by -90, 0, 90, 180, 270 deg clockwise
