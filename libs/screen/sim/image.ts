@@ -616,8 +616,17 @@ namespace pxsim.ImageMethods {
         // Simulator implementation of fill triangle
     }
 
-    export function _fillTriangle(img: RefImage, xy0: number, xy1: number, xy2: number, c: number) {
-        fillTriangle(img, XX(xy0), YY(xy0), XX(xy1), YY(xy1), XX(xy2), YY(xy2), c);
+    export function _fillTriangle(img: RefImage, args: RefCollection) {
+        fillTriangle(
+            img,
+            args.getAt(0) as number,
+            args.getAt(1) as number,
+            args.getAt(2) as number,
+            args.getAt(3) as number,
+            args.getAt(4) as number,
+            args.getAt(5) as number,
+            args.getAt(6) as number,
+        );
     }
 
     export function _blitRow(img: RefImage, xy: number, from: RefImage, xh: number) {

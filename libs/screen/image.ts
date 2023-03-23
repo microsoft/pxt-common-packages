@@ -134,8 +134,8 @@ namespace helpers {
     //% shim=ImageMethods::_blit
     declare function _blit(img: Image, src: Image, args: number[]): boolean;
 
-    //% shim=ImageMethods::_blit
-    declare function _fillTriangle(img: Image, xy0: number, xy1: number, xy2: number, c: color): void;
+    //% shim=ImageMethods::_fillTriangle
+    declare function _fillTriangle(img: Image, args: number[]): void;
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
@@ -221,7 +221,15 @@ namespace helpers {
     }
 
     export function imageFillTriangle(img: Image, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, col: number) {
-        _fillTriangle(img, pack(x0, y0), pack(x1, y1), pack(x2, y2), col);
+        _blitArgs = _blitArgs || [];
+        _blitArgs[0] = x0;
+        _blitArgs[1] = y0;
+        _blitArgs[2] = x1;
+        _blitArgs[3] = y1;
+        _blitArgs[4] = x2;
+        _blitArgs[5] = y2;
+        _blitArgs[6] = col;
+        _fillTriangle(img, _blitArgs);
     }
 
     /**

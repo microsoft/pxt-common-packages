@@ -1164,8 +1164,17 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
 }
 
 //%
-void _fillTriangle(Image_ img, int xy0, int xy1, int xy2, int c) {
-    fillTriangle(img, XX(xy0), YY(xy0), XX(xy1), YY(xy1), XX(xy2), YY(xy2), c);
+void _fillTriangle(Image_ img, pxt::RefCollection *args) {
+    fillTriangle(
+        img,
+        pxt::toInt(args->getAt(0)),
+        pxt::toInt(args->getAt(1)),
+        pxt::toInt(args->getAt(2)),
+        pxt::toInt(args->getAt(3)),
+        pxt::toInt(args->getAt(4)),
+        pxt::toInt(args->getAt(5)),
+        pxt::toInt(args->getAt(6))
+    );
 }
 
 } // namespace ImageMethods
