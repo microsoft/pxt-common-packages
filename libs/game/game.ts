@@ -17,6 +17,30 @@ namespace game {
         None
     }
 
+    // To stay synchronized with https://github.com/microsoft/pxt/blob/stable8.5/webapp/src/components/ImageEditor/sprite/Palette.tsx#L98.
+    /**
+     * The available colors for Arcade.
+     * NOTE: If the color palette is changed, these values will change along with it.
+     **/
+    export enum Color {
+        Transparent = 0,
+        White = 1,
+        Red = 2,
+        Pink = 3,
+        Orange = 4,
+        Yellow = 5,
+        Teal = 6,
+        Green = 7,
+        Blue = 8,
+        LightBlue = 9,
+        Purple = 0xa,
+        LightPurple = 0xb,
+        DarkPurple = 0xc,
+        Tan = 0xd,
+        Brown = 0xe,
+        Black = 0xf
+    }
+
     export class GameOverConfig {
         scoringType: ScoringType;
         winEffect: effects.BackgroundEffect;
