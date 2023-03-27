@@ -629,6 +629,25 @@ namespace pxsim.ImageMethods {
         );
     }
 
+    export function fillPolygon4(img: RefImage, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, c: number) {
+        // Simulator implementation of fill triangle
+    }
+
+    export function _fillPolygon4(img: RefImage, args: RefCollection) {
+        fillPolygon4(
+            img,
+            args.getAt(0) as number,
+            args.getAt(1) as number,
+            args.getAt(2) as number,
+            args.getAt(3) as number,
+            args.getAt(4) as number,
+            args.getAt(5) as number,
+            args.getAt(6) as number,
+            args.getAt(7) as number,
+            args.getAt(8) as number,
+        );
+    }
+
     export function _blitRow(img: RefImage, xy: number, from: RefImage, xh: number) {
         blitRow(img, XX(xy), YY(xy), from, XX(xh), YY(xh))
     }
