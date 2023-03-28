@@ -1159,136 +1159,6 @@ void _fillCircle(Image_ img, int cxy, int r, int c) {
     fillCircle(img, XX(cxy), YY(cxy), r, c);
 }
 
-
-
-/////// Fill Triangle/Polygon /////////////
-
-    /////// Fill Triangle/Polygon(Mode 1, Cache Y range) /////////////
-#define CACHE_WIDTH (160)
-int16_t fillCacheYMin[CACHE_WIDTH];
-int16_t fillCacheYMax[CACHE_WIDTH];
-void cacheLineY(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1) {
-    int x, y;
-    int x0, y0;
-    int x1, y1;
-    int dx, dy;
-    int yi, xi;
-    int D;
-
-    if (X1 < X0)
-        x0 = X1, y0 = Y1, x1 = X0, y1 = Y0;
-    else
-        x0 = X0, y0 = Y0, x1 = X1, y1 = Y1;
-
-    dx = x1 - x0;
-    dy = y1 - y0;
-    y = y0;
-    x = x0;
-
-    if ((dy<0?-dy:dy) < dx) {
-        yi = 1;
-        if (dy < 0) {
-            yi = -1;
-            dy = -dy;
-        }
-        D = 2 * dy - dx;
-        dx <<= 1;
-        dy <<= 1;
-        while (x <= x1 && x < CACHE_WIDTH) {
-                if(0<=x){
-                if (y < fillCacheYMin[x]) fillCacheYMin[x] = y;
-                if (y > fillCacheYMax[x]) fillCacheYMax[x] = y;
-            }
-            if (D > 0) {
-                y += yi;
-                D -= dx;
-            }
-            D += dy;
-            ++x;
-        }
-    } else {
-        xi = 1;
-        // if (dx < 0) {//should not hit
-        //     PANIC();
-        // }
-        if (dy < 0) {
-            D = 2 * dx + dy;
-            dx <<= 1;
-            dy <<= 1;
-            while (y >= y1 && x < CACHE_WIDTH) {
-                if(0<=x){
-                    if (y < fillCacheYMin[x]) fillCacheYMin[x] = y;
-                    if (y > fillCacheYMax[x]) fillCacheYMax[x] = y;
-                }
-                if (D > 0) {
-                    x += xi;
-                    D += dy;
-                }
-                D += dx;
-                --y;
-            }
-        } else {
-            D = 2 * dx - dy;
-            dx <<= 1;
-            dy <<= 1;
-            while (y <= y1 && x < CACHE_WIDTH) {
-                if(0<=x){
-                    if (y < fillCacheYMin[x]) fillCacheYMin[x] = y;
-                    if (y > fillCacheYMax[x]) fillCacheYMax[x] = y;
-                }
-                if (D > 0) {
-                    x += xi;
-                    D -= dy;
-                }
-                D += dx;
-                ++y;
-            }
-        }
-    }
-}
-
-void fillTriangle_Cache(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
-    int minx = max(0,min(x0, min(x1, x2)));
-    int maxX = min(CACHE_WIDTH-1, max(x0, max(x1, x2)));
-
-    int h= height(img);
-    for(int x=minx; x <= maxX; x++){
-        fillCacheYMin[x] = h;
-        fillCacheYMax[x] = -1;
-    }
-
-    cacheLineY(x0, y0, x1, y1);
-    cacheLineY(x1, y1, x2, y2);
-    cacheLineY(x0, y0, x2, y2);
-
-    for (int x=minx; x <= maxX; x++)
-        fillRect(img, x,fillCacheYMin[x], 1,fillCacheYMax[x]-fillCacheYMin[x]+1,c);
-}
-
-void fillPolygon4_Cache(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
-    int minx = max(0,min(x0, min(x1, min(x2, x3))));
-    int maxX = min(CACHE_WIDTH-1, max(x0, max(x1, max(x2, x3))));
-
-    int h= height(img);
-    for(int x=minx; x <= maxX; x++){
-        fillCacheYMin[x] = h;
-        fillCacheYMax[x] = -1;
-    }
-
-    cacheLineY(x0, y0, x1, y1);
-    cacheLineY(x1, y1, x2, y2);
-    cacheLineY(x2, y2, x3, y3);
-    cacheLineY(x0, y0, x3, y3);
-
-    for (int x=minx; x <= maxX; x++) {
-        fillRect(img, x,fillCacheYMin[x], 1,fillCacheYMax[x]-fillCacheYMin[x]+1,c);
-    }
-}
-
-    /////// Fill Triangle/Polygon(Mode 1, Cache Y range) end /////////////
-
-    /////// Fill Triangle/Polygon(Mode 2, YRangeGenerator) /////////////
-
 typedef struct 
 {
     int x, y;
@@ -1300,6 +1170,7 @@ typedef struct
     int D;
     int nextFuncIndex;
 }LineGenState;
+
 typedef struct
 {
     int min;
@@ -1320,6 +1191,7 @@ void nextYRange_Low(int x, LineGenState *line, ValueRange *yRange){
         ++line->x;
     }
 }
+
 void nextYRange_HighUp(int x, LineGenState *line, ValueRange *yRange){
     while (line->x==x&&line->y >= line->y1 && line->x < line->W) {
         if(0<=line->x){
@@ -1334,6 +1206,7 @@ void nextYRange_HighUp(int x, LineGenState *line, ValueRange *yRange){
         --line->y;
     }
 }
+
 void nextYRange_HighDown(int x, LineGenState *line, ValueRange *yRange){
     while (line->x==x&&line->y <= line->y1 && line->x < line->W) {
         if(0<=line->x){
@@ -1394,7 +1267,7 @@ LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1)
     }
 }
 
-void fillTriangle_Generator(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
+void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
     if(x1<x0) {swap(x0,x1);swap(y0,y1);}
     if(x2<x1) {swap(x1,x2);swap(y1,y2);}
     if(x1<x0) {swap(x0,x1);swap(y0,y1);}
@@ -1432,7 +1305,7 @@ void fillTriangle_Generator(Image_ img, int x0, int y0, int x1, int y1, int x2, 
     }
 }
 
-void fillPolygon4_Generator(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
+void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
     int minX= min(min(x0,x1),min(x2,x3));
     int maxX= max(max(x0,x1),max(x2,x3));
 
@@ -1463,24 +1336,6 @@ void fillPolygon4_Generator(Image_ img, int x0, int y0, int x1, int y1, int x2, 
         fillRect(img, x,yRange.min, 1,yRange.max-yRange.min+1,c);
     }
 }
-
-    /////// Fill Triangle/Polygon(Mode 2, YRangeGenerator) end /////////////
-
-void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
-    if(0x10&c) 
-        fillTriangle_Cache(img,x0,y0,x1,y1,x2,y2,c);
-    else
-        fillTriangle_Generator(img,x0,y0,x1,y1,x2,y2,c);
-}
-
-void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
-    if(0x10&c) 
-        fillPolygon4_Cache(img,x0,y0,x1,y1,x2,y2,x3,y3,c);
-    else
-        fillPolygon4_Generator(img,x0,y0,x1,y1,x2,y2,x3,y3,c);
-}
-
-/////// Fill Triangle/Polygon end /////////////
 
 //%
 void _fillTriangle(Image_ img, pxt::RefCollection *args) {
