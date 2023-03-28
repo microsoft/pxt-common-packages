@@ -1306,9 +1306,6 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
 }
 
 void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
-    int minX= min(min(x0,x1),min(x2,x3));
-    int maxX= max(max(x0,x1),max(x2,x3));
-
     LineGenState lines[]={
         (x0<x1)?initYRangeGenerator(x0, y0, x1, y1):initYRangeGenerator(x1, y1, x0, y0),
         (x1<x2)?initYRangeGenerator(x1, y1, x2, y2):initYRangeGenerator(x2, y2, x1, y1),
@@ -1317,6 +1314,9 @@ void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
     
     lines[0].W=lines[1].W=lines[2].W=lines[3].W=width(img);
     lines[0].H=lines[1].H=lines[2].H=lines[3].H=height(img);
+
+    int minX= min(min(x0,x1),min(x2,x3));
+    int maxX= min(max(max(x0,x1),max(x2,x3)), lines[0].W-1);
 
     typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
     FP_NEXT nextFuncList[]={nextYRange_Low,nextYRange_HighUp,nextYRange_HighDown};
