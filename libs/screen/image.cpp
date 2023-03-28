@@ -1207,9 +1207,9 @@ void nextYRange_HighUp(int x, LineGenState *line, ValueRange *yRange) {
     }
 }
 
-void nextYRange_HighDown(int x, LineGenState *line, ValueRange *yRange){
-    while (line->x==x&&line->y <= line->y1 && line->x < line->W) {
-        if(0<=line->x){
+void nextYRange_HighDown(int x, LineGenState *line, ValueRange *yRange) {
+    while (line->x == x && line->y <= line->y1 && line->x < line->W) {
+        if (0 <= line->x) {
             if (line->y < yRange->min) yRange->min = line->y;
             if (line->y > yRange->max) yRange->max = line->y;
         }
