@@ -1268,9 +1268,18 @@ LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1)
 }
 
 void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
-    if(x1<x0) {swap(x0,x1);swap(y0,y1);}
-    if(x2<x1) {swap(x1,x2);swap(y1,y2);}
-    if(x1<x0) {swap(x0,x1);swap(y0,y1);}
+    if (x1 < x0) {
+        swap(x0, x1);
+        swap(y0, y1);
+    }
+    if (x2 < x1) {
+        swap(x1, x2);
+        swap(y1, y2);
+    }
+    if (x1 < x0) {
+        swap(x0, x1);
+        swap(y0, y1);
+    }
 
     LineGenState lines[]={
         initYRangeGenerator(x0, y0, x2, y2),
