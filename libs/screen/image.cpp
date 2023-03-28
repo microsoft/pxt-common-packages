@@ -1297,20 +1297,20 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
 
     ValueRange yRange={lines[0].H,-1};
 
-    for (int x=lines[1].x0; x <= lines[1].x1; x++) {
-        yRange.min=lines[0].H; yRange.max=-1;
+    for (int x = lines[1].x0; x <= lines[1].x1; x++) {
+        yRange.min = lines[0].H; yRange.max = -1;
         fpNext0(x, &lines[0], &yRange);
         fpNext1(x, &lines[1], &yRange);
-        fillRect(img, x,yRange.min, 1,yRange.max-yRange.min+1,c);
+        fillRect(img, x,yRange.min, 1, yRange.max - yRange.min + 1, c);
     }
 
-    fpNext2(lines[2].x0, &lines[2],&yRange);
+    fpNext2(lines[2].x0, &lines[2], &yRange);
 
-    for (int x=lines[2].x0+1; x <= lines[2].x1; x++) {
-        yRange.min=lines[0].H; yRange.max=-1;
+    for (int x = lines[2].x0+1; x <= lines[2].x1; x++) {
+        yRange.min = lines[0].H; yRange.max = -1;
         fpNext0(x, &lines[0], &yRange);
         fpNext2(x, &lines[2], &yRange);
-        fillRect(img, x,yRange.min, 1,yRange.max-yRange.min+1,c);
+        fillRect(img, x, yRange.min, 1, yRange.max - yRange.min +1, c);
     }
 }
 
