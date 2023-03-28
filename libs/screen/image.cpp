@@ -1316,33 +1316,33 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
 
 void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
     LineGenState lines[]={
-        (x0<x1)?initYRangeGenerator(x0, y0, x1, y1):initYRangeGenerator(x1, y1, x0, y0),
-        (x1<x2)?initYRangeGenerator(x1, y1, x2, y2):initYRangeGenerator(x2, y2, x1, y1),
-        (x2<x3)?initYRangeGenerator(x2, y2, x3, y3):initYRangeGenerator(x3, y3, x2, y2),
-        (x0<x3)?initYRangeGenerator(x0, y0, x3, y3):initYRangeGenerator(x3, y3, x0, y0)};
+        (x0 < x1) ? initYRangeGenerator(x0, y0, x1, y1) : initYRangeGenerator(x1, y1, x0, y0),
+        (x1 < x2) ? initYRangeGenerator(x1, y1, x2, y2) : initYRangeGenerator(x2, y2, x1, y1),
+        (x2 < x3) ? initYRangeGenerator(x2, y2, x3, y3) : initYRangeGenerator(x3, y3, x2, y2),
+        (x0 < x3) ? initYRangeGenerator(x0, y0, x3, y3) : initYRangeGenerator(x3, y3, x0, y0)};
     
-    lines[0].W=lines[1].W=lines[2].W=lines[3].W=width(img);
-    lines[0].H=lines[1].H=lines[2].H=lines[3].H=height(img);
+    lines[0].W = lines[1].W = lines[2].W = lines[3].W = width(img);
+    lines[0].H = lines[1].H = lines[2].H = lines[3].H = height(img);
 
-    int minX= min(min(x0,x1),min(x2,x3));
-    int maxX= min(max(max(x0,x1),max(x2,x3)), lines[0].W-1);
+    int minX = min(min(x0, x1), min(x2, x3));
+    int maxX= min(max(max(x0, x1), max(x2, x3)), lines[0].W - 1);
 
     typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
-    FP_NEXT nextFuncList[]={nextYRange_Low,nextYRange_HighUp,nextYRange_HighDown};
-    FP_NEXT fpNext0=nextFuncList[lines[0].nextFuncIndex];
-    FP_NEXT fpNext1=nextFuncList[lines[1].nextFuncIndex];
-    FP_NEXT fpNext2=nextFuncList[lines[2].nextFuncIndex];
-    FP_NEXT fpNext3=nextFuncList[lines[3].nextFuncIndex];
+    FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
+    FP_NEXT fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+    FP_NEXT fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+    FP_NEXT fpNext2 = nextFuncList[lines[2].nextFuncIndex];
+    FP_NEXT fpNext3 = nextFuncList[lines[3].nextFuncIndex];
 
-    ValueRange yRange={lines[0].H,-1};
+    ValueRange yRange = { lines[0].H, -1 };
 
-    for (int x=minX; x <= maxX; x++) {
-        yRange.min=lines[0].H; yRange.max=-1;
+    for (int x = minX; x <= maxX; x++) {
+        yRange.min = lines[0].H; yRange.max = -1;
         fpNext0(x, &lines[0], &yRange);
         fpNext1(x, &lines[1], &yRange);
         fpNext2(x, &lines[2], &yRange);
         fpNext3(x, &lines[3], &yRange);
-        fillRect(img, x,yRange.min, 1,yRange.max-yRange.min+1,c);
+        fillRect(img, x,yRange.min, 1, yRange.max - yRange.min+1, c);
     }
 }
 
