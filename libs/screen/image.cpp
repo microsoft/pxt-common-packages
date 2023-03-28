@@ -1286,14 +1286,14 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
         initYRangeGenerator(x0, y0, x1, y1),
         initYRangeGenerator(x1, y1, x2, y2)};
     
-    lines[0].W=lines[1].W=lines[2].W=width(img);
-    lines[0].H=lines[1].H=lines[2].H=height(img);
+    lines[0].W = lines[1].W = lines[2].W = width(img);
+    lines[0].H = lines[1].H= lines[2].H = height(img);
 
     typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
-    FP_NEXT nextFuncList[]={nextYRange_Low,nextYRange_HighUp,nextYRange_HighDown};
-    FP_NEXT fpNext0=nextFuncList[lines[0].nextFuncIndex];
-    FP_NEXT fpNext1=nextFuncList[lines[1].nextFuncIndex];
-    FP_NEXT fpNext2=nextFuncList[lines[2].nextFuncIndex];
+    FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
+    FP_NEXT fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+    FP_NEXT fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+    FP_NEXT fpNext2 = nextFuncList[lines[2].nextFuncIndex];
 
     ValueRange yRange={lines[0].H,-1};
 
