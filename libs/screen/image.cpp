@@ -1232,7 +1232,7 @@ LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1)
     line.y = line.y0;
     line.x = line.x0;
 
-    if ((line.dy<0?-line.dy:line.dy) < line.dx) {
+    if ((line.dy < 0 ? -line.dy : line.dy) < line.dx) {
         line.yi = 1;
         if (line.dy < 0) {
             line.yi = -1;
