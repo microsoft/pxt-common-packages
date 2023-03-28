@@ -1261,8 +1261,8 @@ LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1)
             line.dx <<= 1;
             line.dy <<= 1;
 
-        line.nextFuncIndex=2;
-        return line;
+            line.nextFuncIndex = 2;
+            return line;
         }
     }
 }
