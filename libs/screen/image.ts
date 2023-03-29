@@ -74,6 +74,12 @@ interface Image {
     fillTriangle(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, col: number): void;
 
     /**
+     * Fills a 4-side-polygon
+     */
+    //% helper=imageFillPolygon4
+    fillPolygon4(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, col: number): void;
+
+    /**
      * Returns an image rotated by -90, 0, 90, 180, 270 deg clockwise
      */
     //% helper=imageRotated
@@ -136,6 +142,9 @@ namespace helpers {
 
     //% shim=ImageMethods::_fillTriangle
     declare function _fillTriangle(img: Image, args: number[]): void;
+
+    //% shim=ImageMethods::_fillPolygon4
+    declare function _fillPolygon4(img: Image, args: number[]): void;
 
     function pack(x: number, y: number) {
         return (Math.clamp(-30000, 30000, x | 0) & 0xffff) | (Math.clamp(-30000, 30000, y | 0) << 16)
@@ -230,6 +239,20 @@ namespace helpers {
         _blitArgs[5] = y2;
         _blitArgs[6] = col;
         _fillTriangle(img, _blitArgs);
+    }
+
+    export function imageFillPolygon4(img: Image, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, col: number) {
+        _blitArgs = _blitArgs || [];
+        _blitArgs[0] = x0;
+        _blitArgs[1] = y0;
+        _blitArgs[2] = x1;
+        _blitArgs[3] = y1;
+        _blitArgs[4] = x2;
+        _blitArgs[5] = y2;
+        _blitArgs[6] = x3;
+        _blitArgs[7] = y3;
+        _blitArgs[8] = col;
+        _fillPolygon4(img, _blitArgs);
     }
 
     /**
