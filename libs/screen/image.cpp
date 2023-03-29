@@ -1169,7 +1169,7 @@ typedef struct
     int yi, xi;
     int D;
     int nextFuncIndex;
-}LineGenState; // For keep the scene state of generating Y values, will continue gen Y(s) with this state set, when we go next step with next X.
+}LineGenState; // For keeping track of the state when generating Y values for a line, even when moving to the next X.
 
 typedef struct
 {
@@ -1206,7 +1206,7 @@ void nextYRange_HighUp(int x, LineGenState *line, ValueRange *yRange) {
         --line->y;
     }
 }
-// simular with sub-function LineHigh() of DrawLine(), but will yield back after each all Y values of given X calculating complete. Next time called will continue going with the state when it yield back.
+// This function is similar to the sub-function drawLineHigh for drawLine. However, it yields back after calculating all Y values of a given X. When the function is called again, it continues from the state where it yielded back previously.
 void nextYRange_HighDown(int x, LineGenState *line, ValueRange *yRange) {
     while (line->x == x && line->y <= line->y1 && line->x < line->W) {
         if (0 <= line->x) {
@@ -1289,8 +1289,8 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
     lines[0].W = lines[1].W = lines[2].W = width(img);
     lines[0].H = lines[1].H= lines[2].H = height(img);
 
-// We have 3 diff sub-function to generate Ys of edges, each particular edge map to one of them. 
-// With this kind of method pointers storage the entrence of the methods, to avoid judge which one to call at every X.
+// We have 3 different sub-functions to generate Ys of edges, each particular edge maps to one of them. 
+// Use function pointers to avoid judging which function to call at every X.
     typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
     FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
     FP_NEXT fpNext0 = nextFuncList[lines[0].nextFuncIndex];
