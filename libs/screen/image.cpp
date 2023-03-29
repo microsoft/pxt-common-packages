@@ -1169,7 +1169,7 @@ typedef struct
     int yi, xi;
     int D;
     int nextFuncIndex;
-}LineGenState;
+}LineGenState; // For keep the scene state of generating Y values, will continue gen Y(s) with this state set, when we go next step with next X.
 
 typedef struct
 {
@@ -1206,7 +1206,7 @@ void nextYRange_HighUp(int x, LineGenState *line, ValueRange *yRange) {
         --line->y;
     }
 }
-
+// simular with sub-function LineHigh() of DrawLine(), but will yield back after each all Y values of given X calculating complete. Next time called will continue going with the state when it yield back.
 void nextYRange_HighDown(int x, LineGenState *line, ValueRange *yRange) {
     while (line->x == x && line->y <= line->y1 && line->x < line->W) {
         if (0 <= line->x) {
@@ -1289,6 +1289,8 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
     lines[0].W = lines[1].W = lines[2].W = width(img);
     lines[0].H = lines[1].H= lines[2].H = height(img);
 
+// We have 3 diff sub-function to generate Ys of edges, each particular edge map to one of them. 
+// With this kind of method pointers storage the entrence of the methods, to avoid judge which one to call at every X.
     typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
     FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
     FP_NEXT fpNext0 = nextFuncList[lines[0].nextFuncIndex];
@@ -1361,6 +1363,14 @@ void _fillTriangle(Image_ img, pxt::RefCollection *args) {
 }
 
 //%
+// This polygon fill is simular with fillTriangle(). Scan minY and maxY of all edges at each X, and draw a verticle line between (x,minY)~(x,maxY).
+// Difference are: 
+// Sort endpoints of each edge, x0<x1, to draw from left to right.
+// But didn't sort edges, for it is too time consuming. Just call next(), and it will return immediatly if the x is not in range of the edge in horizon.
+// NOTE, difference with triangles, edges of polygon can cross vertical line at a given X multi time, this algoritm can fill correctly only edges meet this codition: 
+// Any vertical line(x) cross edges 2 times at most. 
+// Fortunately, what ever perspective transfrom applied, a rectangle/trapezoid will be still met this condition.
+// Ref: https://forum.makecode.com/t/new-3d-engine-help-filling-4-sided-polygons/18641/9?u=aqeeaqee
 void _fillPolygon4(Image_ img, pxt::RefCollection *args) {
     fillPolygon4(
         img,
