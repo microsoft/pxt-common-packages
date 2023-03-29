@@ -1362,13 +1362,13 @@ void _fillTriangle(Image_ img, pxt::RefCollection *args) {
     );
 }
 
-//%
 // This polygon fill is similar to fillTriangle(): Scan minY and maxY of all edges at each X, and draw a vertical line between (x,minY)~(x,maxY).
 // The main difference is that it sorts the endpoints of each edge, x0 < x1, to draw from left to right, but doesn't sort the edges as it's too time consuming.
 // Instead, just call next(), which returns immediately if the x is not in range of the edge in horizon.
 // NOTE: Unlike triangles, edges of a polygon can cross a vertical line at a given X multi time. This algorithm can fill correctly only if edges meet this condition: Any vertical line(x) cross edges at most 2 times.
 // Fortunately, no matter what perspective transform is applied, a rectangle/trapezoid will still meet this condition.
 // Ref: https://forum.makecode.com/t/new-3d-engine-help-filling-4-sided-polygons/18641/9
+//%
 void _fillPolygon4(Image_ img, pxt::RefCollection *args) {
     fillPolygon4(
         img,
