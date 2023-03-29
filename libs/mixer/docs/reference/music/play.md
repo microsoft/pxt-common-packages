@@ -21,7 +21,7 @@ music.play(music.stringPlayable("D F E A E A C B ", 120), music.PlaybackMode.Unt
 music.play(music.melodyPlayable(music.magicWand), music.PlaybackMode.UntilDone)
 ```
 
-The most complex playabe object is a **song**. Songs are composed in the Song Editor using many notes from different instruments.
+The most complex playabe object is a **song**. Songs are composed in the [Song Editor](/reference/music/song-editor) using many notes from different instruments.
 
 ```block
 music.play(music.createSong(hex`0078000408020200001c00010a006400f40164000004000000000000000000000000000500000430000400080001220c001000012514001800011e1c00200001222400280001252c003000012934003800012c3c004000011e03001c0001dc00690000045e010004000000000000000000000564000104000330000400080001290c001000011e1400180001251c002000012924002800011b2c003000012234003800011e3c0040000129`), music.PlaybackMode.UntilDone)
@@ -128,4 +128,5 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
 [string playable](/reference/music/string-playable),
 [melody playable](/reference/music/melody-playable),
 [create song](/reference/music/create-song),
-[stop all sounds](/reference/music/stop-all-sounds)
+[stop all sounds](/reference/music/stop-all-sounds),
+[song editor](/reference/music/song-editor)
