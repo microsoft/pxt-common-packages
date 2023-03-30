@@ -679,13 +679,13 @@ namespace pxsim.ImageMethods {
     }
 
     function initYRangeGenerator(X0: number, Y0: number, X1: number, Y1: number): LineGenState {
-        let line: LineGenState = {
+        const line: LineGenState = {
             x: 0,
             y: 0,
-            x0: 0,
-            y0: 0,
-            x1: 0,
-            y1: 0,
+            x0: X0,
+            y0: Y0,
+            x1: X1,
+            y1: Y1,
             W: 0,
             H: 0,
             dx: 0,
@@ -695,8 +695,6 @@ namespace pxsim.ImageMethods {
             D: 0,
             nextFuncIndex: 0,
         };
-
-        line.x0 = X0, line.y0 = Y0, line.x1 = X1, line.y1 = Y1;
 
         line.dx = line.x1 - line.x0;
         line.dy = line.y1 - line.y0;
@@ -713,7 +711,7 @@ namespace pxsim.ImageMethods {
             line.dx = line.dx << 1;
             line.dy = line.dy << 1;
 
-            line.nextFuncIndex=0;
+            line.nextFuncIndex = 0;
             return line;
         } else {
             line.xi = 1;
@@ -804,7 +802,44 @@ namespace pxsim.ImageMethods {
     }
 
     export function fillPolygon4(img: RefImage, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, c: number) {
-        // Simulator implementation of fill triangle
+        const lines: LineGenState[]= [
+            (x0 < x1) ? initYRangeGenerator(x0, y0, x1, y1) : initYRangeGenerator(x1, y1, x0, y0),
+            (x1 < x2) ? initYRangeGenerator(x1, y1, x2, y2) : initYRangeGenerator(x2, y2, x1, y1),
+            (x2 < x3) ? initYRangeGenerator(x2, y2, x3, y3) : initYRangeGenerator(x3, y3, x2, y2),
+            (x0 < x3) ? initYRangeGenerator(x0, y0, x3, y3) : initYRangeGenerator(x3, y3, x0, y0)
+        ];
+
+        lines[0].W = lines[1].W = lines[2].W = lines[3].W = width(img);
+        lines[0].H = lines[1].H = lines[2].H = lines[3].H = height(img);
+
+        let minX = Math.min(Math.min(x0, x1), Math.min(x2, x3));
+        let maxX = Math.min(Math.max(Math.max(x0, x1), Math.max(x2, x3)), lines[0].W - 1);
+
+        type FP_NEXT = (x: number, line: LineGenState, yRange: ValueRange) => void;
+        const nextFuncList: FP_NEXT[] = [
+            nextYRange_Low,
+            nextYRange_HighUp,
+            nextYRange_HighDown
+        ];
+
+        const fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+        const fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+        const fpNext2 = nextFuncList[lines[2].nextFuncIndex];
+        const fpNext3 = nextFuncList[lines[3].nextFuncIndex];
+
+        const yRange: ValueRange = {
+            min: lines[0].H,
+            max: -1
+        };
+
+        for (let x = minX; x <= maxX; x++) {
+            yRange.min = lines[0].H; yRange.max = -1;
+            fpNext0(x, lines[0], yRange);
+            fpNext1(x, lines[1], yRange);
+            fpNext2(x, lines[2], yRange);
+            fpNext3(x, lines[3], yRange);
+            fillRect(img, x,yRange.min, 1, yRange.max - yRange.min + 1, c);
+        }
     }
 
     export function _fillPolygon4(img: RefImage, args: RefCollection) {

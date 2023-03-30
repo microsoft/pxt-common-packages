@@ -1242,7 +1242,7 @@ LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1)
         line.dx <<= 1;
         line.dy <<= 1;
 
-        line.nextFuncIndex=0;
+        line.nextFuncIndex = 0;
         return line;
     } else {
         line.xi = 1;
@@ -1318,7 +1318,7 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
 }
 
 void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
-    LineGenState lines[]={
+    LineGenState lines[] = {
         (x0 < x1) ? initYRangeGenerator(x0, y0, x1, y1) : initYRangeGenerator(x1, y1, x0, y0),
         (x1 < x2) ? initYRangeGenerator(x1, y1, x2, y2) : initYRangeGenerator(x2, y2, x1, y1),
         (x2 < x3) ? initYRangeGenerator(x2, y2, x3, y3) : initYRangeGenerator(x3, y3, x2, y2),
