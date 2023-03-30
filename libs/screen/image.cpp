@@ -1267,6 +1267,46 @@ LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1)
     }
 }
 
+// core of draw vertical line for repeatly calling, eg.: fillTriangle() or fillPolygon4()
+// value range/safety check not included
+// prepare "img->makeWritable();" and "uint8_t f = img->fillMask(c);" outside required.
+// bpp=4 support only right now
+void drawVLineCore(Image_ img, int x, int y, int h, uint8_t f) {
+    uint8_t *p = img->pix(x, y);
+    auto ptr = p;
+    unsigned mask = 0x0f;
+    if (y & 1)
+        mask <<= 4;
+    for (int i = 0; i < h; ++i) {
+        if (mask == 0xf00) {
+            if (h - i >= 2) {
+                *++ptr = f;
+                i++;
+                continue;
+            } else {
+                mask = 0x0f;
+                ptr++;
+            }
+        }
+        *ptr = (*ptr & ~mask) | (f & mask);
+        mask <<= 4;
+    }
+}
+
+void drawVLine(Image_ img, int x, int y, int h, int c) {
+    int H=height(img);
+    uint8_t f = img->fillMask(c);
+    if (x < 0 || x >= width(img) || y >= H || y+h-1 < 0)
+        return;
+    if (y < 0){
+        h += y;
+        y = 0;
+    }
+    if (y + h > H)
+        h = H - y;
+    drawVLineCore(img,x,y,h,f);
+}
+
 void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
     if (x1 < x0) {
         swap(x0, x1);
@@ -1287,8 +1327,9 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
         initYRangeGenerator(x1, y1, x2, y2)
     };
 
-    lines[0].W = lines[1].W = lines[2].W = width(img);
-    lines[0].H = lines[1].H = lines[2].H = height(img);
+    int W = width(img), H = height(img);
+    lines[0].W = lines[1].W = lines[2].W = W;
+    lines[0].H = lines[1].H = lines[2].H = H;
 
     // We have 3 different sub-functions to generate Ys of edges, each particular edge maps to one of them.
     // Use function pointers to avoid judging which function to call at every X.
@@ -1298,22 +1339,40 @@ void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
     FP_NEXT fpNext1 = nextFuncList[lines[1].nextFuncIndex];
     FP_NEXT fpNext2 = nextFuncList[lines[2].nextFuncIndex];
 
-    ValueRange yRange={lines[0].H,-1};
+    ValueRange yRange = {H, -1};
+    img->makeWritable();
+    uint8_t f = img->fillMask(c);
 
-    for (int x = lines[1].x0; x <= lines[1].x1; x++) {
-        yRange.min = lines[0].H; yRange.max = -1;
+    for (int x = lines[1].x0; x <= min(x1, W - 1); x++) {
+        yRange.min = H;
+        yRange.max = -1;
         fpNext0(x, &lines[0], &yRange);
         fpNext1(x, &lines[1], &yRange);
-        fillRect(img, x, yRange.min, 1, yRange.max - yRange.min + 1, c);
+
+        if (x < 0 || yRange.min >= H || yRange.max < 0)
+            continue;
+        if (yRange.min < 0)
+            yRange.min = 0;
+        if (yRange.max >= H)
+            yRange.max = H - 1;
+        drawVLineCore(img, x, yRange.min, yRange.max - yRange.min + 1, f);
     }
 
     fpNext2(lines[2].x0, &lines[2], &yRange);
 
-    for (int x = lines[2].x0 + 1; x <= lines[2].x1; x++) {
-        yRange.min = lines[0].H; yRange.max = -1;
+    for (int x = lines[2].x0 + 1; x <= min(x2, W - 1); x++) {
+        yRange.min = H;
+        yRange.max = -1;
         fpNext0(x, &lines[0], &yRange);
         fpNext2(x, &lines[2], &yRange);
-        fillRect(img, x, yRange.min, 1, yRange.max - yRange.min + 1, c);
+
+        if (x < 0 || yRange.min >= H || yRange.max < 0)
+            continue;
+        if (yRange.min < 0)
+            yRange.min = 0;
+        if (yRange.max >= H)
+            yRange.max = H - 1;
+        drawVLineCore(img, x, yRange.min, yRange.max - yRange.min + 1, f);
     }
 }
 
@@ -1324,11 +1383,12 @@ void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
         (x2 < x3) ? initYRangeGenerator(x2, y2, x3, y3) : initYRangeGenerator(x3, y3, x2, y2),
         (x0 < x3) ? initYRangeGenerator(x0, y0, x3, y3) : initYRangeGenerator(x3, y3, x0, y0)};
 
-    lines[0].W = lines[1].W = lines[2].W = lines[3].W = width(img);
-    lines[0].H = lines[1].H = lines[2].H = lines[3].H = height(img);
+    int W = width(img), H = height(img);
+    lines[0].W = lines[1].W = lines[2].W = lines[3].W = W;
+    lines[0].H = lines[1].H = lines[2].H = lines[3].H = H;
 
     int minX = min(min(x0, x1), min(x2, x3));
-    int maxX = min(max(max(x0, x1), max(x2, x3)), lines[0].W - 1);
+    int maxX = min(max(max(x0, x1), max(x2, x3)), W - 1);
 
     typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
     FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
@@ -1337,15 +1397,25 @@ void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, in
     FP_NEXT fpNext2 = nextFuncList[lines[2].nextFuncIndex];
     FP_NEXT fpNext3 = nextFuncList[lines[3].nextFuncIndex];
 
-    ValueRange yRange = { lines[0].H, -1 };
+    ValueRange yRange = { H, -1 };
+    img->makeWritable();
+    uint8_t f = img->fillMask(c);
 
     for (int x = minX; x <= maxX; x++) {
-        yRange.min = lines[0].H; yRange.max = -1;
+        yRange.min = H;
+        yRange.max = -1;
         fpNext0(x, &lines[0], &yRange);
         fpNext1(x, &lines[1], &yRange);
         fpNext2(x, &lines[2], &yRange);
         fpNext3(x, &lines[3], &yRange);
-        fillRect(img, x,yRange.min, 1, yRange.max - yRange.min + 1, c);
+
+        if (x < 0 || yRange.min >= H || yRange.max < 0)
+            continue;
+        if (yRange.min < 0)
+            yRange.min = 0;
+        if (yRange.max >= H)
+            yRange.max = H - 1;
+        drawVLineCore(img, x, yRange.min, yRange.max - yRange.min + 1, f);
     }
 }
 
