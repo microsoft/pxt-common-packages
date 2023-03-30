@@ -680,26 +680,21 @@ namespace pxsim.ImageMethods {
 
     function initYRangeGenerator(X0: number, Y0: number, X1: number, Y1: number): LineGenState {
         const line: LineGenState = {
-            x: 0,
-            y: 0,
+            x: X0,
+            y: Y0,
             x0: X0,
             y0: Y0,
             x1: X1,
             y1: Y1,
             W: 0,
             H: 0,
-            dx: 0,
-            dy: 0,
+            dx: X1 - X0,
+            dy: Y1 - Y0,
             yi: 0,
             xi: 0,
             D: 0,
             nextFuncIndex: 0,
         };
-
-        line.dx = line.x1 - line.x0;
-        line.dy = line.y1 - line.y0;
-        line.y = line.y0;
-        line.x = line.x0;
 
         if ((line.dy < 0 ? -line.dy : line.dy) < line.dx) {
             line.yi = 1;
