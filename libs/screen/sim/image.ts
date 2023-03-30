@@ -791,13 +791,13 @@ namespace pxsim.ImageMethods {
     export function _fillTriangle(img: RefImage, args: RefCollection) {
         fillTriangle(
             img,
-            args.getAt(0) as number,
-            args.getAt(1) as number,
-            args.getAt(2) as number,
-            args.getAt(3) as number,
-            args.getAt(4) as number,
-            args.getAt(5) as number,
-            args.getAt(6) as number,
+            args.getAt(0) | 0,
+            args.getAt(1) | 0,
+            args.getAt(2) | 0,
+            args.getAt(3) | 0,
+            args.getAt(4) | 0,
+            args.getAt(5) | 0,
+            args.getAt(6) | 0,
         );
     }
 
@@ -845,15 +845,15 @@ namespace pxsim.ImageMethods {
     export function _fillPolygon4(img: RefImage, args: RefCollection) {
         fillPolygon4(
             img,
-            args.getAt(0) as number,
-            args.getAt(1) as number,
-            args.getAt(2) as number,
-            args.getAt(3) as number,
-            args.getAt(4) as number,
-            args.getAt(5) as number,
-            args.getAt(6) as number,
-            args.getAt(7) as number,
-            args.getAt(8) as number,
+            args.getAt(0) | 0,
+            args.getAt(1) | 0,
+            args.getAt(2) | 0,
+            args.getAt(3) | 0,
+            args.getAt(4) | 0,
+            args.getAt(5) | 0,
+            args.getAt(6) | 0,
+            args.getAt(7) | 0,
+            args.getAt(8) | 0,
         );
     }
 
