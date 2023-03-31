@@ -1294,9 +1294,9 @@ void drawVLineCore(Image_ img, int x, int y, int h, uint8_t f) {
 }
 
 void drawVLine(Image_ img, int x, int y, int h, int c) {
-    int H=height(img);
+    int H = height(img);
     uint8_t f = img->fillMask(c);
-    if (x < 0 || x >= width(img) || y >= H || y+h-1 < 0)
+    if (x < 0 || x >= width(img) || y >= H || y + h - 1 < 0)
         return;
     if (y < 0){
         h += y;
@@ -1304,7 +1304,7 @@ void drawVLine(Image_ img, int x, int y, int h, int c) {
     }
     if (y + h > H)
         h = H - y;
-    drawVLineCore(img,x,y,h,f);
+    drawVLineCore(img, x, y, h, f);
 }
 
 void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
