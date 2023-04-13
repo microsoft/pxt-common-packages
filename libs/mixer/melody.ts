@@ -595,7 +595,7 @@ namespace music {
     //% block="song $song"
     //% song.fieldEditor=musiceditor
     //% song.fieldOptions.decompileLiterals=true
-    //% song.fieldOptions.taggedTemplate="hex"
+    //% song.fieldOptions.taggedTemplate="hex;assets.song"
     //% song.fieldOptions.decompileIndirectFixedInstances="true"
     //% song.fieldOptions.decompileArgumentAsString="true"
     //% toolboxParent=music_playable_play
