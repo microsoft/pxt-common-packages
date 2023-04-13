@@ -1159,6 +1159,302 @@ void _fillCircle(Image_ img, int cxy, int r, int c) {
     fillCircle(img, XX(cxy), YY(cxy), r, c);
 }
 
+typedef struct
+{
+    int x, y;
+    int x0, y0;
+    int x1, y1;
+    int W,H;
+    int dx, dy;
+    int yi, xi;
+    int D;
+    int nextFuncIndex;
+} LineGenState; // For keeping track of the state when generating Y values for a line, even when moving to the next X.
+
+typedef struct
+{
+    int min;
+    int max;
+} ValueRange;
+
+void nextYRange_Low(int x, LineGenState *line, ValueRange *yRange) {
+    while (line->x == x && line->x <= line->x1 && line->x < line->W) {
+        if (0 <= line->x) {
+            if (line->y < yRange->min) yRange->min = line->y;
+            if (line->y > yRange->max) yRange->max = line->y;
+        }
+        if (line->D > 0) {
+            line->y += line->yi;
+            line->D -= line->dx;
+        }
+        line->D += line->dy;
+        ++line->x;
+    }
+}
+
+void nextYRange_HighUp(int x, LineGenState *line, ValueRange *yRange) {
+    while (line->x == x && line->y >= line->y1 && line->x < line->W) {
+        if (0 <= line->x) {
+            if (line->y < yRange->min) yRange->min = line->y;
+            if (line->y > yRange->max) yRange->max = line->y;
+        }
+        if (line->D > 0) {
+            line->x += line->xi;
+            line->D += line->dy;
+        }
+        line->D += line->dx;
+        --line->y;
+    }
+}
+// This function is similar to the sub-function drawLineHigh for drawLine. However, it yields back after calculating all Y values of a given X. When the function is called again, it continues from the state where it yielded back previously.
+void nextYRange_HighDown(int x, LineGenState *line, ValueRange *yRange) {
+    while (line->x == x && line->y <= line->y1 && line->x < line->W) {
+        if (0 <= line->x) {
+            if (line->y < yRange->min) yRange->min = line->y;
+            if (line->y > yRange->max) yRange->max = line->y;
+        }
+        if (line->D > 0) {
+            line->x += line->xi;
+            line->D -= line->dy;
+        }
+        line->D += line->dx;
+        ++line->y;
+    }
+}
+
+LineGenState initYRangeGenerator(int16_t X0, int16_t Y0, int16_t X1, int16_t Y1) {
+    LineGenState line;
+
+    line.x0 = X0, line.y0 = Y0, line.x1 = X1, line.y1 = Y1;
+
+    line.dx = line.x1 - line.x0;
+    line.dy = line.y1 - line.y0;
+    line.y = line.y0;
+    line.x = line.x0;
+
+    if ((line.dy < 0 ? -line.dy : line.dy) < line.dx) {
+        line.yi = 1;
+        if (line.dy < 0) {
+            line.yi = -1;
+            line.dy = -line.dy;
+        }
+        line.D = 2 * line.dy - line.dx;
+        line.dx <<= 1;
+        line.dy <<= 1;
+
+        line.nextFuncIndex = 0;
+        return line;
+    } else {
+        line.xi = 1;
+        // if (dx < 0) {//should not hit
+        //     PANIC();
+        // }
+        if (line.dy < 0) {
+            line.D = 2 * line.dx + line.dy;
+            line.dx <<= 1;
+            line.dy <<= 1;
+
+            line.nextFuncIndex = 1;
+            return line;
+        } else {
+            line.D = 2 * line.dx - line.dy;
+            line.dx <<= 1;
+            line.dy <<= 1;
+
+            line.nextFuncIndex = 2;
+            return line;
+        }
+    }
+}
+
+// core of draw vertical line for repeatly calling, eg.: fillTriangle() or fillPolygon4()
+// value range/safety check not included
+// prepare "img->makeWritable();" and "uint8_t f = img->fillMask(c);" outside required.
+// bpp=4 support only right now
+void drawVLineCore(Image_ img, int x, int y, int h, uint8_t f) {
+    uint8_t *p = img->pix(x, y);
+    auto ptr = p;
+    unsigned mask = 0x0f;
+    if (y & 1)
+        mask <<= 4;
+    for (int i = 0; i < h; ++i) {
+        if (mask == 0xf00) {
+            if (h - i >= 2) {
+                *++ptr = f;
+                i++;
+                continue;
+            } else {
+                mask = 0x0f;
+                ptr++;
+            }
+        }
+        *ptr = (*ptr & ~mask) | (f & mask);
+        mask <<= 4;
+    }
+}
+
+void drawVLine(Image_ img, int x, int y, int h, int c) {
+    int H = height(img);
+    uint8_t f = img->fillMask(c);
+    if (x < 0 || x >= width(img) || y >= H || y + h - 1 < 0)
+        return;
+    if (y < 0){
+        h += y;
+        y = 0;
+    }
+    if (y + h > H)
+        h = H - y;
+    drawVLineCore(img, x, y, h, f);
+}
+
+void fillTriangle(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int c) {
+    if (x1 < x0) {
+        swap(x0, x1);
+        swap(y0, y1);
+    }
+    if (x2 < x1) {
+        swap(x1, x2);
+        swap(y1, y2);
+    }
+    if (x1 < x0) {
+        swap(x0, x1);
+        swap(y0, y1);
+    }
+
+    LineGenState lines[] = {
+        initYRangeGenerator(x0, y0, x2, y2),
+        initYRangeGenerator(x0, y0, x1, y1),
+        initYRangeGenerator(x1, y1, x2, y2)
+    };
+
+    int W = width(img), H = height(img);
+    lines[0].W = lines[1].W = lines[2].W = W;
+    lines[0].H = lines[1].H = lines[2].H = H;
+
+    // We have 3 different sub-functions to generate Ys of edges, each particular edge maps to one of them.
+    // Use function pointers to avoid judging which function to call at every X.
+    typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
+    FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
+    FP_NEXT fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+    FP_NEXT fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+    FP_NEXT fpNext2 = nextFuncList[lines[2].nextFuncIndex];
+
+    ValueRange yRange = {H, -1};
+    img->makeWritable();
+    uint8_t f = img->fillMask(c);
+
+    for (int x = lines[1].x0; x <= min(x1, W - 1); x++) {
+        yRange.min = H;
+        yRange.max = -1;
+        fpNext0(x, &lines[0], &yRange);
+        fpNext1(x, &lines[1], &yRange);
+
+        if (x < 0 || yRange.min >= H || yRange.max < 0)
+            continue;
+        if (yRange.min < 0)
+            yRange.min = 0;
+        if (yRange.max >= H)
+            yRange.max = H - 1;
+        drawVLineCore(img, x, yRange.min, yRange.max - yRange.min + 1, f);
+    }
+
+    fpNext2(lines[2].x0, &lines[2], &yRange);
+
+    for (int x = lines[2].x0 + 1; x <= min(x2, W - 1); x++) {
+        yRange.min = H;
+        yRange.max = -1;
+        fpNext0(x, &lines[0], &yRange);
+        fpNext2(x, &lines[2], &yRange);
+
+        if (x < 0 || yRange.min >= H || yRange.max < 0)
+            continue;
+        if (yRange.min < 0)
+            yRange.min = 0;
+        if (yRange.max >= H)
+            yRange.max = H - 1;
+        drawVLineCore(img, x, yRange.min, yRange.max - yRange.min + 1, f);
+    }
+}
+
+void fillPolygon4(Image_ img, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, int c) {
+    LineGenState lines[] = {
+        (x0 < x1) ? initYRangeGenerator(x0, y0, x1, y1) : initYRangeGenerator(x1, y1, x0, y0),
+        (x1 < x2) ? initYRangeGenerator(x1, y1, x2, y2) : initYRangeGenerator(x2, y2, x1, y1),
+        (x2 < x3) ? initYRangeGenerator(x2, y2, x3, y3) : initYRangeGenerator(x3, y3, x2, y2),
+        (x0 < x3) ? initYRangeGenerator(x0, y0, x3, y3) : initYRangeGenerator(x3, y3, x0, y0)};
+
+    int W = width(img), H = height(img);
+    lines[0].W = lines[1].W = lines[2].W = lines[3].W = W;
+    lines[0].H = lines[1].H = lines[2].H = lines[3].H = H;
+
+    int minX = min(min(x0, x1), min(x2, x3));
+    int maxX = min(max(max(x0, x1), max(x2, x3)), W - 1);
+
+    typedef void (*FP_NEXT)(int x, LineGenState *line, ValueRange *yRange);
+    FP_NEXT nextFuncList[] = { nextYRange_Low, nextYRange_HighUp, nextYRange_HighDown };
+    FP_NEXT fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+    FP_NEXT fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+    FP_NEXT fpNext2 = nextFuncList[lines[2].nextFuncIndex];
+    FP_NEXT fpNext3 = nextFuncList[lines[3].nextFuncIndex];
+
+    ValueRange yRange = { H, -1 };
+    img->makeWritable();
+    uint8_t f = img->fillMask(c);
+
+    for (int x = minX; x <= maxX; x++) {
+        yRange.min = H;
+        yRange.max = -1;
+        fpNext0(x, &lines[0], &yRange);
+        fpNext1(x, &lines[1], &yRange);
+        fpNext2(x, &lines[2], &yRange);
+        fpNext3(x, &lines[3], &yRange);
+
+        if (x < 0 || yRange.min >= H || yRange.max < 0)
+            continue;
+        if (yRange.min < 0)
+            yRange.min = 0;
+        if (yRange.max >= H)
+            yRange.max = H - 1;
+        drawVLineCore(img, x, yRange.min, yRange.max - yRange.min + 1, f);
+    }
+}
+
+//%
+void _fillTriangle(Image_ img, pxt::RefCollection *args) {
+    fillTriangle(
+        img,
+        pxt::toInt(args->getAt(0)),
+        pxt::toInt(args->getAt(1)),
+        pxt::toInt(args->getAt(2)),
+        pxt::toInt(args->getAt(3)),
+        pxt::toInt(args->getAt(4)),
+        pxt::toInt(args->getAt(5)),
+        pxt::toInt(args->getAt(6))
+    );
+}
+
+// This polygon fill is similar to fillTriangle(): Scan minY and maxY of all edges at each X, and draw a vertical line between (x,minY)~(x,maxY).
+// The main difference is that it sorts the endpoints of each edge, x0 < x1, to draw from left to right, but doesn't sort the edges as it's too time consuming.
+// Instead, just call next(), which returns immediately if the x is not in range of the edge in horizon.
+// NOTE: Unlike triangles, edges of a polygon can cross a vertical line at a given X multi time. This algorithm can fill correctly only if edges meet this condition: Any vertical line(x) cross edges at most 2 times.
+// Fortunately, no matter what perspective transform is applied, a rectangle/trapezoid will still meet this condition.
+// Ref: https://forum.makecode.com/t/new-3d-engine-help-filling-4-sided-polygons/18641/9
+//%
+void _fillPolygon4(Image_ img, pxt::RefCollection *args) {
+    fillPolygon4(
+        img,
+        pxt::toInt(args->getAt(0)),
+        pxt::toInt(args->getAt(1)),
+        pxt::toInt(args->getAt(2)),
+        pxt::toInt(args->getAt(3)),
+        pxt::toInt(args->getAt(4)),
+        pxt::toInt(args->getAt(5)),
+        pxt::toInt(args->getAt(6)),
+        pxt::toInt(args->getAt(7)),
+        pxt::toInt(args->getAt(8))
+    );
+}
+
 } // namespace ImageMethods
 
 namespace image {
