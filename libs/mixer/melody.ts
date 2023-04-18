@@ -115,17 +115,17 @@ namespace music {
      * Play a melody from the melody editor.
      * @param melody - string of up to eight notes [C D E F G A B C5] or rests [-] separated by spaces,
      * which will be played one at a time, ex: "E D G F B A C5 B "
-     * @param tempo - number in beats per minute (bpm), dictating how long each note will play for
+     * @param bpm - number in beats per minute (bpm), dictating how long each note will play for
      */
-    //% block="play melody $melody at tempo $tempo|(bpm)" blockId=playMelody
+    //% block="play melody $melody at tempo $bpm|(bpm)" blockId=playMelody
     //% blockNamespace=music
     //% weight=85 blockGap=8 help=music/play-melody
     //% group="Melody"
     //% melody.shadow="melody_editor"
-    //% tempo.min=40 tempo.max=500
-    //% tempo.defl=120
+    //% bpm.min=4 bpm.max=500
+    //% bpm.defl=120
     //% deprecated=1
-    export function playMelody(melody: string, tempo: number) {
+    export function playMelody(melody: string, bpm: number) {
         let notes: string[] = melody.split(" ").filter(n => !!n);
         let formattedMelody = "";
         let newOctave = false;
@@ -143,7 +143,7 @@ namespace music {
             }
             // add tempo after first note
             if (i == 0) {
-                formattedMelody += notes[i] + "-" + tempo + " ";
+                formattedMelody += notes[i] + "-" + bpm + " ";
             } else {
                 formattedMelody += notes[i] + " ";
             }
