@@ -3,7 +3,7 @@
 */
 //% color="#03AA74" weight=100 icon="\uf021" block="Animation"
 //% groups='["Animate", "Advanced"]'
-//% weight = 5
+//% weight=5
 namespace animation {
     const stateNamespace = "__animation";
 
