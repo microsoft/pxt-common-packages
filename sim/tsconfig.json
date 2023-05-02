@@ -3,7 +3,7 @@
         "target": "es2017",
         "noImplicitAny": true,
         "noImplicitReturns": true,
-        "out": "../built/common-sim.js",
+        "outFile": "../built/common-sim.js",
         "lib": [
             "DOM",
             "DOM.Iterable",
