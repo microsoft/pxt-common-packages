@@ -395,7 +395,7 @@ namespace radio {
     function getMaxStringLength(packetType: number) {
         switch (packetType) {
             case PACKET_TYPE_STRING:
-                return MAX_PAYLOAD_LENGTH - 2;
+                return MAX_PAYLOAD_LENGTH - 1;
             case PACKET_TYPE_VALUE:
             case PACKET_TYPE_DOUBLE_VALUE:
                 return MAX_FIELD_DOUBLE_NAME_LENGTH;
