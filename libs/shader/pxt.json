@@ -1,0 +1,14 @@
+{
+    "name": "shader",
+    "description": "Utility methods for shading images",
+    "files": [
+        "shader.cpp",
+        "shader.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core",
+        "screen": "file:../screen"
+    }
+}
