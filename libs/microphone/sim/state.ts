@@ -1,3 +1,5 @@
+/// <reference path="../../core/sim/analogSensor.ts" />
+
 namespace pxsim {
     export interface MicrophoneBoard {
         microphoneState: MicrophoneState;
