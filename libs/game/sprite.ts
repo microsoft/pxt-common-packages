@@ -694,6 +694,8 @@ class Sprite extends sprites.BaseSprite {
             return false
         if (other.flags & SPRITE_NO_SPRITE_OVERLAPS)
             return false
+        if (this.flags & sprites.Flag.HitboxOverlaps || other.flags & sprites.Flag.HitboxOverlaps)
+            return other._hitbox.overlapsWith(this._hitbox);
         if (!other._hitbox.overlapsWith(this._hitbox))
             return false;
         if (!this.isScaled() && !other.isScaled()) {
