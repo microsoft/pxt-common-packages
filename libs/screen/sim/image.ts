@@ -933,40 +933,6 @@ namespace pxsim.ImageMethods {
         }
         return false;
     }
-
-    export function _mergeImage(dst: RefImage, src: RefImage, xy: number) {
-        mergeImage(dst, src, XX(xy), YY(xy));
-    }
-
-    function mergeImage(dst: RefImage, src: RefImage, x0: number, y0: number) {
-        for (let x = 0; x < src._width; x++) {
-            for (let y = 0; y < src._height; y++) {
-                setPixel(
-                    dst,
-                    x0 + x,
-                    y0 + y,
-                    Math.min(getPixel(dst, x0 + x, y0 + y), getPixel(src, x, y))
-                )
-            }
-        }
-    }
-
-    export function _mapImage(dst: RefImage, src: RefImage, xy: number, buf: RefBuffer) {
-        mapImage(dst, src, XX(xy), YY(xy), buf);
-    }
-
-    function mapImage(dst: RefImage, src: RefImage, x0: number, y0: number, buf: RefBuffer) {
-        for (let x = 0; x < src._width; x++) {
-            for (let y = 0; y < src._height; y++) {
-                setPixel(
-                    dst,
-                    x0 + x,
-                    y0 + y,
-                    buf.data[getPixel(dst, x0 + x, y0 + y) + (getPixel(src, x, y) << 4)]
-                )
-            }
-        }
-    }
 }
 
 
