@@ -61,8 +61,8 @@ namespace pxsim {
 }
 
 namespace pxsim.ImageMethods {
-    function XX(x: number) { return (x << 16) >> 16 }
-    function YY(x: number) { return x >> 16 }
+    export function XX(x: number) { return (x << 16) >> 16 }
+    export function YY(x: number) { return x >> 16 }
 
     export function width(img: RefImage) { return img._width }
 
@@ -525,58 +525,59 @@ namespace pxsim.ImageMethods {
     }
 
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
-        const img2: Uint8Array = icon.data
+        const src: Uint8Array = icon.data
         if (!image.isValidImage(icon))
             return
-        if (img2[1] != 1)
+        if (src[1] != 1)
             return // only mono
-        let w = image.bufW(img2)
-        let h = image.bufH(img2)
-        let byteH = image.byteHeight(h, 1)
+        let width = image.bufW(src)
+        let height = image.bufH(src)
+        let byteH = image.byteHeight(height, 1)
 
         x |= 0
         y |= 0
-        const sh = img._height
-        const sw = img._width
+        const destHeight = img._height
+        const destWidth = img._width
 
-        if (x + w <= 0) return
-        if (x >= sw) return
-        if (y + h <= 0) return
-        if (y >= sh) return
+        if (x + width <= 0) return
+        if (x >= destWidth) return
+        if (y + height <= 0) return
+        if (y >= destHeight) return
 
         img.makeWritable()
 
-        let p = 8
+        let srcPointer = 8
         color = img.color(color)
         const screen = img.data
 
-        for (let i = 0; i < w; ++i) {
-            let xxx = x + i
-            if (0 <= xxx && xxx < sw) {
-                let dst = xxx + y * sw
-                let src = p
-                let yy = y
-                let end = Math.min(sh, h + y)
+        for (let i = 0; i < width; ++i) {
+            let destX = x + i
+            if (0 <= destX && destX < destWidth) {
+                let destIndex = destX + y * destWidth
+                let srcIndex = srcPointer
+                let destY = y
+                let destEnd = Math.min(destHeight, height + y)
                 if (y < 0) {
-                    src += ((-y) >> 3)
-                    yy += ((-y) >> 3) * 8
+                    srcIndex += ((-y) >> 3)
+                    destY += ((-y) >> 3) * 8
+                    destIndex += (destY - y) * destWidth
                 }
                 let mask = 0x01
-                let v = img2[src++]
-                while (yy < end) {
-                    if (yy >= 0 && (v & mask)) {
-                        screen[dst] = color
+                let srcByte = src[srcIndex++]
+                while (destY < destEnd) {
+                    if (destY >= 0 && (srcByte & mask)) {
+                        screen[destIndex] = color
                     }
                     mask <<= 1
                     if (mask == 0x100) {
                         mask = 0x01
-                        v = img2[src++]
+                        srcByte = src[srcIndex++]
                     }
-                    dst += sw
-                    yy++
+                    destIndex += destWidth
+                    destY++
                 }
             }
-            p += byteH
+            srcPointer += byteH
         }
     }
 

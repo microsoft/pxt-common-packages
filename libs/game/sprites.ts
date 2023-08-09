@@ -196,6 +196,7 @@ namespace sprites {
         GhostThroughTiles = 1 << 10, // No overlaps with tiles
         GhostThroughWalls = 1 << 11, // No collisions with walls
         GhostThroughSprites = 1 << 12, // No overlaps with other sprites
+        HitboxOverlaps = 1 << 13, // If set, overlaps with this sprite are based off of both sprites' hitboxes and not pixel perfect
         Ghost = sprites.Flag.GhostThroughSprites | sprites.Flag.GhostThroughWalls | sprites.Flag.GhostThroughTiles, // doesn't collide with other sprites or walls
     }
 }
