@@ -104,6 +104,12 @@ namespace music {
         }
     }
 
+    /**
+     * Play a song, melody, or other sound. The music plays until finished or can play as a
+     * background task.
+     * @param toPlay the song or melody to play
+     * @param playbackMode play the song or melody until it's finished or as background task
+     */
     //% blockId="music_playable_play"
     //% block="play $toPlay $playbackMode"
     //% toPlay.shadow=music_melody_playable
@@ -113,6 +119,10 @@ namespace music {
         toPlay.play(playbackMode);
     }
 
+    /**
+     * Create a Playable object for a melody.
+     * @param melody the melody to make playable
+     */
     //% blockId="music_melody_playable"
     //% block="sound $melody"
     //% toolboxParent=music_playable_play
@@ -125,7 +135,10 @@ namespace music {
         return new MelodyPlayable(melody);
     }
 
-
+    /**
+     * Create a Playable object for a melody string containg notes.
+     * @param melody the melody string to make playable
+     */
     //% blockId="music_string_playable"
     //% block="melody $melody at tempo $tempo|(bpm)"
     //% toolboxParent=music_playable_play
@@ -165,6 +178,11 @@ namespace music {
         return new MelodyPlayable(new Melody(formattedMelody));
     }
 
+    /**
+     * Create a Playable object for a single tone and its duration.
+     * @param note the note or tone frequency to play
+     * @param duration the duration of the tone in milliseconds (ms)
+     */
     //% blockId="music_tone_playable"
     //% block="tone $note for $duration"
     //% toolboxParent=music_playable_play
