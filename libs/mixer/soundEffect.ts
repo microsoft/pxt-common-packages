@@ -284,7 +284,7 @@ namespace music {
     //% blockId=soundExpression_generateSimilarSound
     //% block="randomize $sound"
     //% sound.shadow=soundExpression_createSoundEffect
-    //% weight=0 help=music/generate-similar-sound
+    //% weight=0 help=music/randomize-sound
     //% blockGap=8
     //% group="Sounds"
     export function randomizeSound(sound: SoundEffect) {

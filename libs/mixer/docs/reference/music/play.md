@@ -1,6 +1,6 @@
 # play
 
-Play a song, melody, or tone from a playable music source.
+Play a song, melody, tone, or a sound effect from a playable music source.
 
 ```sig
 music.play(music.createSong(hex`00780004080200`), music.PlaybackMode.UntilDone)
@@ -121,6 +121,13 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
     music.play(music.melodyPlayable(music.zapped), music.PlaybackMode.UntilDone)
 })
 ```
+### Play a sound effect
+
+Play a sine wave sound effect for `5` seconds.
+
+```blocks
+music.play(music.createSoundEffect(WaveShape.Sine, 5000, 0, 255, 0, 500, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.UntilDone)
+```
 
 ## See also #seealso
 
@@ -129,4 +136,5 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
 [melody playable](/reference/music/melody-playable),
 [create song](/reference/music/create-song),
 [stop all sounds](/reference/music/stop-all-sounds),
-[song editor](/reference/music/song-editor)
+[song editor](/reference/music/song-editor),
+[create sound effect](/reference/music/create-sound-effect)
