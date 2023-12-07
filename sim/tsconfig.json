@@ -12,7 +12,8 @@
         "rootDir": "../libs",
         "newLine": "LF",
         "declaration": true,
-        "sourceMap": false
+        "sourceMap": false,
+        "types": []
     },
     "include": [
         "../libs/*/sim/*.ts"
