@@ -13,7 +13,7 @@
         "newLine": "LF",
         "declaration": true,
         "sourceMap": false,
-        "typeRoots": ["../node_modules/@types"]
+        "types": []
     },
     "include": [
         "../libs/*/sim/*.ts"
