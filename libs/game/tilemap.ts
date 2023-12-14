@@ -469,13 +469,14 @@ namespace tiles {
             const offsetX = camera.drawOffsetX & bitmask;
             const offsetY = camera.drawOffsetY & bitmask;
 
-            const x0 = Math.max(0, camera.drawOffsetX >> this.scale);
-            const xn = Math.min(this._map.width, ((camera.drawOffsetX + target.width) >> this.scale) + 1);
-            const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
-            const yn = Math.min(this._map.height, ((camera.drawOffsetY + target.height) >> this.scale) + 1);
+            const l = Fx.toInt(this.left) - camera.drawOffsetX;
+            const t = Fx.toInt(this.top) - camera.drawOffsetY;
 
-            const l = Fx.toInt(this.left);
-            const t = Fx.toInt(this.top);
+            const x0 = Math.max(0, -l >> this.scale);
+            const xn = Math.min(this._map.width, ((-l + target.width) >> this.scale) + 1);
+            const y0 = Math.max(0, -t >> this.scale);
+            const yn = Math.min(this._map.height, ((-t + target.height) >> this.scale) + 1);
+
 
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
@@ -484,8 +485,8 @@ namespace tiles {
                     if (tile) {
                         target.drawTransparentImage(
                             tile,
-                            l + ((x - x0) << this.scale) - offsetX,
-                            t + ((y - y0) << this.scale) - offsetY
+                            l + (x << this.scale),
+                            t + (y << this.scale)
                         );
                     }
                 }

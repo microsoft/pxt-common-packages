@@ -130,6 +130,14 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         // clear obstacles if moving on that axis
         this.sprites.forEach(s => {
             if (s.vx || s.vy) s.clearObstacles();
+            else {
+                for (const ob of s._obstacles) {
+                    if (ob && (ob.tilemap.vx || ob.tilemap.vy)) {
+                        s.clearObstacles();
+                        break;
+                    }
+                }
+            }
         });
 
         this.map.clear();
@@ -1000,19 +1008,4 @@ function ___overlapsTilemap(sprite: Sprite, tilemap: tiles.TileMap) {
     }
 
     return false;
-}
-
-function ___overlapsTile(sprite: Sprite, left: Fx8, top: Fx8, col: number, row: number, tileScale: number) {
-    left = Fx.iadd(col << tileScale, left);
-    top = Fx.iadd(row << tileScale, top);
-
-    if (
-        Fx.compare(sprite._hitbox.left, Fx.iadd(1 << tileScale, left)) > 0 ||
-        Fx.compare(sprite._hitbox.top, Fx.iadd(1 << tileScale, top)) > 0 ||
-        Fx.compare(sprite._hitbox.right, left) < 0 ||
-        Fx.compare(sprite._hitbox.bottom, top) < 0
-    ) {
-        return false;
-    }
-    return true;
 }
