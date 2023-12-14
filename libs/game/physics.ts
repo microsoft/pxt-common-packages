@@ -45,6 +45,10 @@ class MovingSprite {
     ) { }
 }
 
+namespace physics {
+    export let debug = false;
+}
+
 /**
  * A physics engine that does simple AABB bounding box check
  */
@@ -55,6 +59,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     protected maxNegativeVelocity: Fx8;
     protected minSingleStep: Fx8;
     protected maxSingleStep: Fx8;
+    tilemaps: tiles.TileMap[];
 
     constructor(maxVelocity = 500, minSingleStep = 2, maxSingleStep = 4) {
         super();
@@ -63,6 +68,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.maxSpeed = maxVelocity;
         this.maxStep = maxSingleStep;
         this.minStep = minSingleStep;
+        this.tilemaps = [];
     }
 
     get maxSpeed(): number {
@@ -193,7 +199,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     this.map.insertAABB(s);
                 }
                 if (tileMap && tileMap.enabled) {
-                    this.tilemapCollisions(ms, tileMap);
+                    this.tilemapCollisions(ms, [tileMap].concat(this.tilemaps));
                 }
 
                 // check for screen edge collisions
@@ -212,6 +218,153 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             this.spriteCollisions(currMovers, overlapHandlers);
             // clear moving sprites buffer for next step
             while (currMovers.length) currMovers.pop();
+        }
+
+        for (const tm of this.tilemaps) {
+            if (tm.vx || tm.vy) {
+                const nonRiders: Sprite[] = [];
+                const riders: Sprite[] = [];
+
+                let dx = Fx.idiv(
+                    Fx.imul(
+                        tm.vx,
+                        dtMs
+                    ),
+                    1000
+                );
+
+                let dy = Fx.idiv(
+                    Fx.imul(
+                        tm.vy,
+                        dtMs
+                    ),
+                    1000
+                );
+
+
+                for (const sprite of this.sprites) {
+                    let isRider = false;
+                    for (const ob of sprite._obstacles) {
+                        if (ob && ob.tilemap === tm) {
+                            isRider = true;
+                            if (physics.debug) {
+                                if (___overlapsTilemap(sprite, tm)) {
+                                    console.log("RIDER overlapping before")
+                                }
+                            }
+                            riders.push(sprite);
+                            this.moveSprite(sprite, dx, dy);
+                            break;
+                        }
+                    }
+                    if (!isRider && !(sprite.flags & (sprites.Flag.GhostThroughWalls | sprites.Flag.IsClipping))) {
+                        nonRiders.push(sprite);
+                    }
+                }
+
+                let compX = Fx.compare(dx, Fx.zeroFx8);
+                let compY = Fx.compare(dy, Fx.zeroFx8);
+
+                while (compX !== 0 || compY !== 0) {
+                    let ddx = Fx.zeroFx8;
+                    if (compX < 0) {
+                        ddx = Fx.max(dx, Fx.neg(Fx.oneFx8));
+                        dx = Fx.sub(dx, ddx);
+                    }
+                    else if (compX > 0) {
+                        ddx = Fx.min(dx, Fx.oneFx8);
+                        dx = Fx.sub(dx, ddx);
+                    }
+
+                    let ddy = Fx.zeroFx8;
+                    if (compY < 0) {
+                        ddy = Fx.max(dy, Fx.neg(Fx.oneFx8));
+                        dy = Fx.sub(dy, ddy);
+                    }
+                    else if (compY > 0) {
+                        ddy = Fx.min(dy, Fx.oneFx8);
+                        dy = Fx.sub(dy, ddy);
+                    }
+
+                    tm.left = Fx.add(ddx, tm.left);
+                    tm.top = Fx.add(ddy, tm.top);
+
+                    for (const sprite of nonRiders) {
+                        let wasPushed = false;
+                        if (compX !== 0) {
+                            if (___overlapsTilemap(sprite, tm)) {
+                                sprite._x = Fx.add(ddx, sprite._x);
+                                wasPushed = true;
+                            }
+                        }
+                        if (compY !== 0) {
+                            if (___overlapsTilemap(sprite, tm)) {
+                                sprite._y = Fx.add(ddy, sprite._y);
+                                wasPushed = true;
+                            }
+                        }
+
+                        let squished = false;
+
+                        if (wasPushed) {
+                            if (physics.debug) {
+                                console.log("pushed")
+                            }
+                            for (const otherMap of this.tilemaps) {
+                                if (otherMap === tm) continue;
+
+                                if (___overlapsTilemap(sprite, otherMap)) {
+                                    squished = true;
+                                    break;
+                                }
+                            }
+
+                            if (!squished) {
+                                if (___overlapsTilemap(sprite, tileMap)) {
+                                    squished = true;
+                                }
+                            }
+
+                            if (squished) {
+                                sprite.flags |= sprites.Flag.IsClipping;
+                                if (physics.debug) {
+                                    console.log("squished!")
+                                }
+                                continue;
+                            }
+                        }
+                        if (physics.debug) {
+                            if (___overlapsTilemap(sprite, tm)) {
+                                console.log("Still overlapping")
+                            }
+                            else {
+                                console.log("No longer overlapping")
+                            }
+                        }
+                    }
+
+                    compX = Fx.compare(dx, Fx.zeroFx8);
+                    compY = Fx.compare(dy, Fx.zeroFx8);
+                }
+
+                if (physics.debug) {
+                    for (const rider of riders) {
+                        if (___overlapsTilemap(rider, tm)) {
+                            console.log("Rider overlaps after move")
+                        }
+                    }
+                }
+            }
+        }
+
+        if (physics.debug) {
+            for (const sprite of this.sprites) {
+                for (const tilemap of this.tilemaps) {
+                    if (___overlapsTilemap(sprite, tilemap)) {
+                        console.log("BAD OVERLAP")
+                    }
+                }
+            }
         }
     }
 
@@ -377,18 +530,22 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         }
     }
 
-    protected tilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
+    protected tilemapCollisions(movingSprite: MovingSprite, tms: tiles.TileMap[]) {
         const s = movingSprite.sprite;
         // if the sprite is already clipping into a wall,
         // allow free movement rather than randomly 'fixing' it
         if (s.flags & sprites.Flag.IsClipping) {
-            if (!tm.isOnWall(s)) {
-                s.flags &= ~sprites.Flag.IsClipping;
+            s.flags &= ~sprites.Flag.IsClipping;
+            for (const tm of tms) {
+                if (tm.isOnWall(s)) {
+                    s.flags |= sprites.Flag.IsClipping;
+                    break;
+                }
             }
         }
         if (!s.isStatic()) s.setHitbox();
         const hbox = s._hitbox;
-        const tileScale = tm.scale;
+        const tileScale = tms[0].scale;
         const tileSize = 1 << tileScale;
 
         const xDiff = Fx.sub(
@@ -404,17 +561,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
             if (xDiff !== Fx.zeroFx8) {
                 const right = xDiff > Fx.zeroFx8;
-                const x0 = Fx.toIntShifted(
-                    Fx.add(
-                        right ?
-                            Fx.add(hbox.right, Fx.oneFx8)
-                            :
-                            Fx.sub(hbox.left, Fx.oneFx8),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
-
                 const collidedTiles: sprites.StaticObstacle[] = [];
 
                 // check collisions with tiles sprite is moving towards horizontally
@@ -423,44 +569,83 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
                     y = Fx.iadd(tileSize, y)
                 ) {
-                    const y0 = Fx.toIntShifted(
-                        Fx.add(
-                            Fx.min(
-                                y,
-                                Fx.sub(
-                                    hbox.bottom,
-                                    yDiff
-                                )
+                    for (const tm of tms) {
+                        const x0 = Fx.toIntShifted(
+                            Fx.sub(
+                                Fx.add(
+                                    right ?
+                                        Fx.add(hbox.right, Fx.oneFx8)
+                                        :
+                                        Fx.sub(hbox.left, Fx.oneFx8),
+                                    Fx.oneHalfFx8
+                                ),
+                                tm.left
                             ),
-                            Fx.oneHalfFx8
-                        ),
-                        tileScale
-                    );
+                            tileScale
+                        );
 
-                    if (tm.isObstacle(x0, y0)) {
-                        const obstacle = tm.getObstacle(x0, y0);
-                        if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
-                            collidedTiles.push(obstacle);
+                        const y0 = Fx.toIntShifted(
+                            Fx.sub(
+                                Fx.add(
+                                    Fx.min(
+                                        y,
+                                        Fx.sub(
+                                            hbox.bottom,
+                                            yDiff
+                                        )
+                                    ),
+                                    Fx.oneHalfFx8
+                                ),
+                                tm.top
+                            ),
+                            tileScale
+                        );
+
+                        if (tm.isObstacle(x0, y0)) {
+                            const obstacle = tm.getObstacle(x0, y0);
+                            if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                                collidedTiles.push(obstacle);
+                            }
                         }
                     }
                 }
 
                 if (collidedTiles.length) {
-                    const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
-                    s._x = Fx.sub(
-                        right ?
-                            Fx.sub(
-                                Fx8(x0 << tileScale),
-                                hbox.width
+                    if (right) {
+                        for (const tile of collidedTiles) {
+                            s._x = Fx.min(
+                                Fx.sub(
+                                    Fx.sub(
+                                        Fx8(tile.left),
+                                        hbox.width
+                                    ),
+                                    hbox.ox
+                                ),
+                                s._x
                             )
-                            :
-                            Fx8((x0 + 1) << tileScale),
-                        hbox.ox
-                    );
+                        }
 
-                    for (const tile of collidedTiles) {
-                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
-                            s.registerObstacle(collisionDirection, tile, tm);
+                        for (const tile of collidedTiles) {
+                            if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                                s.registerObstacle(CollisionDirection.Right, tile, tile.tilemap);
+                            }
+                        }
+                    }
+                    else {
+                        for (const tile of collidedTiles) {
+                            s._x = Fx.max(
+                                Fx.sub(
+                                    Fx8(tile.right),
+                                    hbox.ox
+                                ),
+                                s._x
+                            );
+                        }
+
+                        for (const tile of collidedTiles) {
+                            if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                                s.registerObstacle(CollisionDirection.Left, tile, tile.tilemap);
+                            }
                         }
                     }
 
@@ -489,16 +674,6 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
             if (yDiff !== Fx.zeroFx8) {
                 const down = yDiff > Fx.zeroFx8;
-                const y0 = Fx.toIntShifted(
-                    Fx.add(
-                        down ?
-                            Fx.add(hbox.bottom, Fx.oneFx8)
-                            :
-                            Fx.sub(hbox.top, Fx.oneFx8),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
                 const collidedTiles: sprites.StaticObstacle[] = [];
 
                 // check collisions with tiles sprite is moving towards vertically
@@ -507,43 +682,76 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     x < Fx.iadd(tileSize, hbox.right);
                     x = Fx.iadd(tileSize, x)
                 ) {
-                    const x0 = Fx.toIntShifted(
-                        Fx.add(
-                            Fx.min(
-                                x,
-                                hbox.right
-                            ),
-                            Fx.oneHalfFx8
-                        ),
-                        tileScale
-                    );
 
-                    if (tm.isObstacle(x0, y0)) {
-                        const obstacle = tm.getObstacle(x0, y0);
-                        if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
-                            collidedTiles.push(obstacle);
+                    for (const tm of tms) {
+                        const y0 = Fx.toIntShifted(
+                            Fx.sub(
+                                Fx.add(
+                                    down ?
+                                        Fx.add(hbox.bottom, Fx.oneFx8)
+                                        :
+                                        Fx.sub(hbox.top, Fx.oneFx8),
+                                    Fx.oneHalfFx8
+                                ),
+                                tm.top
+                            ),
+                            tileScale
+                        );
+                        const x0 = Fx.toIntShifted(
+                            Fx.sub(
+                                Fx.add(
+                                    Fx.min(
+                                        x,
+                                        hbox.right
+                                    ),
+                                    Fx.oneHalfFx8
+                                ),
+                                tm.left
+                            ),
+                            tileScale
+                        );
+                        if (tm.isObstacle(x0, y0)) {
+                            const obstacle = tm.getObstacle(x0, y0);
+                            if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                                collidedTiles.push(obstacle);
+                            }
                         }
                     }
                 }
 
                 if (collidedTiles.length) {
-                    const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
-                    s._y = Fx.sub(
-                        down ?
-                            Fx.sub(
-                                Fx8(y0 << tileScale),
-                                hbox.height
-                            )
-                            :
-                            Fx8((y0 + 1) << tileScale),
-                        hbox.oy
-                    );
-
-                    for (const tile of collidedTiles) {
-                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
-                            s.registerObstacle(collisionDirection, tile, tm);
+                    if (down) {
+                        for (const tile of collidedTiles) {
+                            s._y = Fx.min(
+                                Fx.sub(
+                                    Fx.sub(
+                                        Fx8(tile.top),
+                                        hbox.height
+                                    ),
+                                    hbox.oy
+                                ),
+                                s._y
+                            );
+                            if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                                s.registerObstacle(CollisionDirection.Bottom, tile, tile.tilemap);
+                            }
                         }
                     }
+                    else {
+                        for (const tile of collidedTiles) {
+                            s._y = Fx.max(
+                                Fx.sub(
+                                    Fx8(tile.bottom),
+                                    hbox.oy
+                                ),
+                                s._y
+                            );
+                            if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                                s.registerObstacle(CollisionDirection.Top, tile, tile.tilemap);
+                            }
+                        }
+                    }
+
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
                         s.destroy();
@@ -579,36 +787,46 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 x < Fx.iadd(tileSize, hbox.right);
                 x = Fx.iadd(tileSize, x)
             ) {
-                const x0 = Fx.toIntShifted(
-                    Fx.add(
-                        Fx.min(
-                            x,
-                            hbox.right
-                        ),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
                 for (
                     let y = hbox.top;
                     y < Fx.iadd(tileSize, hbox.bottom);
                     y = Fx.iadd(tileSize, y)
                 ) {
-                    const y0 = Fx.toIntShifted(
-                        Fx.add(
-                            Fx.min(
-                                y,
-                                hbox.bottom
+                    for (const tm of tms) {
+                        const x0 = Fx.toIntShifted(
+                            Fx.sub(
+                                Fx.add(
+                                    Fx.min(
+                                        x,
+                                        hbox.right
+                                    ),
+                                    Fx.oneHalfFx8
+                                ),
+                                tm.left
                             ),
-                            Fx.oneHalfFx8
-                        ),
-                        tileScale
-                    );
+                            tileScale
+                        );
 
-                    // if the sprite can move through walls, it can overlap the underlying tile.
-                    if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
-                        overlappedTiles.push(tm.getTile(x0, y0));
+                        const y0 = Fx.toIntShifted(
+                            Fx.sub(
+                                Fx.add(
+                                    Fx.min(
+                                        y,
+                                        hbox.bottom
+                                    ),
+                                    Fx.oneHalfFx8
+                                ),
+                                tm.top
+                            ),
+                            tileScale
+                        );
+
+                        // if the sprite can move through walls, it can overlap the underlying tile.
+                        if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
+                            overlappedTiles.push(tm.getTile(x0, y0));
+                        }
                     }
+
                 }
             }
 
@@ -673,7 +891,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     dx,
                     dy
                 );
-                this.tilemapCollisions(ms, tm);
+                this.tilemapCollisions(ms, [tm].concat(this.tilemaps));
                 // otherwise, accept movement...
             } else if (tm.isOnWall(s) && !this.canResolveClipping(s, tm)) {
                 // if no luck, flag as clipping into a wall
@@ -698,60 +916,59 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         const t = Fx.toInt(hbox.top);
         const b = Fx.toInt(hbox.bottom);
 
-        {   // bump up and test;
-            const offset = (b + 1) % sz;
-            if (offset <= maxMove) {
-                s._y = Fx.sub(
-                    s._y,
-                    Fx8(offset)
-                );
-                if (!tm.isOnWall(s)) {
-                    return true;
-                } else {
-                    s._y = origY;
-                }
+        // bump up and test;
+        let offset = (b + 1) % sz;
+        if (offset <= maxMove) {
+            s._y = Fx.sub(
+                s._y,
+                Fx8(offset)
+            );
+            if (!tm.isOnWall(s)) {
+                return true;
+            } else {
+                s._y = origY;
             }
         }
-        {   // bump down and test;
-            const offset = (Math.floor(t / sz) + 1) * sz - t;
-            if (offset <= maxMove) {
-                s._y = Fx.add(
-                    s._y,
-                    Fx8(offset)
-                );
-                if (!tm.isOnWall(s)) {
-                    return true;
-                } else {
-                    s._y = origY;
-                }
+
+        // bump down and test;
+        offset = (Math.floor(t / sz) + 1) * sz - t;
+        if (offset <= maxMove) {
+            s._y = Fx.add(
+                s._y,
+                Fx8(offset)
+            );
+            if (!tm.isOnWall(s)) {
+                return true;
+            } else {
+                s._y = origY;
             }
         }
-        {   // bump left and test;
-            const offset = (r + 1) % sz;
-            if (offset <= maxMove) {
-                s._x = Fx.sub(
-                    s._x,
-                    Fx8(offset)
-                );
-                if (!tm.isOnWall(s)) {
-                    return true;
-                } else {
-                    s._x = origX;
-                }
+
+        // bump left and test;
+        offset = (r + 1) % sz;
+        if (offset <= maxMove) {
+            s._x = Fx.sub(
+                s._x,
+                Fx8(offset)
+            );
+            if (!tm.isOnWall(s)) {
+                return true;
+            } else {
+                s._x = origX;
             }
         }
-        {   // bump right and test;
-            const offset = (Math.floor(l / sz) + 1) * sz - l;
-            if (offset <= maxMove) {
-                s._x = Fx.add(
-                    s._x,
-                    Fx8(offset)
-                );
-                if (!tm.isOnWall(s)) {
-                    return true;
-                } else {
-                    s._x = origX;
-                }
+
+        // bump right and test;
+        offset = (Math.floor(l / sz) + 1) * sz - l;
+        if (offset <= maxMove) {
+            s._x = Fx.add(
+                s._x,
+                Fx8(offset)
+            );
+            if (!tm.isOnWall(s)) {
+                return true;
+            } else {
+                s._x = origX;
             }
         }
 
@@ -768,4 +985,34 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             this.maxNegativeVelocity
         );
     }
+}
+
+function ___overlapsTilemap(sprite: Sprite, tilemap: tiles.TileMap) {
+    let x0 = Fx.toIntShifted(Fx.sub(sprite._hitbox.left, tilemap.left), tilemap.scale);
+    let y0 = Fx.toIntShifted(Fx.sub(sprite._hitbox.top, tilemap.top), tilemap.scale);
+    let x1 = Fx.toIntShifted(Fx.sub(sprite._hitbox.right, tilemap.left), tilemap.scale);
+    let y1 = Fx.toIntShifted(Fx.sub(sprite._hitbox.bottom, tilemap.top), tilemap.scale);
+
+    for (let x = Math.max(0, x0); x <= x1; x++) {
+        for (let y = Math.max(0, y0); y <= y1; y++) {
+            if (tilemap.isObstacle(x, y)) return true;
+        }
+    }
+
+    return false;
+}
+
+function ___overlapsTile(sprite: Sprite, left: Fx8, top: Fx8, col: number, row: number, tileScale: number) {
+    left = Fx.iadd(col << tileScale, left);
+    top = Fx.iadd(row << tileScale, top);
+
+    if (
+        Fx.compare(sprite._hitbox.left, Fx.iadd(1 << tileScale, left)) > 0 ||
+        Fx.compare(sprite._hitbox.top, Fx.iadd(1 << tileScale, top)) > 0 ||
+        Fx.compare(sprite._hitbox.right, left) < 0 ||
+        Fx.compare(sprite._hitbox.bottom, top) < 0
+    ) {
+        return false;
+    }
+    return true;
 }

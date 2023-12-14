@@ -298,6 +298,11 @@ namespace tiles {
         renderable: scene.Renderable;
         protected handlerState: TileMapEventHandler[];
 
+        left = Fx.zeroFx8;
+        top = Fx.zeroFx8;
+        vx = Fx.zeroFx8;
+        vy = Fx.zeroFx8;
+
         constructor(scale: TileScale = TileScale.Sixteen) {
             this._layer = 1;
             this.scale = scale;
@@ -469,6 +474,9 @@ namespace tiles {
             const y0 = Math.max(0, camera.drawOffsetY >> this.scale);
             const yn = Math.min(this._map.height, ((camera.drawOffsetY + target.height) >> this.scale) + 1);
 
+            const l = Fx.toInt(this.left);
+            const t = Fx.toInt(this.top);
+
             for (let x = x0; x <= xn; ++x) {
                 for (let y = y0; y <= yn; ++y) {
                     const index = this._map.getTile(x, y);
@@ -476,8 +484,8 @@ namespace tiles {
                     if (tile) {
                         target.drawTransparentImage(
                             tile,
-                            ((x - x0) << this.scale) - offsetX,
-                            ((y - y0) << this.scale) - offsetY
+                            l + ((x - x0) << this.scale) - offsetX,
+                            t + ((y - y0) << this.scale) - offsetY
                         );
                     }
                 }
@@ -515,7 +523,9 @@ namespace tiles {
 
         public isObstacle(col: number, row: number) {
             if (!this.enabled) return false;
-            if (this._map.isOutsideMap(col, row)) return true;
+
+            const isOuterTilemap = game.currentScene().tileMap === this;
+            if (this._map.isOutsideMap(col, row)) return isOuterTilemap;
 
             return this._map.isWall(col, row);
         }
@@ -525,10 +535,11 @@ namespace tiles {
             const tile = this._map.getTileImage(index);
             return new sprites.StaticObstacle(
                 tile,
-                row << this.scale,
-                col << this.scale,
+                (row << this.scale) + Fx.toFloat(this.top),
+                (col << this.scale) + Fx.toFloat(this.left),
                 this.layer,
-                index
+                index,
+                this
             );
         }
 

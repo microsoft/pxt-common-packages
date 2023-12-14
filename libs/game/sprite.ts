@@ -263,7 +263,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockCombine block="lifespan"
     lifespan: number;
     private _image: Image;
-    private _obstacles: sprites.Obstacle[];
+    public _obstacles: sprites.Obstacle[];
 
     private sayEndTime: number;
     private sayRenderer: sprites.BaseSpriteSayRenderer;

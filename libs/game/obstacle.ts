@@ -16,6 +16,7 @@ namespace sprites {
         layer: number;
         image: Image;
         tileIndex: number;
+        tilemap: tiles.TileMap;
     }
 
     export class StaticObstacle implements Obstacle {
@@ -25,13 +26,15 @@ namespace sprites {
 
         top: number;
         left: number;
+        tilemap: tiles.TileMap;
 
-        constructor(image: Image, top: number, left: number, layer: number, tileIndex?: number) {
+        constructor(image: Image, top: number, left: number, layer: number, tileIndex?: number, tilemap?: tiles.TileMap) {
             this.image = image;
             this.layer = layer;
             this.top = top;
             this.left = left;
             this.tileIndex = tileIndex;
+            this.tilemap = tilemap;
         }
 
         get x(): number {
