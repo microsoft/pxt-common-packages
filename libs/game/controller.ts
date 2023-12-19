@@ -458,7 +458,7 @@ namespace controller {
      * Get the vertical movement, given the step and state of buttons
      * @param step the distance, eg: 100
      */
-    //% weight=49 help=keys/dy
+    //% weight=49 help=controller/dy
     //% blockId=keydy block="dy (up-down buttons)||scaled by %step"
     //% step.defl=100
     //% group="Single Player"
