@@ -422,7 +422,7 @@ namespace info {
      */
     //% block="countdown"
     //% blockId=gamegetcountdown
-    //% weight=79
+    //% weight=79 help=info/countdown
     //% group="Countdown"
     export function countdown(): number {
         initHUD();
@@ -448,7 +448,7 @@ namespace info {
      */
     //% block="change countdown by $seconds (s)"
     //% blockId=gamechangecountdown
-    //% weight=77
+    //% weight=77 help=info/change-countdown-by
     //% group="Countdown"
     export function changeCountdownBy(seconds: number) {
         startCountdown((countdown() + seconds));

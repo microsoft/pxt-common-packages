@@ -283,7 +283,7 @@ namespace game {
     //% group="Game Over"
     //% weight=80
     //% blockGap=8
-    //% help=game/set-game-over-sound
+    //% help=game/set-game-over-playable
     export function setGameOverPlayable(win: boolean, sound: music.Playable, looping: boolean) {
         init();
         const goc = game.gameOverConfig();
