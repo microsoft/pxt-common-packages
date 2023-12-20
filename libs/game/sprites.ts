@@ -78,7 +78,7 @@ namespace sprites {
      * @param kind the target kind
      */
     //% blockId=allOfKind block="array of sprites of kind %kind=spritekind"
-    //% weight=87
+    //% weight=87 help=sprites/all-of-kind
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
         if (!(kind >= 0) || !spritesByKind[kind]) return [];

@@ -103,6 +103,7 @@ interface Image {
     //% this.shadow=variables_get
     //% this.defl="picture"
     //% other.shadow=screen_image_picker
+    //% help=images/image/equals
     equals(other: Image): boolean;
 
     //% shim=ImageMethods::isStatic

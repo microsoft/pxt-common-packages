@@ -46,7 +46,7 @@ namespace sprites {
     //% group="Overlaps"
     //% weight=100 draggableParameters="reporter"
     //% blockId=spritesoverlap block="on $sprite of kind $kind=spritekind overlaps $otherSprite of kind $otherKind=spritekind"
-    //% help=scene/on-overlap
+    //% help=sprites/on-overlap
     //% blockGap=8
     export function onOverlap(kind: number, otherKind: number, handler: (sprite: Sprite, otherSprite: Sprite) => void) {
         if (kind == undefined || otherKind == undefined || !handler) return;
