@@ -10,7 +10,7 @@ The total score amount is increased by adding the change value when it is greate
 
 ## Parameters
 
-* **value**: a [number](/types/number) to set the current score to.
+* **value**: a [number](/types/number) whice is the amount to change the current score by.
 
 ## Example #example
 
