@@ -1,9 +1,9 @@
-# dx
+# dy
 
 Gets the amount of vertical movement to use if an up or down key is pressed.
 
 ```sig
-controller.dx(0)
+controller.dy(0)
 ```
 
 If you're controlling the location of a sprite by key pressess, you can decide how much change in position it will have when a key is pressed. This is done with _steps_. While a direction key is pressed, the movement value returned is based on if and how long the key is pressed, along with the step size you gave it. If you want fast movement, then you use a larger step size.
