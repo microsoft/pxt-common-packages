@@ -86,8 +86,8 @@ namespace scene {
             if (this.sprite) {
                 this._lastUpdatedSpriteX = this.sprite.x;
                 this._lastUpdatedSpriteY = this.sprite.y;
-                this.offsetX = this.sprite.x - (screen.width >> 1);
-                this.offsetY = this.sprite.y - (screen.height >> 1);
+                this.offsetX = this.sprite.left + (this.sprite.width >> 1) - (screen.width >> 1);
+                this.offsetY = this.sprite.top + (this.sprite.width >> 1) - (screen.height >> 1);
             }
 
             this.drawOffsetX = this.offsetX;
