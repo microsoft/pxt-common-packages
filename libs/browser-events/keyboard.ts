@@ -253,7 +253,7 @@ namespace browserEvents {
         }
 
         //% blockId=browserEvents_key_isPressed
-        //% block="is $this key is pressed"
+        //% block="is $this key pressed"
         //% group="Keyboard"
         //% weight=90
         isPressed() {
