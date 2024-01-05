@@ -1,0 +1,14 @@
+{
+    "name": "browser-events",
+    "description": "A package for interacting with browser-only functionality like keyboard and mouse events",
+    "files": [
+        "browserEvents.cpp",
+        "browserEvents.ts",
+        "keyboard.ts",
+        "shims.d.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "core": "file:../core"
+    }
+}
