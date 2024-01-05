@@ -82,7 +82,7 @@ namespace browserEvents {
         }
 
         //% blockId=browserEvents_mouseButton_isPressed
-        //% block="is $this mouse button is pressed"
+        //% block="is $this mouse button pressed"
         //% group="Mouse"
         //% weight=40
         isPressed() {
