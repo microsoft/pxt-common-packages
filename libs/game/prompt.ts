@@ -1,4 +1,7 @@
 namespace game {
+    export const _KEYBOARD_CHANGE_EVENT = 7339;
+    export const _KEYBOARD_ENTER_EVENT = 7340;
+
     export interface PromptTheme {
         colorPrompt: number;
         colorInput: number;
@@ -15,18 +18,20 @@ namespace game {
      * Ask the player for a string value.
      * @param message The message to display on the text-entry screen
      * @param answerLength The maximum number of characters the user can enter (1 - 24)
+     * @param useSystemKeyboard Use the computer keyboard for typing if the game is being played in the simulator
      */
     //% weight=10 help=game/ask-for-string
-    //% blockId=gameaskforstring block="ask for string %message || and max length %answerLength"
+    //% blockId=gameaskforstring
+    //% block="ask for string $message || and max length $answerLength use system keyboard $useSystemKeyboard"
     //% message.shadow=text
     //% message.defl=""
     //% answerLength.defl="12"
     //% answerLength.min=1
     //% answerLength.max=24
     //% group="Prompt"
-    export function askForString(message: any, answerLength = 12) {
+    export function askForString(message: any, answerLength = 12, useSystemKeyboard = false) {
         let p = new game.Prompt();
-        const result = p.show(console.inspect(message), answerLength);
+        const result = p.show(console.inspect(message), answerLength, useSystemKeyboard);
         return result;
     }
 
@@ -135,6 +140,13 @@ namespace game {
         private inputIndex: number;
         private blink: boolean;
         private frameCount: number;
+        private useSystemKeyboard: boolean;
+
+        private renderable: scene.Renderable;
+        private selectionStart: number;
+        private selectionEnd: number;
+
+        private changeTime = 0;
 
         constructor(theme?: PromptTheme) {
             if (theme) {
@@ -159,7 +171,7 @@ namespace game {
             this.inputIndex = 0;
         }
 
-        show(message: string, answerLength: number) {
+        show(message: string, answerLength: number, useSystemKeyboard = false) {
             this.message = message;
             this.answerLength = answerLength;
             this.inputIndex = 0;
@@ -167,11 +179,35 @@ namespace game {
             controller._setUserEventsEnabled(false);
             game.pushScene()
 
-            this.draw();
-            this.registerHandlers();
-            this.confirmPressed = false;
+            if (useSystemKeyboard && control.deviceDalVersion() === "sim") {
+                this.useSystemKeyboard = true;
+                this.draw();
+                helpers._promptForText(this.answerLength, false);
+                this.selectionEnd = 0;
+                this.selectionStart = 0;
+                control.onEvent(_KEYBOARD_CHANGE_EVENT, 0, () => {
+                    this.result = helpers._getTextPromptString().substr(0, this.answerLength);
 
-            pauseUntil(() => this.confirmPressed);
+                    for (let i = 0; i < this.inputs.length; i++) {
+                        this.drawInput(this.inputs[i].image, this.result.charAt(i) || "", this.theme.colorInput)
+                    }
+
+                    this.changeTime = game.runtime();
+
+                    this.selectionStart = helpers._getTextPromptSelectionStart();
+                    this.selectionEnd = helpers._getTextPromptSelectionEnd();
+                })
+
+                control.waitForEvent(_KEYBOARD_ENTER_EVENT, 0);
+            }
+            else {
+                this.useSystemKeyboard = false;
+                this.draw();
+                this.registerHandlers();
+                this.confirmPressed = false;
+                pauseUntil(() => this.confirmPressed);
+            }
+
 
             game.popScene();
             controller._setUserEventsEnabled(true);
@@ -181,9 +217,51 @@ namespace game {
 
         private draw() {
             this.drawPromptText();
-            this.drawKeyboard();
             this.drawInputarea();
-            this.drawBottomBar();
+
+            if (!this.useSystemKeyboard) {
+                this.drawKeyboard();
+                this.drawBottomBar();
+            }
+
+            this.renderable = scene.createRenderable(this.inputs[0].z - 1, () => {
+                if (!this.useSystemKeyboard) return;
+
+                if (this.selectionStart === this.selectionEnd) {
+                    const input = this.inputs[this.selectionStart];
+                    if (input && !(Math.idiv(game.runtime() - this.changeTime, 500) & 1)) {
+                        screen.fillRect(input.left, input.top, 1, input.height, this.theme.colorInput);
+                    }
+                }
+                else {
+                    let currentY = undefined;
+                    let startX = undefined;
+                    let endX = undefined;
+                    for (let i = this.selectionStart; i < this.selectionEnd; i++) {
+                        const current = this.inputs[i];
+
+                        if (!current) break;
+
+                        if (!currentY) {
+                            currentY = current.top;
+                            startX = current.left
+                            endX = current.right;
+                        }
+                        else if (current.top !== currentY) {
+                            screen.fillRect(startX, currentY, endX - startX, this.inputs[0].height, this.theme.colorCursor);
+
+                            currentY = current.top;
+                            startX = current.left
+                            endX = current.right;
+                        }
+                        else {
+                            endX = current.right;
+                        }
+                    }
+
+                    screen.fillRect(startX, currentY, endX - startX, this.inputs[0].height, this.theme.colorCursor);
+                }
+            });
         }
 
         private drawPromptText() {
