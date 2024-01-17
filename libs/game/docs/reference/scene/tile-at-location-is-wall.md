@@ -64,6 +64,7 @@ mySprite.vx = 30
 
 ## See also #seealso
 
+[location](/reference/scene/location),
 [get tile location](/reference/scene/get-tile-location)
 
 ```jres

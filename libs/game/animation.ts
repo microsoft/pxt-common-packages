@@ -718,6 +718,7 @@ namespace animation {
     //% frames.fieldOptions.filter="!tile !dialog !background"
     //% weight=40
     //% group="Animate" duplicateShadowOnDrag
+    //% help=animation/animation-frames
     export function _animationFrames(frames: Image[]) {
         return frames
     }
