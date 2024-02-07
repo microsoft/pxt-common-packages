@@ -1,4 +1,6 @@
 enum TileScale {
+    //% block="4x4"
+    Four = 2,
     //% block="8x8"
     Eight = 3,
     //% block="16x16"
