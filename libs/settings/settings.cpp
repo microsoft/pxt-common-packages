@@ -10,6 +10,8 @@ namespace settings {
 
 #if defined(SAMD21)
 #define SETTINGS_SIZE (2 * 1024)
+#elif MICROBIT_CODAL
+#define SETTINGS_SIZE (8 * 1024)
 #else
 #define SETTINGS_SIZE (32 * 1024)
 #endif
@@ -28,6 +30,11 @@ class WStorage {
           fs(flash, 512 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
 #elif defined(SAMD21)
           fs(flash, 256 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
+#elif MICROBIT_CODAL
+          // micro:bit V2 memory map
+          // https://github.com/lancaster-university/codal-microbit-v2/blob/master/docs/MemoryMap.md
+          // 73000	CODAL scratch page (is used as temporary scratch by MicroBitFlash, MicroBitFileSystem and MicroBitStorage)
+          fs(flash, 0x73000 - SETTINGS_SIZE, SETTINGS_SIZE),
 #elif defined(NRF52_SERIES)
 #define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
           fs(flash,
