@@ -54,16 +54,16 @@ namespace pxsim.music {
 
         await res.sequencer.initAsync();
         res.sequencer.addEventListener("stop", () => {
-            board().bus.queue(SEQUENCER_STOP_MESSAGE, this.id);
+            board().bus.queue(SEQUENCER_STOP_MESSAGE, res.id);
         });
         res.sequencer.addEventListener("state-change", () => {
-            board().bus.queue(SEQUENCER_STATE_CHANGE_MESSAGE, this.id);
+            board().bus.queue(SEQUENCER_STATE_CHANGE_MESSAGE, res.id);
         });
         res.sequencer.addEventListener("looped", () => {
-            board().bus.queue(SEQUENCER_LOOPED_MESSAGE, this.id);
+            board().bus.queue(SEQUENCER_LOOPED_MESSAGE, res.id);
         });
         res.sequencer.addEventListener("tick", () => {
-            board().bus.queue(SEQUENCER_TICK_MESSAGE, this.id);
+            board().bus.queue(SEQUENCER_TICK_MESSAGE, res.id);
         });
 
 
