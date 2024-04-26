@@ -10,6 +10,8 @@ namespace settings {
 
 #if defined(SAMD21)
 #define SETTINGS_SIZE (2 * 1024)
+#elif defined(MICROBIT_CODAL) && MICROBIT_CODAL
+#define SETTINGS_SIZE (8 * 1024)
 #else
 #define SETTINGS_SIZE (32 * 1024)
 #endif
