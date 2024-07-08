@@ -17,7 +17,7 @@ loop is running. This includes other ``||loops:forever||`` loops and the [``||co
 
 ## Example #example
 
-Create an mood generator that writes a current mood to the console every `5` seconds.
+Create a mood generator that writes a current mood to the console every `5` seconds.
 
 ```blocks
 let mood = ["happy", "sad", "joyful", "angry"]
