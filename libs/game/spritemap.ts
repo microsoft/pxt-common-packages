@@ -16,16 +16,16 @@ namespace sprites {
         neighbors(sprite: Sprite): Sprite[] {
             const n: Sprite[] = [];
             const layer = sprite.layer;
-            this.mergeAtKey(sprite.left, sprite.top, layer, n)
-            this.mergeAtKey(sprite.left, sprite.bottom, layer, n)
-            this.mergeAtKey(sprite.right, sprite.top, layer, n)
-            this.mergeAtKey(sprite.right, sprite.bottom, layer, n)
+            this.mergeAtKey(sprite.left, sprite.top, layer, n);
+            this.mergeAtKey(sprite.left, sprite.bottom, layer, n);
+            this.mergeAtKey(sprite.right, sprite.top, layer, n);
+            this.mergeAtKey(sprite.right, sprite.bottom, layer, n);
             n.removeElement(sprite);
             return n;
         }
 
         /**
-         * Gets the overlaping sprites if any
+         * Gets the overlapping sprites if any
          * @param sprite
          */
         overlaps(sprite: Sprite): Sprite[] {
@@ -42,7 +42,13 @@ namespace sprites {
                     const k = this.key(left, top);
                     const b = this.buckets[k];
                     if (b && b.length)
-                        screen.drawRect(left, top, this.cellWidth, this.cellHeight, 5);
+                        screen.drawRect(
+                            left,
+                            top,
+                            this.cellWidth,
+                            this.cellHeight,
+                            5
+                        );
                 }
             }
         }
@@ -75,28 +81,44 @@ namespace sprites {
         }
 
         private key(x: number, y: number): number {
-            const xi = Math.clamp(0, this.columnCount, Math.idiv(x, this.cellWidth));
-            const yi = Math.clamp(0, this.rowCount, Math.idiv(y, this.cellHeight));
+            const xi = Math.clamp(
+                0,
+                this.columnCount,
+                Math.idiv(x, this.cellWidth)
+            );
+            const yi = Math.clamp(
+                0,
+                this.rowCount,
+                Math.idiv(y, this.cellHeight)
+            );
             return xi + yi * this.columnCount;
         }
 
         private insertAtKey(x: number, y: number, sprite: Sprite) {
             const k = this.key(x, y);
             let bucket = this.buckets[k];
-            if (!bucket)
-                bucket = this.buckets[k] = [];
-            if (bucket.indexOf(sprite) < 0)
-                bucket.push(sprite);
+            if (!bucket) bucket = this.buckets[k] = [];
+            if (bucket.indexOf(sprite) < 0) bucket.push(sprite);
         }
 
         insertAABB(sprite: Sprite) {
             const left = sprite.left;
             const top = sprite.top;
-            const xn = Math.idiv(sprite.width + this.cellWidth - 1, this.cellWidth);
-            const yn = Math.idiv(sprite.height + this.cellHeight - 1, this.cellHeight);
+            const xn = Math.idiv(
+                sprite.width + this.cellWidth - 1,
+                this.cellWidth
+            );
+            const yn = Math.idiv(
+                sprite.height + this.cellHeight - 1,
+                this.cellHeight
+            );
             for (let x = 0; x <= xn; x++)
                 for (let y = 0; y <= yn; y++)
-                    this.insertAtKey(left + Math.min(sprite.width, x * this.cellWidth), top + Math.min(sprite.height, y * this.cellHeight), sprite)
+                    this.insertAtKey(
+                        left + Math.min(sprite.width, x * this.cellWidth),
+                        top + Math.min(sprite.height, y * this.cellHeight),
+                        sprite
+                    );
         }
 
         private mergeAtKey(x: number, y: number, layer: number, n: Sprite[]) {
@@ -104,14 +126,15 @@ namespace sprites {
             const bucket = this.buckets[k];
             if (bucket) {
                 for (const sprite of bucket)
-                    if ((sprite.layer & layer)
-                        && n.indexOf(sprite) < 0)
+                    if (sprite.layer & layer && n.indexOf(sprite) < 0)
                         n.push(sprite);
             }
         }
 
         toString() {
-            return `${this.buckets.length} buckets, ${this.buckets.filter(b => !!b).length} filled`;
+            return `${this.buckets.length} buckets, ${
+                this.buckets.filter(b => !!b).length
+            } filled`;
         }
     }
 }
