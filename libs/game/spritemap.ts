@@ -32,9 +32,11 @@ namespace sprites {
          * @param sprite
          */
         overlaps(sprite: Sprite): Sprite[] {
-            const n = this.neighbors(sprite);
-            const o = n.filter(neighbor => sprite.overlapsWith(neighbor));
-            return o;
+            const potentialNeighbors = this.neighbors(sprite);
+            const neighbors = potentialNeighbors.filter(neighbor =>
+                sprite.overlapsWith(neighbor)
+            );
+            return neighbors;
         }
 
         draw(camera: scene.Camera) {
@@ -43,9 +45,9 @@ namespace sprites {
                 for (let y = 0; y < this.rowCount; ++y) {
                     const left = x * this.cellWidth - camera.drawOffsetX;
                     const top = y * this.cellHeight - camera.drawOffsetY;
-                    const k = this.key(left, top);
-                    const b = this.buckets[k];
-                    if (b && b.length)
+                    const key = this.key(left, top);
+                    const bucket = this.buckets[key];
+                    if (bucket && bucket.length)
                         screen.drawRect(
                             left,
                             top,
@@ -101,9 +103,9 @@ namespace sprites {
         }
 
         private insertAtKey(x: number, y: number, sprite: Sprite) {
-            const k = this.key(x, y);
-            let bucket = this.buckets[k];
-            if (!bucket) bucket = this.buckets[k] = [];
+            const key = this.key(x, y);
+            let bucket = this.buckets[key];
+            if (!bucket) bucket = this.buckets[key] = [];
             if (bucket.indexOf(sprite) < 0) bucket.push(sprite);
         }
 
