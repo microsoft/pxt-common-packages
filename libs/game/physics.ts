@@ -13,7 +13,7 @@ class PhysicsEngine {
     /** move a single sprite **/
     moveSprite(s: Sprite, dx: Fx8, dy: Fx8) { }
 
-    draw() { }
+    draw(camera: scene.Camera ) { }
 
     /** Apply physics and collisions to all sprites **/
     move(dt: number) { }
@@ -106,8 +106,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         this.sprites.removeElement(sprite);
     }
 
-    draw() {
-        this.map.draw();
+    draw(camera: scene.Camera) {
+        this.map.draw(camera);
     }
 
     move(dt: number) {

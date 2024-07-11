@@ -14,14 +14,17 @@ namespace sprites {
          * Returns a potential list of neighbors
          */
         neighbors(sprite: Sprite): Sprite[] {
-            const n: Sprite[] = [];
+            const neighbors: Sprite[] = [];
             const layer = sprite.layer;
-            this.mergeAtKey(sprite.left, sprite.top, layer, n);
-            this.mergeAtKey(sprite.left, sprite.bottom, layer, n);
-            this.mergeAtKey(sprite.right, sprite.top, layer, n);
-            this.mergeAtKey(sprite.right, sprite.bottom, layer, n);
-            n.removeElement(sprite);
-            return n;
+            // TODO: This is just looking at the four corners and not the
+            // interior of the sprite. Long sprites that are orthogonal will not
+            // trigger
+            this.mergeAtKey(sprite.left, sprite.top, layer, neighbors);
+            this.mergeAtKey(sprite.left, sprite.bottom, layer, neighbors);
+            this.mergeAtKey(sprite.right, sprite.top, layer, neighbors);
+            this.mergeAtKey(sprite.right, sprite.bottom, layer, neighbors);
+            neighbors.removeElement(sprite);
+            return neighbors;
         }
 
         /**
@@ -34,11 +37,12 @@ namespace sprites {
             return o;
         }
 
-        draw() {
+        draw(camera: scene.Camera) {
+            // Include camera offset
             for (let x = 0; x < this.columnCount; ++x) {
                 for (let y = 0; y < this.rowCount; ++y) {
-                    const left = x * this.cellWidth;
-                    const top = y * this.cellHeight;
+                    const left = x * this.cellWidth - camera.drawOffsetX;
+                    const top = y * this.cellHeight - camera.drawOffsetY;
                     const k = this.key(left, top);
                     const b = this.buckets[k];
                     if (b && b.length)
@@ -67,13 +71,15 @@ namespace sprites {
 
             const tMap = game.currentScene().tileMap;
 
+            // What to do when there is no tile map? A game can be more than just screen width and height.
+            // Maybe just a multiplier?
             const areaWidth = tMap ? tMap.areaWidth() : screen.width;
             const areaHeight = tMap ? tMap.areaHeight() : screen.height;
 
             this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth * 2);
             this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight * 2);
-            this.rowCount = Math.idiv(areaHeight, this.cellHeight);
-            this.columnCount = Math.idiv(areaWidth, this.cellWidth);
+            this.rowCount = Math.ceil(areaHeight / this.cellHeight);
+            this.columnCount = Math.ceil(areaWidth / this.cellWidth);
         }
 
         clear() {
@@ -121,13 +127,18 @@ namespace sprites {
                     );
         }
 
-        private mergeAtKey(x: number, y: number, layer: number, n: Sprite[]) {
-            const k = this.key(x, y);
-            const bucket = this.buckets[k];
+        private mergeAtKey(
+            x: number,
+            y: number,
+            layer: number,
+            sprites: Sprite[]
+        ) {
+            const key = this.key(x, y);
+            const bucket = this.buckets[key];
             if (bucket) {
                 for (const sprite of bucket)
-                    if (sprite.layer & layer && n.indexOf(sprite) < 0)
-                        n.push(sprite);
+                    if (sprite.layer & layer && sprites.indexOf(sprite) < 0)
+                        sprites.push(sprite);
             }
         }
 

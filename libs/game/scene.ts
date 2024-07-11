@@ -174,7 +174,7 @@ namespace scene {
                     )
                 }
                 if (game.debug)
-                    this.physicsEngine.draw();
+                    this.physicsEngine.draw(this.camera);
                 game.consoleOverlay.draw();
                 // check for power deep sleep
                 power.checkDeepSleep();
