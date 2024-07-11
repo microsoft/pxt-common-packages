@@ -132,12 +132,12 @@ class NewMovingSprite {
 }
 
 class NewArcadePhysicsEngine implements IPhysicsEngine {
-    protected sprites: Sprite[];
-    protected map: sprites.SpriteMap;
-    protected maxVelocity: Fx8;
-    protected maxNegativeVelocity: Fx8;
-    protected minSingleStep: Fx8;
-    protected maxSingleStep: Fx8;
+    private sprites: Sprite[];
+    private map: sprites.SpriteMap;
+    private maxVelocity: Fx8;
+    private maxNegativeVelocity: Fx8;
+    private minSingleStep: Fx8;
+    private maxSingleStep: Fx8;
 
     constructor(
         private readonly tilemapCollisions: (ms: MovingSprite, tm: tiles.TileMap) => void,
