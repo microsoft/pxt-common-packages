@@ -23,6 +23,7 @@
         "metrics.ts",
         "obstacle.ts",
         "physics.ts",
+        "physics2.ts",
         "info.ts",
         "background.ts",
         "tilemap.ts",
