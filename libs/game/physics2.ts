@@ -40,8 +40,8 @@ interface IPhysicsEngine {
 class NewArcadePhysicsEngineBuilder {
     private tilemapCollisions: (ms: MovingSprite, tm: tiles.TileMap) => void;
     private screenEdgeCollisions: (ms: MovingSprite, bounce: number, camera: scene.Camera) => void;
-    private canResolveClipping: (s: Sprite, tm: tiles.TileMap) => boolean;
-    private spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) => void;
+    private canResolveClipping: (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean;
+    private spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void;
     private maxVelocity: number;
     private minSingleStep: number;
     private maxSingleStep: number;
@@ -107,29 +107,29 @@ class NewArcadePhysicsEngineBuilder {
     }
 }
 
-// class NewMovingSprite {
-//     constructor(
-//         public readonly sprite: Sprite,
-//         // vx and vy when last updated
-//         public cachedVx: Fx8,
-//         public cachedVy: Fx8,
-//         // remaining x
-//         public dx: Fx8,
-//         public dy: Fx8,
-//         // how much to move per step
-//         public xStep: Fx8,
-//         public yStep: Fx8
-//     ) { }
+class NewMovingSprite {
+    constructor(
+        public readonly sprite: Sprite,
+        // vx and vy when last updated
+        public cachedVx: Fx8,
+        public cachedVy: Fx8,
+        // remaining x
+        public dx: Fx8,
+        public dy: Fx8,
+        // how much to move per step
+        public xStep: Fx8,
+        public yStep: Fx8
+    ) { }
 
-//     reset(dx: Fx8, dy: Fx8, xStep: Fx8, yStep: Fx8) {
-//         this.cachedVx = this.sprite._vx;
-//         this.cachedVy = this.sprite._vy;
-//         this.dx = dx;
-//         this.dy = dy;
-//         this.xStep = xStep;
-//         this.yStep = yStep;
-//     }
-// }
+    reset(dx: Fx8, dy: Fx8, xStep: Fx8, yStep: Fx8) {
+        this.cachedVx = this.sprite._vx;
+        this.cachedVy = this.sprite._vy;
+        this.dx = dx;
+        this.dy = dy;
+        this.xStep = xStep;
+        this.yStep = yStep;
+    }
+}
 
 class NewArcadePhysicsEngine implements IPhysicsEngine {
     protected sprites: Sprite[];
@@ -142,8 +142,8 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     constructor(
         private readonly tilemapCollisions: (ms: MovingSprite, tm: tiles.TileMap) => void,
         private readonly screenEdgeCollisions: (ms: MovingSprite, bounce: number, camera: scene.Camera) => void,
-        private readonly canResolveClipping: (s: Sprite, tm: tiles.TileMap) => boolean,
-        private readonly spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) => void,
+        private readonly canResolveClipping: (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean,
+        private readonly spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void,
         maxVelocity = 500,
         minSingleStep = 2,
         maxSingleStep = 4
@@ -155,6 +155,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
         this.minStep = minSingleStep;
     }
 
+    //#region helpers
     private get maxSpeed(): number {
         return Fx.toInt(this.maxVelocity);
     }
@@ -179,6 +180,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     private set maxStep(v: number) {
         this.maxSingleStep = Fx8(v);
     }
+    //#endregion 
 
     setMaxSpeed(maxSpeed: number): void {
         this.maxSpeed = maxSpeed;
@@ -224,7 +226,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
                 );
                 this.tilemapCollisions(ms, tm);
                 // otherwise, accept movement...
-            } else if (tm.isOnWall(sprite) && !this.canResolveClipping(sprite, tm)) {
+            } else if (tm.isOnWall(sprite) && !this.canResolveClipping(sprite, tm, this.maxStep)) {
                 // if no luck, flag as clipping into a wall
                 sprite.flags |= sprites.Flag.IsClipping;
             } else {
@@ -333,13 +335,13 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
             }
 
             // this step is done; check collisions between sprites
-            this.spriteCollisions(currMovers, overlapHandlers);
+            this.spriteCollisions(currMovers, overlapHandlers, this.map);
             // clear moving sprites buffer for next step
             while (currMovers.length) currMovers.pop();
         }
     }
 
-    protected createMovingSprite(sprite: Sprite, dtMs: number, dt2: number): MovingSprite {
+    private createMovingSprite(sprite: Sprite, dtMs: number, dt2: number): MovingSprite {
         const ovx = this.constrain(sprite._vx);
         const ovy = this.constrain(sprite._vy);
         sprite._lastX = sprite._x;
@@ -431,7 +433,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
         );
     }
 
-    protected constrain(v: Fx8) {
+    private constrain(v: Fx8) {
         return Fx.max(
             Fx.min(
                 this.maxVelocity,
@@ -636,11 +638,15 @@ function defaultTilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap)
 }
 
 // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
-function defaultCanResolveClipping(s: Sprite, tm: tiles.TileMap) {
+function defaultCanResolveClipping(
+    s: Sprite,
+    tm: tiles.TileMap,
+    maxStep: number
+) {
     if (!s.isStatic()) s.setHitbox();
     const hbox = s._hitbox;
     const sz = 1 << tm.scale;
-    const maxMove = this.maxStep;
+    const maxMove = maxStep;
     const origY = s._y;
     const origX = s._x;
     const l = Fx.toInt(hbox.left);
@@ -733,7 +739,11 @@ function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number,
     }
 }
 
-function defaultSpriteCollisions(movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) {
+function defaultSpriteCollisions(
+    movedSprites: MovingSprite[],
+    handlers: scene.OverlapHandler[],
+    map: sprites.SpriteMap
+) {
     control.enablePerfCounter("phys_collisions");
     if (!handlers.length) return;
 
@@ -741,7 +751,7 @@ function defaultSpriteCollisions(movedSprites: MovingSprite[], handlers: scene.O
     for (const ms of movedSprites) {
         const sprite = ms.sprite;
         if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-        const overSprites = this.map.overlaps(ms.sprite);
+        const overSprites = map.overlaps(ms.sprite);
 
         for (const overlapper of overSprites) {
             if (overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
