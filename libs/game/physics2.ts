@@ -37,11 +37,16 @@ interface IPhysicsEngine {
     setMaxSpeed(maxSpeed: number): void;
 }
 
+type TileMapCollisionHandler = (ms: MovingSprite, tm: tiles.TileMap) => void;
+type ScreenEdgeCollisionHandler = (ms: MovingSprite, bounce: number, camera: scene.Camera) => void;
+type CanResolveClippingHandler = (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean;
+type SpriteCollisionHandler = (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void;
+
 class NewArcadePhysicsEngineBuilder {
-    private tilemapCollisions: (ms: MovingSprite, tm: tiles.TileMap) => void;
-    private screenEdgeCollisions: (ms: MovingSprite, bounce: number, camera: scene.Camera) => void;
-    private canResolveClipping: (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean;
-    private spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void;
+    private tilemapCollisions: TileMapCollisionHandler;
+    private screenEdgeCollisions: ScreenEdgeCollisionHandler;
+    private canResolveClipping: CanResolveClippingHandler;
+    private spriteCollisions: SpriteCollisionHandler;
     private maxVelocity: number;
     private minSingleStep: number;
     private maxSingleStep: number;
@@ -56,22 +61,22 @@ class NewArcadePhysicsEngineBuilder {
         this.maxSingleStep = 4;
     }
 
-    withTilemapCollisions(tilemapCollisions: (ms: MovingSprite, tm: tiles.TileMap) => void) {
+    withTilemapCollisions(tilemapCollisions: TileMapCollisionHandler) {
         this.tilemapCollisions = tilemapCollisions;
         return this;
     }
 
-    withScreenEdgeCollisions(screenEdgeCollisions: (ms: MovingSprite, bounce: number, camera: scene.Camera) => void) {
+    withScreenEdgeCollisions(screenEdgeCollisions: ScreenEdgeCollisionHandler) {
         this.screenEdgeCollisions = screenEdgeCollisions;
         return this;
     }
 
-    withCanResolveClipping(canResolveClipping: (s: Sprite, tm: tiles.TileMap) => boolean) {
+    withCanResolveClipping(canResolveClipping: CanResolveClippingHandler) {
         this.canResolveClipping = canResolveClipping;
         return this;
     }
 
-    withSpriteCollisions(spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[]) => void) {
+    withSpriteCollisions(spriteCollisions: SpriteCollisionHandler) {
         this.spriteCollisions = spriteCollisions;
         return this;
     }
@@ -140,10 +145,10 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     private maxSingleStep: Fx8;
 
     constructor(
-        private readonly tilemapCollisions: (ms: MovingSprite, tm: tiles.TileMap) => void,
-        private readonly screenEdgeCollisions: (ms: MovingSprite, bounce: number, camera: scene.Camera) => void,
-        private readonly canResolveClipping: (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean,
-        private readonly spriteCollisions: (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void,
+        private readonly tilemapCollisions: TileMapCollisionHandler,
+        private readonly screenEdgeCollisions: ScreenEdgeCollisionHandler,
+        private readonly canResolveClipping: CanResolveClippingHandler,
+        private readonly spriteCollisions: SpriteCollisionHandler,
         maxVelocity = 500,
         minSingleStep = 2,
         maxSingleStep = 4
@@ -444,7 +449,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     }
 }
 
-function defaultTilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap) {
+const defaultTilemapCollisions: TileMapCollisionHandler = function (movingSprite: MovingSprite, tm: tiles.TileMap) {
     const s = movingSprite.sprite;
     // if the sprite is already clipping into a wall,
     // allow free movement rather than randomly 'fixing' it
@@ -638,7 +643,7 @@ function defaultTilemapCollisions(movingSprite: MovingSprite, tm: tiles.TileMap)
 }
 
 // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
-function defaultCanResolveClipping(
+const defaultCanResolveClipping: CanResolveClippingHandler = function(
     s: Sprite,
     tm: tiles.TileMap,
     maxStep: number
@@ -715,7 +720,7 @@ function defaultCanResolveClipping(
     return false;
 }
 
-function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
+const defaultScreenEdgeCollisions: ScreenEdgeCollisionHandler = function (movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
     let s = movingSprite.sprite;
     if (!s.isStatic()) s.setHitbox();
     if (!camera.isUpdated()) camera.update();
@@ -739,7 +744,7 @@ function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number,
     }
 }
 
-function defaultSpriteCollisions(
+const defaultSpriteCollisions: SpriteCollisionHandler = function (
     movedSprites: MovingSprite[],
     handlers: scene.OverlapHandler[],
     map: sprites.SpriteMap
