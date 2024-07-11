@@ -126,30 +126,6 @@ class NewArcadePhysicsEngineBuilder {
     }
 }
 
-// class NewMovingSprite {
-//     constructor(
-//         public readonly sprite: Sprite,
-//         // vx and vy when last updated
-//         public cachedVx: Fx8,
-//         public cachedVy: Fx8,
-//         // remaining x
-//         public dx: Fx8,
-//         public dy: Fx8,
-//         // how much to move per step
-//         public xStep: Fx8,
-//         public yStep: Fx8
-//     ) { }
-
-//     reset(dx: Fx8, dy: Fx8, xStep: Fx8, yStep: Fx8) {
-//         this.cachedVx = this.sprite._vx;
-//         this.cachedVy = this.sprite._vy;
-//         this.dx = dx;
-//         this.dy = dy;
-//         this.xStep = xStep;
-//         this.yStep = yStep;
-//     }
-// }
-
 class NewArcadePhysicsEngine implements IPhysicsEngine {
     private sprites: Sprite[];
     private map: sprites.SpriteMap;
