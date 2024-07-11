@@ -81,7 +81,7 @@ namespace scene {
         allSprites: SpriteLike[];
         private spriteNextId: number;
         spritesByKind: SparseArray<sprites.SpriteSet>;
-        physicsEngine: PhysicsEngine;
+        physicsEngine: IPhysicsEngine;
         camera: scene.Camera;
         flags: number;
         destroyedHandlers: SpriteHandler[];
@@ -107,7 +107,7 @@ namespace scene {
         constructor(eventContext: control.EventContext, protected previousScene?: Scene) {
             this.eventContext = eventContext;
             this.flags = 0;
-            this.physicsEngine = new ArcadePhysicsEngine();
+            this.physicsEngine = (new NewArcadePhysicsEngineBuilder()).create();
             this.camera = new scene.Camera();
             this.background = new Background(this.camera);
             this.destroyedHandlers = [];

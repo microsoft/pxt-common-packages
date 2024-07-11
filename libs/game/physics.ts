@@ -20,6 +20,7 @@ class PhysicsEngine {
 
     setMaxSpeed(speed: number) { }
 
+    //TODO: remove if no reason to have
     overlaps(sprite: Sprite): Sprite[] { return []; }
 }
 
