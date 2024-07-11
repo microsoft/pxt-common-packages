@@ -37,16 +37,21 @@ interface IPhysicsEngine {
     setMaxSpeed(maxSpeed: number): void;
 }
 
-type TileMapCollisionHandler = (ms: MovingSprite, tm: tiles.TileMap) => void;
+type TileMapCollisionHandler = (ms: MovingSprite, tm: tiles.TileMap, onXAxisCollisionHandler: OnXAxisCollisionHandler, OnYAxisCollisionHandler: OnYAxisCollisionHandler) => void;
 type ScreenEdgeCollisionHandler = (ms: MovingSprite, bounce: number, camera: scene.Camera) => void;
 type CanResolveClippingHandler = (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean;
 type SpriteCollisionHandler = (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void;
+type OnXAxisCollisionHandler = (collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) => void;
+type OnYAxisCollisionHandler = (collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) => void;
 
 class NewArcadePhysicsEngineBuilder {
     private tilemapCollisions: TileMapCollisionHandler;
     private screenEdgeCollisions: ScreenEdgeCollisionHandler;
     private canResolveClipping: CanResolveClippingHandler;
     private spriteCollisions: SpriteCollisionHandler;
+    private OnXAxisCollision: OnXAxisCollisionHandler;
+    private OnYAxisCollision: OnYAxisCollisionHandler;
+
     private maxVelocity: number;
     private minSingleStep: number;
     private maxSingleStep: number;
@@ -56,6 +61,8 @@ class NewArcadePhysicsEngineBuilder {
         this.screenEdgeCollisions = defaultScreenEdgeCollisions;
         this.canResolveClipping = defaultCanResolveClipping;
         this.spriteCollisions = defaultSpriteCollisions;
+        this.OnXAxisCollision = defaultOnXAxisCollision;
+        this.OnYAxisCollision = defaultOnYAxisCollision;
         this.maxVelocity = 500;
         this.minSingleStep = 2;
         this.maxSingleStep = 4;
@@ -78,6 +85,11 @@ class NewArcadePhysicsEngineBuilder {
 
     withSpriteCollisions(spriteCollisions: SpriteCollisionHandler) {
         this.spriteCollisions = spriteCollisions;
+        return this;
+    }
+    
+    withOnXAxisCollision(OnXAxisCollision: OnXAxisCollisionHandler) {
+        this.OnXAxisCollision = OnXAxisCollision;
         return this;
     }
 
@@ -105,6 +117,8 @@ class NewArcadePhysicsEngineBuilder {
             this.screenEdgeCollisions,
             this.canResolveClipping,
             this.spriteCollisions,
+            this.OnXAxisCollision,
+            this.OnYAxisCollision,
             this.maxVelocity,
             this.minSingleStep,
             this.maxSingleStep,
@@ -112,29 +126,29 @@ class NewArcadePhysicsEngineBuilder {
     }
 }
 
-class NewMovingSprite {
-    constructor(
-        public readonly sprite: Sprite,
-        // vx and vy when last updated
-        public cachedVx: Fx8,
-        public cachedVy: Fx8,
-        // remaining x
-        public dx: Fx8,
-        public dy: Fx8,
-        // how much to move per step
-        public xStep: Fx8,
-        public yStep: Fx8
-    ) { }
+// class NewMovingSprite {
+//     constructor(
+//         public readonly sprite: Sprite,
+//         // vx and vy when last updated
+//         public cachedVx: Fx8,
+//         public cachedVy: Fx8,
+//         // remaining x
+//         public dx: Fx8,
+//         public dy: Fx8,
+//         // how much to move per step
+//         public xStep: Fx8,
+//         public yStep: Fx8
+//     ) { }
 
-    reset(dx: Fx8, dy: Fx8, xStep: Fx8, yStep: Fx8) {
-        this.cachedVx = this.sprite._vx;
-        this.cachedVy = this.sprite._vy;
-        this.dx = dx;
-        this.dy = dy;
-        this.xStep = xStep;
-        this.yStep = yStep;
-    }
-}
+//     reset(dx: Fx8, dy: Fx8, xStep: Fx8, yStep: Fx8) {
+//         this.cachedVx = this.sprite._vx;
+//         this.cachedVy = this.sprite._vy;
+//         this.dx = dx;
+//         this.dy = dy;
+//         this.xStep = xStep;
+//         this.yStep = yStep;
+//     }
+// }
 
 class NewArcadePhysicsEngine implements IPhysicsEngine {
     private sprites: Sprite[];
@@ -149,6 +163,8 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
         private readonly screenEdgeCollisions: ScreenEdgeCollisionHandler,
         private readonly canResolveClipping: CanResolveClippingHandler,
         private readonly spriteCollisions: SpriteCollisionHandler,
+        private readonly onXAxisCollision: OnXAxisCollisionHandler,
+        private readonly onYAxisCollision: OnYAxisCollisionHandler,
         maxVelocity = 500,
         minSingleStep = 2,
         maxSingleStep = 4
@@ -229,7 +245,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
                     dx,
                     dy
                 );
-                this.tilemapCollisions(ms, tm);
+                this.tilemapCollisions(ms, tm, this.onXAxisCollision, this.onYAxisCollision);
                 // otherwise, accept movement...
             } else if (tm.isOnWall(sprite) && !this.canResolveClipping(sprite, tm, this.maxStep)) {
                 // if no luck, flag as clipping into a wall
@@ -324,7 +340,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
                     this.map.insertAABB(s);
                 }
                 if (tileMap && tileMap.enabled) {
-                    this.tilemapCollisions(ms, tileMap);
+                    this.tilemapCollisions(ms, tileMap, this.onXAxisCollision, this.onYAxisCollision);
                 }
 
                 // check for screen edge collisions
@@ -449,7 +465,12 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     }
 }
 
-const defaultTilemapCollisions: TileMapCollisionHandler = function (movingSprite: MovingSprite, tm: tiles.TileMap) {
+const defaultTilemapCollisions: TileMapCollisionHandler = function (
+    movingSprite: MovingSprite,
+    tm: tiles.TileMap,
+    onXAxisCollisionHandler: OnXAxisCollisionHandler,
+    OnYAxisCollisionHandler: OnYAxisCollisionHandler
+) {
     const s = movingSprite.sprite;
     // if the sprite is already clipping into a wall,
     // allow free movement rather than randomly 'fixing' it
@@ -458,11 +479,16 @@ const defaultTilemapCollisions: TileMapCollisionHandler = function (movingSprite
             s.flags &= ~sprites.Flag.IsClipping;
         }
     }
+
+    // get hitbox
     if (!s.isStatic()) s.setHitbox();
     const hbox = s._hitbox;
+
+    // get tile map scale and size
     const tileScale = tm.scale;
     const tileSize = 1 << tileScale;
 
+    // get the difference in x and y
     const xDiff = Fx.sub(
         s._x,
         s._lastX
@@ -473,10 +499,14 @@ const defaultTilemapCollisions: TileMapCollisionHandler = function (movingSprite
         s._lastY
     );
 
+    // check for collisions with walls
     if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+
+        // check for collisions with tiles sprite is moving towards horizontally
         if (xDiff !== Fx.zeroFx8) {
             const right = xDiff > Fx.zeroFx8;
-            const x0 = Fx.toIntShifted(
+
+            const tileColumn = Fx.toIntShifted(
                 Fx.add(
                     right ?
                         Fx.add(hbox.right, Fx.oneFx8)
@@ -487,81 +517,30 @@ const defaultTilemapCollisions: TileMapCollisionHandler = function (movingSprite
                 tileScale
             );
 
-            const collidedTiles: sprites.StaticObstacle[] = [];
+            const collidedTiles = tm.getXAxisCollisions(tileColumn, yDiff, hbox, tileScale, tileSize);
 
-            // check collisions with tiles sprite is moving towards horizontally
-            for (
-                let y = Fx.sub(hbox.top, yDiff);
-                y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
-                y = Fx.iadd(tileSize, y)
-            ) {
-                const y0 = Fx.toIntShifted(
-                    Fx.add(
-                        Fx.min(
-                            y,
-                            Fx.sub(
-                                hbox.bottom,
-                                yDiff
-                            )
-                        ),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
-
-                if (tm.isObstacle(x0, y0)) {
-                    const obstacle = tm.getObstacle(x0, y0);
-                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
-                        collidedTiles.push(obstacle);
-                    }
-                }
-            }
-
+            // if there are collisions, resolve them and update sprite velocity
             if (collidedTiles.length) {
                 const collisionDirection = right ? CollisionDirection.Right : CollisionDirection.Left;
+
                 s._x = Fx.sub(
                     right ?
                         Fx.sub(
-                            Fx8(x0 << tileScale),
+                            Fx8(tileColumn << tileScale),
                             hbox.width
                         )
                         :
-                        Fx8((x0 + 1) << tileScale),
+                        Fx8((tileColumn + 1) << tileScale),
                     hbox.ox
                 );
 
-                for (const tile of collidedTiles) {
-                    if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
-                        s.registerObstacle(collisionDirection, tile, tm);
-                    }
-                }
-
-                if (s.flags & sprites.Flag.DestroyOnWall) {
-                    s.destroy();
-                } else if (s._vx === movingSprite.cachedVx && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
-                    // sprite collision event didn't change velocity in this direction;
-                    // apply normal updates
-                    if (s.flags & sprites.Flag.BounceOnWall) {
-                        if ((!right && s.vx < 0) || (right && s.vx > 0)) {
-                            s._vx = Fx.neg(s._vx);
-                            movingSprite.xStep = Fx.neg(movingSprite.xStep);
-                            movingSprite.dx = Fx.neg(movingSprite.dx);
-                        }
-                    } else {
-                        movingSprite.dx = Fx.zeroFx8;
-                        s._vx = Fx.zeroFx8;
-                    }
-                } else if (Math.sign(Fx.toInt(s._vx)) === Math.sign(Fx.toInt(movingSprite.cachedVx))) {
-                    // sprite collision event changed velocity,
-                    // but still facing same direction; prevent further movement this update.
-                    movingSprite.dx = Fx.zeroFx8;
-                }
+                onXAxisCollisionHandler(collisionDirection, collidedTiles, s, tm, movingSprite);
             }
         }
 
         if (yDiff !== Fx.zeroFx8) {
             const down = yDiff > Fx.zeroFx8;
-            const y0 = Fx.toIntShifted(
+            const tileRow = Fx.toIntShifted(
                 Fx.add(
                     down ?
                         Fx.add(hbox.bottom, Fx.oneFx8)
@@ -571,72 +550,29 @@ const defaultTilemapCollisions: TileMapCollisionHandler = function (movingSprite
                 ),
                 tileScale
             );
-            const collidedTiles: sprites.StaticObstacle[] = [];
 
-            // check collisions with tiles sprite is moving towards vertically
-            for (
-                let x = hbox.left;
-                x < Fx.iadd(tileSize, hbox.right);
-                x = Fx.iadd(tileSize, x)
-            ) {
-                const x0 = Fx.toIntShifted(
-                    Fx.add(
-                        Fx.min(
-                            x,
-                            hbox.right
-                        ),
-                        Fx.oneHalfFx8
-                    ),
-                    tileScale
-                );
-
-                if (tm.isObstacle(x0, y0)) {
-                    const obstacle = tm.getObstacle(x0, y0);
-                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
-                        collidedTiles.push(obstacle);
-                    }
-                }
-            }
+            const collidedTiles: sprites.StaticObstacle[] = tm.getYAxisCollisions(
+                tileRow,
+                Fx.zeroFx8, // we have already moved in x, so the diff isn't applied
+                hbox,
+                tileScale,
+                tileSize
+            );
 
             if (collidedTiles.length) {
                 const collisionDirection = down ? CollisionDirection.Bottom : CollisionDirection.Top;
                 s._y = Fx.sub(
                     down ?
                         Fx.sub(
-                            Fx8(y0 << tileScale),
+                            Fx8(tileRow << tileScale),
                             hbox.height
                         )
                         :
-                        Fx8((y0 + 1) << tileScale),
+                        Fx8((tileRow + 1) << tileScale),
                     hbox.oy
                 );
 
-                for (const tile of collidedTiles) {
-                    if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
-                        s.registerObstacle(collisionDirection, tile, tm);
-                    }
-                }
-
-                if (s.flags & sprites.Flag.DestroyOnWall) {
-                    s.destroy();
-                } else if (s._vy === movingSprite.cachedVy && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
-                    // sprite collision event didn't change velocity in this direction;
-                    // apply normal updates
-                    if (s.flags & sprites.Flag.BounceOnWall) {
-                        if ((!down && s.vy < 0) || (down && s.vy > 0)) {
-                            s._vy = Fx.neg(s._vy);
-                            movingSprite.yStep = Fx.neg(movingSprite.yStep);
-                            movingSprite.dy = Fx.neg(movingSprite.dy);
-                        }
-                    } else {
-                        movingSprite.dy = Fx.zeroFx8;
-                        s._vy = Fx.zeroFx8;
-                    }
-                } else if (Math.sign(Fx.toInt(s._vy)) === Math.sign(Fx.toInt(movingSprite.cachedVy))) {
-                    // sprite collision event changed velocity,
-                    // but still facing same direction; prevent further movement this update.
-                    movingSprite.dy = Fx.zeroFx8;
-                }
+               OnYAxisCollisionHandler(collisionDirection, collidedTiles, s, tm, movingSprite);
             }
         }
     }
@@ -791,5 +727,77 @@ const defaultSpriteCollisions: SpriteCollisionHandler = function (
                     });
             }
         }
+    }
+}
+
+const defaultOnXAxisCollision = function (
+    collisionDirection: CollisionDirection,
+    collidedTiles: sprites.StaticObstacle[],
+    s: Sprite,
+    tm: tiles.TileMap,
+    movingSprite: MovingSprite
+) {
+    for (const tile of collidedTiles) {
+        // We must check the flag again, as the sprite may have changed it in a collision handler
+        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+            s.runUserCollisionHandlers(collisionDirection, tile, tm);
+        }
+    }
+
+    if (s.flags & sprites.Flag.DestroyOnWall) {
+        s.destroy();
+    } else if (s._vx === movingSprite.cachedVx && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
+        // sprite collision event didn't change velocity in this direction;
+        // apply normal updates
+
+        if (s.flags & sprites.Flag.BounceOnWall) {
+            // If the sprite can bounce, reverse the velocity
+            if (
+                (!(collisionDirection === CollisionDirection.Right) && s.vx < 0) || (collisionDirection === CollisionDirection.Right && s.vx > 0)
+            ) {
+                s._vx = Fx.neg(s._vx);
+                movingSprite.xStep = Fx.neg(movingSprite.xStep);
+                movingSprite.dx = Fx.neg(movingSprite.dx);
+            }
+        } else {
+            movingSprite.dx = Fx.zeroFx8;
+            s._vx = Fx.zeroFx8;
+        }
+    } else if (Math.sign(Fx.toInt(s._vx)) === Math.sign(Fx.toInt(movingSprite.cachedVx))) {
+        // sprite collision event changed velocity,
+        // but still facing same direction; prevent further movement this update.
+        movingSprite.dx = Fx.zeroFx8;
+    }
+}
+
+const defaultOnYAxisCollision = function(collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) {
+    for (const tile of collidedTiles) {
+        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+            s.runUserCollisionHandlers(collisionDirection, tile, tm);
+        }
+    }
+
+    if (s.flags & sprites.Flag.DestroyOnWall) {
+        s.destroy();
+    } else if (s._vy === movingSprite.cachedVy && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
+        // sprite collision event didn't change velocity in this direction;
+        // apply normal updates
+        if (s.flags & sprites.Flag.BounceOnWall) {
+            if (
+                (!(collisionDirection === CollisionDirection.Bottom) && s.vy < 0) || 
+                (collisionDirection === CollisionDirection.Bottom && s.vy > 0)
+            ) {
+                s._vy = Fx.neg(s._vy);
+                movingSprite.yStep = Fx.neg(movingSprite.yStep);
+                movingSprite.dy = Fx.neg(movingSprite.dy);
+            }
+        } else {
+            movingSprite.dy = Fx.zeroFx8;
+            s._vy = Fx.zeroFx8;
+        }
+    } else if (Math.sign(Fx.toInt(s._vy)) === Math.sign(Fx.toInt(movingSprite.cachedVy))) {
+        // sprite collision event changed velocity,
+        // but still facing same direction; prevent further movement this update.
+        movingSprite.dy = Fx.zeroFx8;
     }
 }

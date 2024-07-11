@@ -553,6 +553,82 @@ namespace tiles {
             return false;
         }
 
+        public getXAxisCollisions(
+            tileColumn: number,
+            yDiff: Fx8,
+            hbox: game.Hitbox,
+            tileScale: number,
+            tileSize: number
+        ) {
+            const collidedTiles: sprites.StaticObstacle[] = [];
+
+            for (
+                let y = Fx.sub(hbox.top, yDiff);
+                y < Fx.iadd(tileSize, Fx.sub(hbox.bottom, yDiff));
+                y = Fx.iadd(tileSize, y)
+            ) {
+                const tileRow = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            y,
+                            Fx.sub(
+                                hbox.bottom,
+                                yDiff
+                            )
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+
+                if (this.isObstacle(tileColumn, tileRow)) {
+                    const obstacle = this.getObstacle(tileColumn, tileRow);
+                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                        collidedTiles.push(obstacle);
+                    }
+                }
+            }
+
+            return collidedTiles;
+        }
+
+        public getYAxisCollisions(
+            tileRow: number,
+            xDiff: Fx8,
+            hbox: game.Hitbox,
+            tileScale: number,
+            tileSize: number
+        ) {
+            const collidedTiles: sprites.StaticObstacle[] = [];
+
+            // check collisions with tiles sprite is moving towards vertically
+            for (
+                let x = Fx.sub(hbox.left, xDiff);
+                x < Fx.iadd(tileSize, hbox.right);
+                x = Fx.iadd(tileSize, x)
+            ) {
+                const tileColumn = Fx.toIntShifted(
+                    Fx.add(
+                        Fx.min(
+                            x,
+                            hbox.right
+                        ),
+                        Fx.oneHalfFx8
+                    ),
+                    tileScale
+                );
+
+                if (this.isObstacle(tileColumn, tileRow)) {
+                    const obstacle = this.getObstacle(tileColumn, tileRow);
+                    if (!collidedTiles.some(o => o.tileIndex === obstacle.tileIndex)) {
+                        collidedTiles.push(obstacle);
+                    }
+                }
+            }
+
+            return collidedTiles;
+        }
+
         public getTileImage(index: number) {
             return this.data.getTileImage(index);
         }
