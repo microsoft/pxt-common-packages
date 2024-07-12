@@ -127,8 +127,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             if (s.vx || s.vy) s.clearObstacles();
         });
 
-        this.map.clear();
-        this.map.resizeBuckets(this.sprites);
+        this.map.reset(this.sprites);
 
         const MAX_STEP_COUNT = Fx.toInt(
             Fx.idiv(
@@ -191,7 +190,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 s._y = Fx.add(s._y, stepY);
 
                 if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS)) {
-                    this.map.insertAABB(s);
+                    this.map.insertSprite(s);
                 }
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap);
@@ -316,7 +315,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         for (const ms of movedSprites) {
             const sprite = ms.sprite;
             if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-            const overSprites = this.map.overlaps(ms.sprite);
+            const overSprites = this.map.getOverlappingSprites(ms.sprite);
 
             for (const overlapper of overSprites) {
                 if (overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
@@ -649,7 +648,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param layer
      */
     overlaps(sprite: Sprite): Sprite[] {
-        return this.map.overlaps(sprite);
+        return this.map.getOverlappingSprites(sprite);
     }
 
     /** moves a sprite explicitly outside of the normal velocity changes **/

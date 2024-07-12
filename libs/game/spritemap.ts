@@ -1,9 +1,9 @@
 namespace sprites {
     export interface ISpriteMap {
+        insertSprite(sprite: Sprite): void;
+        getOverlappingSprites(sprite: Sprite): Sprite[];
         draw(): void;
-        resizeBuckets(sprites: Sprite[]): void;
-        clear(): void;
-        insertAABB(sprite: Sprite): void;
+        reset(sprites: Sprite[]): void;
     }
 
     export class SpriteMap implements ISpriteMap {
@@ -35,7 +35,7 @@ namespace sprites {
          * Gets the overlaping sprites if any
          * @param sprite
          */
-        public overlaps(sprite: Sprite): Sprite[] {
+        public getOverlappingSprites(sprite: Sprite): Sprite[] {
             control.enablePerfCounter("spritemap_overlaps");
             const n = this.neighbors(sprite);
             const o = n.filter(neighbor => sprite.overlapsWith(neighbor));
@@ -58,7 +58,7 @@ namespace sprites {
         /**
          * Recompute hashes for all objects
          */
-        public resizeBuckets(sprites: Sprite[]) {
+        private resizeBuckets(sprites: Sprite[]) {
             // rescale buckets
             let maxWidth = 0;
             let maxHeight = 0;
@@ -78,8 +78,13 @@ namespace sprites {
             this.columnCount = Math.idiv(areaWidth, this.cellWidth);
         }
 
-        public clear() {
+        /**
+         * Clears the spritemap and recomputes the buckets
+         * @param sprites 
+         */
+        public reset(sprites: Sprite[]) {
             this.buckets = [];
+            this.resizeBuckets(sprites);
         }
 
         private key(x: number, y: number): number {
@@ -97,7 +102,7 @@ namespace sprites {
                 bucket.push(sprite);
         }
 
-        public insertAABB(sprite: Sprite) {
+        public insertSprite(sprite: Sprite) {
             const left = sprite.left;
             const top = sprite.top;
             const xn = Math.idiv(sprite.width + this.cellWidth - 1, this.cellWidth);

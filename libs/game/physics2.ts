@@ -250,8 +250,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
             if (sprite.vx || sprite.vy) sprite.clearObstacles();
         }
 
-        this.map.clear();
-        this.map.resizeBuckets(this.sprites);
+        this.map.reset(this.sprites);
 
         const MAX_STEP_COUNT = Fx.toInt(
             Fx.idiv(
@@ -314,7 +313,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
                 s._y = Fx.add(s._y, stepY);
 
                 if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS)) {
-                    this.map.insertAABB(s);
+                    this.map.insertSprite(s);
                 }
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap, this.onXAxisCollision, this.onYAxisCollision);
@@ -669,7 +668,7 @@ function defaultScreenEdgeCollisions(
 function defaultSpriteCollisions (
     movedSprites: MovingSprite[],
     handlers: scene.OverlapHandler[],
-    map: sprites.SpriteMap
+    map: sprites.ISpriteMap
 ) {
     control.enablePerfCounter("physics_sprite_collisions");
     if (!handlers.length) return;
@@ -678,7 +677,7 @@ function defaultSpriteCollisions (
     for (const ms of movedSprites) {
         const sprite = ms.sprite;
         if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-        const overSprites = map.overlaps(ms.sprite);
+        const overSprites = map.getOverlappingSprites(ms.sprite);
 
         for (const overlapper of overSprites) {
             if (overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
