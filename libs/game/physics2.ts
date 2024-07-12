@@ -40,7 +40,7 @@ interface IPhysicsEngine {
 type TileMapCollisionHandler = (ms: MovingSprite, tm: tiles.TileMap, onXAxisCollisionHandler: OnXAxisCollisionHandler, OnYAxisCollisionHandler: OnYAxisCollisionHandler) => void;
 type ScreenEdgeCollisionHandler = (ms: MovingSprite, bounce: number, camera: scene.Camera) => void;
 type CanResolveClippingHandler = (s: Sprite, tm: tiles.TileMap, maxStep: number) => boolean;
-type SpriteCollisionHandler = (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.SpriteMap) => void;
+type SpriteCollisionHandler = (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.ISpriteMap) => void;
 type OnXAxisCollisionHandler = (collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) => void;
 type OnYAxisCollisionHandler = (collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) => void;
 
@@ -128,7 +128,7 @@ class NewArcadePhysicsEngineBuilder {
 
 class NewArcadePhysicsEngine implements IPhysicsEngine {
     private sprites: Sprite[];
-    private map: sprites.SpriteMap;
+    private map: sprites.ISpriteMap;
     private maxVelocity: Fx8;
     private maxNegativeVelocity: Fx8;
     private minSingleStep: Fx8;
@@ -746,7 +746,13 @@ function defaultOnXAxisCollision (
     }
 }
 
-function defaultOnYAxisCollision(collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) {
+function defaultOnYAxisCollision(
+    collisionDirection: CollisionDirection,
+    collidedTiles: sprites.StaticObstacle[],
+    s: Sprite,
+    tm: tiles.TileMap,
+    movingSprite: MovingSprite
+) {
     for (const tile of collidedTiles) {
         if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
             s.runUserCollisionHandlers(collisionDirection, tile, tm);

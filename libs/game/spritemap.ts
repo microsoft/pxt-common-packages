@@ -1,5 +1,12 @@
 namespace sprites {
-    export class SpriteMap {
+    export interface ISpriteMap {
+        draw(): void;
+        resizeBuckets(sprites: Sprite[]): void;
+        clear(): void;
+        insertAABB(sprite: Sprite): void;
+    }
+
+    export class SpriteMap implements ISpriteMap {
         private cellWidth: number;
         private cellHeight: number;
         private rowCount: number;
@@ -13,7 +20,7 @@ namespace sprites {
         /**
          * Returns a potential list of neighbors
          */
-        neighbors(sprite: Sprite): Sprite[] {
+        private neighbors(sprite: Sprite): Sprite[] {
             const n: Sprite[] = [];
             const layer = sprite.layer;
             this.mergeAtKey(sprite.left, sprite.top, layer, n)
@@ -28,13 +35,14 @@ namespace sprites {
          * Gets the overlaping sprites if any
          * @param sprite
          */
-        overlaps(sprite: Sprite): Sprite[] {
+        public overlaps(sprite: Sprite): Sprite[] {
+            control.enablePerfCounter("spritemap_overlaps");
             const n = this.neighbors(sprite);
             const o = n.filter(neighbor => sprite.overlapsWith(neighbor));
             return o;
         }
 
-        draw() {
+        public draw() {
             for (let x = 0; x < this.columnCount; ++x) {
                 for (let y = 0; y < this.rowCount; ++y) {
                     const left = x * this.cellWidth;
@@ -50,7 +58,7 @@ namespace sprites {
         /**
          * Recompute hashes for all objects
          */
-        resizeBuckets(sprites: Sprite[]) {
+        public resizeBuckets(sprites: Sprite[]) {
             // rescale buckets
             let maxWidth = 0;
             let maxHeight = 0;
@@ -70,7 +78,7 @@ namespace sprites {
             this.columnCount = Math.idiv(areaWidth, this.cellWidth);
         }
 
-        clear() {
+        public clear() {
             this.buckets = [];
         }
 
@@ -89,7 +97,7 @@ namespace sprites {
                 bucket.push(sprite);
         }
 
-        insertAABB(sprite: Sprite) {
+        public insertAABB(sprite: Sprite) {
             const left = sprite.left;
             const top = sprite.top;
             const xn = Math.idiv(sprite.width + this.cellWidth - 1, this.cellWidth);
