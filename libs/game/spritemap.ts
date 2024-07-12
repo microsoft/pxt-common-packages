@@ -19,10 +19,9 @@ namespace sprites {
             // TODO: This is just looking at the four corners and not the
             // interior of the sprite. Long sprites that are orthogonal will not
             // trigger
-            this.mergeAtKey(sprite.left, sprite.top, layer, neighbors);
-            this.mergeAtKey(sprite.left, sprite.bottom, layer, neighbors);
-            this.mergeAtKey(sprite.right, sprite.top, layer, neighbors);
-            this.mergeAtKey(sprite.right, sprite.bottom, layer, neighbors);
+            for (const coord of this.getBucketCoordinates(sprite)) {
+                this.mergeAtKey(coord.x, coord.y, layer, neighbors);
+            }
             neighbors.removeElement(sprite);
             return neighbors;
         }
@@ -109,7 +108,7 @@ namespace sprites {
             if (bucket.indexOf(sprite) < 0) bucket.push(sprite);
         }
 
-        insertAABB(sprite: Sprite) {
+        private getBucketCoordinates(sprite: Sprite) {
             const left = sprite.left;
             const top = sprite.top;
             const xn = Math.idiv(
@@ -120,13 +119,20 @@ namespace sprites {
                 sprite.height + this.cellHeight - 1,
                 this.cellHeight
             );
+            let coords = [];
             for (let x = 0; x <= xn; x++)
                 for (let y = 0; y <= yn; y++)
-                    this.insertAtKey(
-                        left + Math.min(sprite.width, x * this.cellWidth),
-                        top + Math.min(sprite.height, y * this.cellHeight),
-                        sprite
-                    );
+                    coords.push({
+                        x: left + Math.min(sprite.width, x * this.cellWidth),
+                        y: top + Math.min(sprite.height, y * this.cellHeight),
+                    });
+            return coords;
+        }
+
+        insertAABB(sprite: Sprite) {
+            for (const coord of this.getBucketCoordinates(sprite)) {
+                this.insertAtKey(coord.x, coord.y, sprite);
+            }
         }
 
         private mergeAtKey(
