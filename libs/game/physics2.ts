@@ -340,8 +340,9 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
 
             // this step is done; check collisions between sprites
             this.spriteCollisions(currMovers, overlapHandlers, this.map);
+            
             // clear moving sprites buffer for next step
-            while (currMovers.length) currMovers.pop();
+            currMovers.length = 0;
         }
     }
 
