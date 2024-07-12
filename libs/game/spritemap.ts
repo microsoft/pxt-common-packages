@@ -20,15 +20,17 @@ namespace sprites {
         /**
          * Returns a potential list of neighbors
          */
-        private neighbors(sprite: Sprite): Sprite[] {
-            const n: Sprite[] = [];
+        private neighbors(sprite: Sprite): { [key: string]: Sprite } {
+            const neighbors: { [key: string]: Sprite } = {};
+
             const layer = sprite.layer;
-            this.mergeAtKey(sprite.left, sprite.top, layer, n)
-            this.mergeAtKey(sprite.left, sprite.bottom, layer, n)
-            this.mergeAtKey(sprite.right, sprite.top, layer, n)
-            this.mergeAtKey(sprite.right, sprite.bottom, layer, n)
-            n.removeElement(sprite);
-            return n;
+            this.mergeAtKey(sprite.left, sprite.top, layer, neighbors)
+            this.mergeAtKey(sprite.left, sprite.bottom, layer, neighbors)
+            this.mergeAtKey(sprite.right, sprite.top, layer, neighbors)
+            this.mergeAtKey(sprite.right, sprite.bottom, layer, neighbors)
+            neighbors[sprite.id] = undefined;
+
+            return neighbors;
         }
 
         /**
@@ -37,9 +39,17 @@ namespace sprites {
          */
         public getOverlappingSprites(sprite: Sprite): Sprite[] {
             control.enablePerfCounter("spritemap_overlaps");
-            const n = this.neighbors(sprite);
-            const o = n.filter(neighbor => sprite.overlapsWith(neighbor));
-            return o;
+            const neighbors = this.neighbors(sprite);
+
+            const overlappingSprites: Sprite[] = [];
+            for (const key of Object.keys(neighbors)) {
+                const neighbor = neighbors[key];
+                if (neighbor && sprite.overlapsWith(neighbor)) {
+                    overlappingSprites.push(neighbor);
+                }
+            }
+
+            return overlappingSprites;
         }
 
         public draw() {
@@ -112,14 +122,15 @@ namespace sprites {
                     this.insertAtKey(left + Math.min(sprite.width, x * this.cellWidth), top + Math.min(sprite.height, y * this.cellHeight), sprite)
         }
 
-        private mergeAtKey(x: number, y: number, layer: number, n: Sprite[]) {
+        private mergeAtKey(x: number, y: number, layer: number, neighbors: { [key: string]: Sprite }) {
             const k = this.key(x, y);
             const bucket = this.buckets[k];
             if (bucket) {
-                for (const sprite of bucket)
-                    if ((sprite.layer & layer)
-                        && n.indexOf(sprite) < 0)
-                        n.push(sprite);
+                for (const sprite of bucket) {
+                    if ((sprite.layer & layer) && neighbors[sprite.id] === undefined) {
+                        neighbors[sprite.id] = sprite;
+                    }
+                } 
             }
         }
 
