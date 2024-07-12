@@ -22,7 +22,7 @@ interface IPhysicsEngine {
     /**
      * Draws the buckets used in the sprite map
      */
-    draw(): void;
+    draw(camera: scene.Camera): void;
 
     /**
      * Apply physics and collisions to all sprites
@@ -196,8 +196,8 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
         this.sprites.removeElement(sprite);
     }
 
-    draw(): void {
-        this.map.draw();
+    draw(camera: scene.Camera): void {
+        this.map.draw(camera);
     }
 
     moveSprite(sprite: Sprite, dx: Fx8, dy: Fx8): void {

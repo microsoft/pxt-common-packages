@@ -2,7 +2,7 @@ namespace sprites {
     export interface ISpriteMap {
         insertSprite(sprite: Sprite): void;
         getOverlappingSprites(sprite: Sprite): Sprite[];
-        draw(): void;
+        draw(camera: scene.Camera): void;
         reset(sprites: Sprite[]): void;
     }
 
@@ -52,11 +52,11 @@ namespace sprites {
             return overlappingSprites;
         }
 
-        public draw() {
+        public draw(camera: scene.Camera) {
             for (let x = 0; x < this.columnCount; ++x) {
                 for (let y = 0; y < this.rowCount; ++y) {
-                    const left = x * this.cellWidth;
-                    const top = y * this.cellHeight;
+                    const left = x * this.cellWidth - camera.drawOffsetX;;
+                    const top = y * this.cellHeight - camera.drawOffsetY;
                     const k = this.key(left, top);
                     const b = this.buckets[k];
                     if (b && b.length)
