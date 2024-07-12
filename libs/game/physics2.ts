@@ -43,6 +43,7 @@ type CanResolveClippingHandler = (s: Sprite, tm: tiles.TileMap, maxStep: number)
 type SpriteCollisionHandler = (movedSprites: MovingSprite[], handlers: scene.OverlapHandler[], spriteMap: sprites.ISpriteMap) => void;
 type OnXAxisCollisionHandler = (collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) => void;
 type OnYAxisCollisionHandler = (collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) => void;
+type SpriteMapFactory = () => sprites.ISpriteMap;
 
 class NewArcadePhysicsEngineBuilder {
     private tilemapCollisions: TileMapCollisionHandler;
@@ -51,6 +52,7 @@ class NewArcadePhysicsEngineBuilder {
     private spriteCollisions: SpriteCollisionHandler;
     private OnXAxisCollision: OnXAxisCollisionHandler;
     private OnYAxisCollision: OnYAxisCollisionHandler;
+    private spriteMapFactory: SpriteMapFactory;
 
     private maxVelocity: number;
     private minSingleStep: number;
@@ -63,6 +65,7 @@ class NewArcadePhysicsEngineBuilder {
         this.spriteCollisions = defaultSpriteCollisions;
         this.OnXAxisCollision = defaultOnXAxisCollision;
         this.OnYAxisCollision = defaultOnYAxisCollision;
+        this.spriteMapFactory = defaultSpritesMapFactory;
         this.maxVelocity = 500;
         this.minSingleStep = 2;
         this.maxSingleStep = 4;
@@ -108,6 +111,11 @@ class NewArcadePhysicsEngineBuilder {
         return this;
     }
 
+    withSpriteMapFactory(spriteMapFactory: SpriteMapFactory) {
+        this.spriteMapFactory = spriteMapFactory;
+        return this;
+    }
+
     /**
      * Creates a new physics engine
      */
@@ -119,6 +127,7 @@ class NewArcadePhysicsEngineBuilder {
             this.spriteCollisions,
             this.OnXAxisCollision,
             this.OnYAxisCollision,
+            this.spriteMapFactory,
             this.maxVelocity,
             this.minSingleStep,
             this.maxSingleStep,
@@ -141,12 +150,13 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
         private readonly spriteCollisions: SpriteCollisionHandler,
         private readonly onXAxisCollision: OnXAxisCollisionHandler,
         private readonly onYAxisCollision: OnYAxisCollisionHandler,
+        spriteMapFactory: SpriteMapFactory,
         maxVelocity = 500,
         minSingleStep = 2,
         maxSingleStep = 4
     ) {
         this.sprites = [];
-        this.map = new sprites.SpriteMap();
+        this.map = spriteMapFactory();
         this.maxSpeed = maxVelocity;
         this.maxStep = maxSingleStep;
         this.minStep = minSingleStep;
@@ -794,4 +804,8 @@ function defaultOnYAxisCollision(
         // but still facing same direction; prevent further movement this update.
         movingSprite.dy = Fx.zeroFx8;
     }
+}
+
+function defaultSpritesMapFactory() {
+    return new sprites.SpriteMap();
 }
