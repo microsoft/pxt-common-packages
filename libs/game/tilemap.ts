@@ -560,6 +560,8 @@ namespace tiles {
             tileScale: number,
             tileSize: number
         ) {
+            control.enablePerfCounter("tilemap_x_axis_collisions");
+
             const collidedTiles: sprites.StaticObstacle[] = [];
 
             for (
@@ -599,6 +601,7 @@ namespace tiles {
             tileScale: number,
             tileSize: number
         ) {
+            control.enablePerfCounter("tilemap_y_axis_collisions");
             const collidedTiles: sprites.StaticObstacle[] = [];
 
             // check collisions with tiles sprite is moving towards vertically
