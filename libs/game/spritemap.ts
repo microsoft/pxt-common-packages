@@ -79,13 +79,15 @@ namespace sprites {
 
             const tMap = game.currentScene().tileMap;
 
+            // TODO: If we are not using a tile map, the number of buckets is based on the screen size
+            // Anything outside the screen is but into one giant bucket
             const areaWidth = tMap ? tMap.areaWidth() : screen.width;
             const areaHeight = tMap ? tMap.areaHeight() : screen.height;
 
             this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth * 2);
             this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight * 2);
-            this.rowCount = Math.idiv(areaHeight, this.cellHeight);
-            this.columnCount = Math.idiv(areaWidth, this.cellWidth);
+            this.rowCount = Math.ceil(areaHeight / this.cellHeight);
+            this.columnCount = Math.ceil(areaWidth / this.cellWidth);
         }
 
         /**
