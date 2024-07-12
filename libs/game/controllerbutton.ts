@@ -216,6 +216,7 @@ namespace controller {
         }
 
         __update(dtms: number) {
+            control.enablePerfCounter("controller_button_update");
             if (!this._pressed) return;
             this._pressedElasped += dtms;
 

@@ -234,6 +234,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     }
 
     move(dt: number): void {
+        control.enablePerfCounter("physics_move");
         // Sprite movement logic is done in milliseconds to avoid rounding errors with Fx8 numbers
         const dtMs = Math.min(MAX_TIME_STEP, dt * 1000);
         const dt2 = Math.idiv(dtMs, 2);
@@ -245,9 +246,9 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
             .map(sprite => this.createMovingSprite(sprite, dtMs, dt2));
 
         // clear obstacles if moving on that axis
-        this.sprites.forEach(s => {
-            if (s.vx || s.vy) s.clearObstacles();
-        });
+        for (const sprite of this.sprites) {
+            if (sprite.vx || sprite.vy) sprite.clearObstacles();
+        }
 
         this.map.clear();
         this.map.resizeBuckets(this.sprites);
@@ -447,6 +448,8 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     onXAxisCollisionHandler: OnXAxisCollisionHandler,
     OnYAxisCollisionHandler: OnYAxisCollisionHandler
 ) {
+    control.enablePerfCounter("physics_tilemap_collisions");
+
     const s = movingSprite.sprite;
     // if the sprite is already clipping into a wall,
     // allow free movement rather than randomly 'fixing' it
@@ -560,6 +563,8 @@ function defaultCanResolveClipping(
     tm: tiles.TileMap,
     maxStep: number
 ) {
+    control.enablePerfCounter("phys_resolve_clipping");
+
     if (!s.isStatic()) s.setHitbox();
     const hbox = s._hitbox;
     const sz = 1 << tm.scale;
@@ -632,7 +637,12 @@ function defaultCanResolveClipping(
     return false;
 }
 
-function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
+function defaultScreenEdgeCollisions(
+    movingSprite: MovingSprite,
+    bounce: number,
+    camera: scene.Camera) {
+    control.enablePerfCounter("phys_screen_edge_collisions");
+
     let s = movingSprite.sprite;
     if (!s.isStatic()) s.setHitbox();
     if (!camera.isUpdated()) camera.update();
@@ -656,12 +666,12 @@ function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number,
     }
 }
 
- function defaultSpriteCollisions (
+function defaultSpriteCollisions (
     movedSprites: MovingSprite[],
     handlers: scene.OverlapHandler[],
     map: sprites.SpriteMap
 ) {
-    control.enablePerfCounter("phys_collisions");
+    control.enablePerfCounter("physics_sprite_collisions");
     if (!handlers.length) return;
 
     // sprites that have moved this step
@@ -685,22 +695,22 @@ function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number,
             // if the two sprites are not currently engaged in an overlap event,
             // apply all matching overlap events
             if (higher._overlappers.indexOf(lower.id) === -1) {
-                handlers
-                    .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
-                        || (h.kind === otherKind && h.otherKind === thisKind)
-                    )
-                    .forEach(h => {
+                for (const handler of handlers) {
+                    if ((handler.kind === thisKind && handler.otherKind === otherKind) ||
+                        (handler.kind === otherKind && handler.otherKind === thisKind)
+                    ) {
                         higher._overlappers.push(lower.id);
                         control.runInParallel(() => {
                             if (!((sprite.flags | overlapper.flags) & SPRITE_NO_SPRITE_OVERLAPS)) {
-                                h.handler(
-                                    thisKind === h.kind ? sprite : overlapper,
-                                    thisKind === h.kind ? overlapper : sprite
+                                handler.handler(
+                                    thisKind === handler.kind ? sprite : overlapper,
+                                    thisKind === handler.kind ? overlapper : sprite
                                 );
                             }
                             higher._overlappers.removeElement(lower.id);
                         });
-                    });
+                    }
+                }
             }
         }
     }
@@ -713,6 +723,8 @@ function defaultOnXAxisCollision (
     tm: tiles.TileMap,
     movingSprite: MovingSprite
 ) {
+    control.enablePerfCounter("physics_x_axis_collisions");
+
     for (const tile of collidedTiles) {
         // We must check the flag again, as the sprite may have changed it in a collision handler
         if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
@@ -753,6 +765,7 @@ function defaultOnYAxisCollision(
     tm: tiles.TileMap,
     movingSprite: MovingSprite
 ) {
+    control.enablePerfCounter("physics_y_axis_collisions");
     for (const tile of collidedTiles) {
         if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
             s.runUserCollisionHandlers(collisionDirection, tile, tm);
