@@ -322,9 +322,6 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
                 s._x = Fx.add(s._x, stepX);
                 s._y = Fx.add(s._y, stepY);
 
-                if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS)) {
-                    this.map.insertSprite(s);
-                }
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap, this.onXAxisCollision, this.onYAxisCollision);
                 }

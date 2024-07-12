@@ -1,6 +1,5 @@
 namespace sprites {
     export interface ISpriteMap {
-        insertSprite(sprite: Sprite): void;
         getOverlappingSprites(sprite: Sprite): Sprite[];
         draw(camera: scene.Camera): void;
         reset(sprites: Sprite[]): void;
@@ -24,8 +23,23 @@ namespace sprites {
             const neighbors: { [key: string]: Sprite } = {};
             const layer = sprite.layer;
 
-            for (const key of this.getBucketsKeys(sprite)) {
-                this.mergeAt(key, layer, neighbors)
+            const left = sprite.left;
+            const top = sprite.top;
+            const xn = Math.idiv(
+                sprite.width + this.cellWidth - 1,
+                this.cellWidth
+            );
+            const yn = Math.idiv(
+                sprite.height + this.cellHeight - 1,
+                this.cellHeight
+            );
+            for (let x = 0; x <= xn; x++) {
+                for (let y = 0; y <= yn; y++) {
+                    const key = this.key(left + Math.min(sprite.width, x * this.cellWidth),
+                    top + Math.min(sprite.height, y * this.cellHeight))
+                    this.insertAt(key, sprite)
+                    this.mergeAt(key, layer, neighbors)
+                }
             }
             neighbors[sprite.id] = undefined;
             return neighbors;
@@ -107,31 +121,6 @@ namespace sprites {
             let bucket = this.buckets[key];
             if (!bucket) bucket = this.buckets[key] = [];
             if (bucket.indexOf(sprite) < 0) bucket.push(sprite);
-        }
-
-        private getBucketsKeys(sprite: Sprite): number[] {
-            const left = sprite.left;
-            const top = sprite.top;
-            const xn = Math.idiv(
-                sprite.width + this.cellWidth - 1,
-                this.cellWidth
-            );
-            const yn = Math.idiv(
-                sprite.height + this.cellHeight - 1,
-                this.cellHeight
-            );
-            let keys = []
-            for (let x = 0; x <= xn; x++)
-                for (let y = 0; y <= yn; y++)
-                       keys.push(this.key(left + Math.min(sprite.width, x * this.cellWidth),
-                        top + Math.min(sprite.height, y * this.cellHeight)))
-            return keys
-        }
-
-        public insertSprite(sprite: Sprite) {
-            for (const key of this.getBucketsKeys(sprite)) {
-                this.insertAt(key, sprite)
-            }
         }
 
         private mergeAt(key: number, layer: number, neighbors: { [key: string]: Sprite }) {

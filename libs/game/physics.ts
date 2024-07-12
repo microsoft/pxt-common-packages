@@ -190,7 +190,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 s._y = Fx.add(s._y, stepY);
 
                 if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS)) {
-                    this.map.insertSprite(s);
+                    // this.map.insertSprite(s);
                 }
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap);
