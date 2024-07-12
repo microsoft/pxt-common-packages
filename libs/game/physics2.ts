@@ -5,13 +5,13 @@ interface IPhysicsEngine {
      */
     addSprite(sprite: Sprite): void;
 
-    /** 
-     * Removes the sprite from being tracked by the physics engine 
+    /**
+     * Removes the sprite from being tracked by the physics engine
      * @param sprite sprite to remove
      */
     removeSprite(sprite: Sprite): void;
 
-    /** 
+    /**
      * Moves a sprite explicitly outside of the normal velocity changes
      * @param sprite sprite to move
      * @param dx distance to move in x
@@ -20,18 +20,18 @@ interface IPhysicsEngine {
     moveSprite(sprite: Sprite, dx: Fx8, dy: Fx8): void;
 
     /**
-     * Draws the buckets used in the sprite map 
+     * Draws the buckets used in the sprite map
      */
     draw(): void;
 
-    /** 
+    /**
      * Apply physics and collisions to all sprites
      * @param dt time since last update
      */
     move(dt: number): void;
 
     /**
-     * Allows consumers to change the max speed 
+     * Allows consumers to change the max speed
      * @param maxSpeed the new max speed
      */
     setMaxSpeed(maxSpeed: number): void;
@@ -56,7 +56,7 @@ class NewArcadePhysicsEngineBuilder {
     private minSingleStep: number;
     private maxSingleStep: number;
 
-    constructor() { 
+    constructor() {
         this.tilemapCollisions = defaultTilemapCollisions;
         this.screenEdgeCollisions = defaultScreenEdgeCollisions;
         this.canResolveClipping = defaultCanResolveClipping;
@@ -87,7 +87,7 @@ class NewArcadePhysicsEngineBuilder {
         this.spriteCollisions = spriteCollisions;
         return this;
     }
-    
+
     withOnXAxisCollision(OnXAxisCollision: OnXAxisCollisionHandler) {
         this.OnXAxisCollision = OnXAxisCollision;
         return this;
@@ -177,7 +177,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     private set maxStep(v: number) {
         this.maxSingleStep = Fx8(v);
     }
-    //#endregion 
+    //#endregion
 
     setMaxSpeed(maxSpeed: number): void {
         this.maxSpeed = maxSpeed;
@@ -441,7 +441,7 @@ class NewArcadePhysicsEngine implements IPhysicsEngine {
     }
 }
 
-const defaultTilemapCollisions: TileMapCollisionHandler = function (
+ function defaultTilemapCollisions(
     movingSprite: MovingSprite,
     tm: tiles.TileMap,
     onXAxisCollisionHandler: OnXAxisCollisionHandler,
@@ -555,7 +555,7 @@ const defaultTilemapCollisions: TileMapCollisionHandler = function (
 }
 
 // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
-const defaultCanResolveClipping: CanResolveClippingHandler = function(
+function defaultCanResolveClipping(
     s: Sprite,
     tm: tiles.TileMap,
     maxStep: number
@@ -632,7 +632,7 @@ const defaultCanResolveClipping: CanResolveClippingHandler = function(
     return false;
 }
 
-const defaultScreenEdgeCollisions: ScreenEdgeCollisionHandler = function (movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
+function defaultScreenEdgeCollisions(movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
     let s = movingSprite.sprite;
     if (!s.isStatic()) s.setHitbox();
     if (!camera.isUpdated()) camera.update();
@@ -656,7 +656,7 @@ const defaultScreenEdgeCollisions: ScreenEdgeCollisionHandler = function (moving
     }
 }
 
-const defaultSpriteCollisions: SpriteCollisionHandler = function (
+ function defaultSpriteCollisions (
     movedSprites: MovingSprite[],
     handlers: scene.OverlapHandler[],
     map: sprites.SpriteMap
@@ -706,7 +706,7 @@ const defaultSpriteCollisions: SpriteCollisionHandler = function (
     }
 }
 
-const defaultOnXAxisCollision = function (
+function defaultOnXAxisCollision (
     collisionDirection: CollisionDirection,
     collidedTiles: sprites.StaticObstacle[],
     s: Sprite,
@@ -746,7 +746,7 @@ const defaultOnXAxisCollision = function (
     }
 }
 
-const defaultOnYAxisCollision = function(collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) {
+function defaultOnYAxisCollision(collisionDirection: CollisionDirection, collidedTiles: sprites.StaticObstacle[], s: Sprite, tm: tiles.TileMap, movingSprite: MovingSprite) {
     for (const tile of collidedTiles) {
         if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
             s.runUserCollisionHandlers(collisionDirection, tile, tm);
@@ -760,7 +760,7 @@ const defaultOnYAxisCollision = function(collisionDirection: CollisionDirection,
         // apply normal updates
         if (s.flags & sprites.Flag.BounceOnWall) {
             if (
-                (!(collisionDirection === CollisionDirection.Bottom) && s.vy < 0) || 
+                (!(collisionDirection === CollisionDirection.Bottom) && s.vy < 0) ||
                 (collisionDirection === CollisionDirection.Bottom && s.vy > 0)
             ) {
                 s._vy = Fx.neg(s._vy);
