@@ -19,7 +19,7 @@ So that you can move the servo shaft very precisely, you get to use microseconds
 
 ### Continuous rotation
 
-There is another type of servo called a _continuous rotation_ servo that might look the same as a regular servo. It's different because the shaft doesn't stop at a particular position. In this case, the pulse you send to the servo doesn't mean position, but instead it's a speed number. The shaft keeps rotating if you send a pulse number other than `1500` milliseconds to the servo. Instead of being an angle of rotation, the duration is a speed rating in one of the directions. The `1000` microseconds is full speed rotating to the left and `2000` microseconds is full speed rotating to the right. The number `1500` microseconds is no rotation in any direction.
+There is another type of servo called a _continuous rotation_ servo that might look the same as a regular servo. It's different because the shaft doesn't stop at a particular position. In this case, the pulse you send to the servo doesn't mean position, but instead it's a speed number. The shaft keeps rotating if you send a pulse number other than `1500` microseconds to the servo. Instead of being an angle of rotation, the duration is a speed rating in one of the directions. The `1000` microseconds is full speed rotating to the left and `2000` microseconds is full speed rotating to the right. A number of `1500` microseconds means no rotation in any direction.
 
 #### ~hint
 
