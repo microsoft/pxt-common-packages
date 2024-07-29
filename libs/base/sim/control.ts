@@ -1,7 +1,7 @@
 namespace pxsim.pxtcore {
     // TODO: add in support for mode, as in CODAL
     export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
-        board().bus.listen(id, evid, handler);
+        board().bus.listen(id, evid, handler, mode);
     }
 
     export function deepSleep() {
