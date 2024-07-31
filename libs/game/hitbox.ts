@@ -88,15 +88,8 @@ namespace game {
         overlapsWith(other: Hitbox): boolean {
             this.updateIfInvalid();
             other.updateIfInvalid();
-            if (this.contains(other.left, other.top)) return true;
-            if (this.contains(other.left, other.bottom)) return true;
-            if (this.contains(other.right, other.top)) return true;
-            if (this.contains(other.right, other.bottom)) return true;
-            if (other.contains(this.left, this.top)) return true;
-            if (other.contains(this.left, this.bottom)) return true;
-            if (other.contains(this.right, this.top)) return true;
-            if (other.contains(this.right, this.bottom)) return true;
-            return false;
+            return !(this.left > other.right || this.right < other.left ||
+                    this.top > other.bottom || this.bottom < other.top)
         }
     }
 
