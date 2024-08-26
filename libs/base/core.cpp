@@ -1338,8 +1338,26 @@ namespace Math_ {
 //%
 TNumber pow(TNumber x, TNumber y) {
 #ifdef PXT_POWI
-    // regular pow() from math.h is 4k of code
-    return fromDouble(__builtin_powi(toDouble(x), toInt(y)));
+    // regular pow() from math.h is 4k of code, but it can
+    // also be expressed as exp(y * log(x)) which is less
+    // performant than pow() but doesn't increase code size
+    double dx = toDouble(x);
+    double dy = toDouble(y);
+
+    // shortcut to integer pow if y is an integer
+    if (::floor(dy) == dy) {
+        return fromDouble(__builtin_powi(dx, dy));
+    }
+    if (dx > 0) {
+        return fromDouble(::exp(dy * ::log(dx)));
+    }
+    if (dx == 0) {
+        if (dy < 0) {
+            return fromDouble(HUGE_VAL);
+        }
+        return x;
+    }
+    return fromDouble(::log(dx));
 #else
     return fromDouble(::pow(toDouble(x), toDouble(y)));
 #endif
