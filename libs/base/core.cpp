@@ -1353,6 +1353,7 @@ TNumber pow(TNumber x, TNumber y) {
     }
     if (dx == 0) {
         if (dy < 0) {
+            // positive infinity
             return fromDouble(HUGE_VAL);
         }
         return x;
