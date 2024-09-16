@@ -396,7 +396,9 @@ namespace controller {
 
         __update(dtms: number) {
             dtms = dtms | 0;
-            this.buttons.forEach(btn => btn.__update(dtms));
+            for (const button of this.buttons) {
+                button.__update(dtms);
+            }
         }
 
         serialize(offset: number): Buffer {
