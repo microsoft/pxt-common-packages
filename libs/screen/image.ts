@@ -1,6 +1,13 @@
 type color = number
 
 namespace image {
+    export enum Dimension {
+        //% block="width"
+        Width,
+        //% block="height"
+        Height
+    }
+
     export function repeatY(count: number, image: Image) {
         let arr = [image]
         while (--count > 0)
@@ -23,6 +30,24 @@ namespace image {
             y += img.height
         }
         return r
+    }
+
+    /**
+     * Returns the width or height of a picture.
+     *
+     * @param picture The picture to get the width or height of
+     * @param dimension The dimension to get
+     * @returns
+     */
+    //% blockId=image_get_dimension
+    //% group="Create"
+    //% blockNamespace="images"
+    //% block="$picture $dimension"
+    //% picture.shadow=variables_get
+    //% picture.defl=picture
+    export function getDimension(picture: Image, dimension: Dimension) {
+        if (dimension === Dimension.Width) return picture.width;
+        else return picture.height;
     }
 }
 
