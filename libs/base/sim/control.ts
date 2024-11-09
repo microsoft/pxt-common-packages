@@ -43,6 +43,13 @@ namespace pxsim.control {
         })
         const cb = getResume();
     }
+    export function singleSimulator() {
+        pxsim.Runtime.postMessage(<pxsim.SimulatorCommandMessage>{
+            type: "simulator",
+            command: "single"
+        })
+        const cb = getResume();
+    }
     export function waitMicros(micros: number) {
         thread.pause(micros / 1000); // it prempts not much we can do here.
     }
