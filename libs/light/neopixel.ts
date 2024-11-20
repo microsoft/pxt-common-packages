@@ -9,7 +9,9 @@ const enum NeoPixelMode {
     //% block="RGB (RGB format)"
     RGB_RGB = 3,
     //% block="APA102"
-    APA102 = 4
+    APA102 = 4,
+    //% block="RGB (BGR format)"
+    RGB_BGR = 5,
 }
 
 const enum LightMove {
@@ -287,6 +289,11 @@ namespace light {
                     red = this.buf[offset + 0];
                     green = this.buf[offset + 1];
                     blue = this.buf[offset + 2];
+                    break;
+                case NeoPixelMode.RGB_BGR:
+                    blue = this.buf[offset + 0];
+                    green = this.buf[offset + 1];
+                    red = this.buf[offset + 2];
                     break;
                 case NeoPixelMode.APA102:
                     blue = this.buf[offset + 1];
@@ -885,6 +892,11 @@ namespace light {
                     b[offset] = red;
                     b[offset + 1] = green;
                     b[offset + 2] = blue;
+                    break;
+                case NeoPixelMode.RGB_BGR:
+                    b[offset] = blue;
+                    b[offset + 1] = green;
+                    b[offset + 2] = red;
                     break;
                 case NeoPixelMode.APA102:
                     // https://cdn-shop.adafruit.com/datasheets/APA102.pdf
