@@ -861,15 +861,6 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
     return drawImageCore(img, other, x, y, -1);
 }
 
-// Image_ format (legacy)
-//  byte 0: magic 0xe4 - 4 bit color; 0xe1 is monochromatic
-//  byte 1: width in pixels
-//  byte 2: height in pixels
-//  byte 3: padding (should be zero)
-//  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit
-//  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
-
-
 struct PinnedRefImage {
     uint32_t addr;
     RefImage *img;
@@ -894,6 +885,14 @@ void addImage(uint32_t addr, RefImage *img) {
     pinnedRefImages = p;
     registerGCObj(img);
 }
+
+// Image_ format (legacy)
+//  byte 0: magic 0xe4 - 4 bit color; 0xe1 is monochromatic
+//  byte 1: width in pixels
+//  byte 2: height in pixels
+//  byte 3: padding (should be zero)
+//  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit
+//  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 Image_ convertAndWrap(Buffer buf) {
     auto img = findImage((uint32_t)buf->data);
