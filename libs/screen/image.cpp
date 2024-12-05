@@ -864,7 +864,7 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 struct PinnedRefImage {
     uint32_t addr;
     RefImage *img;
-    PinnedImage *next;
+    PinnedRefImage *next;
 };
 
 PinnedRefImage* pinnedRefImages = NULL;
