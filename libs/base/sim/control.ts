@@ -48,7 +48,6 @@ namespace pxsim.control {
             type: "simulator",
             command: "single"
         })
-        const cb = getResume();
     }
     export function waitMicros(micros: number) {
         thread.pause(micros / 1000); // it prempts not much we can do here.
