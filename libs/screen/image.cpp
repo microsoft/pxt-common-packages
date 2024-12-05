@@ -869,10 +869,40 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 //  byte 4...N: data 4 bits per pixels, high order nibble printed first, lines aligned to 32 bit
 //  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
+
+struct PinnedRefImage {
+    uint32_t addr;
+    RefImage *img;
+    PinnedImage *next;
+};
+
+PinnedRefImage* pinnedRefImages = NULL;
+
+RefImage* findImage(uint32_t addr) {
+    for (auto p = pinnedRefImages; p; p = p->next) {
+        if (p->addr == addr)
+            return p->img;
+    }
+    return NULL;
+}
+
+void addImage(uint32_t addr, RefImage *img) {
+    auto p = (PinnedRefImage *)GC_ALLOC_BLOCK(sizeof(PinnedRefImage));
+    p->addr = addr;
+    p->img = img;
+    p->next = pinnedRefImages;
+    pinnedRefImages = p;
+    registerGCObj(img);
+}
+
 Image_ convertAndWrap(Buffer buf) {
+    auto img = findImage((uint32_t)buf->data);
+    if (img)
+        return img;
     if (isValidImage(buf)) {
         auto r = NEW_GC(RefImage, buf);
         r.makeWritable();
+        addImage((uint32_t)buf->data, r);
         return r;
     }
 
