@@ -869,6 +869,8 @@ struct PinnedRefImage {
 
 PinnedRefImage* pinnedRefImages = NULL;
 
+// TODO: limit the size of the list
+
 RefImage* findImage(uint32_t addr) {
     for (auto p = pinnedRefImages; p; p = p->next) {
         if (p->addr == addr)
