@@ -870,8 +870,11 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 //  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 Image_ convertAndWrap(Buffer buf) {
-    if (isValidImage(buf))
-        return NEW_GC(RefImage, buf);
+    if (isValidImage(buf)) {
+        auto r = NEW_GC(RefImage, buf);
+        r.makeWritable();
+        return r;
+    }
 
     // What follows in this function is mostly dead code, except if people construct image buffers
     // by hand. Probably safe to remove in a year (middle of 2020) or so. When removing, also remove
