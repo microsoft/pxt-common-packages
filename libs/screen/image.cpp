@@ -1,5 +1,7 @@
 #include "pxt.h"
 
+extern "C" void *xmalloc(size_t sz);
+
 #if IMAGE_BITS == 1
 // OK
 #elif IMAGE_BITS == 4
@@ -880,7 +882,7 @@ RefImage* findImage(uint32_t addr) {
 }
 
 void addImage(uint32_t addr, RefImage *img) {
-    auto p = (PinnedRefImage *)GC_ALLOC_BLOCK(sizeof(PinnedRefImage));
+    auto p = (PinnedRefImage *)xmalloc(sizeof(PinnedRefImage));
     p->addr = addr;
     p->img = img;
     p->next = pinnedRefImages;
@@ -902,7 +904,7 @@ Image_ convertAndWrap(Buffer buf) {
         return img;
     if (isValidImage(buf)) {
         auto r = NEW_GC(RefImage, buf);
-        r.makeWritable();
+        r->makeWritable();
         addImage((uint32_t)buf->data, r);
         return r;
     }
