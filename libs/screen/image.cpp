@@ -1,5 +1,7 @@
 #include "pxt.h"
 
+extern "C" void *xmalloc(size_t sz);
+
 #if IMAGE_BITS == 1
 // OK
 #elif IMAGE_BITS == 4
@@ -861,6 +863,33 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
     return drawImageCore(img, other, x, y, -1);
 }
 
+struct PinnedRefImage {
+    uint32_t addr;
+    RefImage *img;
+    PinnedRefImage *next;
+};
+
+PinnedRefImage* pinnedRefImages = NULL;
+
+// TODO: limit the size of the list
+
+RefImage* findImage(uint32_t addr) {
+    for (auto p = pinnedRefImages; p; p = p->next) {
+        if (p->addr == addr)
+            return p->img;
+    }
+    return NULL;
+}
+
+void addImage(uint32_t addr, RefImage *img) {
+    auto p = (PinnedRefImage *)xmalloc(sizeof(PinnedRefImage));
+    p->addr = addr;
+    p->img = img;
+    p->next = pinnedRefImages;
+    pinnedRefImages = p;
+    registerGCObj(img);
+}
+
 // Image_ format (legacy)
 //  byte 0: magic 0xe4 - 4 bit color; 0xe1 is monochromatic
 //  byte 1: width in pixels
@@ -870,8 +899,15 @@ bool overlapsWith(Image_ img, Image_ other, int x, int y) {
 //  words byte 4...N: data 1 bit per pixels, high order bit printed first, lines aligned to byte
 
 Image_ convertAndWrap(Buffer buf) {
-    if (isValidImage(buf))
-        return NEW_GC(RefImage, buf);
+    auto img = findImage((uint32_t)buf->data);
+    if (img)
+        return img;
+    if (isValidImage(buf)) {
+        auto r = NEW_GC(RefImage, buf);
+        r->makeWritable();
+        addImage((uint32_t)buf->data, r);
+        return r;
+    }
 
     // What follows in this function is mostly dead code, except if people construct image buffers
     // by hand. Probably safe to remove in a year (middle of 2020) or so. When removing, also remove
