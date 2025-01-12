@@ -815,7 +815,7 @@ class Sprite extends sprites.BaseSprite {
         this._obstacles = [];
     }
 
-    registerObstacle(direction: CollisionDirection, other: sprites.Obstacle, tm?: tiles.TileMap) {
+    runUserCollisionHandlers(direction: CollisionDirection, other: sprites.Obstacle, tm?: tiles.TileMap) {
         this._obstacles[direction] = other;
         const collisionHandlers = game.currentScene().collisionHandlers[other.tileIndex];
         const wallCollisionHandlers = game.currentScene().wallCollisionHandlers;
