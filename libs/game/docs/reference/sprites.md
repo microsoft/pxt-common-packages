@@ -92,7 +92,7 @@ sprites.onOverlap(0, 0, function (sprite, otherSprite) {})
 [set kind](/reference/sprites/sprite/set-kind),
 [kind](/reference/sprites/sprite/kind),
 [start effect](/reference/sprites/sprite/start-effect),
-[clear particles](/reference/sprites/sprite/clear-particles),
+[clear particles](/reference/effects/clear-particles),
 [on created](/reference/sprites/on-created),
 [on destroyed](/reference/sprites/on-destroyed),
 [on overlap](/reference/sprites/on-overlap),
