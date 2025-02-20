@@ -24,4 +24,9 @@ int getTextPromptSelectionStart() {
 int getTextPromptSelectionEnd() {
     return 0;
 }
+
+//%
+bool isSystemKeyboardSupported() {
+    return false;
+}
 }

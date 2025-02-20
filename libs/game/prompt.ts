@@ -1,6 +1,7 @@
 namespace game {
     export const _KEYBOARD_CHANGE_EVENT = 7339;
     export const _KEYBOARD_ENTER_EVENT = 7340;
+    export const _KEYBOARD_CANCEL_EVENT = 7341;
 
     export interface PromptTheme {
         colorPrompt: number;
@@ -40,8 +41,6 @@ namespace game {
     const font = image.font8; // FONT8-TODO
     //% whenUsed=true
     const PADDING = 4;
-    //% whenUsed=true
-    const PROMPT_LINE_SPACING = 2;
 
     //% whenUsed=true
     const NUM_LETTERS = 26;
@@ -71,15 +70,13 @@ namespace game {
     //% whenUsed=true
     const BLANK_PADDING = 1;
     //% whenUsed=true
-    const ROW_LEFT = PADDING + CELL_WIDTH / 2 + Math.floor((CONTENT_WIDTH - (CELL_WIDTH * ALPHABET_ROW_LENGTH)) / 2);
+    const ROW_LEFT = PADDING + Math.floor((CONTENT_WIDTH - (CELL_WIDTH * ALPHABET_ROW_LENGTH)) / 2);
 
     // Dimensions of the bottom bar
     //% whenUsed=true
     const BOTTOM_BAR_ALPHABET_MARGIN = 4;
     //% whenUsed=true
     const BOTTOM_BAR_HEIGHT = PADDING + BOTTOM_BAR_ALPHABET_MARGIN + CELL_HEIGHT;
-    //% whenUsed=true
-    const BOTTOM_BAR_TOP = screen.height - BOTTOM_BAR_HEIGHT;
     //% whenUsed=true
     const BOTTOM_BAR_BUTTON_WIDTH = PADDING * 2 + font.charWidth * 3;
     //% whenUsed=true
@@ -105,10 +102,6 @@ namespace game {
     //% whenUsed=true
     const INPUT_TOP = ALPHABET_TOP - INPUT_HEIGHT - ALPHABET_INPUT_MARGIN;
 
-    // Dimensions of prompt message area
-    //% whenUsed=true
-    const PROMPT_HEIGHT = INPUT_TOP - CONTENT_TOP;
-
     //% whenUsed=true
     const lowerShiftText = "ABC";
     //% whenUsed=true
@@ -126,25 +119,18 @@ namespace game {
         answerLength: number;
         result: string;
 
-        private cursor: Sprite;
-        private shiftButton: Sprite;
-        private confirmButton: Sprite;
+        protected confirmPressed: boolean;
+        protected cursorRow: number;
+        protected cursorColumn: number;
+        protected upper: boolean;
+        protected useSystemKeyboard: boolean;
 
-        private letters: Sprite[];
-        private inputs: Sprite[];
+        protected renderable: scene.Renderable;
+        protected selectionStart: number;
+        protected selectionEnd: number;
 
-        private confirmPressed: boolean;
-        private cursorRow: number;
-        private cursorColumn: number;
-        private upper: boolean;
-        private inputIndex: number;
-        private blink: boolean;
-        private frameCount: number;
-        private useSystemKeyboard: boolean;
-
-        private renderable: scene.Renderable;
-        private selectionStart: number;
-        private selectionEnd: number;
+        protected keyboardRows: number;
+        protected keyboardColumns: number;
 
         private changeTime = 0;
 
@@ -168,29 +154,30 @@ namespace game {
             this.cursorRow = 0;
             this.cursorColumn = 0;
             this.upper = false;
-            this.inputIndex = 0;
+            this.result = "";
+            this.keyboardColumns = ALPHABET_ROW_LENGTH;
+            this.keyboardRows = NUM_ROWS;
+            this.selectionStart = 0;
+            this.selectionEnd = 0;
         }
 
         show(message: string, answerLength: number, useSystemKeyboard = false) {
             this.message = message;
             this.answerLength = answerLength;
-            this.inputIndex = 0;
 
             controller._setUserEventsEnabled(false);
             game.pushScene()
 
-            if (useSystemKeyboard && control.deviceDalVersion() === "sim") {
+            this.createRenderable();
+            this.confirmPressed = false;
+
+            if (useSystemKeyboard && control.deviceDalVersion() === "sim" && helpers._isSystemKeyboardSupported()) {
                 this.useSystemKeyboard = true;
-                this.draw();
-                helpers._promptForText(this.answerLength, false);
+                helpers._promptForText(this.answerLength, this.numbersOnly());
                 this.selectionEnd = 0;
                 this.selectionStart = 0;
                 control.onEvent(_KEYBOARD_CHANGE_EVENT, 0, () => {
                     this.result = helpers._getTextPromptString().substr(0, this.answerLength);
-
-                    for (let i = 0; i < this.inputs.length; i++) {
-                        this.drawInput(this.inputs[i].image, this.result.charAt(i) || "", this.theme.colorInput)
-                    }
 
                     this.changeTime = game.runtime();
 
@@ -198,16 +185,32 @@ namespace game {
                     this.selectionEnd = helpers._getTextPromptSelectionEnd();
                 })
 
-                control.waitForEvent(_KEYBOARD_ENTER_EVENT, 0);
+                let cancelled = false;
+                let finished = false;
+
+                control.onEvent(_KEYBOARD_CANCEL_EVENT, 0, () => {
+                    cancelled = true;
+                });
+
+                control.onEvent(_KEYBOARD_ENTER_EVENT, 0, () => {
+                    finished = true;
+                });
+
+                pauseUntil(() => cancelled || finished);
+
+                if (cancelled) {
+                    this.useSystemKeyboard = false;
+                    this.selectionStart = this.result.length;
+                    this.selectionEnd = this.selectionStart;
+                    this.registerHandlers();
+                    pauseUntil(() => this.confirmPressed);
+                }
             }
             else {
                 this.useSystemKeyboard = false;
-                this.draw();
                 this.registerHandlers();
-                this.confirmPressed = false;
                 pauseUntil(() => this.confirmPressed);
             }
-
 
             game.popScene();
             controller._setUserEventsEnabled(true);
@@ -215,189 +218,170 @@ namespace game {
             return this.result;
         }
 
-        private draw() {
-            this.drawPromptText();
-            this.drawInputarea();
+        protected numbersOnly() {
+            return false;
+        }
 
-            if (!this.useSystemKeyboard) {
-                this.drawKeyboard();
-                this.drawBottomBar();
+        protected createRenderable() {
+            if (this.renderable) {
+                this.renderable.destroy();
             }
 
-            this.renderable = scene.createRenderable(this.inputs[0].z - 1, () => {
-                if (!this.useSystemKeyboard) return;
+            const promptText = new sprites.RenderText(this.message, CONTENT_WIDTH);
+            const systemKeyboardText = new sprites.RenderText("Type your response using your keyboard and hit ENTER", CONTENT_WIDTH);
 
-                if (this.selectionStart === this.selectionEnd) {
-                    const input = this.inputs[this.selectionStart];
-                    if (input && !(Math.idiv(game.runtime() - this.changeTime, 500) & 1)) {
-                        screen.fillRect(input.left, input.top, 1, input.height, this.theme.colorInput);
-                    }
+            this.renderable = scene.createRenderable(-1, () => {
+                promptText.draw(screen, (screen.width >> 1) - (promptText.width >> 1), CONTENT_TOP, this.theme.colorPrompt, 0, 2)
+                this.drawInputArea();
+
+                if (!this.useSystemKeyboard) {
+                    this.drawKeyboard();
+                    this.drawBottomBar();
+                    return;
                 }
-                else {
-                    let currentY = undefined;
-                    let startX = undefined;
-                    let endX = undefined;
-                    for (let i = this.selectionStart; i < this.selectionEnd; i++) {
-                        const current = this.inputs[i];
 
-                        if (!current) break;
-
-                        if (!currentY) {
-                            currentY = current.top;
-                            startX = current.left
-                            endX = current.right;
-                        }
-                        else if (current.top !== currentY) {
-                            screen.fillRect(startX, currentY, endX - startX, this.inputs[0].height, this.theme.colorCursor);
-
-                            currentY = current.top;
-                            startX = current.left
-                            endX = current.right;
-                        }
-                        else {
-                            endX = current.right;
-                        }
-                    }
-
-                    screen.fillRect(startX, currentY, endX - startX, this.inputs[0].height, this.theme.colorCursor);
-                }
+                screen.fillRect(0, screen.height - (PADDING << 1) - systemKeyboardText.height, screen.width, screen.height, this.theme.colorBottomBackground);
+                systemKeyboardText.draw(screen, PADDING, screen.height - PADDING - systemKeyboardText.height, this.theme.colorBottomText);
             });
         }
 
-        private drawPromptText() {
-            const prompt = sprites.create(layoutText(this.message, CONTENT_WIDTH, PROMPT_HEIGHT, this.theme.colorPrompt), -1);
-            prompt.x = screen.width / 2
-            prompt.y = CONTENT_TOP + Math.floor((PROMPT_HEIGHT - prompt.height) / 2) + Math.floor(prompt.height / 2);
-        }
-
-        private drawInputarea() {
+        protected drawInputArea() {
             const answerLeft = ROW_LEFT + Math.floor(
                 ((CELL_WIDTH * ALPHABET_ROW_LENGTH) -
                     CELL_WIDTH * Math.min(this.answerLength, ALPHABET_ROW_LENGTH)) / 2);
 
-            this.inputs = [];
             for (let i = 0; i < this.answerLength; i++) {
-                const blank = image.create(CELL_WIDTH, CELL_HEIGHT);
-                this.drawInput(blank, "", this.theme.colorInput);
-
                 const col = i % ALPHABET_ROW_LENGTH;
                 const row = Math.floor(i / ALPHABET_ROW_LENGTH);
 
-                const s = sprites.create(blank, -1);
-                s.x = answerLeft + col * CELL_WIDTH;
-                s.y = INPUT_TOP + row * CELL_HEIGHT;
-                this.inputs.push(s);
+                if (this.selectionStart !== this.selectionEnd && i >= this.selectionStart && i < this.selectionEnd) {
+                    screen.fillRect(
+                        answerLeft + col * CELL_WIDTH,
+                        INPUT_TOP + row * CELL_HEIGHT,
+                        CELL_WIDTH,
+                        CELL_HEIGHT,
+                        this.theme.colorCursor
+                    );
+                }
+
+                screen.fillRect(
+                    answerLeft + col * CELL_WIDTH + BLANK_PADDING,
+                    INPUT_TOP + row * CELL_HEIGHT + CELL_HEIGHT - 1,
+                    CELL_WIDTH - BLANK_PADDING * 2,
+                    1,
+                    !this.useSystemKeyboard && !this.blink() && i === this.selectionStart ? this.theme.colorInputHighlighted : this.theme.colorInput
+                );
+
+                if (i < this.result.length) {
+                    const char = this.result.charAt(i);
+                    screen.print(
+                        char,
+                        answerLeft + col * CELL_WIDTH + LETTER_OFFSET_X,
+                        INPUT_TOP + row * CELL_HEIGHT + LETTER_OFFSET_Y,
+                        this.theme.colorInputText,
+                        font
+                    );
+                }
+            }
+
+            // draw the blinking text cursor
+            if (this.useSystemKeyboard) {
+                if (this.selectionStart === this.selectionEnd && this.selectionStart < this.answerLength) {
+                    const col = this.selectionStart % ALPHABET_ROW_LENGTH;
+                    const row = Math.floor(this.selectionStart / ALPHABET_ROW_LENGTH);
+                    if (!this.blink()) {
+                        screen.fillRect(
+                            answerLeft + col * CELL_WIDTH,
+                            INPUT_TOP + row * CELL_HEIGHT,
+                            1,
+                            CELL_HEIGHT,
+                            this.theme.colorCursor
+                        );
+                    }
+                }
             }
         }
 
-        private drawKeyboard() {
-            const cursorImage = image.create(CELL_WIDTH, CELL_HEIGHT);
-            cursorImage.fill(this.theme.colorCursor);
-            this.cursor = sprites.create(cursorImage, -1);
-            this.cursor.z = -1;
-            this.updateCursor();
+        protected drawKeyboard() {
+            const top = screen.height - BOTTOM_BAR_HEIGHT - this.keyboardRows * CELL_HEIGHT - PADDING;
+            const left = (screen.width >> 1) - ((CELL_WIDTH * this.keyboardColumns) >> 1)
+            for (let j = 0; j < this.keyboardRows * this.keyboardColumns; j++) {
+                const col = j % this.keyboardColumns;
+                const row = Math.idiv(j, this.keyboardColumns);
 
-            this.letters = [];
-            for (let j = 0; j < 36; j++) {
-                const letter = image.create(CELL_WIDTH, CELL_HEIGHT);
+                if (col === this.cursorColumn && row === this.cursorRow) {
+                    screen.fillRect(
+                        left + col * CELL_WIDTH,
+                        top + row * CELL_HEIGHT,
+                        CELL_WIDTH,
+                        CELL_HEIGHT,
+                        this.theme.colorCursor
+                    )
+                }
 
-                const col2 = j % ALPHABET_ROW_LENGTH;
-                const row2 = Math.floor(j / ALPHABET_ROW_LENGTH);
-
-                const t = sprites.create(letter, -1);
-                t.x = ROW_LEFT + col2 * CELL_WIDTH;
-                t.y = ALPHABET_TOP + row2 * CELL_HEIGHT;
-
-                this.letters.push(t);
+                screen.print(
+                    this.getSymbolForIndex(j),
+                    left + col * CELL_WIDTH + LETTER_OFFSET_X,
+                    top + row * CELL_HEIGHT + LETTER_OFFSET_Y,
+                    this.theme.colorAlphabet
+                )
             }
-            this.updateKeyboard();
         }
 
-        private drawBottomBar() {
-            const bg = image.create(screen.width, BOTTOM_BAR_HEIGHT);
-            bg.fill(this.theme.colorBottomBackground);
-
-            const bgSprite = sprites.create(bg, -1);
-            bgSprite.x = screen.width / 2;
-            bgSprite.y = BOTTOM_BAR_TOP + BOTTOM_BAR_HEIGHT / 2;
-            bgSprite.z = -1;
-
-            this.shiftButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT), -1);
-            this.shiftButton.x = Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
-            this.shiftButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
-
-            this.confirmButton = sprites.create(image.create(BOTTOM_BAR_BUTTON_WIDTH, BOTTOM_BAR_HEIGHT), -1);
-            this.confirmButton.x = CONFIRM_BUTTON_LEFT + Math.floor(BOTTOM_BAR_BUTTON_WIDTH / 2);
-            this.confirmButton.y = BOTTOM_BAR_TOP + Math.ceil(BOTTOM_BAR_HEIGHT / 2);
-
-            this.updateButtons();
+        protected drawBottomBar() {
+            this.drawBottomBarBackground();
+            this.drawShift(this.cursorRow === 3 && !(this.cursorColumn & 1));
+            this.drawConfirm(this.cursorRow === 3 && !!(this.cursorColumn & 1));
         }
 
-        private updateButtons() {
-            if (this.cursorRow === 3 && this.cursorColumn % 2 !== 1) {
-                this.shiftButton.image.fill(this.theme.colorCursor);
-            }
-            else {
-                this.shiftButton.image.fill(this.theme.colorBottomBackground);
+        protected drawBottomBarBackground() {
+            screen.fillRect(0, screen.height - BOTTOM_BAR_HEIGHT, screen.width, BOTTOM_BAR_HEIGHT, this.theme.colorBottomBackground);
+        }
+
+        protected drawShift(highlighted: boolean) {
+            if (highlighted) {
+                screen.fillRect(
+                    0,
+                    screen.height - BOTTOM_BAR_HEIGHT,
+                    BOTTOM_BAR_BUTTON_WIDTH,
+                    BOTTOM_BAR_HEIGHT,
+                    this.theme.colorCursor
+                );
             }
 
+            let shiftText = lowerShiftText;
             if (this.upper) {
-                this.shiftButton.image.print(upperShiftText, BOTTOM_BAR_SHIFT_X, BOTTOM_BAR_TEXT_Y);
+                shiftText = upperShiftText;
             }
-            else {
-                this.shiftButton.image.print(lowerShiftText, BOTTOM_BAR_SHIFT_X, BOTTOM_BAR_TEXT_Y);
-            }
-
-
-            if (this.cursorRow === 3 && this.cursorColumn % 2) {
-                this.confirmButton.image.fill(this.theme.colorCursor);
-            }
-            else {
-                this.confirmButton.image.fill(this.theme.colorBottomBackground);
-            }
-
-            this.confirmButton.image.print(confirmText, BOTTOM_BAR_CONFIRM_X, BOTTOM_BAR_TEXT_Y);
+            screen.print(
+                shiftText,
+                BOTTOM_BAR_SHIFT_X,
+                screen.height - BOTTOM_BAR_HEIGHT + BOTTOM_BAR_TEXT_Y,
+                this.theme.colorBottomText
+            )
         }
 
-        private updateCursor() {
-            if (this.cursorRow === 3) {
-                this.cursor.image.fill(0);
-                this.updateButtons();
+        protected drawConfirm(highlighted: boolean) {
+            if (highlighted) {
+                screen.fillRect(
+                    CONFIRM_BUTTON_LEFT,
+                    screen.height - BOTTOM_BAR_HEIGHT,
+                    BOTTOM_BAR_BUTTON_WIDTH,
+                    BOTTOM_BAR_HEIGHT,
+                    this.theme.colorCursor
+                );
             }
-            else {
-                this.cursor.x = ROW_LEFT + this.cursorColumn * CELL_WIDTH;
-                this.cursor.y = ALPHABET_TOP + this.cursorRow * CELL_HEIGHT;
-            }
+
+            screen.print(
+                confirmText,
+                CONFIRM_BUTTON_LEFT + BOTTOM_BAR_CONFIRM_X,
+                screen.height - BOTTOM_BAR_HEIGHT + BOTTOM_BAR_TEXT_Y,
+                this.theme.colorBottomText
+            )
         }
 
-        private updateSelectedInput() {
-            if (this.inputIndex < this.answerLength) {
-                const u = this.inputs[this.inputIndex];
-                if (this.blink) {
-                    this.drawInput(u.image, "", this.theme.colorInput);
-                }
-                else {
-                    this.drawInput(u.image, "", this.theme.colorInputHighlighted)
-                }
-            }
-        }
-
-        private updateKeyboard() {
-            const len = this.letters.length;
-            for (let k = 0; k < len; k++) {
-                const img = this.letters[k].image;
-                img.fill(0);
-                img.print(getCharForIndex(k, this.upper), LETTER_OFFSET_X, LETTER_OFFSET_Y);
-            }
-        }
-
-        private drawInput(img: Image, char: string, color: number) {
-            img.fill(0);
-            img.fillRect(BLANK_PADDING, CELL_HEIGHT - 1, CELL_WIDTH - BLANK_PADDING * 2, 1, color)
-
-            if (char) {
-                img.print(char, LETTER_OFFSET_X, LETTER_OFFSET_Y, this.theme.colorInputText, font);
-            }
+        protected getSymbolForIndex(index: number) {
+            return getCharForIndex(index, this.upper);
         }
 
         private registerHandlers() {
@@ -424,79 +408,56 @@ namespace game {
             controller.B.onEvent(SYSTEM_KEY_DOWN, () => {
                 this.delete();
             });
-
-
-            this.frameCount = 0;
-            this.blink = true;
-
-            game.onUpdate(() => {
-                this.frameCount = (this.frameCount + 1) % 30;
-
-                if (this.frameCount === 0) {
-                    this.blink = !this.blink;
-
-                    this.updateSelectedInput();
-                }
-            })
         }
 
-        private moveVertical(up: boolean) {
+        protected moveVertical(up: boolean) {
             if (up) {
-                if (this.cursorRow === 3) {
-                    this.cursor.image.fill(this.theme.colorCursor);
-                    this.cursorRow = 2;
+                if (this.cursorRow === this.keyboardRows) {
+                    this.cursorRow = this.keyboardRows - 1;
 
                     if (this.cursorColumn % 2) {
-                        this.cursorColumn = ALPHABET_ROW_LENGTH - 1;
+                        this.cursorColumn = this.keyboardColumns - 1;
                     }
                     else {
                         this.cursorColumn = 0;
                     }
-
-                    this.updateButtons();
                 }
                 else {
                     this.cursorRow = Math.max(0, this.cursorRow - 1);
                 }
             }
             else {
-                this.cursorRow = Math.min(3, this.cursorRow + 1);
+                this.cursorRow = Math.min(this.keyboardRows, this.cursorRow + 1);
 
-                if (this.cursorRow === 3) {
+                if (this.cursorRow === this.keyboardRows) {
                     // Go to closest button
                     this.cursorColumn = this.cursorColumn > 5 ? 1 : 0;
                 }
             }
-
-            this.updateCursor();
         }
 
-        private moveHorizontal(right: boolean) {
+        protected moveHorizontal(right: boolean) {
             if (right) {
-                this.cursorColumn = (this.cursorColumn + 1) % ALPHABET_ROW_LENGTH;
+                this.cursorColumn = (this.cursorColumn + 1) % this.keyboardColumns;
             }
             else {
-                this.cursorColumn = (this.cursorColumn + (ALPHABET_ROW_LENGTH - 1)) % ALPHABET_ROW_LENGTH;
+                this.cursorColumn = (this.cursorColumn + (this.keyboardColumns - 1)) % this.keyboardColumns;
             }
-
-            this.updateCursor();
         }
 
-        private confirm() {
+        protected confirm() {
             if (this.cursorRow === 3) {
                 if (this.cursorColumn % 2) {
                     this.confirmPressed = true;
                 }
                 else {
                     this.upper = !this.upper;
-                    this.updateKeyboard();
-                    this.updateButtons();
                 }
             }
             else {
-                if (this.inputIndex >= this.answerLength) return;
+                if (this.selectionStart >= this.answerLength) return;
 
-                const index = this.cursorColumn + this.cursorRow * ALPHABET_ROW_LENGTH
+                const index = this.cursorColumn + this.cursorRow * this.keyboardColumns
                 const letter = getCharForIndex(index, this.upper);
 
                 if (!this.result) {
@@ -506,102 +467,27 @@ namespace game {
                     this.result += letter;
                 }
 
-                const sprite = this.inputs[this.inputIndex];
+                this.changeTime = game.runtime();
+
                 this.changeInputIndex(1);
-                this.drawInput(sprite.image, letter, this.theme.colorInput);
             }
         }
 
-        private delete() {
-            if (this.inputIndex <= 0) return;
-
-            if (this.inputIndex < this.answerLength) {
-                this.drawInput(this.inputs[this.inputIndex].image, "", this.theme.colorInput);
-            }
+        protected delete() {
+            if (this.selectionStart <= 0) return;
 
             this.result = this.result.substr(0, this.result.length - 1);
-
             this.changeInputIndex(-1);
         }
 
-        private changeInputIndex(delta: number) {
-            this.inputIndex += delta;
-            this.frameCount = 0
-            this.blink = false;
-            this.updateSelectedInput();
-        }
-    }
-
-    function layoutText(message: string, width: number, height: number, color: number) {
-        const lineHeight = font.charHeight + PROMPT_LINE_SPACING;
-
-        const lineLength = Math.floor(width / font.charWidth);
-        const numLines = Math.floor(height / lineHeight);
-
-        let lines: string[] = [];
-        let word: string;
-        let line: string;
-
-        let pushWord = () => {
-            if (line) {
-                if (line.length + word.length + 1 > lineLength) {
-                    lines.push(line);
-                    line = word;
-                }
-                else {
-                    line = line + " " + word;
-                }
-            }
-            else {
-                line = word;
-            }
-
-            word = null;
+        protected changeInputIndex(delta: number) {
+            this.selectionStart += delta;
+            this.selectionEnd = this.selectionStart;
         }
 
-        for (let l = 0; l < message.length; l++) {
-            const char = message.charAt(l);
-
-            if (char === " ") {
-                if (word) {
-                    pushWord();
-                }
-                else {
-                    word = " ";
-                }
-            }
-            else if (!word) {
-                word = char;
-            }
-            else {
-                word += char;
-            }
+        protected blink() {
+            return Math.idiv(game.runtime() - this.changeTime, 500) & 1;
         }
-
-        if (word) {
-            pushWord();
-        }
-
-        if (line) {
-            lines.push(line);
-        }
-
-        let maxLineWidth = 0;
-        for (let m = 0; m < lines.length; m++) {
-            maxLineWidth = Math.max(maxLineWidth, lines[m].length);
-        }
-
-        const actualWidth = maxLineWidth * font.charWidth;
-        const actualHeight = lines.length * lineHeight;
-
-        const res = image.create(actualWidth, actualHeight);
-
-        for (let n = 0; n < lines.length; n++) {
-            if ((n + 1) > numLines) break;
-            res.print(lines[n], 0, n * lineHeight, color, font);
-        }
-
-        return res;
     }
 
     function getCharForIndex(index: number, upper: boolean) {

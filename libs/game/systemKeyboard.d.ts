@@ -17,4 +17,7 @@ declare namespace helpers {
 
     //% shim=Keyboard::getTextPromptSelectionEnd
     function _getTextPromptSelectionEnd(): number;
+
+    //% shim=Keyboard::isSystemKeyboardSupported
+    function _isSystemKeyboardSupported(): boolean;
 }
