@@ -241,7 +241,7 @@ namespace info {
         return players ? players.filter(item => item.impl.hasScore()) : [];
     }
 
-    export function saveAllScores() {
+    export function saveAllScores(scoringType: string) {
         const allScoresKey = "all-scores";
         let allScores: number[];
         const pws = playersWithScores();
@@ -252,7 +252,12 @@ namespace info {
             allScores = [];
         }
 
-        settings.writeJSON(allScoresKey, allScores);
+        const scoresObj = {
+            "allScores": allScores,
+            "scoringType": allScores.length ? scoringType : "None"
+        }
+
+        settings.writeJSON(allScoresKey, scoresObj);
     }
 
     export function winningPlayer(): PlayerInfo {

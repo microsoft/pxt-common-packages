@@ -56,6 +56,7 @@ mySprite.vy = 35
 
 ## See also #seealso
 
+[location](/reference/scene/location),
 [get tile location](/reference/scene/get-tile-location)
 
 ```jres

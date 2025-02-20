@@ -1,7 +1,7 @@
 namespace pxsim.pxtcore {
     // TODO: add in support for mode, as in CODAL
     export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
-        board().bus.listen(id, evid, handler);
+        board().bus.listen(id, evid, handler, mode);
     }
 
     export function deepSleep() {
@@ -42,6 +42,12 @@ namespace pxsim.control {
             controlReset: true
         })
         const cb = getResume();
+    }
+    export function singleSimulator() {
+        pxsim.Runtime.postMessage(<pxsim.SimulatorCommandMessage>{
+            type: "simulator",
+            command: "single"
+        })
     }
     export function waitMicros(micros: number) {
         thread.pause(micros / 1000); // it prempts not much we can do here.

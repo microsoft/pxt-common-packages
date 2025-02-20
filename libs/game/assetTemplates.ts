@@ -15,6 +15,10 @@ function tilemap16(lits: any, ...args: any[]): tiles.TileMapData { return null }
 //% pyConvertToTaggedTemplate
 function tilemap32(lits: any, ...args: any[]): tiles.TileMapData { return null }
 
+//% helper=getTilemapByName
+//% pyConvertToTaggedTemplate
+function tilemap4(lits: any, ...args: any[]): tiles.TileMapData { return null }
+
 namespace assets {
     //% helper=getTilemapByName
     //% pyConvertToTaggedTemplate

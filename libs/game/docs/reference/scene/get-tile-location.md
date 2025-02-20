@@ -50,6 +50,7 @@ forever(function () {
 
 ## See also #seealso
 
+[location](/reference/scene/location),
 [set tile at](/reference/scene/set-tile-at),
 [place on tile](/reference/scene/place-on-tile)
 

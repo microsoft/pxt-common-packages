@@ -3,14 +3,8 @@
 Get the current game countdown time.
 
 ```sig
-info.changeCountdownBy(0)
+info.countdown()
 ```
-
-The current game countdown time amount is increased by adding the change value when it is greater than zero (positive). If the change number is less than zero (negative), the game countdown is reduced by the value of the change number.
-
-## Parameters
-
-* **value**: a [number](/types/number) to set the game countdown by.
 
 ## Returns
 
