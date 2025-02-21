@@ -11,7 +11,7 @@ void cancelTextPrompt() {
 }
 
 //%
-ManagedString getTextPromptString() {
+char* getTextPromptString() {
     return NULL;
 }
 
