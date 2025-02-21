@@ -251,7 +251,7 @@ namespace sprites {
 
             if (sayLeft + width < 0 || sayTop + height < 0 || sayLeft > screen.width || sayTop > screen.height) return;
 
-            SpriteSayRenderer.drawSayFrame(sayLeft, sayTop, width, height, owner.x, owner.y, this.bgColor, screen);
+            SpriteSayRenderer.drawSayFrame(sayLeft, sayTop, width, height, owner.x - ox, owner.y - oy, this.bgColor, screen);
 
             if (height) {
                 if (this.animation) {
