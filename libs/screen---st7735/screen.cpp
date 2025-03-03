@@ -152,7 +152,7 @@ class WDisplay {
 
             // the device will run without shield when the following is specified in user program:
             // namespace userconfig { export const DISPLAY_CFG0 = 0x02000080 }
-            if (*cfg0 & 0x0200000) {
+            if (*cfg0 & 0x2000000) {
                 DMESG("74HC: no wait requested");
                 return DISPLAY_TYPE_ST7735;
             }
