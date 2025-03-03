@@ -133,7 +133,7 @@ static bool isSystem(const char *fn) {
 // NOTE: to get the required size, must call this function before
 // NOTE: any other function that calls mountedStorage
 //%
-void _askForSize(uint32_t size) {
+void _userCreate(uint32_t size) {
     DMESG("askForSize requested %d", size);
     auto s = mountedStorage(size);
     DMESG("askForSize got %d", s->fs.totalSize());

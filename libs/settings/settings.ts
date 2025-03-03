@@ -19,8 +19,8 @@ namespace settings {
     //% shim=settings::_get
     declare function _get(key: string): Buffer;
 
-    //% shim=settings::_askForSize
-    declare function _askForSize(n: number): void;
+    //% shim=settings::_userCreate
+    declare function _userCreate(n: number): void;
 
     //% shim=settings::_userClean
     declare function _userClean(): void;
@@ -71,6 +71,10 @@ namespace settings {
             // and panic - reset should hopefully recreate needed files
             control.panic(920)
         }
+    }
+
+    export function create(size: number) {
+        _userCreate(size)
     }
 
     /**
