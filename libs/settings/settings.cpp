@@ -20,7 +20,7 @@ class WStorage {
     FS fs;
     bool isMounted;
 
-    WStorage()
+    WStorage(uint32_t size)
         : flash(),
 #if defined(STM32F4)
           fs(flash, 0x8008000, SETTINGS_SIZE),
@@ -32,7 +32,7 @@ class WStorage {
           // micro:bit V2 memory map
           // https://github.com/lancaster-university/codal-microbit-v2/blob/master/docs/MemoryMap.md
           // 73000	CODAL scratch page (is used as temporary scratch by MicroBitFlash, MicroBitFileSystem and MicroBitStorage)
-          fs(flash, 0x73000 - SETTINGS_SIZE, SETTINGS_SIZE),
+          fs(flash, 0x73000 - (size == 0 ? SETTINGS_SIZE : size), (size == 0 ? SETTINGS_SIZE : size)),
 #elif defined(NRF52_SERIES)
 #define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
           fs(flash,
@@ -50,10 +50,16 @@ class WStorage {
         fs.minGCSpacing = 10000;
     }
 };
-SINGLETON(WStorage);
 
-static WStorage *mountedStorage() {
-    auto s = getWStorage();
+static WStorage *instWStorage;
+static WStorage *getWStorage(uint32_t size = 0) {
+    if (!instWStorage)
+        instWStorage = new WStorage(size);
+    return instWStorage;
+}
+
+static WStorage *mountedStorage(uint32_t size = 0) {
+    auto s = getWStorage(size);
     if (s->fs.tryMount())
         return s;
     s->fs.exists("foobar"); // forces mount and possibly format
@@ -122,6 +128,15 @@ Buffer _get(String key) {
 
 static bool isSystem(const char *fn) {
     return fn[0] == '#';
+}
+
+// NOTE: to get the required size, must call this function before
+// NOTE: any other function that calls mountedStorage
+//%
+void _askForSize(uint32_t size) {
+    DMESG("askForSize requested %d", size);
+    auto s = mountedStorage(size);
+    DMESG("askForSize got %d", s->fs.totalSize());
 }
 
 //%
