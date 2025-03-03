@@ -152,7 +152,7 @@ class WDisplay {
 
             // the device will run without shield when the following is specified in user program:
             // namespace userconfig { export const DISPLAY_CFG0 = 0x02000080 }
-            if (*cfg0 & 0x2000000) {
+            if (*cfg0 & 0x0200000) {
                 DMESG("74HC: no wait requested");
                 return DISPLAY_TYPE_ST7735;
             }
@@ -170,9 +170,9 @@ class WDisplay {
 
         // SER pin (or first bit of second HC) is orientation
         if (hc & 0x0010)
-            *cfg0 = (*cfg0 & 0xFFFFFF00) | 0x80; // change to prevent overwrite of offset bytes
+            *cfg0 |= 0x80;
         else
-            *cfg0 = (*cfg0 & 0xFFFFFF00) | 0x40; // change to prevent overwrite of offset bytes 
+            *cfg0 |= 0x40;
 
         uint32_t configId = (hc & 0xe0) >> 5;
 
