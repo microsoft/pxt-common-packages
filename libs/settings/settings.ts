@@ -19,6 +19,9 @@ namespace settings {
     //% shim=settings::_get
     declare function _get(key: string): Buffer;
 
+    //% shim=settings::_askForSize
+    declare function _askForSize(n: number): void;
+
     //% shim=settings::_userClean
     declare function _userClean(): void;
 
