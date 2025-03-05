@@ -54,7 +54,7 @@ class WStorage {
 static WStorage *instWStorage;
 WStorage *getWStorage() {
     if (!instWStorage) {       
-        uint32_t size = getConfig(CFG_SETTINGS_SIZE_DEFAULT, SETTINGS_SIZE);
+        uint32_t size = getConfig(CFG_SETTINGS_SIZE_DEFL, SETTINGS_SIZE);
         uint32_t new_size = getConfig(CFG_SETTINGS_SIZE, 0);
         if (new_size > 0)
             size = new_size;
