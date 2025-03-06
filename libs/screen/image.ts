@@ -105,7 +105,7 @@ interface Image {
     fillPolygon4(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, col: number): void;
 
     /**
-     * Returns an image rotated by -90, 0, 90, 180, 270 deg clockwise
+     * Returns an image rotated by -90, 90, -180, 180, -270, 270 deg clockwise
      */
     //% helper=imageRotated
     rotated(deg: number): Image;
@@ -293,7 +293,7 @@ namespace helpers {
             r.flipX();
             r.flipY();
             return r;
-        } else if (deg == 90) {
+        } else if (deg == 90 || deg == -270) {
             let r = img.transposed();
             r.flipX();
             return r;
