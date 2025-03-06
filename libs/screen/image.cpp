@@ -479,7 +479,7 @@ Image_ transposed(Image_ img) {
 
     // this is quite slow
     for (int i = 0; i < img->width(); ++i) {
-        for (int j = 0; j < img->height(); ++i) {
+        for (int j = 0; j < img->height(); ++j) {
             setCore(r, j, i, getCore(img, i, j));
         }
     }
