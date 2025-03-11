@@ -270,6 +270,7 @@ class Sprite extends sprites.BaseSprite {
 
     _hitbox: game.Hitbox;
     _overlappers: number[];
+    _alreadyChecked: number[];
     _kindsOverlappedWith: number[];
 
     flags: number
