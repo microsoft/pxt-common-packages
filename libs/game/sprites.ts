@@ -56,6 +56,7 @@ namespace sprites {
     //% blockAliasFor="sprites.create"
     //% expandableArgumentMode=toggle
     //% weight=99 help=sprites/create
+    //% duplicateShadowOnDrag
     export function __create(img: Image, kind?: number): Sprite {
         return sprites.create(img, kind);
     }
