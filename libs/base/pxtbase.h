@@ -1163,7 +1163,7 @@ bool removeElement(RefCollection *c, TValue x);
 //
 
 #ifndef PXT_CODAL
-#define FLASH_BOTTOM_STACK 0
+#define FLASH_BOTTOM_STACK 0x00000000
 #else
 #define FLASH_BOTTOM_STACK MICROBIT_TOP_OF_FLASH           
 #endif
