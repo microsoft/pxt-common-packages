@@ -189,7 +189,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 s._x = Fx.add(s._x, stepX);
                 s._y = Fx.add(s._y, stepY);
 
-                if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS)) {
+                if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS) && s._kindsOverlappedWith.length) {
                     this.map.insertAABB(s);
                 }
                 if (tileMap && tileMap.enabled) {
@@ -311,40 +311,60 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         control.enablePerfCounter("phys_collisions");
         if (!handlers.length) return;
 
+        // clear the overlap lists on all sprites
+        for (const sprite of this.sprites) {
+            sprite._alreadyChecked = undefined;
+        }
+
         for (const bucket of this.map.filledBuckets) {
+            if (bucket.length === 1) continue;
+
             for (const sprite of bucket) {
                 if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
+
                 for (const overlapper of bucket) {
-                    if (overlapper === sprite || overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
+                    if (overlapper === sprite) continue;
                     const thisKind = sprite.kind();
                     const otherKind = overlapper.kind();
 
-                    // skip if no overlap event between these two kinds of sprites
-                    if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
-
-                    // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
+                    // the sprite with the higher id maintains the overlap lists
                     const higher = sprite.id > overlapper.id ? sprite : overlapper;
                     const lower = higher === sprite ? overlapper : sprite;
 
-                    // if the two sprites are not currently engaged in an overlap event,
-                    // apply all matching overlap events
-                    if (higher._overlappers.indexOf(lower.id) === -1) {
-                        for (const h of handlers) {
-                            if ((h.kind === thisKind && h.otherKind === otherKind)
-                                || (h.kind === otherKind && h.otherKind === thisKind)) {
-                                higher._overlappers.push(lower.id);
-                                control.runInParallel(() => {
-                                    if (!((sprite.flags | overlapper.flags) & SPRITE_NO_SPRITE_OVERLAPS)) {
-                                        if (thisKind === h.kind) {
-                                            h.handler(sprite, overlapper)
-                                        }
-                                        else {
-                                            h.handler(overlapper, sprite)
-                                        }
+                    if (!higher._alreadyChecked) {
+                        higher._alreadyChecked = [];
+                    }
+
+                    // skip if we already compared these two
+                    if (higher._alreadyChecked.indexOf(lower.id) !== -1) continue;
+
+                    higher._alreadyChecked.push(lower.id);
+
+                    // skip if already overlapping
+                    if (higher._overlappers.indexOf(lower.id) !== -1) continue;
+
+                    // skip if there is no overlap event between these two kinds of sprites
+                    if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
+
+                    // perform the actual overlap check
+                    if (!higher.overlapsWith(lower)) continue;
+
+                    // invoke all matching overlap event handlers
+                    for (const h of handlers) {
+                        if ((h.kind === thisKind && h.otherKind === otherKind)
+                            || (h.kind === otherKind && h.otherKind === thisKind)) {
+                            higher._overlappers.push(lower.id);
+                            control.runInParallel(() => {
+                                if (!((sprite.flags | overlapper.flags) & SPRITE_NO_SPRITE_OVERLAPS)) {
+                                    if (thisKind === h.kind) {
+                                        h.handler(sprite, overlapper)
                                     }
-                                    higher._overlappers.removeElement(lower.id);
-                                });
-                            }
+                                    else {
+                                        h.handler(overlapper, sprite)
+                                    }
+                                }
+                                higher._overlappers.removeElement(lower.id);
+                            });
                         }
                     }
                 }

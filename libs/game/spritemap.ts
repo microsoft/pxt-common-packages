@@ -65,8 +65,8 @@ namespace sprites {
             const areaWidth = tMap ? tMap.areaWidth() : screen.width;
             const areaHeight = tMap ? tMap.areaHeight() : screen.height;
 
-            this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth * 2);
-            this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight * 2);
+            this.cellWidth = Math.clamp(8, areaWidth >> 2, maxWidth << 1);
+            this.cellHeight = Math.clamp(8, areaHeight >> 2, maxHeight << 1);
             this.rowCount = Math.idiv(areaHeight, this.cellHeight);
             this.columnCount = Math.idiv(areaWidth, this.cellWidth);
         }
