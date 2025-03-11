@@ -311,43 +311,42 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         control.enablePerfCounter("phys_collisions");
         if (!handlers.length) return;
 
-        // sprites that have moved this step
-        for (const ms of movedSprites) {
-            const sprite = ms.sprite;
-            if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-            const overSprites = this.map.overlaps(ms.sprite);
+        for (const bucket of this.map.filledBuckets) {
+            for (const sprite of bucket) {
+                if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
+                for (const overlapper of bucket) {
+                    if (overlapper === sprite || overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
+                    const thisKind = sprite.kind();
+                    const otherKind = overlapper.kind();
 
-            for (const overlapper of overSprites) {
-                if (overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-                const thisKind = sprite.kind();
-                const otherKind = overlapper.kind();
+                    // skip if no overlap event between these two kinds of sprites
+                    if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
 
-                // skip if no overlap event between these two kinds of sprites
-                if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
+                    // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
+                    const higher = sprite.id > overlapper.id ? sprite : overlapper;
+                    const lower = higher === sprite ? overlapper : sprite;
 
-                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
-                const higher = sprite.id > overlapper.id ? sprite : overlapper;
-                const lower = higher === sprite ? overlapper : sprite;
-
-                // if the two sprites are not currently engaged in an overlap event,
-                // apply all matching overlap events
-                if (higher._overlappers.indexOf(lower.id) === -1) {
-                    handlers
-                        .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
-                            || (h.kind === otherKind && h.otherKind === thisKind)
-                        )
-                        .forEach(h => {
-                            higher._overlappers.push(lower.id);
-                            control.runInParallel(() => {
-                                if (!((sprite.flags | overlapper.flags) & SPRITE_NO_SPRITE_OVERLAPS)) {
-                                    h.handler(
-                                        thisKind === h.kind ? sprite : overlapper,
-                                        thisKind === h.kind ? overlapper : sprite
-                                    );
-                                }
-                                higher._overlappers.removeElement(lower.id);
-                            });
-                        });
+                    // if the two sprites are not currently engaged in an overlap event,
+                    // apply all matching overlap events
+                    if (higher._overlappers.indexOf(lower.id) === -1) {
+                        for (const h of handlers) {
+                            if ((h.kind === thisKind && h.otherKind === otherKind)
+                                || (h.kind === otherKind && h.otherKind === thisKind)) {
+                                higher._overlappers.push(lower.id);
+                                control.runInParallel(() => {
+                                    if (!((sprite.flags | overlapper.flags) & SPRITE_NO_SPRITE_OVERLAPS)) {
+                                        if (thisKind === h.kind) {
+                                            h.handler(sprite, overlapper)
+                                        }
+                                        else {
+                                            h.handler(overlapper, sprite)
+                                        }
+                                    }
+                                    higher._overlappers.removeElement(lower.id);
+                                });
+                            }
+                        }
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ namespace sprites {
         private rowCount: number;
         private columnCount: number;
         private buckets: Sprite[][];
+        filledBuckets: Sprite[][];
 
         constructor() {
             this.buckets = [];
@@ -72,6 +73,7 @@ namespace sprites {
 
         clear() {
             this.buckets = [];
+            this.filledBuckets = [];
         }
 
         private key(x: number, y: number): number {
@@ -83,8 +85,10 @@ namespace sprites {
         private insertAtKey(x: number, y: number, sprite: Sprite) {
             const k = this.key(x, y);
             let bucket = this.buckets[k];
-            if (!bucket)
+            if (!bucket) {
                 bucket = this.buckets[k] = [];
+                this.filledBuckets.push(bucket);
+            }
             if (bucket.indexOf(sprite) < 0)
                 bucket.push(sprite);
         }
