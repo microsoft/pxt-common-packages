@@ -20,7 +20,7 @@ class WStorage {
     FS fs;
     bool isMounted;
 
-    WStorage()
+    WStorage(uint32_t size)
         : flash(),
 #if defined(STM32F4)
           fs(flash, 0x8008000, SETTINGS_SIZE),
@@ -29,10 +29,7 @@ class WStorage {
 #elif defined(SAMD21)
           fs(flash, 256 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
 #elif defined(MICROBIT_CODAL) && MICROBIT_CODAL
-          // micro:bit V2 memory map
-          // https://github.com/lancaster-university/codal-microbit-v2/blob/master/docs/MemoryMap.md
-          // 73000	CODAL scratch page (is used as temporary scratch by MicroBitFlash, MicroBitFileSystem and MicroBitStorage)
-          fs(flash, 0x73000 - SETTINGS_SIZE, SETTINGS_SIZE),
+          fs(flash, MICROBIT_TOP_OF_FLASH - size, size),
 #elif defined(NRF52_SERIES)
 #define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
           fs(flash,
@@ -50,7 +47,18 @@ class WStorage {
         fs.minGCSpacing = 10000;
     }
 };
-SINGLETON(WStorage);
+
+static WStorage *instWStorage;
+WStorage *getWStorage() {
+    if (!instWStorage) {       
+        uint32_t size = getConfig(CFG_SETTINGS_SIZE_DEFL, SETTINGS_SIZE);
+        uint32_t new_size = getConfig(CFG_SETTINGS_SIZE, 0);
+        if (new_size > 0)
+            size = new_size;
+        instWStorage = new WStorage(size);    
+    }
+    return instWStorage;
+}
 
 static WStorage *mountedStorage() {
     auto s = getWStorage();
