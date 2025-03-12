@@ -1162,10 +1162,14 @@ bool removeElement(RefCollection *c, TValue x);
 // can be patched with the right vtable.
 //
 
-#ifndef PXT_CODAL
+#ifndef MICROBIT_CODAL
 #define FLASH_BOTTOM_STACK 0x00000000
 #else
-#define FLASH_BOTTOM_STACK MICROBIT_TOP_OF_FLASH           
+#if MICROBIT_CODAL
+#define FLASH_BOTTOM_STACK MICROBIT_TOP_OF_FLASH
+#else
+#define FLASH_BOTTOM_STACK 0x00000000
+#endif         
 #endif
 
 #define PXT_SHIMS_BEGIN                                                                            \
