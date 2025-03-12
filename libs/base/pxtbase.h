@@ -1163,19 +1163,19 @@ bool removeElement(RefCollection *c, TValue x);
 //
 
 #ifndef MICROBIT_CODAL
-#define FLASH_BOTTOM_STACK 0x00000000
+#define FLASH_TOP 0x00000000
 #else
 #if MICROBIT_CODAL
-#define FLASH_BOTTOM_STACK MICROBIT_TOP_OF_FLASH
+#define FLASH_TOP MICROBIT_TOP_OF_FLASH
 #else
-#define FLASH_BOTTOM_STACK 0x00000000
+#define FLASH_TOP 0x00000000
 #endif         
 #endif
 
 #define PXT_SHIMS_BEGIN                                                                            \
     namespace pxt {                                                                                \
     const uintptr_t functionsAndBytecode[]                                                         \
-        __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e, FLASH_BOTTOM_STACK,
+        __attribute__((aligned(0x20))) = {0x08010801, 0x42424242, 0x08010801, 0x8de9d83e, FLASH_TOP,
 
 #define PXT_SHIMS_END                                                                              \
     }                                                                                              \
