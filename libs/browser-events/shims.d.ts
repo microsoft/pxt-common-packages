@@ -10,4 +10,20 @@ declare namespace browserEvents {
     //% shim=browserEvents::wheelDz
     function wheelDz(): number;
 
+    //% shim=browserEvents::currentTime
+    function currentTime(): number;
+    //% shim=browserEvents::getYear
+    function getYear(time: number): number;
+    //% shim=browserEvents::getMonth
+    function getMonth(time: number): number;
+    //% shim=browserEvents::getDayOfMonth
+    function getDayOfMonth(time: number): number;
+    //% shim=browserEvents::getDayOfWeek
+    function getDayOfWeek(time: number): number;
+    //% shim=browserEvents::getHours
+    function getHours(time: number): number;
+    //% shim=browserEvents::getMinutes
+    function getMinutes(time: number): number;
+    //% shim=browserEvents::getSeconds
+    function getSeconds(time: number): number;
 }

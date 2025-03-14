@@ -90,6 +90,7 @@ namespace images {
     //% image.fieldOptions.decompileIndirectFixedInstances="true"
     //% image.fieldOptions.decompileArgumentAsString="true"
     //% weight=0 group="Create"
+    //% deprecated
     //% help=images/image
     export function _image(image: Image): Image {
         return image;

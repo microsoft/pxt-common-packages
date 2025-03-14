@@ -49,12 +49,17 @@ namespace mp {
         }
     }
 
+    class StateEntry {
+        constructor(public key: number, public value: number) {
+        }
+    }
+
     /**
      * A player in the game
      */
     export class Player {
         _sprite: Sprite;
-        _state: number[];
+        _state: StateEntry[];
         _index: number;
         _data: any;
         _mwb: boolean;
@@ -153,20 +158,11 @@ namespace mp {
         }
 
         _setState(key: number, val: number) {
-            this._ensureState(key);
-            if (this._state.length > key)
-                this._state[key] = val;
+            this._lookupOrCreateState(key).value = val;
         }
 
         _getState(key: number): number {
-            this._ensureState(key);
-            return (this._state.length > key) ? this._state[key] : 0;
-        }
-
-        _ensureState(key: number) {
-            if (!this._state) this._state = [];
-            if (key < 0 || key > 255) return;
-            while (this._state.length < key) this._state.push(0);
+            return this._lookupOrCreateState(key).value;
         }
 
         _getInfo(): info.PlayerInfo {
@@ -187,6 +183,17 @@ namespace mp {
                 case 3: return controller.player4;
             }
             return undefined;
+        }
+
+        _lookupOrCreateState(key: number) {
+            if (!this._state) this._state = [];
+            for (const entry of this._state) {
+                if (entry.key === key) return entry;
+            }
+
+            const newEntry = new StateEntry(key, 0);
+            this._state.push(newEntry);
+            return newEntry;
         }
     }
 
@@ -428,7 +435,7 @@ namespace mp {
     //% blockId=mp_setPlayerSprite
     //% block="set $player sprite to $sprite"
     //% player.shadow=mp_playerSelector
-    //% sprite.shadow=spritescreate
+    //% sprite.shadow=spritescreatenoset
     //% group=Player
     //% weight=120
     //% blockGap=8

@@ -270,6 +270,7 @@ class Sprite extends sprites.BaseSprite {
 
     _hitbox: game.Hitbox;
     _overlappers: number[];
+    _alreadyChecked: number[];
     _kindsOverlappedWith: number[];
 
     flags: number
@@ -789,7 +790,6 @@ class Sprite extends sprites.BaseSprite {
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Locations"
-    //% direction.shadow=tiles_collision_direction_editor
     //% help=sprites/sprite/tile-hit-from
     //% deprecated=1
     tileHitFrom(direction: number): number {
