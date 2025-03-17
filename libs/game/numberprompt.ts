@@ -4,21 +4,21 @@ namespace game {
      * Ask the player for a number value.
      * @param message The message to display on the text-entry screen
      * @param answerLength The maximum number of digits the user can enter (1 - 10)
-     * @param useSystemKeyboard Use the computer keyboard for typing if the game is being played in the simulator
+     * @param useOnScreenKeyboard Force the simulator to use the on-screen keyboard for text entry
      */
     //% weight=10 help=game/ask-for-number
     //% blockId=gameaskfornumber
-    //% block="ask for number $message || and max length $answerLength use system keyboard $useSystemKeyboard"
+    //% block="ask for number $message || and max length $answerLength use on-screen keyboard $useOnScreenKeyboard"
     //% message.shadow=text
     //% message.defl=""
     //% answerLength.defl="6"
     //% answerLength.min=1
     //% answerLength.max=10
     //% group="Prompt"
-    export function askForNumber(message: any, answerLength = 6, useSystemKeyboard = false) {
+    export function askForNumber(message: any, answerLength = 6, useOnScreenKeyboard = false) {
         answerLength = Math.max(0, Math.min(10, answerLength));
         let p = new game.NumberPrompt();
-        const result = p.show(console.inspect(message), answerLength, useSystemKeyboard);
+        const result = p.show(console.inspect(message), answerLength, useOnScreenKeyboard);
         return parseFloat(result);
     }
 
