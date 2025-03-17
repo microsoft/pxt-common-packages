@@ -228,7 +228,7 @@ namespace game {
             }
 
             const promptText = new sprites.RenderText(this.message, CONTENT_WIDTH);
-            const systemKeyboardText = new sprites.RenderText("Type your response using your keyboard and hit ENTER", CONTENT_WIDTH);
+            let systemKeyboardText: sprites.RenderText;
 
             this.renderable = scene.createRenderable(-1, () => {
                 promptText.draw(screen, (screen.width >> 1) - (promptText.width >> 1), CONTENT_TOP, this.theme.colorPrompt, 0, 2)
@@ -238,6 +238,10 @@ namespace game {
                     this.drawKeyboard();
                     this.drawBottomBar();
                     return;
+                }
+
+                if (!systemKeyboardText) {
+                    systemKeyboardText = new sprites.RenderText(helpers._getLocalizedInstructions(), CONTENT_WIDTH);
                 }
 
                 screen.fillRect(0, screen.height - (PADDING << 1) - systemKeyboardText.height, screen.width, screen.height, this.theme.colorBottomBackground);

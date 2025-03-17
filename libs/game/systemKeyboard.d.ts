@@ -12,6 +12,9 @@ declare namespace helpers {
     //% shim=Keyboard::getTextPromptString
     function _getTextPromptString(): string;
 
+    //% shim=Keyboard::getLocalizedInstructions
+    function _getLocalizedInstructions(): string;
+
     //% shim=Keyboard::getTextPromptSelectionStart
     function _getTextPromptSelectionStart(): number;
 
