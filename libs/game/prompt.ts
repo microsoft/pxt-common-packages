@@ -19,20 +19,20 @@ namespace game {
      * Ask the player for a string value.
      * @param message The message to display on the text-entry screen
      * @param answerLength The maximum number of characters the user can enter (1 - 24)
-     * @param useSystemKeyboard Use the computer keyboard for typing if the game is being played in the simulator
+     * @param useOnScreenKeyboard Force the simulator to use the on-screen keyboard for text entry
      */
     //% weight=10 help=game/ask-for-string
     //% blockId=gameaskforstring
-    //% block="ask for string $message || and max length $answerLength use system keyboard $useSystemKeyboard"
+    //% block="ask for string $message || and max length $answerLength use on-screen keyboard $useOnScreenKeyboard"
     //% message.shadow=text
     //% message.defl=""
     //% answerLength.defl="12"
     //% answerLength.min=1
     //% answerLength.max=24
     //% group="Prompt"
-    export function askForString(message: any, answerLength = 12, useSystemKeyboard = false) {
+    export function askForString(message: any, answerLength = 12, useOnScreenKeyboard = false) {
         let p = new game.Prompt();
-        const result = p.show(console.inspect(message), answerLength, useSystemKeyboard);
+        const result = p.show(console.inspect(message), answerLength, useOnScreenKeyboard);
         return result;
     }
 
@@ -161,7 +161,7 @@ namespace game {
             this.selectionEnd = 0;
         }
 
-        show(message: string, answerLength: number, useSystemKeyboard = false) {
+        show(message: string, answerLength: number, useOnScreenKeyboard = false) {
             this.message = message;
             this.answerLength = answerLength;
 
@@ -171,7 +171,7 @@ namespace game {
             this.createRenderable();
             this.confirmPressed = false;
 
-            if (useSystemKeyboard && control.deviceDalVersion() === "sim" && helpers._isSystemKeyboardSupported()) {
+            if (!useOnScreenKeyboard && control.deviceDalVersion() === "sim" && helpers._isSystemKeyboardSupported()) {
                 this.useSystemKeyboard = true;
                 helpers._promptForText(this.answerLength, this.numbersOnly());
                 this.selectionEnd = 0;
