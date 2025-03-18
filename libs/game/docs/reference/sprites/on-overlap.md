@@ -12,7 +12,7 @@ An overlap with a sprite of a different or the same kind is detected. If you wan
 
 When an overlap is detected the sprite of the first kind is given to you in the **sprite** parameter of **handler**. The sprite for the second kind is in **otherSprite**.
 
-An overlap of two sprites is dectected when the first non-transparent pixel in the image of the first sprite overlaps the first non-transparent pixel of the second sprite. If a sprite has it's ``ghost`` flag set, any overlap with another sprite won't be noticed. Also, an overlap occurs even when the values of **Z** for the sprites are different.
+An overlap of two sprites is detected when the first non-transparent pixel in the image of the first sprite overlaps the first non-transparent pixel of the second sprite. If a sprite has it's ``ghost`` flag set, any overlap with another sprite won't be noticed. Also, an overlap occurs even when the values of **Z** for the sprites are different.
 
 ## Parameters
 
@@ -24,95 +24,22 @@ An overlap of two sprites is dectected when the first non-transparent pixel in t
 
 ## Example #example
 
-### Ghost bumper #ex1
-
-Create a ``Ghost`` sprite that is blasted by green balls. Let the balls go through the sprite until it's ``kind`` is changed to ``Mortal`` by pressing the **A** button. When the ``Ghost`` sprite is changed to ``Mortal``, any contact with the balls is detected in ``||sprites:on overlaps||``. Make the balls push the ``Mortal`` sprite off the screen.
+Create a ``Ghost`` sprite that is blasted by yellow balls. Let the balls go through the sprite until it's ghost status is removed by pressing the **A** button. When the ``Ghost`` sprite is exposed, any contact with the balls is detected in ``||sprites:on overlap||``. Make the balls push the ``Ghost`` sprite off the screen.
 
 ```blocks
-namespace SpriteKind {
-    export const Mortal = SpriteKind.create()
-    export const Ghost = SpriteKind.create()
-    export const Ball = SpriteKind.create()
-}
-let ghost: Sprite = null
-let projectile: Sprite = null
-ghost = sprites.create(img`
-. . . . . . d d d d d . . . . . 
-. . . d d d d 1 1 1 d d d . . . 
-. . d d 1 1 1 1 1 1 1 1 d d . . 
-. . d 1 1 1 1 1 1 1 1 1 1 d . . 
-. . d 1 1 1 1 1 1 1 1 1 1 d d . 
-. d d 1 1 1 f 1 1 1 f 1 1 1 d . 
-. d 1 1 1 1 1 1 1 1 1 1 1 1 d d 
-. d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
-. d 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
-d d 1 1 1 1 1 1 f f 1 1 1 1 1 d 
-d 1 1 1 1 1 1 1 f f 1 1 1 1 1 d 
-d 1 1 1 1 1 1 1 1 1 1 1 1 1 1 d 
-d 1 1 1 1 1 1 1 d 1 1 1 1 1 1 d 
-d 1 d d d 1 1 d d d d 1 d 1 1 d 
-d d d . d d d d . . d d d d d d 
-d d . . . d d . . . . d . . d d 
-`, SpriteKind.Ghost)
-ghost.x = 40
-ghost.setFlag(SpriteFlag.AutoDestroy, true)
-game.onUpdateInterval(400, function () {
-    projectile = sprites.createProjectile(img`
-. . 7 7 7 7 . . 
-. 7 7 7 7 7 7 . 
-7 7 7 7 7 7 7 7 
-7 7 7 7 7 7 7 7 
-7 7 7 7 7 7 7 7 
-7 7 7 7 7 7 7 7 
-. 7 7 7 7 7 7 . 
-. . 7 7 7 7 . . 
-`, -400, 0, SpriteKind.Ball)
-    projectile.z = -1
-})
-sprites.onOverlap(SpriteKind.Mortal, SpriteKind.Ball, function (sprite, otherSprite) {
-    sprite.say("Ouch!", 200)
-    otherSprite.vx = otherSprite.vx * -1
-    otherSprite.vy = Math.randomRange(-100, 100)
-    sprite.x += -1
-})
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    ghost.setKind(SpriteKind.Mortal)
+    ghost.setFlag(SpriteFlag.Ghost, false)
 })
-sprites.onDestroyed(SpriteKind.Mortal, function (sprite) {
-    game.over()
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Projectile, function (sprite, otherSprite) {
+    otherSprite.setVelocity(-50, 50)
+    sprite.sayText("Ouch!", 200, false)
+    sprite.setPosition(sprite.x + 2, sprite.y + 2)
 })
-```
-
-## Ghosting mode #ex2
-
-Use the **A** to blast a green ball at a ``Ghost`` sprite. Set the flag for the sprite to ``Ghost``. In the ``||sprites:on overlaps||`` block, try to detect the contact of the ball with the ghost. When button **B** is pressed, switch the value of the ``ghost`` flag and see if the ball hits the ghost sprite.
-
-```blocks
-namespace SpriteKind {
-    export const Mortal = SpriteKind.create()
-    export const Ghost = SpriteKind.create()
-    export const Ball = SpriteKind.create()
-}
+sprites.onDestroyed(SpriteKind.Player, function (sprite) {
+    game.gameOver(false)
+})
 let projectile: Sprite = null
 let ghost: Sprite = null
-let mySprite = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.Ball)
 ghost = sprites.create(img`
     . . . . . . d d d d d . . . . . 
     . . . d d d d 1 1 1 d d d . . . 
@@ -130,33 +57,29 @@ ghost = sprites.create(img`
     d 1 d d d 1 1 d d d d 1 d 1 1 d 
     d d d . d d d d . . d d d d d d 
     d d . . . d d . . . . d . . d d 
-    `, SpriteKind.Ghost)
-ghost.x = 40
+    `, SpriteKind.Player)
+ghost.setPosition(60, 60)
 ghost.setFlag(SpriteFlag.AutoDestroy, true)
-game.onUpdateInterval(400, function () {
-    projectile = sprites.createProjectile(img`
-        . . 7 7 7 7 . . 
-        . 7 7 7 7 7 7 . 
-        7 7 7 7 7 7 7 7 
-        7 7 7 7 7 7 7 7 
-        7 7 7 7 7 7 7 7 
-        7 7 7 7 7 7 7 7 
-        . 7 7 7 7 7 7 . 
-        . . 7 7 7 7 . . 
-        `, -400, 0, SpriteKind.Ball)
-    projectile.z = -1
-})
-controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    ghost.setKind(SpriteKind.Mortal)
-})
-sprites.onDestroyed(SpriteKind.Mortal, function (sprite) {
-    game.over(false)
-})
-sprites.onOverlap(SpriteKind.Mortal, SpriteKind.Ball, function (sprite, otherSprite) {
-    sprite.say("Ouch!", 200)
-    otherSprite.vx = otherSprite.vx * -1
-    otherSprite.vy = Math.randomRange(-100, 100)
-    sprite.x += -1
+ghost.setFlag(SpriteFlag.Ghost, true)
+game.onUpdateInterval(1000, function () {
+    projectile = sprites.createProjectileFromSide(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . 5 5 . . . . . . . 
+        . . . . . . 5 5 5 5 . . . . . . 
+        . . . . . 5 5 5 5 5 5 . . . . . 
+        . . . . . 5 5 5 5 5 5 . . . . . 
+        . . . . . . 5 5 5 5 . . . . . . 
+        . . . . . . . 5 5 . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        . . . . . . . . . . . . . . . . 
+        `, 50, 50)
 })
 ```
 
