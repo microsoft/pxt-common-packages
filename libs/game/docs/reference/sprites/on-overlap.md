@@ -12,7 +12,7 @@ An overlap with a sprite of a different or the same kind is detected. If you wan
 
 When an overlap is detected the sprite of the first kind is given to you in the **sprite** parameter of **handler**. The sprite for the second kind is in **otherSprite**.
 
-An overlap of two sprites is dectected when the first non-transparent pixel in the image of the first sprite overlaps the first non-transparent pixel of the second sprite. If a sprite has it's ``ghost`` flag set, any overlap with another sprite won't be noticed. Also, an overlap occurs even when the values of **Z** for the sprites are different.
+An overlap of two sprites is detected when the first non-transparent pixel in the image of the first sprite overlaps the first non-transparent pixel of the second sprite. If a sprite has it's ``ghost`` flag set, any overlap with another sprite won't be noticed. Also, an overlap occurs even when the values of **Z** for the sprites are different.
 
 ## Parameters
 
@@ -24,7 +24,7 @@ An overlap of two sprites is dectected when the first non-transparent pixel in t
 
 ## Example #example
 
-Create a ``Ghost`` sprite that is blasted by yellow balls. Let the balls go through the sprite until it's ghost status is removed by pressing the **A** button. When the ``Ghost`` sprite is exposed, any contact with the balls is detected in ``||sprites:on overlaps||``. Make the balls push the ``Ghost`` sprite off the screen.
+Create a ``Ghost`` sprite that is blasted by yellow balls. Let the balls go through the sprite until it's ghost status is removed by pressing the **A** button. When the ``Ghost`` sprite is exposed, any contact with the balls is detected in ``||sprites:on overlap||``. Make the balls push the ``Ghost`` sprite off the screen.
 
 ```blocks
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
