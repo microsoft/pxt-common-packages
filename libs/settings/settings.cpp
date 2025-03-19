@@ -23,23 +23,23 @@ class WStorage {
     WStorage(uint32_t size)
         : flash(),
 #if defined(STM32F4)
-          fs(flash, 0x8008000, SETTINGS_SIZE),
+          fs(flash, 0x8008000, size),
 #elif defined(SAMD51)
-          fs(flash, 512 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
+          fs(flash, 512 * 1024 - size, size),
 #elif defined(SAMD21)
-          fs(flash, 256 * 1024 - SETTINGS_SIZE, SETTINGS_SIZE),
+          fs(flash, 256 * 1024 - size, size),
 #elif defined(MICROBIT_CODAL) && MICROBIT_CODAL
           fs(flash, MICROBIT_TOP_OF_FLASH - size, size),
 #elif defined(NRF52_SERIES)
 #define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
           fs(flash,
              128 * 1024 < NRF_BOOTLOADER_START && NRF_BOOTLOADER_START < (uint32_t)flash.totalSize()
-                 ? NRF_BOOTLOADER_START - SETTINGS_SIZE
-                 : flash.totalSize() - SETTINGS_SIZE,
-             SETTINGS_SIZE),
+                 ? NRF_BOOTLOADER_START - size
+                 : flash.totalSize() - size,
+                 size),
 #elif defined(PICO_BOARD)
           // XIP bias 0x10000000
-          fs(flash, 0x10000000 + flash.totalSize() - SETTINGS_SIZE - 4096, SETTINGS_SIZE),
+          fs(flash, 0x10000000 + flash.totalSize() - size - 4096, size),
 #else
           fs(flash),
 #endif
