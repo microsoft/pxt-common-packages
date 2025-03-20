@@ -933,6 +933,257 @@ namespace pxsim.ImageMethods {
         }
         return false;
     }
+
+    const TWO_PI = 2 * Math.PI;
+    const HALF_PI = Math.PI / 2;
+    const THREE_HALF_PI = 3 * Math.PI / 2
+
+    export function _drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {
+        drawScaledRotatedImage(dst, src, args);
+    }
+
+    export function drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {// destX: number, destY: number, src: Image, sx: number, sy: number, angle: number) {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        const sx = args.getAt(2) as number;
+        const sy = args.getAt(3) as number;
+        let angle = args.getAt(4) as number;
+        const transparent = args.getAt(5) as number;
+
+        // Get the angle into a nice range
+        if (angle < 0) angle = (angle % TWO_PI) + Math.PI;
+        else angle = angle % TWO_PI;
+
+        // The shear process below only works for -90 to 90.
+        // Outside that range, we need to do a 180 rotation first
+        let flip = false;
+        if (angle > HALF_PI && angle <= THREE_HALF_PI) {
+            flip = true
+            angle = (angle + Math.PI) % TWO_PI
+        }
+
+        // We're doing 3 shears:
+        // 1. shear x by -tan(angle / 2)
+        // 2. shear y by sin(angle)
+        // 3. shear x by -tan(angle / 2) again
+        const xShear = -Math.tan(angle / 2);
+        const yShear = Math.sin(angle);
+
+        const scaledWidth = src._width * sx;
+        const scaledHeight = src._height * sy;
+
+        let minX = 999999;
+        let minY = 999999;
+        let maxX = -999999;
+        let maxY = -999999;
+
+        // Shearing 3 times shifts our origin, so figure out the new
+        // bounds by transforming the 4 corners and taking the min/max
+        for (let y = 0; y < scaledHeight; y += scaledHeight - 1) {
+            for (let x = 0; x < scaledWidth; x += scaledWidth - 1) {
+                let newX = (x + y * xShear) | 0;
+                const newY = (y + newX * yShear) | 0;
+                newX = (newX + newY * xShear) | 0;
+                minX = Math.min(minX, newX);
+                minY = Math.min(minY, newY);
+                maxX = Math.max(maxX, newX);
+                maxY = Math.max(maxY, newY);
+            }
+        }
+
+        const rotatedWidth = maxX - minX + 1;
+        const rotatedHeight = maxY - minY + 1;
+
+        dst.makeWritable();
+
+        for (let x = 0; x < rotatedWidth; x++) {
+            for (let y = 0; y < rotatedHeight; y++) {
+                let ox = (x + minX) - (y + minY) * xShear;
+                const oy = (y + minY) - ox * yShear
+                ox = ox - oy * xShear;
+
+                let color: number;
+                if (flip) {
+                    color = getPixel(src, (scaledWidth - ox - 1) / sx, (scaledHeight - oy - 1) / sy);
+                }
+                else {
+                    color = getPixel(src, ox / sx, oy / sy);
+                }
+
+                if (!transparent || color) {
+                    setPixel(dst, xDst + x, yDst + y, color);
+                }
+            }
+        }
+    }
+
+    export function _checkRotatedScaledOverlap(dst: RefImage, src: RefImage, args: RefCollection) {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        const sxDst = args.getAt(2) as number;
+        const syDst = args.getAt(3) as number;
+        let angleDst = args.getAt(4) as number;
+        const sxSrc = args.getAt(5) as number;
+        const sySrc = args.getAt(6) as number;
+        let angleSrc = args.getAt(7) as number;
+
+        // normalize dst angle
+        if (angleDst < 0) angleDst = (angleDst % TWO_PI) + Math.PI;
+        else angleDst = angleDst % TWO_PI;
+
+        let flipDst = false;
+        if (angleDst > HALF_PI && angleDst <= THREE_HALF_PI) {
+            flipDst = true
+            angleDst = (angleDst + Math.PI) % TWO_PI
+        }
+
+        const scaledWidthDst = src._width * sxDst;
+        const scaledHeightDst = src._height * syDst;
+
+        const xShearDst = -Math.tan(angleDst / 2);
+        const yShearDst = Math.sin(angleDst);
+
+        let minXDst = 999999;
+        let minYDst = 999999;
+        let maxX = -999999;
+        let maxY = -999999;
+
+        for (let y = 0; y < scaledHeightDst; y += scaledHeightDst - 1) {
+            for (let x = 0; x < scaledWidthDst; x += scaledWidthDst - 1) {
+                let newX = (x + y * xShearDst) | 0;
+                const newY = (y + newX * yShearDst) | 0;
+                newX = (newX + newY * xShearDst) | 0;
+                minXDst = Math.min(minXDst, newX);
+                minYDst = Math.min(minYDst, newY);
+                maxX = Math.max(maxX, newX);
+                maxY = Math.max(maxY, newY);
+            }
+        }
+
+        const rotatedWidthDst = maxX - minXDst + 1;
+        const rotatedHeightDst = maxY - minYDst + 1;
+
+        // normalize Src angle
+        if (angleSrc < 0) angleSrc = (angleSrc % TWO_PI) + Math.PI;
+        else angleSrc = angleSrc % TWO_PI;
+
+        let flipSrc = false;
+        if (angleSrc > HALF_PI && angleSrc <= THREE_HALF_PI) {
+            flipSrc = true
+            angleSrc = (angleSrc + Math.PI) % TWO_PI
+        }
+
+        const scaledWidthSrc = src._width * sxSrc;
+        const scaledHeightSrc = src._height * sySrc;
+
+        const xShearSrc = -Math.tan(angleSrc / 2);
+        const yShearSrc = Math.sin(angleSrc);
+
+        let minXSrc = 999999;
+        let minYSrc = 999999;
+        maxX = -999999;
+        maxY = -999999;
+
+        for (let y = 0; y < scaledHeightSrc; y += scaledHeightSrc - 1) {
+            for (let x = 0; x < scaledWidthSrc; x += scaledWidthSrc - 1) {
+                let newX = (x + y * xShearSrc) | 0;
+                const newY = (y + newX * yShearSrc) | 0;
+                newX = (newX + newY * xShearSrc) | 0;
+                minXSrc = Math.min(minXSrc, newX);
+                minYSrc = Math.min(minYSrc, newY);
+                maxX = Math.max(maxX, newX);
+                maxY = Math.max(maxY, newY);
+            }
+        }
+
+        const rotatedWidthSrc = maxX - minXSrc + 1;
+        const rotatedHeightSrc = maxY - minYSrc + 1;
+
+        const xMax = Math.min(rotatedWidthSrc + xDst, rotatedWidthDst) - xDst;
+        const yMax = Math.min(rotatedHeightSrc + yDst, rotatedHeightDst) - yDst;
+
+        for (let x = 0; x < xMax; x++) {
+            for (let y = 0; y < yMax; y++) {
+                let oxSrc = (x + minXSrc) - (y + minYSrc) * xShearSrc;
+                const oySrc = (y + minYSrc) - oxSrc * yShearSrc
+                oxSrc = oxSrc - oySrc * xShearSrc;
+
+                let colorSrc: number;
+                if (flipSrc) {
+                    colorSrc = getPixel(src, (scaledWidthSrc - oxSrc - 1) / sxSrc, (scaledHeightSrc - oySrc - 1) / sySrc);
+                }
+                else {
+                    colorSrc = getPixel(src, oxSrc / sxSrc, oySrc / sySrc);
+                }
+
+                if (!colorSrc) continue;
+
+                let oxDst = (x + minXDst + xDst) - (y + minYDst + yDst) * xShearDst;
+                const oyDst = (y + minYDst + yDst) - oxDst * yShearDst
+                oxDst = oxDst - oyDst * xShearDst;
+
+                let colorDst: number;
+                if (flipDst) {
+                    colorDst = getPixel(dst, (scaledWidthDst - oxDst - 1) / sxDst, (scaledHeightDst - oyDst - 1) / syDst);
+                }
+                else {
+                    colorDst = getPixel(dst, oxDst / sxDst, oyDst / syDst);
+                }
+
+                if (colorDst) return true;
+            }
+        }
+
+        return false;
+    }
+
+    export function _scaledRotatedImageDimensions(img: RefImage, args: RefCollection, result: RefBuffer) {
+        const sx = args.getAt(0) as number;
+        const sy = args.getAt(1) as number;
+        let angle = args.getAt(2) as number;
+
+        // Get the angle into a nice range
+        if (angle < 0) angle = (angle % TWO_PI) + Math.PI;
+        else angle = angle % TWO_PI;
+
+        // The shear process below only works for -90 to 90.
+        // Outside that range, we need to do a 180 rotation first
+        if (angle > HALF_PI && angle <= THREE_HALF_PI) {
+            angle = (angle + Math.PI) % TWO_PI
+        }
+
+        // We're doing 3 shears:
+        // 1. shear x by -tan(angle / 2)
+        // 2. shear y by sin(angle)
+        // 3. shear x by -tan(angle / 2) again
+        const xShear = -Math.tan(angle / 2);
+        const yShear = Math.sin(angle);
+
+        const scaledWidth = img._width * sx;
+        const scaledHeight = img._height * sy;
+
+        let minX = 999999;
+        let minY = 999999;
+        let maxX = -999999;
+        let maxY = -999999;
+
+        // Shearing 3 times shifts our origin, so figure out the new
+        // bounds by transforming the 4 corners and taking the min/max
+        for (let y = 0; y < scaledHeight; y += scaledHeight - 1) {
+            for (let x = 0; x < scaledWidth; x += scaledWidth - 1) {
+                let newX = (x + y * xShear) | 0;
+                const newY = (y + newX * yShear) | 0;
+                newX = (newX + newY * xShear) | 0;
+                minX = Math.min(minX, newX);
+                minY = Math.min(minY, newY);
+                maxX = Math.max(maxX, newX);
+                maxY = Math.max(maxY, newY);
+            }
+        }
+
+        pxsim.BufferMethods.setNumber(result, pxsim.BufferMethods.NumberFormat.UInt16LE, 0, maxX - minX + 1)
+        pxsim.BufferMethods.setNumber(result, pxsim.BufferMethods.NumberFormat.UInt16LE, 2, maxY - minY + 1)
+    }
 }
 
 

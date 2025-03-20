@@ -165,6 +165,15 @@ namespace helpers {
     //% shim=ImageMethods::_blit
     declare function _blit(img: Image, src: Image, args: number[]): boolean;
 
+    //% shim=ImageMethods::_drawScaledRotatedImage
+    declare function _drawScaledRotatedImage(img: Image, src: Image, args: number[]): void;
+
+    //% shim=ImageMethods::_scaledRotatedImageDimensions
+    declare function _scaledRotatedImageDimensions(img: Image, args: number[], result: Buffer): void;
+
+    //% shim=ImageMethods::_checkRotatedScaledOverlap
+    declare function _checkRotatedScaledOverlap(dst: Image, src: Image, args: number[]): boolean;
+
     //% shim=ImageMethods::_fillTriangle
     declare function _fillTriangle(img: Image, args: number[]): void;
 
@@ -278,6 +287,45 @@ namespace helpers {
         _blitArgs[7] = y3;
         _blitArgs[8] = col;
         _fillPolygon4(img, _blitArgs);
+    }
+
+    export function imageDrawRotateScaled(dest: Image, destX: number, destY: number, src: Image, sx: number, sy: number, angle: number, transparent: boolean) {
+        _blitArgs = _blitArgs || [];
+        _blitArgs[0] = destX | 0;
+        _blitArgs[1] = destY | 0;
+        _blitArgs[2] = sx;
+        _blitArgs[3] = sy;
+        _blitArgs[4] = angle;
+        _blitArgs[5] = transparent ? 1 : 0;
+        _drawScaledRotatedImage(dest, src, _blitArgs);
+    }
+
+    export function imageOverlapsRotateScaled(dest: Image, xDst: number, yDst: number, sxDst: number, syDst: number, angleDst: number, src: Image, sxSrc: number, sySrc: number, angleSrc: number) {
+        _blitArgs = _blitArgs || [];
+        _blitArgs[0] = xDst | 0;
+        _blitArgs[1] = yDst | 0;
+        _blitArgs[2] = sxDst;
+        _blitArgs[3] = syDst;
+        _blitArgs[4] = angleDst;
+        _blitArgs[5] = sxSrc;
+        _blitArgs[6] = sySrc;
+        _blitArgs[7] = angleSrc;
+
+        return _checkRotatedScaledOverlap(dest, src, _blitArgs);
+    }
+
+    export function scaledRotatedImageDimensions(img: Image, sx: number, sy: number, angle: number) {
+        _blitArgs = _blitArgs || [];
+        _blitArgs[0] = sx;
+        _blitArgs[1] = sy;
+        _blitArgs[2] = angle;
+        const result = control.createBuffer(4);
+        _scaledRotatedImageDimensions(img, _blitArgs, result);
+
+        return {
+            width: result.getNumber(NumberFormat.UInt16LE, 0),
+            height: result.getNumber(NumberFormat.UInt16LE, 2)
+        };
     }
 
     /**
