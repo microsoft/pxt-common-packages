@@ -20,8 +20,8 @@ namespace pxsim.gpu {
 
     const fxOps: Ops = {
         initFx(v: number): number {
-            // Already an fx8
-            return v;
+            // Convert to fx8
+            return (v * 256) | 0;
         },
         toFixed(v: number): number {
             // Convert to fx8
@@ -79,6 +79,9 @@ namespace pxsim.gpu {
     function max3(a: number, b: number, c: number): number {
         return Math.max(Math.max(a, b), c);
     }
+    function isTopLeft(a: V2, b: V2): boolean {
+        return a.y < b.y || (a.y === b.y && a.x > b.x);
+    }
     function scaleToRef(v: V2, s: number, ref: V2): V2 {
         ref.x = ops.mul(v.x, s);
         ref.y = ops.mul(v.y, s);
@@ -115,7 +118,6 @@ namespace pxsim.gpu {
         // Triangle indices. Triangles are wound counterclockwise.
         const TRI0_INDICES = [0, 3, 2];
         const TRI1_INDICES = [2, 1, 0];
-
         const v0: Vertex = {
             pos: { x: ops.initFx(args.getAt(0)), y: ops.initFx(args.getAt(1)) },
             uv: { x: ops.initFx(args.getAt(2)), y: ops.initFx(args.getAt(3)) },
@@ -195,11 +197,16 @@ namespace pxsim.gpu {
         const U20 = c0.x - c2.x;
         const V20 = c0.y - c2.y;
 
+        const minX = min3(p0.x, p1.x, p2.x);
+        const minY = min3(p0.y, p1.y, p2.y);
+        const maxX = max3(p0.x, p1.x, p2.x);
+        const maxY = max3(p0.y, p1.y, p2.y);
+
         const pbounds: Bounds = {
-            left: clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth) + fxHalf,
-            top: clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight) + fxHalf,
-            right: clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth) + fxHalf,
-            bottom: clamp(max3(p0.y, p1.y, p2.y), 0, dstHeight) + fxHalf,
+            left: clamp(minX + fxHalf, 0, dstWidth - fxOne),
+            top: clamp(minY + fxHalf, 0, dstHeight - fxOne),
+            right: clamp(maxX - fxHalf, 0, dstWidth - fxOne),
+            bottom: clamp(maxY - fxHalf, 0, dstHeight - fxOne),
         };
         const p: V2 = { x: pbounds.left, y: pbounds.top };
 
@@ -237,7 +244,11 @@ namespace pxsim.gpu {
             let w1 = w1_row;
             let w2 = w2_row;
             for (p.x = pbounds.left; p.x <= pbounds.right; p.x += fxOne) {
-                if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+                if (
+                    (w0 > 0 || (w0 === 0 && isTopLeft(p1, p2))) &&
+                    (w1 > 0 || (w1 === 0 && isTopLeft(p2, p0))) &&
+                    (w2 > 0 || (w2 === 0 && isTopLeft(p0, p1)))
+                ) {
                     const color = shadeTexturedPixel(w0, w1, w2);
                     if (color) {
                         ImageMethods.setPixel(
