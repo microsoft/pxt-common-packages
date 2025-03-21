@@ -12,6 +12,7 @@ namespace images {
     //% img.fieldOptions.decompileArgumentAsString="true"
     //% img.fieldOptions.filter="!tile !dialog !background"
     //% weight=100 group="Create" duplicateShadowOnDrag
+    //% help=images/sprite-image
     export function _spriteImage(img: Image) {
         return img
     }
@@ -83,11 +84,14 @@ namespace images {
      * An image
      * @param image the image
      */
-    //% blockId=image_picker block="%image" shim=TD_ID
-    //% image.fieldEditor="images"
-    //% image.fieldOptions.columns=6
-    //% image.fieldOptions.width=600
+    //% blockId=image_picker block="$image" shim=TD_ID
+    //% image.fieldEditor="sprite"
+    //% image.fieldOptions.taggedTemplate="img"
+    //% image.fieldOptions.decompileIndirectFixedInstances="true"
+    //% image.fieldOptions.decompileArgumentAsString="true"
     //% weight=0 group="Create"
+    //% deprecated
+    //% help=images/image
     export function _image(image: Image): Image {
         return image;
     }

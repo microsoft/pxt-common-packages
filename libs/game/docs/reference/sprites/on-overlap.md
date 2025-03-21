@@ -76,7 +76,7 @@ sprites.onOverlap(SpriteKind.Mortal, SpriteKind.Ball, function (sprite, otherSpr
     sprite.x += -1
 })
 controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
-    ghost.type = SpriteKind.Mortal
+    ghost.setKind(SpriteKind.Mortal)
 })
 sprites.onDestroyed(SpriteKind.Mortal, function (sprite) {
     game.over()

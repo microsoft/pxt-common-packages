@@ -13,6 +13,30 @@ enum ControllerEvent {
 //% blockGap=8
 namespace controller {
     let _players: Controller[];
+    game.addScenePopHandler(() => {
+        const stateWhenPushed = game.currentScene().controllerConnectionState;
+        if (!stateWhenPushed)
+            return;
+        for (let i = 0; i < stateWhenPushed.length; i++) {
+            const p = _players[i];
+            if (p && (!!stateWhenPushed[i] != !!p.connected)) {
+                // connection state changed while in another scene; raise the event.
+                control.raiseEvent(
+                    p.id,
+                    p.connected ? ControllerEvent.Connected : ControllerEvent.Disconnected
+                );
+            }
+        }
+
+    })
+    game.addScenePushHandler(oldScene => {
+        oldScene.controllerConnectionState = [];
+        for (let i = 0; i < _players.length; i++) {
+            if (_players[i]) {
+                oldScene.controllerConnectionState[i] = _players[i].connected;
+            }
+        }
+    })
 
     function addController(ctrl: Controller) {
         if (!_players) {
@@ -169,6 +193,11 @@ namespace controller {
             this._moveSpriteInternal(sprite, vx, vy);
         }
 
+        stopControllingSprite(sprite: Sprite) {
+            if (!sprite) return;
+            this._controlledSprites = this._controlledSprites.filter(s => s.s.id !== sprite.id);
+        }
+
         // use this instead of movesprite internally to avoid adding the "multiplayer" part
         // to the compiled program
         _moveSpriteInternal(sprite: Sprite, vx: number = 100, vy: number = 100) {
@@ -274,7 +303,7 @@ namespace controller {
          * Get the vertical movement, given the step and state of buttons
          * @param step the distance, eg: 100
          */
-        //% weight=49 help=keys/dy
+        //% weight=49 help=controller/dy
         //% blockId=ctrldy block="%controller dy (up-down buttons)||scaled by %step"
         //% step.defl=100
         //% group="Multiplayer"
@@ -429,7 +458,7 @@ namespace controller {
      * Get the vertical movement, given the step and state of buttons
      * @param step the distance, eg: 100
      */
-    //% weight=49 help=keys/dy
+    //% weight=49 help=controller/dy
     //% blockId=keydy block="dy (up-down buttons)||scaled by %step"
     //% step.defl=100
     //% group="Single Player"

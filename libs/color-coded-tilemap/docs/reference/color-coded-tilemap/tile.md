@@ -4,7 +4,7 @@ A tile is an image that is displayed as a rectangular portion of the game scene.
 
 ## The tile type
 
-A **tile** is a complex type that contains an [image](/types/image) and a position in a tilemap. The game scene has a collection of tiles and they are added to the scene using the [setTile](/reference/scene/set-tile) function. Tiles can also be set as a wall to keep sprites from passing through them.
+A **tile** is a complex type that contains an [image](/types/image) and a position in a tilemap. The game scene has a collection of tiles and they are added to the scene using the [setTile](/reference/color-coded-tilemap/set-tile) function. Tiles can also be set as a wall to keep sprites from passing through them.
 
 ## Setting tiles
 
@@ -68,7 +68,11 @@ tileList = scene.getTilesByType(4)
 
 ## See also
 
-[set tile](/reference/scene/set-tile),
-[set tilemap](/reference/scene/set-tilemap),
-[get tile](/reference/scene/get-tile),
-[get tiles by type](/reference/scene/get-tiles-by-type)
+[set tile](/reference/color-coded-tilemap/set-tile),
+[set tile map](/reference/color-coded-tilemap/set-tile-map),
+[get tile](/reference/color-coded-tilemap/get-tile),
+[get tiles by type](/reference/color-coded-tilemap/get-tiles-by-type)
+
+```package
+color-coded-tilemap
+```

@@ -1,18 +1,138 @@
 /**
  * Game transitions and dialog
  **/
-//% color=#8854d0 weight=97 icon="\uf111"
-//% groups='["Gameplay", "Prompt"]'
 namespace game {
     /**
      * Determines if diagnostics are shown
      */
     export let debug = false;
     export let stats = false;
-    export let winEffect: effects.BackgroundEffect = undefined;
-    export let loseEffect: effects.BackgroundEffect = undefined;
-    let loseSound: music.Melody = undefined;
-    let winSound: music.Melody = undefined;
+
+    export enum ScoringType {
+        //% block="high score"
+        HighScore,
+        //% block="low score"
+        LowScore,
+        //% block="none"
+        None
+    }
+
+    // To stay synchronized with https://github.com/microsoft/pxt/blob/stable8.5/webapp/src/components/ImageEditor/sprite/Palette.tsx#L98.
+    /**
+     * The available colors for Arcade.
+     * NOTE: If the color palette is changed, these values will change along with it.
+     **/
+    export enum Color {
+        Transparent = 0,
+        White = 1,
+        Red = 2,
+        Pink = 3,
+        Orange = 4,
+        Yellow = 5,
+        Teal = 6,
+        Green = 7,
+        Blue = 8,
+        LightBlue = 9,
+        Purple = 0xa,
+        LightPurple = 0xb,
+        DarkPurple = 0xc,
+        Tan = 0xd,
+        Brown = 0xe,
+        Black = 0xf
+    }
+
+    export class GameOverConfig {
+        scoringType: ScoringType;
+        winEffect: effects.BackgroundEffect;
+        loseEffect: effects.BackgroundEffect;
+        loseSound: music.Playable;
+        winSound: music.Playable;
+        loseSoundLooping: boolean;
+        winSoundLooping: boolean;
+        winMessage: string;
+        winMessageMultiplayer: string;
+        loseMessage: string;
+        effectSetByUser: boolean;
+        soundSetByUser: boolean;
+        messageSetByUser: boolean;
+        scoringTypeSetByUser: boolean;
+
+        constructor() {
+            this.init();
+        }
+
+        init() {
+            this.scoringType = ScoringType.HighScore;
+            this.winEffect = effects.confetti;
+            this.loseEffect = effects.melt;
+            this.winSound = music.melodyPlayable(music.powerUp);
+            this.loseSound = music.melodyPlayable(music.wawawawaa);
+            this.winSoundLooping = false;
+            this.loseSoundLooping  = false;
+            this.winMessage = "YOU WIN!";
+            this.winMessageMultiplayer = "${WINNER} WINS!";
+            this.loseMessage = "GAME OVER";
+            this.effectSetByUser = false;
+            this.soundSetByUser = false;
+            this.messageSetByUser = false;
+            this.scoringTypeSetByUser = false;
+        }
+
+        setScoringType(type: ScoringType, explicit: boolean) {
+            if (!explicit && this.scoringTypeSetByUser) return;
+            this.scoringType = type;
+            if (explicit) this.scoringTypeSetByUser = true;
+        }
+
+        setEffect(win: boolean, effect: effects.BackgroundEffect, explicit: boolean) {
+            if (!explicit && this.effectSetByUser) return;
+            if (win) this.winEffect = effect;
+            else this.loseEffect = effect;
+            if (explicit) this.effectSetByUser = true;
+        }
+        getEffect(win: boolean) {
+            return win ? this.winEffect : this.loseEffect;
+        }
+
+        setSound(win: boolean, sound: music.Playable, looping: boolean, explicit: boolean) {
+            if (!explicit && this.soundSetByUser) return;
+            if (win) {
+                this.winSound = sound;
+                this.winSoundLooping = looping;
+            } else {
+                this.loseSound = sound;
+                this.loseSoundLooping = looping;
+            }
+            if (explicit) this.soundSetByUser = true;
+        }
+        getSound(win: boolean) {
+            return win ? this.winSound : this.loseSound;
+        }
+        getSoundLooping(win: boolean) {
+            return win ? this.winSoundLooping : this.loseSoundLooping;
+        }
+
+        setMessage(win: boolean, message: string, explicit: boolean) {
+            if (!explicit && this.messageSetByUser) return;
+            if (win) this.winMessage = message;
+            else this.loseMessage = message;
+            if (explicit) this.messageSetByUser = true;
+        }
+        getMessage(win: boolean, preferMultiplayer?: boolean) {
+            if (this.messageSetByUser)
+                return win ? this.winMessage : this.loseMessage;
+            else if (preferMultiplayer)
+                return win ? this.winMessageMultiplayer : this.loseMessage;
+            else
+                return win ? this.winMessage : this.loseMessage;
+        }
+    }
+
+    let _gameOverConfig: GameOverConfig;
+    export const gameOverConfig = () => {
+        if (!_gameOverConfig) _gameOverConfig = new GameOverConfig();
+        return _gameOverConfig;
+    }
 
     let _scene: scene.Scene;
     let _sceneStack: scene.Scene[];
@@ -48,16 +168,6 @@ namespace game {
             _scene = new scene.Scene(control.pushEventContext(), _scene);
         }
         _scene.init();
-
-        if (!winEffect)
-            winEffect = effects.confetti;
-        if (!loseEffect)
-            loseEffect = effects.melt;
-
-        if (!winSound)
-            winSound = music.powerUp;
-        if (!loseSound)
-            loseSound = music.wawawawaa;
     }
 
     export function pushScene() {
@@ -139,31 +249,91 @@ namespace game {
 
     /**
      * Set the effect that occurs when the game is over
-     * @param win whether the animation should run on a win (true)
+     * @param win whether the effect should run on a win (true) or lose (false)
      * @param effect
      */
+    //% blockId=game_setgameovereffect
+    //% block="use effect $effect for $win"
+    //% effect.defl=effects.confetti
+    //% win.shadow=toggleWinLose
+    //% win.defl=true
+    //% group="Game Over"
+    //% weight=90
+    //% blockGap=8
+    //% help=game/set-game-over-effect
     export function setGameOverEffect(win: boolean, effect: effects.BackgroundEffect) {
         init();
-        if (!effect) return;
-        if (win)
-            winEffect = effect;
-        else
-            loseEffect = effect;
+        const goc = game.gameOverConfig();
+        goc.setEffect(win, effect, true);
     }
 
     /**
-     * Set the music that occurs when the player wins
-     * @param win
+     * Set the music that occurs when the game is over
+     * @param win whether the sound should play on a win (true) or lose (false)
      * @param effect
      */
+    //% blockId=game_setgameoverplayable
+    //% block="use $sound looping $looping for $win"
+    //% sound.shadow=music_melody_playable
+    //% sound.defl=music.powerUp
+    //% looping.shadow=toggleOnOff
+    //% looping.defl=false
+    //% win.shadow=toggleWinLose
+    //% win.defl=true
+    //% group="Game Over"
+    //% weight=80
+    //% blockGap=8
+    //% help=game/set-game-over-playable
+    export function setGameOverPlayable(win: boolean, sound: music.Playable, looping: boolean) {
+        init();
+        const goc = game.gameOverConfig();
+        goc.setSound(win, sound, looping, true);
+    }
+
+    // Legacy api. Older extensions may still use this.
     export function setGameOverSound(win: boolean, sound: music.Melody) {
         init();
-        if (!sound) return;
-        if (win)
-            winSound = sound;
-        else
-            loseSound = sound;
+        const goc = game.gameOverConfig();
+        goc.setSound(win, music.melodyPlayable(sound), false, true);
     }
+
+    /**
+     * Set the message that displays when the game is over
+     * @param win whether the message should show on a win (true) or lose (false)
+     * @param message 
+     */
+    //% blockId=game_setgameovermessage
+    //% block="use message $message for $win"
+    //% message.defl="GAME OVER!"
+    //% win.shadow=toggleWinLose
+    //% win.defl=true
+    //% group="Game Over"
+    //% weight=70
+    //% blockGap=8
+    //% help=game/set-game-over-message
+    export function setGameOverMessage(win: boolean, message: string) {
+        init();
+        const goc = game.gameOverConfig();
+        goc.setMessage(win, message, true);
+    }
+
+    /**
+     * Set the method of judging the best score for the game
+     * @param type the scoring type
+     */
+    //% blockId=game_setgameoverscoringtype
+    //% block="use $type as best score"
+    //% type.defl=ScoringType.HighScore
+    //% group="Game Over"
+    //% weight=60
+    //% blockGap=8
+    //% help=game/set-game-over-scoring-type
+    export function setGameOverScoringType(type: ScoringType) {
+        init();
+        const goc = game.gameOverConfig();
+        goc.setScoringType(type, true);
+    }
+
     /**
      * Set the function to call on game over. The 'win' boolean is
      * passed to the handler.
@@ -179,7 +349,39 @@ namespace game {
     //% group="Gameplay"
     //% blockId=gameOver block="game over %win=toggleWinLose || with %effect effect"
     //% weight=80 help=game/over
+    //% deprecated=true
     export function over(win: boolean = false, effect?: effects.BackgroundEffect) {
+        // Match legacy behavior unless effect was set by user
+        const goc = game.gameOverConfig();
+        goc.setEffect(win, effect, false);
+        _gameOverImpl(win);
+    }
+
+    //% blockId=gameOver2 block="game over $win"
+    //% win.shadow=toggleWinLose
+    //% win.defl=true
+    //% weight=100
+    //% blockGap=8
+    //% help=game/over
+    //% group="Game Over"
+    export function gameOver(win: boolean) {
+        _gameOverImpl(win);
+    }
+
+    export function gameOverPlayerWin(player: number) {
+        _gameOverImpl(true, player);
+    }
+
+    function _mapScoreTypeToString(scoreType: ScoringType): string {
+        switch (scoreType) {
+            case ScoringType.HighScore: return "highscore";
+            case ScoringType.LowScore: return "lowscore";
+            case ScoringType.None: return "none";
+            default: return "none";
+        }
+    }
+
+    function _gameOverImpl(win: boolean, winnerOverride?: number) {
         init();
         if (__isOver) return;
         __isOver = true;
@@ -187,18 +389,29 @@ namespace game {
         if (__gameOverHandler) {
             __gameOverHandler(win);
         } else {
-            if (!effect) {
-                effect = win ? winEffect : loseEffect;
+            const goc = game.gameOverConfig();
+
+            const judged = !winnerOverride && goc.scoringType !== ScoringType.None;
+            const playersWithScores = info.playersWithScores();
+            const prevBestScore = judged && info.highScore();
+            const winner = judged && win && info.winningPlayer();
+            const scores = playersWithScores.map(player => new GameOverPlayerScore(player.number, player.impl.score(), player === winner));
+
+            // Save all scores. Dependency Note: this action triggers Kiosk to exit the simulator and show the high score screen.
+            const scoreTypeString = _mapScoreTypeToString(goc.scoringType);
+            info.saveAllScores(scoreTypeString);
+
+            // Save high score if this was a judged game and there was a winner (don't save in the LOSE case).
+            if (judged && winner) {
+                info.saveHighScore();
             }
 
-            // Save all scores as relevant to the game.
-            info.saveAllScores();
-
-            // collect the scores before poping the scenes
-            const scoreInfo = info.player1.getState();
-            const highScore = info.highScore();
-            if (scoreInfo.score > highScore)
-                info.saveHighScore();
+            const preferMultiplayer = !!winnerOverride || (judged && info.multiplayerScoring());
+            const message = goc.getMessage(win, preferMultiplayer);
+            const effect = goc.getEffect(win);
+            const sound = goc.getSound(win);
+            const looping = goc.getSoundLooping(win);
+            const playbackMode = looping ? music.PlaybackMode.LoopingInBackground : music.PlaybackMode.InBackground;
 
             // releasing memory and clear fibers. Do not add anything that releases the fiber until background is set below,
             // or screen will be cleared on the new frame and will not appear as background in the game over screen.
@@ -209,16 +422,12 @@ namespace game {
             pushScene();
             scene.setBackgroundImage(screen.clone());
 
-            if (win)
-                winSound.play();
-            else
-                loseSound.play();
-
-            effect.startScreenEffect();
+            if (sound) music.play(sound, playbackMode);
+            if (effect) effect.startScreenEffect();
 
             pause(400);
 
-            const overDialog = new GameOverDialog(win, scoreInfo.score, highScore);
+            const overDialog = new GameOverDialog(win, message, judged, scores, prevBestScore, winnerOverride);
             scene.createRenderable(scene.HUD_Z, target => {
                 overDialog.update();
                 target.drawTransparentImage(

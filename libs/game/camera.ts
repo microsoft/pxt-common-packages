@@ -8,6 +8,8 @@ namespace scene {
         drawOffsetX: number;
         drawOffsetY: number;
         sprite: Sprite;
+        protected _lastUpdatedSpriteX: number;
+        protected _lastUpdatedSpriteY: number;
 
         protected shakeStartTime: number;
         protected shakeDuration: number;
@@ -27,9 +29,9 @@ namespace scene {
         set offsetX(v: number) {
             const scene = game.currentScene();
             if (scene.tileMap && scene.tileMap.enabled) {
-                this._offsetX = scene.tileMap.offsetX(v);
+                this._offsetX = Math.floor(scene.tileMap.offsetX(v));
             } else {
-                this._offsetX = v;
+                this._offsetX = Math.floor(v);
             }
         }
         get offsetY() {
@@ -38,29 +40,29 @@ namespace scene {
         set offsetY(v: number) {
             const scene = game.currentScene();
             if (scene.tileMap && scene.tileMap.enabled) {
-                this._offsetY = scene.tileMap.offsetY(v);
+                this._offsetY = Math.floor(scene.tileMap.offsetY(v));
             } else {
-                this._offsetY = v;
+                this._offsetY = Math.floor(v);
             }
         }
 
         get x() {
-            return this.drawOffsetX + (screen.width >> 1);
+            return this.offsetX + (screen.width >> 1);
         }
         get y() {
-            return this.drawOffsetY + (screen.height >> 1);
+            return this.offsetY + (screen.height >> 1);
         }
         get left() {
-            return this.drawOffsetX;
+            return this.offsetX;
         }
         get right() {
-            return this.drawOffsetX + screen.width;
+            return this.offsetX + screen.width;
         }
         get top() {
-            return this.drawOffsetY;
+            return this.offsetY;
         }
         get bottom() {
-            return this.drawOffsetY + screen.height;
+            return this.offsetY + screen.height;
         }
 
         shake(amplitude: number = 4, duration: number = 1000) {
@@ -75,15 +77,18 @@ namespace scene {
             }
         }
 
+        isUpdated() {
+            return !this.sprite || (this.sprite.x === this._lastUpdatedSpriteX && this.sprite.y === this._lastUpdatedSpriteY);
+        }
+
         update() {
             // if sprite, follow sprite
             if (this.sprite) {
-                this.offsetX = this.sprite.x - (screen.width >> 1);
-                this.offsetY = this.sprite.y - (screen.height >> 1);
+                this._lastUpdatedSpriteX = this.sprite.x;
+                this._lastUpdatedSpriteY = this.sprite.y;
+                this.offsetX = this.sprite.left + (this.sprite.width >> 1) - (screen.width >> 1);
+                this.offsetY = this.sprite.top + (this.sprite.width >> 1) - (screen.height >> 1);
             }
-
-            this.offsetX = Math.floor(this.offsetX);
-            this.offsetY = Math.floor(this.offsetY);
 
             this.drawOffsetX = this.offsetX;
             this.drawOffsetY = this.offsetY;

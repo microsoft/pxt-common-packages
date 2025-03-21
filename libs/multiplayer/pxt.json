@@ -1,0 +1,20 @@
+{
+    "name": "multiplayer",
+    "description": "Additional blocks for building multiplayer games",
+    "files": [
+        "README.md",
+        "ns.ts",
+        "fieldEditors.ts",
+        "images.ts",
+        "player.ts",
+        "stateKind.ts",
+        "targetoverrides.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "dependencies": {
+        "game": "file:../game"
+    }
+}

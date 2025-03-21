@@ -1,6 +1,8 @@
 namespace music.sequencer {
     const BUFFER_SIZE = 12;
 
+    let currentSequencer: sequencer.Sequencer;
+
     /**
      * Byte encoding format for songs
      * FIXME: should this all be word aligned?
@@ -22,7 +24,7 @@ namespace music.sequencer {
      *     notes byte length
      *     ...note events
      *
-     * instrument(27 bytes)
+     * instrument(28 bytes)
      *     0 waveform
      *     1 amp attack
      *     3 amp decay
@@ -38,6 +40,7 @@ namespace music.sequencer {
      *     22 amp lfo amp
      *     24 pitch lfo freq
      *     25 pitch lfo amp
+     *     27 octave
      *
      * drum(5 + 7 * steps bytes)
      *     0 steps
@@ -57,12 +60,19 @@ namespace music.sequencer {
      *     4 polyphony
      *     5...notes(1 byte each)
      *
+     * note (1 byte)
+     *     lower six bits = note - (instrumentOctave - 2) * 12
+     *     upper two bits are the enharmonic spelling:
+     *          0 = normal
+     *          1 = flat
+     *          2 = sharp
      */
 
-    export class Song {
+    export class Song extends Playable {
         tracks: Track[];
 
         constructor(public buf: Buffer) {
+            super();
             this.tracks = [];
 
             let currentOffset = 7;
@@ -120,6 +130,40 @@ namespace music.sequencer {
 
         get numberOfTracks(): number {
             return this.buf[6];
+        }
+
+        play(playbackMode: PlaybackMode) {
+            if (control.deviceDalVersion() === "sim") {
+                const seq = new _SimulatorSequencer();
+
+                if (playbackMode === PlaybackMode.UntilDone) {
+                    seq.play(this.buf, false);
+
+                    pauseUntil(() => seq.state() === "stop");
+                }
+                else if (playbackMode === PlaybackMode.InBackground) {
+                    seq.play(this.buf, false);
+                }
+                else {
+                    seq.play(this.buf, true);
+                }
+            }
+            else {
+                if (currentSequencer) currentSequencer.stop();
+                currentSequencer = new sequencer.Sequencer(this);
+
+                if (playbackMode === PlaybackMode.UntilDone) {
+                    let seq = currentSequencer;
+                    currentSequencer.start(false);
+                    pauseUntil(() => !seq.isRunning);
+                }
+                else if (playbackMode === PlaybackMode.InBackground) {
+                    currentSequencer.start(false);
+                }
+                else {
+                    currentSequencer.start(true);
+                }
+            }
         }
     }
 
@@ -239,8 +283,12 @@ namespace music.sequencer {
             return this.polyphony + 5;
         }
 
-        getNote(offset: number) {
-            return this.buf[this.offset + offset + 5];
+        getNote(offset: number, octave?: number) {
+            const value = this.buf[this.offset + offset + 5] & 0x3f;
+            if (octave !== undefined) {
+                return value + (octave - 2) * 12
+            }
+            return value
         }
 
         protected getValue(offset: number) {
@@ -365,6 +413,14 @@ namespace music.sequencer {
 
         set waveform(value: number) {
             this.buf[this.offset] = value;
+        }
+
+        get octave(): number {
+            return this.buf[this.offset + 27]
+        }
+
+        set octave(value: number) {
+            this.buf[this.offset + 27] = value;
         }
     }
 
@@ -772,5 +828,13 @@ namespace music.sequencer {
     function lfoValueAtTime(lfo: LFO, time: number) {
         // Use cosine to smooth out the value somewhat
         return Math.cos(((time / 1000) * lfo.frequency) * 2 * Math.PI) * lfo.amplitude
+    }
+
+    export function _stopAllSongs() {
+        if (currentSequencer) {
+            currentSequencer.stop();
+            currentSequencer = undefined;
+        }
+        _stopAllSimSequencers();
     }
 }

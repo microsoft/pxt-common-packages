@@ -189,13 +189,13 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                 s._x = Fx.add(s._x, stepX);
                 s._y = Fx.add(s._y, stepY);
 
-                if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS)) {
+                if (!(s.flags & SPRITE_NO_SPRITE_OVERLAPS) && s._kindsOverlappedWith.length) {
                     this.map.insertAABB(s);
                 }
                 if (tileMap && tileMap.enabled) {
                     this.tilemapCollisions(ms, tileMap);
                 }
-                
+
                 // check for screen edge collisions
                 const bounce = s.flags & sprites.Flag.BounceOnWall;
                 if (s.flags & sprites.Flag.StayInScreen || (bounce && !tileMap)) {
@@ -311,43 +311,62 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         control.enablePerfCounter("phys_collisions");
         if (!handlers.length) return;
 
-        // sprites that have moved this step
-        for (const ms of movedSprites) {
-            const sprite = ms.sprite;
-            if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-            const overSprites = this.map.overlaps(ms.sprite);
+        // clear the overlap lists on all sprites
+        for (const sprite of this.sprites) {
+            sprite._alreadyChecked = undefined;
+        }
 
-            for (const overlapper of overSprites) {
-                if (overlapper.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
-                const thisKind = sprite.kind();
-                const otherKind = overlapper.kind();
+        for (const bucket of this.map.filledBuckets) {
+            if (bucket.length === 1) continue;
 
-                // skip if no overlap event between these two kinds of sprites
-                if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
+            for (const sprite of bucket) {
+                if (sprite.flags & SPRITE_NO_SPRITE_OVERLAPS) continue;
 
-                // Maintaining invariant that the sprite with the higher ID has the other sprite as an overlapper
-                const higher = sprite.id > overlapper.id ? sprite : overlapper;
-                const lower = higher === sprite ? overlapper : sprite;
+                for (const overlapper of bucket) {
+                    if (overlapper === sprite) continue;
+                    const thisKind = sprite.kind();
+                    const otherKind = overlapper.kind();
 
-                // if the two sprites are not currently engaged in an overlap event,
-                // apply all matching overlap events
-                if (higher._overlappers.indexOf(lower.id) === -1) {
-                    handlers
-                        .filter(h => (h.kind === thisKind && h.otherKind === otherKind)
-                            || (h.kind === otherKind && h.otherKind === thisKind)
-                        )
-                        .forEach(h => {
+                    // the sprite with the higher id maintains the overlap lists
+                    const higher = sprite.id > overlapper.id ? sprite : overlapper;
+                    const lower = higher === sprite ? overlapper : sprite;
+
+                    if (!higher._alreadyChecked) {
+                        higher._alreadyChecked = [];
+                    }
+
+                    // skip if we already compared these two
+                    if (higher._alreadyChecked.indexOf(lower.id) !== -1) continue;
+
+                    higher._alreadyChecked.push(lower.id);
+
+                    // skip if already overlapping
+                    if (higher._overlappers.indexOf(lower.id) !== -1) continue;
+
+                    // skip if there is no overlap event between these two kinds of sprites
+                    if (sprite._kindsOverlappedWith.indexOf(otherKind) === -1) continue;
+
+                    // perform the actual overlap check
+                    if (!higher.overlapsWith(lower)) continue;
+
+                    // invoke all matching overlap event handlers
+                    for (const h of handlers) {
+                        if ((h.kind === thisKind && h.otherKind === otherKind)
+                            || (h.kind === otherKind && h.otherKind === thisKind)) {
                             higher._overlappers.push(lower.id);
                             control.runInParallel(() => {
                                 if (!((sprite.flags | overlapper.flags) & SPRITE_NO_SPRITE_OVERLAPS)) {
-                                    h.handler(
-                                        thisKind === h.kind ? sprite : overlapper,
-                                        thisKind === h.kind ? overlapper : sprite
-                                    );
+                                    if (thisKind === h.kind) {
+                                        h.handler(sprite, overlapper)
+                                    }
+                                    else {
+                                        h.handler(overlapper, sprite)
+                                    }
                                 }
                                 higher._overlappers.removeElement(lower.id);
                             });
-                        });
+                        }
+                    }
                 }
             }
         }
@@ -356,6 +375,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     protected screenEdgeCollisions(movingSprite: MovingSprite, bounce: number, camera: scene.Camera) {
         let s = movingSprite.sprite;
         if (!s.isStatic()) s.setHitbox();
+        if (!camera.isUpdated()) camera.update();
 
         let offset = Fx.toFloat(s._hitbox.left) - camera.offsetX;
         if (offset < 0) {
@@ -465,7 +485,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
                         s.destroy();
-                    } else if (s._vx === movingSprite.cachedVx) {
+                    } else if (s._vx === movingSprite.cachedVx && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
                         if (s.flags & sprites.Flag.BounceOnWall) {
@@ -546,7 +566,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     if (s.flags & sprites.Flag.DestroyOnWall) {
                         s.destroy();
-                    } else if (s._vy === movingSprite.cachedVy) {
+                    } else if (s._vy === movingSprite.cachedVy && !(s.flags & SPRITE_NO_WALL_COLLISION)) {
                         // sprite collision event didn't change velocity in this direction;
                         // apply normal updates
                         if (s.flags & sprites.Flag.BounceOnWall) {

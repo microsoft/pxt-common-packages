@@ -270,6 +270,7 @@ class Sprite extends sprites.BaseSprite {
 
     _hitbox: game.Hitbox;
     _overlappers: number[];
+    _alreadyChecked: number[];
     _kindsOverlappedWith: number[];
 
     flags: number
@@ -694,6 +695,8 @@ class Sprite extends sprites.BaseSprite {
             return false
         if (other.flags & SPRITE_NO_SPRITE_OVERLAPS)
             return false
+        if (this.flags & sprites.Flag.HitboxOverlaps || other.flags & sprites.Flag.HitboxOverlaps)
+            return other._hitbox.overlapsWith(this._hitbox);
         if (!other._hitbox.overlapsWith(this._hitbox))
             return false;
         if (!this.isScaled() && !other.isScaled()) {
@@ -787,7 +790,6 @@ class Sprite extends sprites.BaseSprite {
      */
     //% blockId=spriteobstacle block="%sprite(mySprite) wall hit on %direction"
     //% blockNamespace="scene" group="Locations"
-    //% direction.shadow=tiles_collision_direction_editor
     //% help=sprites/sprite/tile-hit-from
     //% deprecated=1
     tileHitFrom(direction: number): number {
@@ -854,6 +856,7 @@ class Sprite extends sprites.BaseSprite {
     //% duration.shadow=timePicker
     //% expandableArgumentMode="toggle"
     //% help=sprites/sprite/destroy
+    //% deprecated=1
     destroy(effect?: effects.ParticleEffect, duration?: number) {
         if (this.flags & sprites.Flag.Destroyed)
             return;

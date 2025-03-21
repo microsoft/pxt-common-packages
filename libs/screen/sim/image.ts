@@ -61,8 +61,8 @@ namespace pxsim {
 }
 
 namespace pxsim.ImageMethods {
-    function XX(x: number) { return (x << 16) >> 16 }
-    function YY(x: number) { return x >> 16 }
+    export function XX(x: number) { return (x << 16) >> 16 }
+    export function YY(x: number) { return x >> 16 }
 
     export function width(img: RefImage) { return img._width }
 
@@ -525,58 +525,59 @@ namespace pxsim.ImageMethods {
     }
 
     export function drawIcon(img: RefImage, icon: RefBuffer, x: number, y: number, color: number) {
-        const img2: Uint8Array = icon.data
+        const src: Uint8Array = icon.data
         if (!image.isValidImage(icon))
             return
-        if (img2[1] != 1)
+        if (src[1] != 1)
             return // only mono
-        let w = image.bufW(img2)
-        let h = image.bufH(img2)
-        let byteH = image.byteHeight(h, 1)
+        let width = image.bufW(src)
+        let height = image.bufH(src)
+        let byteH = image.byteHeight(height, 1)
 
         x |= 0
         y |= 0
-        const sh = img._height
-        const sw = img._width
+        const destHeight = img._height
+        const destWidth = img._width
 
-        if (x + w <= 0) return
-        if (x >= sw) return
-        if (y + h <= 0) return
-        if (y >= sh) return
+        if (x + width <= 0) return
+        if (x >= destWidth) return
+        if (y + height <= 0) return
+        if (y >= destHeight) return
 
         img.makeWritable()
 
-        let p = 8
+        let srcPointer = 8
         color = img.color(color)
         const screen = img.data
 
-        for (let i = 0; i < w; ++i) {
-            let xxx = x + i
-            if (0 <= xxx && xxx < sw) {
-                let dst = xxx + y * sw
-                let src = p
-                let yy = y
-                let end = Math.min(sh, h + y)
+        for (let i = 0; i < width; ++i) {
+            let destX = x + i
+            if (0 <= destX && destX < destWidth) {
+                let destIndex = destX + y * destWidth
+                let srcIndex = srcPointer
+                let destY = y
+                let destEnd = Math.min(destHeight, height + y)
                 if (y < 0) {
-                    src += ((-y) >> 3)
-                    yy += ((-y) >> 3) * 8
+                    srcIndex += ((-y) >> 3)
+                    destY += ((-y) >> 3) * 8
+                    destIndex += (destY - y) * destWidth
                 }
                 let mask = 0x01
-                let v = img2[src++]
-                while (yy < end) {
-                    if (yy >= 0 && (v & mask)) {
-                        screen[dst] = color
+                let srcByte = src[srcIndex++]
+                while (destY < destEnd) {
+                    if (destY >= 0 && (srcByte & mask)) {
+                        screen[destIndex] = color
                     }
                     mask <<= 1
                     if (mask == 0x100) {
                         mask = 0x01
-                        v = img2[src++]
+                        srcByte = src[srcIndex++]
                     }
-                    dst += sw
-                    yy++
+                    destIndex += destWidth
+                    destY++
                 }
             }
-            p += byteH
+            srcPointer += byteH
         }
     }
 
@@ -610,6 +611,246 @@ namespace pxsim.ImageMethods {
 
     export function _fillCircle(img: RefImage, cxy: number, r: number, c: number) {
         fillCircle(img, XX(cxy), YY(cxy), r, c);
+    }
+
+    interface LineGenState {
+        x: number;
+        y: number;
+        x0: number;
+        y0: number;
+        x1: number;
+        y1: number;
+        W: number;
+        H: number;
+        dx: number;
+        dy: number;
+        yi: number;
+        xi: number;
+        D: number;
+        nextFuncIndex: number;
+    }
+    interface ValueRange {
+        min: number;
+        max: number;
+    }
+
+    function nextYRange_Low(x: number, line: LineGenState, yRange: ValueRange) {
+        while (line.x === x && line.x <= line.x1 && line.x < line.W) {
+            if (0 <= line.x) {
+                if (line.y < yRange.min) yRange.min = line.y;
+                if (line.y > yRange.max) yRange.max = line.y
+            }
+            if (line.D > 0) {
+                line.y += line.yi;
+                line.D -= line.dx;
+            }
+            line.D += line.dy;
+            ++line.x;
+        }
+    }
+
+    function nextYRange_HighUp(x: number, line: LineGenState, yRange: ValueRange) {
+        while (line.x == x && line.y >= line.y1 && line.x < line.W) {
+            if (0 <= line.x) {
+                if (line.y < yRange.min) yRange.min = line.y;
+                if (line.y > yRange.max) yRange.max = line.y;
+            }
+            if (line.D > 0) {
+                line.x += line.xi;
+                line.D += line.dy;
+            }
+            line.D += line.dx;
+            --line.y;
+        }
+    }
+
+    function nextYRange_HighDown(x: number, line: LineGenState, yRange: ValueRange) {
+        while (line.x == x && line.y <= line.y1 && line.x < line.W) {
+            if (0 <= line.x) {
+                if (line.y < yRange.min) yRange.min = line.y;
+                if (line.y > yRange.max) yRange.max = line.y;
+            }
+            if (line.D > 0) {
+                line.x += line.xi;
+                line.D -= line.dy;
+            }
+            line.D += line.dx;
+            ++line.y;
+        }
+    }
+
+    function initYRangeGenerator(X0: number, Y0: number, X1: number, Y1: number): LineGenState {
+        const line: LineGenState = {
+            x: X0,
+            y: Y0,
+            x0: X0,
+            y0: Y0,
+            x1: X1,
+            y1: Y1,
+            W: 0,
+            H: 0,
+            dx: X1 - X0,
+            dy: Y1 - Y0,
+            yi: 0,
+            xi: 0,
+            D: 0,
+            nextFuncIndex: 0,
+        };
+
+        if ((line.dy < 0 ? -line.dy : line.dy) < line.dx) {
+            line.yi = 1;
+            if (line.dy < 0) {
+                line.yi = -1;
+                line.dy = -line.dy;
+            }
+            line.D = 2 * line.dy - line.dx;
+            line.dx = line.dx << 1;
+            line.dy = line.dy << 1;
+
+            line.nextFuncIndex = 0;
+            return line;
+        } else {
+            line.xi = 1;
+            if (line.dy < 0) {
+                line.D = 2 * line.dx + line.dy;
+                line.dx = line.dx << 1;
+                line.dy = line.dy << 1;
+
+                line.nextFuncIndex = 1;
+                return line;
+            } else {
+                line.D = 2 * line.dx - line.dy;
+                line.dx = line.dx << 1;
+                line.dy = line.dy << 1;
+
+                line.nextFuncIndex = 2;
+                return line;
+            }
+        }
+    }
+
+    export function fillTriangle(img: RefImage, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, c: number) {
+        if (x1 < x0) {
+            [x1, x0] = [x0, x1];
+            [y1, y0] = [y0, y1];
+        }
+        if (x2 < x1) {
+            [x2, x1] = [x1, x2];
+            [y2, y1] = [y1, y2];
+        }
+        if (x1 < x0) {
+            [x1, x0] = [x0, x1];
+            [y1, y0] = [y0, y1];
+        }
+
+        const lines: LineGenState[] = [
+            initYRangeGenerator(x0, y0, x2, y2),
+            initYRangeGenerator(x0, y0, x1, y1),
+            initYRangeGenerator(x1, y1, x2, y2)
+        ];
+
+        lines[0].W = lines[1].W = lines[2].W = width(img);
+        lines[0].H = lines[1].H = lines[2].H = height(img);
+
+        type FP_NEXT = (x: number, line: LineGenState, yRange: ValueRange) => void;
+        const nextFuncList: FP_NEXT[] = [
+            nextYRange_Low,
+            nextYRange_HighUp,
+            nextYRange_HighDown
+        ];
+        const fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+        const fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+        const fpNext2 = nextFuncList[lines[2].nextFuncIndex];
+
+        const yRange= {
+            min: lines[0].H,
+            max: -1
+        };
+
+        for (let x = lines[1].x0; x <= lines[1].x1; x++) {
+            yRange.min = lines[0].H; yRange.max = -1;
+            fpNext0(x, lines[0], yRange);
+            fpNext1(x, lines[1], yRange);
+            fillRect(img, x, yRange.min, 1, yRange.max - yRange.min + 1, c);
+        }
+
+        fpNext2(lines[2].x0, lines[2], yRange);
+
+        for (let x = lines[2].x0 + 1; x <= lines[2].x1; x++) {
+            yRange.min = lines[0].H; yRange.max = -1;
+            fpNext0(x, lines[0], yRange);
+            fpNext2(x, lines[2], yRange);
+            fillRect(img, x, yRange.min, 1, yRange.max - yRange.min + 1, c);
+        }
+    }
+
+    export function _fillTriangle(img: RefImage, args: RefCollection) {
+        fillTriangle(
+            img,
+            args.getAt(0) | 0,
+            args.getAt(1) | 0,
+            args.getAt(2) | 0,
+            args.getAt(3) | 0,
+            args.getAt(4) | 0,
+            args.getAt(5) | 0,
+            args.getAt(6) | 0,
+        );
+    }
+
+    export function fillPolygon4(img: RefImage, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, c: number) {
+        const lines: LineGenState[]= [
+            (x0 < x1) ? initYRangeGenerator(x0, y0, x1, y1) : initYRangeGenerator(x1, y1, x0, y0),
+            (x1 < x2) ? initYRangeGenerator(x1, y1, x2, y2) : initYRangeGenerator(x2, y2, x1, y1),
+            (x2 < x3) ? initYRangeGenerator(x2, y2, x3, y3) : initYRangeGenerator(x3, y3, x2, y2),
+            (x0 < x3) ? initYRangeGenerator(x0, y0, x3, y3) : initYRangeGenerator(x3, y3, x0, y0)
+        ];
+
+        lines[0].W = lines[1].W = lines[2].W = lines[3].W = width(img);
+        lines[0].H = lines[1].H = lines[2].H = lines[3].H = height(img);
+
+        let minX = Math.min(Math.min(x0, x1), Math.min(x2, x3));
+        let maxX = Math.min(Math.max(Math.max(x0, x1), Math.max(x2, x3)), lines[0].W - 1);
+
+        type FP_NEXT = (x: number, line: LineGenState, yRange: ValueRange) => void;
+        const nextFuncList: FP_NEXT[] = [
+            nextYRange_Low,
+            nextYRange_HighUp,
+            nextYRange_HighDown
+        ];
+
+        const fpNext0 = nextFuncList[lines[0].nextFuncIndex];
+        const fpNext1 = nextFuncList[lines[1].nextFuncIndex];
+        const fpNext2 = nextFuncList[lines[2].nextFuncIndex];
+        const fpNext3 = nextFuncList[lines[3].nextFuncIndex];
+
+        const yRange: ValueRange = {
+            min: lines[0].H,
+            max: -1
+        };
+
+        for (let x = minX; x <= maxX; x++) {
+            yRange.min = lines[0].H; yRange.max = -1;
+            fpNext0(x, lines[0], yRange);
+            fpNext1(x, lines[1], yRange);
+            fpNext2(x, lines[2], yRange);
+            fpNext3(x, lines[3], yRange);
+            fillRect(img, x,yRange.min, 1, yRange.max - yRange.min + 1, c);
+        }
+    }
+
+    export function _fillPolygon4(img: RefImage, args: RefCollection) {
+        fillPolygon4(
+            img,
+            args.getAt(0) | 0,
+            args.getAt(1) | 0,
+            args.getAt(2) | 0,
+            args.getAt(3) | 0,
+            args.getAt(4) | 0,
+            args.getAt(5) | 0,
+            args.getAt(6) | 0,
+            args.getAt(7) | 0,
+            args.getAt(8) | 0,
+        );
     }
 
     export function _blitRow(img: RefImage, xy: number, from: RefImage, xh: number) {

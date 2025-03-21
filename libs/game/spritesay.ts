@@ -251,7 +251,7 @@ namespace sprites {
 
             if (sayLeft + width < 0 || sayTop + height < 0 || sayLeft > screen.width || sayTop > screen.height) return;
 
-            SpriteSayRenderer.drawSayFrame(sayLeft, sayTop, width, height, owner.x, owner.y, this.bgColor, screen);
+            SpriteSayRenderer.drawSayFrame(sayLeft, sayTop, width, height, owner.x - ox, owner.y - oy, this.bgColor, screen);
 
             if (height) {
                 if (this.animation) {
@@ -287,7 +287,6 @@ namespace sprites {
 
             // sets the default scroll speed in pixels per second
             let speed = 45;
-            const currentScene = game.currentScene();
 
             // Calculates the speed of the scroll if scrolling is needed and a time is specified
             if (timeOnScreen && maxOffset > 0) {
@@ -298,7 +297,7 @@ namespace sprites {
             }
 
             if (timeOnScreen) {
-                timeOnScreen = timeOnScreen + currentScene.millis();
+                timeOnScreen = timeOnScreen + game.runtime();
             }
 
             if (bubbleWidth > maxTextWidth + bubblePadding) {
@@ -328,7 +327,7 @@ namespace sprites {
                 this.sayBubbleSprite.z = owner.z + 1;
 
                 // Update box stuff as long as timeOnScreen doesn't exist or it can still be on the screen
-                if (!timeOnScreen || timeOnScreen > currentScene.millis()) {
+                if (!timeOnScreen || timeOnScreen > game.runtime()) {
                     // move bubble
                     if (!owner.isOutOfScreen(camera)) {
                         const ox = camera.offsetX;
@@ -396,7 +395,7 @@ namespace sprites {
                     this.sayBubbleSprite = undefined;
                 }
             }
-            this.updateSay(0, currentScene.camera);
+            this.updateSay(0, game.currentScene().camera);
         }
 
         update(dt: number, camera: scene.Camera, owner: Sprite) {
@@ -406,7 +405,7 @@ namespace sprites {
 
             this.sayBubbleSprite.setFlag(SpriteFlag.RelativeToCamera, !!(owner.flags & SpriteFlag.RelativeToCamera));
 
-            if (owner.flags && Flag.Destroyed) this.destroy();
+            if (owner.flags & Flag.Destroyed) this.destroy();
         }
 
         destroy() {

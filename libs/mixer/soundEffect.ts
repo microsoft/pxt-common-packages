@@ -39,7 +39,7 @@ enum SoundExpressionPlayMode {
 }
 
 namespace music {
-    export class SoundEffect {
+    export class SoundEffect extends Playable {
         waveShape: WaveShape;
         startFrequency: number;
         endFrequency: number;
@@ -50,6 +50,7 @@ namespace music {
         interpolation: InterpolationCurve;
 
         constructor() {
+            super();
             this.waveShape = WaveShape.Sine;
             this.startFrequency = 5000;
             this.endFrequency = 1;
@@ -77,6 +78,20 @@ namespace music {
                 volume
             );
         }
+
+        play(playbackMode: PlaybackMode) {
+            const toPlay = this.toBuffer(music.volume());
+            if (playbackMode === PlaybackMode.InBackground) {
+                queuePlayInstructions(0, toPlay);
+            }
+            else if (playbackMode === PlaybackMode.UntilDone) {
+                queuePlayInstructions(0, toPlay);
+                pause(this.duration)
+            }
+            else {
+                this.loop();
+            }
+        }
     }
 
 
@@ -87,11 +102,11 @@ namespace music {
      */
     //% blockId=soundExpression_playSoundEffect
     //% block="play sound $sound $mode"
-    //% sound.shadow=soundExpression_createSoundEffect
     //% weight=30
     //% help=music/play-sound-effect
     //% blockGap=8
     //% group="Sounds"
+    //% deprecated=1
     export function playSoundEffect(sound: SoundEffect, mode: SoundExpressionPlayMode) {
         const toPlay = sound.toBuffer(music.volume());
 
@@ -139,8 +154,11 @@ namespace music {
     //% inlineInputMode="variable"
     //% inlineInputModeLimit=3
     //% expandableArgumentBreaks="3,5"
+    //% toolboxParent=music_playable_play
+    //% toolboxParentArgument=toPlay
     //% weight=20
     //% group="Sounds"
+    //% duplicateShadowOnDrag
     export function createSoundEffect(waveShape: WaveShape, startFrequency: number, endFrequency: number, startVolume: number, endVolume: number, duration: number, effect: SoundExpressionEffect, interpolation: InterpolationCurve): SoundEffect {
         const result = new SoundEffect();
 
@@ -266,7 +284,7 @@ namespace music {
     //% blockId=soundExpression_generateSimilarSound
     //% block="randomize $sound"
     //% sound.shadow=soundExpression_createSoundEffect
-    //% weight=0 help=music/generate-similar-sound
+    //% weight=0 help=music/randomize-sound
     //% blockGap=8
     //% group="Sounds"
     export function randomizeSound(sound: SoundEffect) {

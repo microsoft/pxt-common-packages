@@ -16,6 +16,26 @@ namespace pxsim.multiplayer {
         } as pxsim.MultiplayerImageMessage);
     }
 
+    export function postIcon(iconType: IconType, slot: number, im: pxsim.RefImage) {
+        if (im && (im._width * im._height > 64 * 64)) {
+            // setting 64x64 as max size for icon for now
+            return;
+        }
+
+        // treat empty icon as undefined
+        const asBuf = (im && im.data.some(pixel => pixel != 0))
+            ? pxsim.image.toBuffer(im) : undefined;
+        const sb = board() as ScreenBoard;
+        const screenState = sb && sb.screenState;
+        getMultiplayerState().send({
+            content: "Icon",
+            slot: slot,
+            icon: asBuf,
+            iconType: iconType,
+            palette: screenState.paletteToUint8Array(),
+        } as pxsim.MultiplayerIconMessage);
+    }
+
 
     export function getCurrentImage(): pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
@@ -56,6 +76,19 @@ namespace pxsim {
         palette: Uint8Array;
     }
 
+    export enum IconType {
+        Player = 0,
+        Reaction = 1,
+    }
+    export interface MultiplayerIconMessage extends SimulatorMultiplayerMessage {
+        content: "Icon";
+        icon: RefBuffer;
+        slot: number;
+        iconType: IconType;
+        // 48bytes, [r0,g0,b0,r1,g1,b1,...]
+        palette: Uint8Array;
+    }
+
     export interface MultiplayerButtonEvent extends SimulatorMultiplayerMessage {
         content: "Button";
         button: number; // pxsim.Key.A, ...
@@ -67,6 +100,15 @@ namespace pxsim {
         instruction: "playinstructions" | "muteallchannels";
         soundbuf?: Uint8Array;
     }
+
+    export interface MultiplayerConnectionEvent extends SimulatorMultiplayerMessage {
+        content: "Connection";
+        slot: number;
+        connected: boolean;
+    }
+
+    const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
+    const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
 
     export class MultiplayerState {
         lastMessageId: number;
@@ -114,6 +156,12 @@ namespace pxsim {
             }
         }
 
+        registerConnectionState(player: number, connected: boolean) {
+            const evId = connected ? MULTIPLAYER_PLAYER_JOINED_ID : MULTIPLAYER_PLAYER_LEFT_ID;
+            const b = board();
+            b.bus.queue(evId, player);
+        }
+
         protected messageHandler(msg: SimulatorMessage) {
             if (!isMultiplayerMessage(msg)) {
                 return;
@@ -146,6 +194,8 @@ namespace pxsim {
                         pxsim.AudioContextManager.muteAllChannels();
                     }
                 }
+            } else if (isConnectionMessage(msg)) {
+                this.registerConnectionState(msg.slot, msg.connected);
             }
         }
     }
@@ -164,5 +214,9 @@ namespace pxsim {
 
     function isAudioMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerAudioEvent {
         return msg && msg.content === "Audio";
+    }
+
+    function isConnectionMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerConnectionEvent {
+        return msg && msg.content === "Connection";
     }
 }

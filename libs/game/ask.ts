@@ -4,7 +4,6 @@ namespace game {
      * @param title
      * @param subtitle
      */
-    //% group="Gameplay"
     //% weight=89 help=game/ask
     //% blockId=gameask block="ask %title||%subtitle"
     //% title.shadow=text

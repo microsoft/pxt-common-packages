@@ -3,7 +3,7 @@
 */
 //% color="#03AA74" weight=100 icon="\uf021" block="Animation"
 //% groups='["Animate", "Advanced"]'
-//% advanced=true
+//% weight=5
 namespace animation {
     const stateNamespace = "__animation";
 
@@ -28,130 +28,87 @@ namespace animation {
     }
 
     export class Path {
-        protected nodes: PathNode[];
-        protected lastNode: number; // The index of the last node to fire
+        length: number;
 
-        constructor() {
-            this.nodes = [];
-            this.lastNode = -1;
-        }
+        protected args: number[];
+        protected currentCommand: string;
+        protected lastControlX: number;
+        protected lastControlY: number;
 
-        private static generateNode(p0: Point, command: string, args: number[], metadata: [ Point, PathNode ]): PathNode {
-            const [ pathStart, lastNode ] = metadata;
-            let node: PathNode;
-            switch (command) {
-                case "M": { // M x y
-                    const p1 = new Point(args[0], args[1]);
-                    node = new MoveTo(p1);
-                    break;
-                }
-                case "m": { // m dx dy
-                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
-                    node = new MoveTo(p1);
-                    break;
-                }
-                case "L": { // L x y
-                    const p1 = new Point(args[0], args[1]);
-                    node = new LineTo(p0, p1);
-                    break;
-                }
-                case "l": { // l dx dy
-                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
-                    node = new LineTo(p0, p1);
-                    break;
-                }
-                case "H": { // H x
-                    const p1 = new Point(args[0], p0.y);
-                    node = new LineTo(p0, p1);
-                    break;
-                }
-                case "h": { // h dx
-                    const p1 = new Point(p0.x + args[0], p0.y);
-                    node = new LineTo(p0, p1);
-                    break;
-                }
-                case "V": { // V y
-                    const p1 = new Point(p0.x, args[0]);
-                    node = new LineTo(p0, p1);
-                    break;
-                }
-                case "v": { // v dy
-                    const p1 = new Point(p0.x, p0.y + args[0]);
-                    node = new LineTo(p0, p1);
-                    break;
-                }
-                case "Q": { // Q x1 y1 x2 y2
-                    const p1 = new Point(args[0], args[1]);
-                    const p2 = new Point(args[2], args[3]);
-                    node = new QuadraticCurveTo(p0, p1, p2);
-                    break;
-                }
-                case "q": { // q dx1 dy1 dx2 dy2
-                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
-                    const p2 = new Point(p0.x + args[2], p0.y + args[3]);
-                    node = new QuadraticCurveTo(p0, p1, p2);
-                    break;
-                }
-                case "T": { // T x2 y2
-                    let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if (!lastControlPoint) break;
+        protected startX: number;
+        protected startY: number;
 
-                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2 = new Point(args[0], args[1]);
-                    node = new QuadraticCurveTo(p0, p1, p2);
-                    break;
-                }
-                case "t": { // t dx2 dy2
-                    let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if (!lastControlPoint) break;
+        protected lastX: number;
+        protected lastY: number;
 
-                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2 = new Point(p0.x + args[0], p0.y + args[1]);
-                    node = new QuadraticCurveTo(p0, p1, p2);
-                    break;
-                }
-                case "C": { // C x1 y1 x2 y2 x3 y3
-                    const p1 = new Point(args[0], args[1]);
-                    const p2 = new Point(args[2], args[3]);
-                    const p3 = new Point(args[4], args[5]);
-                    node = new CubicCurveTo(p0, p1, p2, p3);
-                    break;
-                }
-                case "c": { // c dx1 dy1 dx2 dy2 dx3 dy3
-                    const p1 = new Point(p0.x + args[0], p0.y + args[1]);
-                    const p2 = new Point(p0.x + args[2], p0.y + args[3]);
-                    const p3 = new Point(p0.x + args[4], p0.y + args[5]);
-                    node = new CubicCurveTo(p0, p1, p2, p3);
-                    break;
-                }
-                case "S": { // S x2 y2 x3 y3
-                    let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if (!lastControlPoint) break;
+        protected strIndex: number;
+        protected commandIndex: number;
 
-                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2 = new Point(args[0], args[1]);
-                    const p3 = new Point(args[2], args[3]);
-                    node = new CubicCurveTo(p0, p1, p2, p3);
-                    break;
-                }
-                case "s": { // s dx2 dy2 dx3 dy3
-                    let lastControlPoint: Point = lastNode.getLastControlPoint();
-                    if (!lastControlPoint) break;
+        constructor(protected path: string) {
+            this.strIndex = 0;
 
-                    const p1 = new Point(p0.x + (p0.x - lastControlPoint.x), p0.y + (p0.y - lastControlPoint.y));
-                    const p2 = new Point(p0.x + args[0], p0.y + args[1]);
-                    const p3 = new Point(p0.x + args[2], p0.y + args[3]);
-                    node = new CubicCurveTo(p0, p1, p2, p3);
-                    break;
-                }
-                case "Z": // Z
-                case "z": { // z
-                    node = new LineTo(p0, pathStart);
-                    break;
-                }
+            // Run through the path once to get the length and check for errors
+            this.length = 0;
+            while (this.strIndex < this.path.length) {
+                this.readNextCommand();
+                if (this.currentCommand) this.length++;
             }
 
-            return node;
+            this.reset();
+        }
+
+        protected readNextCommand() {
+            if (this.strIndex >= this.path.length) {
+                this.currentCommand = undefined;
+                return;
+            }
+
+            this.currentCommand = this.readNextToken();
+
+            if (!this.currentCommand) return;
+
+            this.args = [];
+
+            const numArgs = Path.commandToArgCount(this.currentCommand);
+
+            if (numArgs === -1) throw "Unknown path command '" + this.currentCommand +"'";
+
+            for (let i = 0; i < numArgs; i++) {
+                this.args.push(parseFloat(this.readNextToken()))
+            }
+
+            for (const arg of this.args) {
+                if (Number.isNaN(arg)) throw "Invalid argument for path command '" + this.currentCommand + "'";
+            }
+        }
+
+        reset() {
+            this.args = undefined;
+            this.currentCommand = undefined;
+            this.lastControlX = undefined;
+            this.lastControlY = undefined;
+            this.startX = undefined;
+            this.startY = undefined;
+            this.lastX = undefined;
+            this.lastY = undefined;
+            this.strIndex = 0;
+            this.commandIndex = 0;
+        }
+
+        protected readNextToken() {
+            while (this.path.charCodeAt(this.strIndex) === 32 && this.strIndex < this.path.length) {
+                this.strIndex ++;
+            }
+
+            if (this.strIndex >= this.path.length) return undefined;
+
+            const tokenStart = this.strIndex;
+
+            while (this.path.charCodeAt(this.strIndex) !== 32 && this.strIndex < this.path.length) {
+                this.strIndex++;
+            }
+
+            return this.path.substr(tokenStart, this.strIndex - tokenStart);
         }
 
         private static commandToArgCount(command: string): number {
@@ -191,227 +148,344 @@ namespace animation {
             }
         }
 
-        public static parse(pathStart: Point, pathString: string): Path {
-            let path: Path = new Path();
-            let p0: Point = pathStart;
-
-            // This implementation of SVG parsing does not support the A/a commands, nor does it support exponents in arguments
-            const digits = "0123456789";
-            const separators = ", \t\n\r\f\v";
-            const signs = "+-";
-
-            let currentArg: string = "";
-            let command: string = null;
-            let args: number[] = [];
-
-            for (let i = 0; i < pathString.length; i++) {
-                const char = pathString.charAt(i);
-                const lastNode = path.nodes[path.nodes.length - 1];
-
-                // This is an SVG path parser. It's kinda complicated. For each character, evaluate the following conditions:
-                // - if it's a digit, add it to the current argument
-                // - else if it's whitespace or newline, finish the current argument and prepare for the next one
-                // - else if it's a command, complete the previous argument, and prepare for the next one
-                //   - if there's sufficient data to make a node during this step, create it and continue
-                // - else if it's a plus/minus sign, and if it's the start of a new argument, add it to allow for positive/negative numbers
-                // - if it's the end of the string, complete the current argument before proceeding to the next step
-                // - if there's sufficient data to make a node after all of these steps, create it
-                if (digits.indexOf(char) > -1) { // Parses number arguments
-                    currentArg += char;
-                } else if (separators.indexOf(char) > -1 && currentArg) { // Terminates number arguments
-                    args.push(parseInt(currentArg));
-                    currentArg = "";
-                } else if (this.commandToArgCount(char) > -1) { // Parses command arguments
-                    if (command && currentArg) {
-                        args.push(parseInt(currentArg));
-
-                        // Try to finish up this node, otherwise just toss it out
-                        if (command && args.length >= this.commandToArgCount(command)) {
-                            let node: PathNode = this.generateNode(p0, command, args, [
-                                pathStart,
-                                lastNode
-                            ]);
-                            path.add(node);
-                            p0 = node.getEndPoint(); // Set the start for the next node to the end of this node
-                            if (node.setStart) pathStart = p0; // If this is a move command, then this sets the new start of the path (for the Z/z command)
-                        }
-
-                        // Clean up before continuing
-                        command = "";
-                        args = [];
-                        currentArg = "";
-                    }
-                    command = char;
-                } else if (signs.indexOf(char) > -1) { // Allows for positive/negative values
-                    if (currentArg) {
-                        args.push(parseInt(currentArg));
-                        currentArg = "";
-                    }
-                    currentArg = char;
-                }
-
-                // If the end of the path has been reached, cleans up the last argument before continuing parsing
-                if (i === pathString.length - 1) {
-                    if (currentArg) {
-                        args.push(parseInt(currentArg));
-                    }
-                }
-
-                // If the command has a sufficient amount of arguments, then create a node for it
-                if (command && args.length >= this.commandToArgCount(command)) {
-                    // Generate the node
-                    let node: PathNode = this.generateNode(p0, command, args, [
-                        pathStart,
-                        lastNode
-                    ]);
-                    path.add(node);
-                    p0 = node.getEndPoint();
-                    if (node.setStart) pathStart = p0;
-
-                    // Reset and prepare for the next command
-                    command = "";
-                    args = [];
-                    currentArg = "";
-                }
-            }
-
-            return path;
-        }
-
-        public add(node: PathNode) {
-            this.nodes.push(node);
-        }
-
-        get length(): number {
-            return this.nodes.length;
-        }
-
-        public run(interval: number, target: Sprite, startedAt: number): boolean {
-            const runningTime = control.millis() - startedAt; // The time since the start of the path
+        public run(interval: number, target: Sprite, runningTime: number): boolean {
             const nodeIndex = Math.floor(runningTime / interval); // The current node
             const nodeTime = runningTime % interval; // The time the current node has been animating
 
-            if (this.lastNode > -1 && this.lastNode < nodeIndex && this.nodes.length) { // If the last node hasn't been completed yet
-                this.nodes[this.lastNode].apply(target, interval, interval); // Applies the last state of the previous node in case it was missed (this makes sure all moveTos fire)
-
-                if (nodeIndex >= this.nodes.length) return true; // Once the nodeIndex is past the last item of the array, only then end the animation
+            if (this.startX === undefined) {
+                this.startX = target.x;
+                this.startY = target.y;
+                this.lastX = target.x;
+                this.lastY = target.y;
+                this.commandIndex = 0;
+                this.readNextCommand();
             }
-            this.lastNode = nodeIndex;
 
-            this.nodes[nodeIndex].apply(target, nodeTime, interval);
+            while (this.commandIndex < nodeIndex) {
+                if (this.currentCommand) {
+                    this.runCurrentCommand(target, interval, interval);
+                    this.lastX = target.x;
+                    this.lastY = target.y;
+                }
+                this.commandIndex++
+                this.readNextCommand();
+            }
+
+            if (nodeIndex >= this.length) {
+                return true;
+            }
+
+            this.runCurrentCommand(target, nodeTime, interval);
             return false;
         }
+
+        protected runCurrentCommand(target: Sprite, nodeTime: number, intervalTime: number) {
+            switch (this.currentCommand) {
+                case "M": // M x y
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    moveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.args[0],
+                        this.args[1]
+                    );
+                    break;
+                case "m": // m dx dy
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    moveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.args[0] + this.lastX,
+                        this.args[1] + this.lastY
+                    );
+                    break;
+                case "L": // L x y
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0],
+                        this.args[1]
+                    );
+                    break;
+                case "l": // l dx dy
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0] + this.lastX,
+                        this.args[1] + this.lastY
+                    );
+                    break;
+                case "H": // H x
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0],
+                        this.lastY
+                    );
+                    break;
+                case "h": // h dx
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0] + this.lastX,
+                        this.lastY
+                    );
+                    break;
+                case "V": // V y
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.lastX,
+                        this.args[0]
+                    );
+                    break;
+                case "v": // v dy
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.lastX,
+                        this.args[0] + this.lastY
+                    );
+                    break;
+                case "Q": // Q x1 y1 x2 y2
+                    this.lastControlX = this.args[0];
+                    this.lastControlY = this.args[1];
+                    quadraticCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0],
+                        this.args[1],
+                        this.args[2],
+                        this.args[3]
+                    )
+                    break;
+                case "q": // q dx1 dy1 dx2 dy2
+                    this.lastControlX = this.args[0] + this.lastX;
+                    this.lastControlY = this.args[1] + this.lastY;
+                    quadraticCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0] + this.lastX,
+                        this.args[1] + this.lastY,
+                        this.args[2] + this.lastX,
+                        this.args[3] + this.lastY
+                    );
+                    break;
+                case "T": // T x2 y2
+                    this.ensureControlPoint();
+                    quadraticCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.lastX + this.lastX - this.lastControlX,
+                        this.lastY + this.lastY - this.lastControlY,
+                        this.args[0],
+                        this.args[1],
+                    );
+                    if (nodeTime === intervalTime) {
+                        this.lastControlX = this.lastX + this.lastX - this.lastControlX;
+                        this.lastControlY = this.lastY + this.lastY - this.lastControlY;
+                    }
+                    break;
+                case "t": // t dx2 dy2
+                    this.ensureControlPoint();
+                    quadraticCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.lastX + this.lastX - this.lastControlX,
+                        this.lastY + this.lastY - this.lastControlY,
+                        this.args[0] + this.lastX,
+                        this.args[1] + this.lastY,
+                    );
+                    if (nodeTime === intervalTime) {
+                        this.lastControlX = this.lastX + this.lastX - this.lastControlX;
+                        this.lastControlY = this.lastY + this.lastY - this.lastControlY;
+                    }
+                    break;
+                case "C": // C x1 y1 x2 y2 x3 y3
+                    this.lastControlX = this.args[2];
+                    this.lastControlY = this.args[3];
+                    cubicCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0],
+                        this.args[1],
+                        this.args[2],
+                        this.args[3],
+                        this.args[4],
+                        this.args[5],
+                    );
+                    break;
+                case "c": // c dx1 dy1 dx2 dy2 dx3 dy3
+                    this.lastControlX = this.args[2] + this.lastX;
+                    this.lastControlY = this.args[3] + this.lastY;
+                    cubicCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.args[0] + this.lastX,
+                        this.args[1] + this.lastY,
+                        this.args[2] + this.lastX,
+                        this.args[3] + this.lastY,
+                        this.args[4] + this.lastX,
+                        this.args[5] + this.lastY,
+                    );
+                    break;
+                case "S": // S x2 y2 x3 y3
+                    this.ensureControlPoint();
+                    cubicCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.lastX + this.lastX - this.lastControlX,
+                        this.lastY + this.lastY - this.lastControlY,
+                        this.args[0],
+                        this.args[1],
+                        this.args[2],
+                        this.args[3]
+                    );
+                    if (nodeTime === intervalTime) {
+                        this.lastControlX = this.args[0];
+                        this.lastControlY = this.args[1];
+                    }
+                    break;
+                case "s": // s dx2 dy2 dx3 dy3
+                    this.ensureControlPoint();
+                    cubicCurveTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.lastX + this.lastX - this.lastControlX,
+                        this.lastY + this.lastY - this.lastControlY,
+                        this.args[0] + this.lastX,
+                        this.args[1] + this.lastY,
+                        this.args[2] + this.lastX,
+                        this.args[3] + this.lastY,
+                    );
+                    if (nodeTime === intervalTime) {
+                        this.lastControlX = this.args[0] + this.lastX;
+                        this.lastControlY = this.args[1] + this.lastY;
+                    }
+                    break;
+                case "Z": // Z
+                case "z": // z
+                    this.lastControlX = undefined;
+                    this.lastControlY = undefined;
+                    lineTo(
+                        target,
+                        nodeTime,
+                        intervalTime,
+                        this.lastX,
+                        this.lastY,
+                        this.startX,
+                        this.startY
+                    );
+                    break;
+            }
+        }
+
+        protected ensureControlPoint() {
+            if (this.lastControlX === undefined) throw "Invalid path command. S/s and T/t must follow either Q/q or C/c"
+        }
     }
 
-    export abstract class PathNode {
-        setStart: boolean;
-        constructor() {
-            this.setStart = false;
-        }
-
-        apply(target: Sprite, nodeTime: number, interval: number) {};
-
-        getLastControlPoint(): Point {
-            return null;
-        };
-
-        getEndPoint(): Point {
-            return null;
-        };
+    function moveTo(target: Sprite, nodeTime: number, interval: number, x: number, y: number) {
+        if (nodeTime >= interval) target.setPosition(x, y);
     }
 
-    export class MoveTo extends PathNode {
-        constructor(public p1: Point) {
-            super();
-
-            this.setStart = true;
-        }
-
-        apply(target: Sprite, nodeTime: number, interval: number) {
-            nodeTime >= interval && target.setPosition(this.p1.x, this.p1.y);
-        }
-
-        getEndPoint(): Point {
-            return this.p1;
-        }
+    function lineTo(target: Sprite, nodeTime: number, interval: number, x0: number, y0: number, x1: number, y1: number) {
+        target.setPosition(
+            Math.round(((x1 - x0) / interval) * nodeTime) + x0,
+            Math.round(((y1 - y0) / interval) * nodeTime) + y0
+        );
     }
 
-    export class LineTo extends PathNode {
-        constructor(public p0: Point, public p1: Point) {
-            super();
-        }
+    function quadraticCurveTo(target: Sprite, nodeTime: number, interval: number, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number) {
+        const progress = nodeTime / interval;
+        const diff = 1 - progress;
+        const a = diff * diff;
+        const b = 2 * diff * progress;
+        const c = progress * progress;
 
-        apply(target: Sprite, nodeTime: number, interval: number) {
-            const x = Math.round(((this.p1.x - this.p0.x) / interval) * nodeTime) + this.p0.x;
-            const y = Math.round(((this.p1.y - this.p0.y) / interval) * nodeTime) + this.p0.y;
-
-            target.setPosition(x, y);
-        }
-
-        getEndPoint(): Point {
-            return this.p1;
-        }
+        target.setPosition(
+            Math.round(a * x0 + b * x1 + c * x2),
+            Math.round(a * y0 + b * y1 + c * y2)
+        );
     }
 
-    export class QuadraticCurveTo extends PathNode {
-        constructor(public p0: Point, public p1: Point, public p2: Point) {
-            super();
-        }
+    function cubicCurveTo(target: Sprite, nodeTime: number, interval: number, x0: number, y0: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number) {
+        const progress = nodeTime / interval;
+        const diff = 1 - progress;
+        const a = diff * diff * diff;
+        const b = 3 * diff * diff * progress;
+        const c = 3 * diff * progress * progress;
+        const d = progress * progress * progress;
 
-        apply(target: Sprite, nodeTime: number, interval: number) {
-            const progress = nodeTime / interval;
-            const diff = 1 - progress;
-            const a = Math.pow(diff, 2);
-            const b = 2 * diff * progress;
-            const c = Math.pow(progress, 2);
-
-            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x);
-            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y);
-
-            target.setPosition(x, y);
-        }
-
-        getLastControlPoint(): Point {
-            return this.p1;
-        }
-
-        getEndPoint(): Point {
-            return this.p2;
-        }
-    }
-
-    export class CubicCurveTo extends PathNode {
-        constructor(public p0: Point, public p1: Point, public p2: Point, public p3: Point) {
-            super();
-        }
-
-        apply(target: Sprite, nodeTime: number, interval: number) {
-            const progress = nodeTime / interval;
-            const diff = 1 - progress;
-            const a = Math.pow(diff, 3);
-            const b = 3 * Math.pow(diff, 2) * progress;
-            const c = 3 * diff * Math.pow(progress, 2);
-            const d = Math.pow(progress, 3);
-
-            const x = Math.round(a * this.p0.x + b * this.p1.x + c * this.p2.x + d * this.p3.x);
-            const y = Math.round(a * this.p0.y + b * this.p1.y + c * this.p2.y + d * this.p3.y);
-
-            target.setPosition(x, y);
-        }
-
-        getLastControlPoint(): Point {
-            return this.p2;
-        }
-
-        getEndPoint(): Point {
-            return this.p3;
-        }
+        target.setPosition(
+            Math.round(a * x0 + b * x1 + c * x2 + d * x3),
+            Math.round(a * y0 + b * y1 + c * y2 + d * y3)
+        );
     }
 
     export abstract class SpriteAnimation {
-        protected startedAt: number;
+        protected elapsedTime: number;
 
         constructor(public sprite: Sprite, protected loop: boolean) {
+            this.elapsedTime = 0;
         }
 
         public init() {
@@ -457,10 +531,9 @@ namespace animation {
         }
 
         public update(): boolean {
-            if (this.startedAt == null)
-                this.startedAt = control.millis();
-            const runningTime = control.millis() - this.startedAt;
-            const frameIndex = Math.floor(runningTime / this.frameInterval);
+            this.elapsedTime += game.eventContext().deltaTimeMillis;
+
+            const frameIndex = Math.floor(this.elapsedTime / this.frameInterval);
 
             if (this.lastFrame != frameIndex && this.frames.length) {
                 if (!this.loop && frameIndex >= this.frames.length) {
@@ -477,19 +550,26 @@ namespace animation {
     }
 
     export class MovementAnimation extends SpriteAnimation {
+        protected startX: number;
+        protected startY: number;
+
         constructor(sprite: Sprite, private path: Path, private nodeInterval: number, loop?: boolean) {
             super(sprite, loop);
-
-            this.loop = loop;
+            this.startX = sprite.x;
+            this.startY = sprite.y;
+            this.elapsedTime = 0;
         }
 
         public update(): boolean {
-            if (this.startedAt == null) this.startedAt = control.millis();
+            this.elapsedTime += game.eventContext().deltaTimeMillis;
 
-            let result = this.path.run(this.nodeInterval, this.sprite, this.startedAt);
+            let result = this.path.run(this.nodeInterval, this.sprite, this.elapsedTime);
             if (result) {
                 if (!this.loop) return true;
-                this.startedAt = control.millis();
+                this.elapsedTime = 0;
+                this.path.reset();
+                this.sprite.x = this.startX;
+                this.sprite.y = this.startY;
             }
             return false;
         }
@@ -524,7 +604,7 @@ namespace animation {
     //% group="Animate"
     //% help=animation/run-movement-animation
     export function runMovementAnimation(sprite: Sprite, pathString: string, duration?: number, loop?: boolean) {
-        const path = Path.parse(new Point(sprite.x, sprite.y), pathString);
+        const path = new Path(pathString);
         const anim = new MovementAnimation(sprite, path, duration / path.length, !!loop);
         anim.init();
     }
@@ -638,6 +718,7 @@ namespace animation {
     //% frames.fieldOptions.filter="!tile !dialog !background"
     //% weight=40
     //% group="Animate" duplicateShadowOnDrag
+    //% help=animation/animation-frames
     export function _animationFrames(frames: Image[]) {
         return frames
     }

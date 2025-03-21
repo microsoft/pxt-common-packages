@@ -1,9 +1,9 @@
-# score
+# high Score
 
 Get the highest score recored for the game.
 
 ```sig
-info.score()
+info.highScore()
 ```
 
 The highest score recorded by your game program is remembered. So, you can find out what the player's best score was for the game.
@@ -19,7 +19,7 @@ Add `9` to the life count if the player had a high score of  `100000` points.
 ```blocks
 let lifeBonus = true
 
-if (info.score() >= 100000) {
+if (info.highScore() >= 100000) {
     if (lifeBonus) {
         info.changeLifeBy(9)
         lifeBonus = false

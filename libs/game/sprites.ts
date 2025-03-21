@@ -56,8 +56,22 @@ namespace sprites {
     //% blockAliasFor="sprites.create"
     //% expandableArgumentMode=toggle
     //% weight=99 help=sprites/create
+    //% duplicateShadowOnDrag
     export function __create(img: Image, kind?: number): Sprite {
         return sprites.create(img, kind);
+    }
+
+    //% group="Effects"
+    //% weight=80
+    //% blockId=spritedestroy2 block="destroy $sprite || with $effect effect for $duration ms"
+    //% sprite.shadow=variables_get
+    //% sprite.defl=mySprite
+    //% duration.shadow=timePicker
+    //% expandableArgumentMode="toggle"
+    //% help=sprites/sprite/destroy
+    export function destroy(sprite: Sprite, effect?: effects.ParticleEffect, duration?: number) {
+        if (!sprite) return;
+        sprite.destroy(effect, duration);
     }
 
     /**
@@ -65,7 +79,7 @@ namespace sprites {
      * @param kind the target kind
      */
     //% blockId=allOfKind block="array of sprites of kind %kind=spritekind"
-    //% weight=87
+    //% weight=87 help=sprites/all-of-kind
     export function allOfKind(kind: number): Sprite[] {
         const spritesByKind = game.currentScene().spritesByKind;
         if (!(kind >= 0) || !spritesByKind[kind]) return [];
@@ -183,6 +197,7 @@ namespace sprites {
         GhostThroughTiles = 1 << 10, // No overlaps with tiles
         GhostThroughWalls = 1 << 11, // No collisions with walls
         GhostThroughSprites = 1 << 12, // No overlaps with other sprites
+        HitboxOverlaps = 1 << 13, // If set, overlaps with this sprite are based off of both sprites' hitboxes and not pixel perfect
         Ghost = sprites.Flag.GhostThroughSprites | sprites.Flag.GhostThroughWalls | sprites.Flag.GhostThroughTiles, // doesn't collide with other sprites or walls
     }
 }

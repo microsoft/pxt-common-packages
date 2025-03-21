@@ -2,20 +2,24 @@
 
 Make music and play tones.
 
+## Songs
+
+```cards
+music.createSong(hex`00780004080200`)
+```
+
 ## Melodies
 
 ```cards
-music.playMelody("", 120);
-music.baDing.play()
-music.baDing.playUntilDone()
-music.baDing.loop()
-music.baDing.stop()
+music.stringPlayable("", 120)
+music.melodyPlayable(music.baDing)
 ```
 
 ## Sound
 
 ```cards
-music.playTone(0, 0);
+music.play(null, music.PlaybackMode.UntilDone)
+music.tonePlayable(262, music.beat(BeatFraction.Whole))
 music.ringTone(0);
 music.rest(0);
 music.noteFrequency(Note.C);
@@ -29,7 +33,8 @@ music.stopAllSounds()
 
 ## See Also
 
-[play melody](/reference/music/play-melody), [play tone](/reference/music/play-tone),
+[play](/reference/music/play), [tone playable](/reference/music/tone-playable),
+[string playable](/reference/music/string-playable), [melody playable](/reference/music/melody-playable), [create song](/reference/music/create-song),
 [ring tone](/reference/music/ring-tone), [rest](/reference/music/rest),
 [beat](/reference/music/beat), [tempo](/reference/music/tempo),
 [change tempo by](/reference/music/change-tempo-by),[set tempo](/reference/music/set-tempo)

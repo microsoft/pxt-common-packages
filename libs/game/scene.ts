@@ -94,6 +94,7 @@ namespace scene {
         gameForeverHandlers: GameForeverHandler[];
         particleSources: particles.ParticleSource[];
         controlledSprites: controller.ControlledSprite[][];
+        controllerConnectionState: boolean[]
         followingSprites: sprites.FollowingSprite[];
         buttonEventHandlers: controller.ButtonEventHandlerState[];
 
@@ -181,6 +182,7 @@ namespace scene {
             // update screen
             this.eventContext.registerFrameHandler(UPDATE_SCREEN_PRIORITY, control.__screen.update);
             multiplayer.initServer();
+            multiplayer.initPlayerConnectionListeners();
             // register additional components
             Scene.initializers.forEach(f => f(this));
         }

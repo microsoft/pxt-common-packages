@@ -114,6 +114,7 @@
 #define CFG_PIN_WIFI_AT_RX 92
 
 #define CFG_PIN_USB_POWER 93
+#define CFG_DISPLAY_DELAY 94
 
 // default I2C address
 #define ACCELEROMETER_TYPE_LIS3DH 0x32

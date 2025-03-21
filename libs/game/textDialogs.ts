@@ -14,6 +14,22 @@ enum DialogLayout {
 }
 
 namespace game {
+    function padStr(len: number): string {
+        let str = "";
+        for (let i = 0; i < len; ++i) {
+            str += " ";
+        }
+        return str;
+    }
+
+    function replaceRange(dst: string, src: string, start: number, len: number): string {
+        return dst.substr(0, start) + src.substr(0, len) + dst.substr(start + len);
+    }
+
+    function screenColor(c: number): number {
+        return screen.isMono ? 1 : c;
+    }
+
     let dialogFrame: Image;
     let dialogCursor: Image;
     let dialogTextColor: number;
@@ -36,24 +52,21 @@ namespace game {
         textColor: number;
 
         constructor(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
-            this.image = image.create(width, height);
+            this.cursorCount = 0;
+            this.resize(width, height, frame, font, cursor);
+        }
 
+        resize(width: number, height: number, frame?: Image, font?: image.Font, cursor?: Image) {
             this.frame = frame || dialogFrame || (dialogFrame = defaultFrame());
-
-            this.font = font || image.font8;
-
-            this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
-
-            this.textColor = dialogTextColor == undefined ? dialogTextColor = 15 : dialogTextColor;
-
             this.unit = Math.floor(this.frame.width / 3);
             this.columns = Math.floor(width / this.unit);
             this.rows = Math.floor(height / this.unit);
-
             this.innerLeft = (width - (this.columns * this.unit)) >> 1;
             this.innerTop = (height - (this.rows * this.unit)) >> 1;
-
-            this.cursorCount = 0;
+            this.image = image.create(width, height);
+            this.font = font || image.font8;
+            this.cursor = cursor || dialogCursor || (dialogCursor = defaultCursorImage());
+            this.textColor = dialogTextColor == undefined ? dialogTextColor = 15 : dialogTextColor;
 
             this.drawBorder();
             this.clearInterior();
@@ -332,18 +345,150 @@ namespace game {
         }
     }
 
+    const img_trophy_sm = img`
+    . . . . . . . 
+    . 4 5 5 5 1 . 
+    . 4 5 5 5 1 . 
+    . 4 5 5 5 1 . 
+    . . 4 5 1 . . 
+    . . . 5 . . . 
+    . . 4 5 1 . . 
+    . . . . . . . 
+    `;
+
+    const img_trophy_lg = img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . 5 5 5 5 5 5 . . . . . 
+    . . . . 5 4 4 4 4 4 4 5 . . . . 
+    . . . . 5 5 5 5 5 5 5 5 . . . . 
+    . . . . 4 5 5 5 5 5 5 1 . . . . 
+    . . . 5 4 4 5 5 5 5 1 1 5 . . . 
+    . . 5 . 4 4 5 5 5 5 1 1 . 5 . . 
+    . . 5 . 4 4 5 5 5 5 1 1 . 5 . . 
+    . . . 5 4 4 5 5 5 5 1 1 5 . . . 
+    . . . . 4 4 5 5 5 5 1 1 . . . . 
+    . . . . . 4 5 5 5 1 1 . . . . . 
+    . . . . . . 4 5 1 1 . . . . . . 
+    . . . . . . . 4 1 . . . . . . . 
+    . . . . . 4 4 5 5 1 1 . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `;
+
+    const img_sleepy_sim = img`
+    . . . . . . . . . . . . . . . . 
+    . . . 6 6 6 6 6 6 6 6 6 6 . . . 
+    . . 6 f f f f f f f f f f 6 . . 
+    . . 6 f f f f f f f f f f 6 . . 
+    . . 6 f f 1 1 f f 1 1 f f 6 . . 
+    . . 6 f f f f f f f f f f 6 . . 
+    . . 6 f f f f 1 1 f f f f 6 . . 
+    . . 6 f f f f f f f f f f 6 . . 
+    . . 6 6 6 6 6 6 6 6 6 6 6 6 . . 
+    . . 6 6 f 6 6 6 6 6 6 6 f 6 . . 
+    . . 6 f f f 6 6 6 6 6 6 6 6 . . 
+    . . 6 6 f 6 6 6 6 6 f 6 6 6 . . 
+    . . 6 6 6 6 6 6 6 6 6 6 6 6 . . 
+    . . . 6 6 6 6 6 6 6 6 6 6 . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `;
+
+    export class GameOverPlayerScore {
+        public str: string;
+        constructor(
+            public player: number,
+            public value: number,
+            public winner: boolean) { }
+    }
+
+    enum GameOverDialogFlags {
+        WIN = 1,
+        HAS_BEST = 2,
+        NEW_BEST = 4,
+        MULTIPLAYER = 8,
+        HAS_SCORES = 16
+    };
+
     export class GameOverDialog extends game.BaseDialog {
         protected cursorOn: boolean;
-        protected isNewHighScore: boolean;
+        protected flags: GameOverDialogFlags;
+        protected height: number;
+
+        get isWinCondition() { return !!(this.flags & GameOverDialogFlags.WIN); }
+        get isJudgedGame() { return this.judged; }
+        get hasScores() { return !!(this.flags & GameOverDialogFlags.HAS_SCORES); }
+        get hasBestScore() { return !!(this.flags & GameOverDialogFlags.HAS_BEST); }
+        get isNewBestScore() { return !!(this.flags & GameOverDialogFlags.NEW_BEST); }
+        get isMultiplayerGame() { return !!(this.flags & GameOverDialogFlags.MULTIPLAYER); }
 
         constructor(
-            protected win: boolean,
-            protected score?: number,
-            protected highScore?: number
+            win: boolean,
+            protected message: string,
+            protected judged: boolean,
+            protected scores: GameOverPlayerScore[],
+            protected bestScore?: number,
+            protected winnerOverride?: number
         ) {
             super(screen.width, 46, defaultSplashFrame());
             this.cursorOn = false;
-            this.isNewHighScore = this.score > this.highScore;
+            this.flags = 0;
+
+            if (win) {
+                this.flags |= GameOverDialogFlags.WIN;
+            }
+
+            // Fixup states in case of winner override
+            if (winnerOverride) {
+                win = true;
+                this.flags |= GameOverDialogFlags.WIN;
+                // For display purposes, treat this as a multiplayer game
+                this.flags |= GameOverDialogFlags.MULTIPLAYER;
+                const score = scores.find(score => score.player === winnerOverride);
+                if (!score) {
+                    scores.push(new GameOverPlayerScore(winnerOverride, null, true));
+                    scores.sort((a, b) => a.player - b.player);
+                }
+                scores.forEach(score => score.winner = score.player === winnerOverride);
+            }
+
+            if (scores.length) {
+                // If any score present is other than player 1, this is a multiplayer game
+                scores.forEach(score => score.player > 1 && (this.flags |= GameOverDialogFlags.MULTIPLAYER));
+                if (win) {
+                    let winner = scores.find(score => score.winner);
+                    if (!winner && scores.length === 1) winner = scores[0];
+                    if (winner) {
+                        if (winner.value != null) {
+                            if (bestScore == null) {
+                                this.bestScore = winner.value;
+                                this.flags |= GameOverDialogFlags.NEW_BEST;
+                            } else if (info.isBetterScore(winner.value, bestScore)) {
+                                this.bestScore = winner.value;
+                                this.flags |= GameOverDialogFlags.NEW_BEST;
+                            }
+                        }
+                        // Replace string tokens with resolved values
+                        this.message = this.message
+                            .replaceAll("${WINNER}", "PLAYER " + winner.player)
+                            .replaceAll("${Winner}", "Player " + winner.player)
+                            .replaceAll("${winner}", "player " + winner.player)
+                            .replaceAll("${winner_short}", "P" + winner.player);
+                    }
+                }
+            }
+
+            const scoresWithValues = scores.filter(score => score.value != null);
+            if (scoresWithValues.length) this.flags |= GameOverDialogFlags.HAS_SCORES;
+
+            if (this.isWinCondition && this.isJudgedGame && this.hasScores && (this.bestScore != null)) {
+                this.flags |= GameOverDialogFlags.HAS_BEST;
+            }
+
+            // Two scores per row
+            const scoreRows = Math.max(0, scoresWithValues.length - 1) >> 1;
+            this.height = 47 + scoreRows * image.font5.charHeight;
+            this.resize(screen.width, this.height, defaultSplashFrame());
         }
 
         displayCursor() {
@@ -359,43 +504,133 @@ namespace game {
             }
         }
 
-        drawTextCore() {
-            const titleHeight = 8;
+        drawMessage() {
+            const currY = 5;
             this.image.printCenter(
-                this.win ? "YOU WIN!" : "GAME OVER!",
-                titleHeight,
-                screen.isMono ? 1 : 5,
+                this.message,
+                currY,
+                screenColor(5),
                 image.font8
             );
+        }
 
-            if (this.score !== undefined) {
-                const scoreHeight = 23;
-                const highScoreHeight = 34;
-                const scoreColor = screen.isMono ? 1 : 2;
-
-                this.image.printCenter(
-                    "Score:" + this.score,
-                    scoreHeight,
-                    scoreColor,
-                    image.font8
-                );
-
-                if (this.isNewHighScore) {
+        drawScores() {
+            if (this.hasScores) {
+                const scores = this.scores.filter(score => score.value != null);
+                let currY = image.font5.charHeight + 16;
+                if (this.isMultiplayerGame) {
+                    if (scores.length === 1) {
+                        // Multiplayer special case: Only one player scored
+                        const score = scores[0];
+                        score.str = "P" + score.player + ":" + score.value;
+                        this.image.printCenter(
+                            score.str,
+                            currY,
+                            screenColor(1),
+                            image.font5
+                        );
+                        if (score.winner) {
+                            // In multiplayer, the winning score gets a trophy
+                            const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
+                            this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
+                        }
+                    } else {
+                        // Multiplayer general case: Multiple players scored
+                        // Compute max score width
+                        const strlens = [0, 0];
+                        for (let i = 0; i < scores.length; ++i) {
+                            const col = i % 2;
+                            const score = scores[i];
+                            score.str = "P" + score.player + ":" + score.value;
+                            strlens[col] = Math.max(strlens[col], score.str.length);
+                        }
+                        // Print scores in a grid, two per row
+                        for (let i = 0; i < scores.length; ++i) {
+                            const col = i % 2;
+                            const score = scores[i];
+                            let str = padStr(strlens[col]);
+                            str = replaceRange(str, score.str, 0, score.str.length);
+                            let x = 0;
+                            if (col === 0) {
+                                x = (this.image.width >> 1) - strlens[col] * image.font5.charWidth - 3;
+                            } else {
+                                x = (this.image.width >> 1) + 3;
+                            }
+                            if (score.winner) {
+                                // In multiplayer, the winning score gets a trophy
+                                if (i % 2 === 0) {
+                                    this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
+                                } else {
+                                    this.image.drawTransparentImage(img_trophy_sm, x + score.str.length * image.font5.charWidth + 2, currY - 2);
+                                }
+                            }
+                            this.image.print(
+                                str,
+                                x,
+                                currY,
+                                screenColor(1),
+                                image.font5
+                            );
+                            if (i % 2 === 1) {
+                                currY += image.font5.charHeight + 2;
+                            }
+                        }
+                    }
+                } else {
+                    // Single player case
+                    const score = scores[0];
+                    score.str = "Score:" + score.value;
                     this.image.printCenter(
-                        "New High Score!",
-                        highScoreHeight,
-                        scoreColor,
-                        image.font5
+                        score.str,
+                        currY - 1,
+                        screenColor(1),
+                        image.font8 // Single player score gets a bigger font
                     );
+                }
+            } else if (this.isWinCondition) {
+                // No score, but there is a win condition. Show a trophy.
+                let currY = image.font5.charHeight + 14;
+                this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+            } else {
+                // No score, no win, show a generic game over icon (sleepy sim)
+                let currY = image.font5.charHeight + 14;
+                this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
+            }
+        }
+
+        drawBestScore() {
+            if (this.hasBestScore) {
+                const currY = this.height - image.font8.charHeight - 5;
+                if (this.isNewBestScore) {
+                    const label = "New Best Score!";
+                    this.image.printCenter(
+                        label,
+                        currY,
+                        screenColor(9),
+                        image.font8
+                    );
+                    // In single player draw trophy icons on either side of the label.
+                    // In multiplayer a trophy icon is drawn next to the winning score instead.
+                    if (!this.isMultiplayerGame) {
+                        const halfWidth = (label.length * image.font8.charWidth) >> 1;
+                        this.image.drawTransparentImage(img_trophy_sm, (this.image.width >> 1) - halfWidth - img_trophy_sm.width - 2, currY);
+                        this.image.drawTransparentImage(img_trophy_sm, (this.image.width >> 1) + halfWidth, currY);
+                    }
                 } else {
                     this.image.printCenter(
-                        "HI" + this.highScore,
-                        highScoreHeight,
-                        scoreColor,
+                        "Best:" + this.bestScore,
+                        currY,
+                        screenColor(9),
                         image.font8
                     );
                 }
             }
+        }
+
+        drawTextCore() {
+            this.drawMessage();
+            this.drawScores();
+            this.drawBestScore();
         }
     }
 
