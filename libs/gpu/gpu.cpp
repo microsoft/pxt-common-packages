@@ -62,10 +62,11 @@ static inline int fxDiv(int a, int b) {
 static inline int sign(int v) {
     return v < 0 ? -1 : 1;
 }
-// Returns signed fractional part
-static inline int fxSignedFrac(int v) {
-    int f = abs(v) & 0xff;
-    return f * sign(v);
+static inline int fxWrap(int v) {
+    int r = v % fxOne;
+    if (r < 0)
+        r += fxOne;
+    return r;
 }
 static inline int min(int a, int b) {
     return (a < b ? a : b);
@@ -85,6 +86,9 @@ static inline int min3(int a, int b, int c) {
 static inline int max3(int a, int b, int c) {
     return max(max(a, b), c);
 }
+static inline bool isTopLeft(a : V2, b : V2) {
+    return a.y < b.y || (a.y == = b.y && a.x > b.x);
+}
 static inline void scaleToRef(const Vec2 &v, int s, Vec2 &ref) {
     ref.x = fxMul(v.x, s);
     ref.y = fxMul(v.y, s);
@@ -100,10 +104,7 @@ static inline void divToRef(const Vec2 &a, const Vec2 &b, Vec2 &ref) {
 
 const int fxZero = fx8FromInt(0);
 const int fxOne = fx8FromInt(1);
-
-// Workaround for the visible seam that sometimes appears on the shared diagonal edge between the
-// triangles when using fixed-point interpolants.
-const int w1Fudge = fx8FromInt(-60);
+const int fxHalf = fx8FromInt(0.5);
 
 static int shadeTexturedPixel(const Vec2 &area, const Vertex *v0, const Vertex *v1,
                               const Vertex *v2, int w0, int w1, int w2, Image_ tex, int texWidth,
@@ -116,16 +117,8 @@ static int shadeTexturedPixel(const Vec2 &area, const Vertex *v0, const Vertex *
     add3ToRef(_uv0, _uv1, _uv2, _uv);
     divToRef(_uv, area, _uv);
     // Sample texture at uv coords, repeating the texture.
-    int u = fxSignedFrac(_uv.x);
-    int v = fxSignedFrac(_uv.y);
-    if (u < fxZero)
-        u += fxOne;
-    if (v < fxZero)
-        v += fxOne;
-    if (u == fxZero && _uv.x > 0)
-        u = fxOne;
-    if (v == fxZero && _uv.y > 0)
-        v = fxOne;
+    const int u = fxWrap(_uv.x);
+    const int v = fxWrap(_uv.y);
     const int x = fxToInt(fxMul(u, texWidth));
     const int y = fxToInt(fxMul(v, texHeight));
     return ImageMethods::getPixel(tex, x, y);
@@ -149,10 +142,10 @@ static void drawTexturedTri(const Vertex *verts[], const int indices[], Image_ d
     const int texWidth = fx8FromInt(tex->width());
     const int texHeight = fx8FromInt(tex->height());
 
-    const int left = clamp(min3(p0.x, p1.x, p2.x), 0, dstWidth);
-    const int top = clamp(min3(p0.y, p1.y, p2.y), 0, dstHeight);
-    const int right = clamp(max3(p0.x, p1.x, p2.x), 0, dstWidth);
-    const int bottom = clamp(max3(p0.y, p1.y, p2.y), 0, dstHeight);
+    const int left = clamp(min3(p0.x, p1.x, p2.x) + fxHalf, 0, dstWidth - fxOne);
+    const int top = clamp(min3(p0.y, p1.y, p2.y) + fxHalf, 0, dstHeight - fxOne);
+    const int right = clamp(max3(p0.x, p1.x, p2.x) - fxHalf, 0, dstWidth - fxOne);
+    const int bottom = clamp(max3(p0.y, p1.y, p2.y) - fxHalf, 0, dstHeight - fxOne);
 
     Vec2 p(left, top);
 
@@ -170,12 +163,14 @@ static void drawTexturedTri(const Vertex *verts[], const int indices[], Image_ d
 
     // This loop doesn't attempt to filter pixels outside the triangle, and this results in a lot of
     // extra evaluations. We should do some prefiltering.
-    for (; p.y < bottom; p.y += fxOne) {
+    for (; p.y <= bottom; p.y += fxOne) {
         int w0 = w0_row;
         int w1 = w1_row;
         int w2 = w2_row;
-        for (p.x = left; p.x < right; p.x += fxOne) {
-            if (w0 >= 0 && w1 >= w1Fudge && w2 >= 0) {
+        for (p.x = left; p.x <= right; p.x += fxOne) {
+            if ((w0 > 0 || (w0 == 0 && isTopLeft(p1, p2))) &&
+                (w1 > 0 || (w1 == 0 && isTopLeft(p2, p0))) &&
+                (w2 > 0 || (w2 == 0 && isTopLeft(p0, p1)))) {
                 const int color =
                     shadeTexturedPixel(area, v0, v1, v2, w0, w1, w2, tex, texWidth, texHeight);
                 if (color) {
@@ -196,14 +191,14 @@ static void drawTexturedQuad(Image_ dst, Image_ tex, RefCollection *args) {
     Vertex v0, v1, v2, v3;
     const Vertex *verts[4] = {&v0, &v1, &v2, &v3};
 
-    v0.pos.set(pxt::toInt(args->getAt(0)), pxt::toInt(args->getAt(1)));
-    v1.pos.set(pxt::toInt(args->getAt(4)), pxt::toInt(args->getAt(5)));
-    v2.pos.set(pxt::toInt(args->getAt(8)), pxt::toInt(args->getAt(9)));
-    v3.pos.set(pxt::toInt(args->getAt(12)), pxt::toInt(args->getAt(13)));
-    v0.uv.set(pxt::toInt(args->getAt(2)), pxt::toInt(args->getAt(3)));
-    v1.uv.set(pxt::toInt(args->getAt(6)), pxt::toInt(args->getAt(7)));
-    v2.uv.set(pxt::toInt(args->getAt(10)), pxt::toInt(args->getAt(11)));
-    v3.uv.set(pxt::toInt(args->getAt(14)), pxt::toInt(args->getAt(15)));
+    v0.pos.set(fx8FromInt(pxt::toInt(args->getAt(0))), fx8FromInt(pxt::toInt(args->getAt(1))));
+    v1.pos.set(fx8FromInt(pxt::toInt(args->getAt(4))), fx8FromInt(pxt::toInt(args->getAt(5))));
+    v2.pos.set(fx8FromInt(pxt::toInt(args->getAt(8))), fx8FromInt(pxt::toInt(args->getAt(9))));
+    v3.pos.set(fx8FromInt(pxt::toInt(args->getAt(12))), fx8FromInt(pxt::toInt(args->getAt(13))));
+    v0.uv.set(fx8FromInt(pxt::toInt(args->getAt(2))), fx8FromInt(pxt::toInt(args->getAt(3))));
+    v1.uv.set(fx8FromInt(pxt::toInt(args->getAt(6))), fx8FromInt(pxt::toInt(args->getAt(7))));
+    v2.uv.set(fx8FromInt(pxt::toInt(args->getAt(10))), fx8FromInt(pxt::toInt(args->getAt(11))));
+    v3.uv.set(fx8FromInt(pxt::toInt(args->getAt(14))), fx8FromInt(pxt::toInt(args->getAt(15))));
 
     drawTexturedTri(verts, TRI0_INDICES, dst, tex);
     drawTexturedTri(verts, TRI1_INDICES, dst, tex);

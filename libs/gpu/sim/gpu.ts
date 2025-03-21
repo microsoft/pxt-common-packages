@@ -67,6 +67,11 @@ namespace pxsim.gpu {
     const fxOne = ops.toFixed(1);
     const fxHalf = ops.toFixed(0.5);
 
+    function wrapFx(v: number): number {
+        let r = v % fxOne;
+        if (r < fxZero) r += fxOne;
+        return r;
+    }
     function edge(a: V2, b: V2, c: V2): number {
         return ops.mul(b.y - a.y, c.x - a.x) - ops.mul(b.x - a.x, c.y - a.y);
     }
@@ -226,12 +231,8 @@ namespace pxsim.gpu {
             add3ToRef(_uv0, _uv1, _uv2, _uv);
             divToRef(_uv, { x: area, y: area }, _uv);
             // Sample texture at uv coords, repeating the texture.
-            let u = _uv.x % fxOne;
-            let v = _uv.y % fxOne;
-            //if (u < fxZero) u += fxOne
-            //if (v < fxZero) v += fxOne
-            //if (u === fxZero && _uv.x > 0) u = fxOne
-            //if (v === fxZero && _uv.y > 0) v = fxOne
+            const u = wrapFx(_uv.x);
+            const v = wrapFx(_uv.y);
             const x = ops.toInt(ops.mul(u, texWidth));
             const y = ops.toInt(ops.mul(v, texHeight));
             return ImageMethods.getPixel(args.tex, x, y);
