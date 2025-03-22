@@ -148,20 +148,10 @@ namespace pxsim.gpu {
         const p0 = v0.pos, p1 = v1.pos, p2 = v2.pos, p3 = v3.pos;
         const uv0 = v0.uv, uv1 = v1.uv, uv2 = v2.uv, uv3 = v3.uv;
 
-        const texWfx = ops.initFx(tex._width);
-        const texHfx = ops.initFx(tex._height);
-
         const minX = min4(p0.x, p1.x, p2.x, p3.x);
         const minY = min4(p0.y, p1.y, p2.y, p3.y);
         const maxX = max4(p0.x, p1.x, p2.x, p3.x);
         const maxY = max4(p0.y, p1.y, p2.y, p3.y);
-
-        const pbounds: Bounds = {
-            left: clamp(minX, 0, ops.initFx(dst._width)),
-            top: clamp(minY, 0, ops.initFx(dst._height)),
-            right: clamp(maxX, 0, ops.initFx(dst._width)),
-            bottom: clamp(maxY, 0, ops.initFx(dst._height))
-        };
 
         const areaA = edge(p0, p3, p2);
         const invAreaA = areaA !== fxZero ? ops.div(fxOne, areaA) : fxZero;
@@ -169,34 +159,30 @@ namespace pxsim.gpu {
         const areaB = edge(p2, p1, p0);
         const invAreaB = areaB !== fxZero ? ops.div(fxOne, areaB) : fxZero;
 
-        for (let py = pbounds.top; py < pbounds.bottom; py += fxOne) {
-            for (let px = pbounds.left; px < pbounds.right; px += fxOne) {
-                let uvx = 0;
-                let uvy = 0;
-                let inside = false;
+        const texWfx = ops.initFx(tex._width);
+        const texHfx = ops.initFx(tex._height);
 
+        const left = clamp(minX, 0, ops.initFx(dst._width));
+        const top = clamp(minY, 0, ops.initFx(dst._height));
+        const right = clamp(maxX, 0, ops.initFx(dst._width));
+        const bottom = clamp(maxY, 0, ops.initFx(dst._height));
+
+        let uv: V2 = { x: 0, y: 0 };
+
+        for (let py = top; py < bottom; py += fxOne) {
+            for (let px = left; px < right; px += fxOne) {
                 if (invAreaA && isInsideTriangle(px, py, p0, p3, p2)) {
-                    const w0 = ops.mul(edge(p3, p2, { x: px, y: py }), invAreaA);
-                    const w1 = ops.mul(edge(p2, p0, { x: px, y: py }), invAreaA);
-                    const w2 = ops.mul(edge(p0, p3, { x: px, y: py }), invAreaA);
-                    uvx = ops.mul(uv0.x, w0) + ops.mul(uv3.x, w1) + ops.mul(uv2.x, w2);
-                    uvy = ops.mul(uv0.y, w0) + ops.mul(uv3.y, w1) + ops.mul(uv2.y, w2);
-                    inside = true;
+                    uv = interpolateUV(px, py, p0, p3, p2, uv0, uv3, uv2, invAreaA);
                 } else if (invAreaB && isInsideTriangle(px, py, p2, p1, p0)) {
-                    const w0 = ops.mul(edge(p1, p0, { x: px, y: py }), invAreaB);
-                    const w1 = ops.mul(edge(p0, p2, { x: px, y: py }), invAreaB);
-                    const w2 = ops.mul(edge(p2, p1, { x: px, y: py }), invAreaB);
-                    uvx = ops.mul(uv2.x, w0) + ops.mul(uv1.x, w1) + ops.mul(uv0.x, w2);
-                    uvy = ops.mul(uv2.y, w0) + ops.mul(uv1.y, w1) + ops.mul(uv0.y, w2);
-                    inside = true;
+                    uv = interpolateUV(px, py, p2, p1, p0, uv2, uv1, uv0, invAreaB);
+                } else {
+                    continue;
                 }
 
-                if (inside) {
-                    const uWrap = ops.mul(wrapFx(uvx), texWfx);
-                    const vWrap = ops.mul(wrapFx(uvy), texHfx);
-                    const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
-                    if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
-                }
+                const uWrap = ops.mul(wrapFx(uv.x), texWfx);
+                const vWrap = ops.mul(wrapFx(uv.y), texHfx);
+                const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
+                if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
             }
         }
     }
