@@ -150,14 +150,6 @@ namespace pxsim.gpu {
 
         const texWfx = ops.initFx(tex._width);
         const texHfx = ops.initFx(tex._height);
-        const texelBiasU = ops.div(fxOne, ops.mul(texWfx, fxTwo));
-        const texelBiasV = ops.div(fxOne, ops.mul(texHfx, fxTwo));
-        
-        const areaA = edge(p0, p3, p2);
-        const invAreaA = areaA !== fxZero ? ops.div(fxOne, areaA) : fxZero;
-
-        const areaB = edge(p2, p1, p0);
-        const invAreaB = areaB !== fxZero ? ops.div(fxOne, areaB) : fxZero;
 
         const minX = min4(p0.x, p1.x, p2.x, p3.x);
         const minY = min4(p0.y, p1.y, p2.y, p3.y);
@@ -171,25 +163,43 @@ namespace pxsim.gpu {
             bottom: clamp(maxY, 0, ops.initFx(dst._height))
         };
 
-        for (let py = pbounds.top; py <= pbounds.bottom; py += fxOne) {
-            for (let px = pbounds.left; px <= pbounds.right; px += fxOne) {
+        const areaA = edge(p0, p3, p2);
+        const invAreaA = areaA !== fxZero ? ops.div(fxOne, areaA) : fxZero;
+
+        const areaB = edge(p2, p1, p0);
+        const invAreaB = areaB !== fxZero ? ops.div(fxOne, areaB) : fxZero;
+
+        for (let py = pbounds.top; py < pbounds.bottom; py += fxOne) {
+            for (let px = pbounds.left; px < pbounds.right; px += fxOne) {
+                let uvx = 0;
+                let uvy = 0;
+                let inside = false;
+
                 if (invAreaA && isInsideTriangle(px, py, p0, p3, p2)) {
-                    const uv = interpolateUV(px, py, p0, p3, p2, uv0, uv3, uv2, invAreaA);
-                    const uWrap = ops.mul(wrapFx(uv.x + texelBiasU), texWfx);
-                    const vWrap = ops.mul(wrapFx(uv.y + texelBiasV), texHfx);
-                    const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
-                    if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
+                    const w0 = ops.mul(edge(p3, p2, { x: px, y: py }), invAreaA);
+                    const w1 = ops.mul(edge(p2, p0, { x: px, y: py }), invAreaA);
+                    const w2 = ops.mul(edge(p0, p3, { x: px, y: py }), invAreaA);
+                    uvx = ops.mul(uv0.x, w0) + ops.mul(uv3.x, w1) + ops.mul(uv2.x, w2);
+                    uvy = ops.mul(uv0.y, w0) + ops.mul(uv3.y, w1) + ops.mul(uv2.y, w2);
+                    inside = true;
                 } else if (invAreaB && isInsideTriangle(px, py, p2, p1, p0)) {
-                    const uv = interpolateUV(px, py, p2, p1, p0, uv2, uv1, uv0, invAreaB);
-                    const uWrap = ops.mul(wrapFx(uv.x + texelBiasU), texWfx);
-                    const vWrap = ops.mul(wrapFx(uv.y + texelBiasV), texHfx);
+                    const w0 = ops.mul(edge(p1, p0, { x: px, y: py }), invAreaB);
+                    const w1 = ops.mul(edge(p0, p2, { x: px, y: py }), invAreaB);
+                    const w2 = ops.mul(edge(p2, p1, { x: px, y: py }), invAreaB);
+                    uvx = ops.mul(uv2.x, w0) + ops.mul(uv1.x, w1) + ops.mul(uv0.x, w2);
+                    uvy = ops.mul(uv2.y, w0) + ops.mul(uv1.y, w1) + ops.mul(uv0.y, w2);
+                    inside = true;
+                }
+
+                if (inside) {
+                    const uWrap = ops.mul(wrapFx(uvx), texWfx);
+                    const vWrap = ops.mul(wrapFx(uvy), texHfx);
                     const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
                     if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
                 }
             }
         }
     }
-
     export function _drawTexturedQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
         drawTexturedQuad(dst, tex, args);
     }
