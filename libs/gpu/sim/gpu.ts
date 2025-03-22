@@ -11,14 +11,17 @@ namespace pxsim.gpu {
      * (i:3,uv:0,1) (i:2,uv:1,1)
      */
 
-
     type V2 = { x: number; y: number };
     type Vertex = { pos: V2; uv: V2 };
     type Bounds = { left: number; top: number; right: number; bottom: number };
 
+    const FX_SHIFT = 16;
+    const FX_ONE = 1 << FX_SHIFT;
+    const FX_HALF = FX_ONE >> 1;
+
     type Ops = {
         initFx(v: number): number;
-        toFixed(v: number): number;
+        toNum(v: number): number;
         toInt(v: number): number;
         round(v: number): number;
         mul(a: number, b: number): number;
@@ -27,40 +30,36 @@ namespace pxsim.gpu {
 
     const fxOps: Ops = {
         initFx(v: number): number {
-            // Convert to fx8
-            return (v * 256) | 0;
+            return (v * FX_ONE) | 0;
         },
-        toFixed(v: number): number {
-            // Convert to fx8
-            return (v * 256) | 0;
+        toNum(v: number): number {
+            return v / FX_ONE;
         },
         toInt(v: number): number {
-            // Convert to number
-            return v >> 8;
+            return v >> FX_SHIFT;
         },
         round(v: number): number {
-            return (v + 128) >> 8;
+            return ((v + FX_HALF) >> FX_SHIFT) << FX_SHIFT;
         },
         mul(a: number, b: number): number {
-            return ((a * b) | 0) >> 8;
+            return ((a * b) / FX_ONE) | 0;
+            //return ((a * b + (FX_ONE >> 1)) / FX_ONE) | 0;
         },
         div(a: number, b: number): number {
-            return ((a | 0) << 8) / (b | 0);
-        },
+            return ((a * FX_ONE) / b) | 0;
+            //return (((a << FX_SHIFT) + (b >> 1)) / b) | 0;
+        }
     };
 
     const floatOps: Ops = {
         initFx(v: number): number {
-            // Convert to number
-            return v >> 8;
+            return v;
         },
-        toFixed(v: number): number {
-            // Keep as number
-            return v | 0;
+        toNum(v: number): number {
+            return v;
         },
         toInt(v: number): number {
-            // Already a number
-            return v | 0;
+            return Math.floor(v);
         },
         round(v: number): number {
             return Math.round(v);
@@ -77,8 +76,9 @@ namespace pxsim.gpu {
     //const ops = floatOps
 
     const fxZero = 0;
-    const fxOne = ops.toFixed(1);
-    const fxHalf = ops.toFixed(0.5);
+    const fxOne = ops.initFx(1);
+    const fxTwo = ops.initFx(2);
+    const fxHalf = ops.initFx(0.5);
 
     function wrapFx(v: number): number {
         let r = v % fxOne;
@@ -124,7 +124,6 @@ namespace pxsim.gpu {
     }
 
     function drawTexturedQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
-
         const v0: Vertex = {
             pos: { x: ops.initFx(args.getAt(0)), y: ops.initFx(args.getAt(1)) },
             uv: { x: ops.initFx(args.getAt(2)), y: ops.initFx(args.getAt(3)) },
@@ -135,13 +134,11 @@ namespace pxsim.gpu {
         };
         const v2: Vertex = {
             pos: { x: ops.initFx(args.getAt(8)), y: ops.initFx(args.getAt(9)) },
-            uv: {
-                x: ops.initFx(args.getAt(10)), y: ops.initFx(args.getAt(11)),
-            },
+            uv: { x: ops.initFx(args.getAt(10)), y: ops.initFx(args.getAt(11)) },
         };
         const v3: Vertex = {
-            pos: { x: ops.initFx(args.getAt(12)), y: ops.initFx(args.getAt(13)), },
-            uv: { x: ops.initFx(args.getAt(14)), y: ops.initFx(args.getAt(15)), },
+            pos: { x: ops.initFx(args.getAt(12)), y: ops.initFx(args.getAt(13)) },
+            uv: { x: ops.initFx(args.getAt(14)), y: ops.initFx(args.getAt(15)) },
         };
 
         drawInterpolatedQuad(v0, v1, v2, v3, dst, tex);
@@ -151,17 +148,11 @@ namespace pxsim.gpu {
         const p0 = v0.pos, p1 = v1.pos, p2 = v2.pos, p3 = v3.pos;
         const uv0 = v0.uv, uv1 = v1.uv, uv2 = v2.uv, uv3 = v3.uv;
 
-        const dx1 = p1.x - p0.x, dy1 = p1.y - p0.y;
-        const dx2 = p3.x - p0.x, dy2 = p3.y - p0.y;
-
-        const denom = ops.mul(dx1, dy2) - ops.mul(dx2, dy1);
-        if (denom === fxZero) return;
-
-        const texWfx = ops.toFixed(tex._width);
-        const texHfx = ops.toFixed(tex._height);
-        const halfTexelU = ops.div(fxOne, tex._width << 1);
-        const halfTexelV = ops.div(fxOne, tex._height << 1);
-
+        const texWfx = ops.initFx(tex._width);
+        const texHfx = ops.initFx(tex._height);
+        const texelBiasU = ops.div(fxOne, ops.mul(texWfx, fxTwo));
+        const texelBiasV = ops.div(fxOne, ops.mul(texHfx, fxTwo));
+        
         const areaA = edge(p0, p3, p2);
         const invAreaA = areaA !== fxZero ? ops.div(fxOne, areaA) : fxZero;
 
@@ -174,43 +165,32 @@ namespace pxsim.gpu {
         const maxY = max4(p0.y, p1.y, p2.y, p3.y);
 
         const pbounds: Bounds = {
-            left: clamp(minX, 0, ops.toFixed(dst._width)),
-            top: clamp(minY, 0, ops.toFixed(dst._height)),
-            right: clamp(maxX, 0, ops.toFixed(dst._width)),
-            bottom: clamp(maxY, 0, ops.toFixed(dst._height))
+            left: clamp(minX, 0, ops.initFx(dst._width)),
+            top: clamp(minY, 0, ops.initFx(dst._height)),
+            right: clamp(maxX, 0, ops.initFx(dst._width)),
+            bottom: clamp(maxY, 0, ops.initFx(dst._height))
         };
 
-        for (let py = pbounds.top; py < pbounds.bottom; py += fxOne) {
-            for (let px = pbounds.left; px < pbounds.right; px += fxOne) {
-                const sampleX = px + fxHalf;
-                const sampleY = py + fxHalf;
-
-                if (invAreaA && isInsideTriangle(sampleX, sampleY, p0, p3, p2)) {
-                    const uv = interpolateUV(sampleX, sampleY, p0, p3, p2, uv0, uv3, uv2, invAreaA);
-                    const uWrap = wrapFx(uv.x + halfTexelU);
-                    const vWrap = wrapFx(uv.y + halfTexelV);
-                    const x = ops.round(ops.mul(uWrap, texWfx));
-                    const y = ops.round(ops.mul(vWrap, texHfx));
-                    const color = ImageMethods.getPixel(tex, x, y);
-                    if (color) ImageMethods.setPixel(dst, ops.round(px), ops.round(py), color);
-                } else if (invAreaB && isInsideTriangle(sampleX, sampleY, p2, p1, p0)) {
-                    const uv = interpolateUV(sampleX, sampleY, p2, p1, p0, uv2, uv1, uv0, invAreaB);
-                    const uWrap = wrapFx(uv.x + halfTexelU);
-                    const vWrap = wrapFx(uv.y + halfTexelV);
-                    const x = ops.round(ops.mul(uWrap, texWfx));
-                    const y = ops.round(ops.mul(vWrap, texHfx));
-                    const color = ImageMethods.getPixel(tex, x, y);
-                    if (color) ImageMethods.setPixel(dst, ops.round(px), ops.round(py), color);
+        for (let py = pbounds.top; py <= pbounds.bottom; py += fxOne) {
+            for (let px = pbounds.left; px <= pbounds.right; px += fxOne) {
+                if (invAreaA && isInsideTriangle(px, py, p0, p3, p2)) {
+                    const uv = interpolateUV(px, py, p0, p3, p2, uv0, uv3, uv2, invAreaA);
+                    const uWrap = ops.mul(wrapFx(uv.x + texelBiasU), texWfx);
+                    const vWrap = ops.mul(wrapFx(uv.y + texelBiasV), texHfx);
+                    const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
+                    if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
+                } else if (invAreaB && isInsideTriangle(px, py, p2, p1, p0)) {
+                    const uv = interpolateUV(px, py, p2, p1, p0, uv2, uv1, uv0, invAreaB);
+                    const uWrap = ops.mul(wrapFx(uv.x + texelBiasU), texWfx);
+                    const vWrap = ops.mul(wrapFx(uv.y + texelBiasV), texHfx);
+                    const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
+                    if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
                 }
             }
         }
     }
 
-    export function _drawTexturedQuad(
-        dst: RefImage,
-        tex: RefImage,
-        args: RefCollection
-    ) {
+    export function _drawTexturedQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
         drawTexturedQuad(dst, tex, args);
     }
 }
