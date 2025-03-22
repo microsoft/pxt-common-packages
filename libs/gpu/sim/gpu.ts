@@ -179,9 +179,9 @@ namespace pxsim.gpu {
                     continue;
                 }
 
-                const uWrap = ops.mul(wrapFx(uv.x), texWfx);
-                const vWrap = ops.mul(wrapFx(uv.y), texHfx);
-                const color = ImageMethods.getPixel(tex, ops.toInt(uWrap), ops.toInt(vWrap));
+                const u = ops.mul(wrapFx(uv.x), texWfx);
+                const v = ops.mul(wrapFx(uv.y), texHfx);
+                const color = ImageMethods.getPixel(tex, ops.toInt(u), ops.toInt(v));
                 if (color) ImageMethods.setPixel(dst, ops.toInt(px), ops.toInt(py), color);
             }
         }
