@@ -7,205 +7,151 @@ int getPixel(Image_ img, int x, int y);
 
 namespace gpu {
 
-///
-/// Quad layout (wound clockwise)
-/// (i:0,uv:0,0) (i:1,uv:1,0)
-///   +------------+
-///   |\__         |
-///   |   \__      |
-///   |      \__   |
-///   |         \__|
-///   +------------+
-/// (i:3,uv:0,1) (i:2,uv:1,1)
-///
-
-// Triangle indices. Triangles are wound counterclockwise.
-static const int TRI0_INDICES[] = {0, 3, 2};
-static const int TRI1_INDICES[] = {2, 1, 0};
-
 struct Vec2 {
-    Vec2(int x = 0, int y = 0) : x(x), y(y) {}
-    void set(int x, int y) {
-        this->x = x;
-        this->y = y;
-    }
     int x, y;
-};
-
-struct Vec3 {
-    Vec3(int x = 0, int y = 0, int z = 0) : x(x), y(y), z(z) {}
-    int x, y, z;
+    Vec2(int x = 0, int y = 0) : x(x), y(y) {}
 };
 
 struct Vertex {
     Vec2 pos, uv;
 };
 
-static inline int fx8FromInt(int v) {
-    // Convert to fixed
-    return (int)(v * 256);
-}
-static inline int fx8FromFloat(float v) {
-    // Convert to fixed
-    return (int)(v * 256.f);
-}
-static inline int fxToInt(int v) {
-    // Convert to int (floor)
-    return v >> 8;
-}
+struct Bounds {
+    int left, top, right, bottom;
+};
+
+constexpr int fxOne = 1 << 8;
+constexpr int fxZero = 0;
+constexpr int fxHalf = fxOne >> 1;
+
 static inline int fxMul(int a, int b) {
     return (a * b) >> 8;
 }
 static inline int fxDiv(int a, int b) {
     return (a << 8) / b;
 }
-static inline int sign(int v) {
-    return v < 0 ? -1 : 1;
+static inline int fxToInt(int v) {
+    return v >> 8;
+}
+static inline int fxFromFloat(int v) {
+    return v << 8;
 }
 static inline int fxWrap(int v) {
     int r = v % fxOne;
-    if (r < 0)
-        r += fxOne;
-    return r;
+    return (r < fxZero) ? (r + fxOne) : r;
 }
 static inline int min(int a, int b) {
-    return (a < b ? a : b);
+    return a < b ? a : b;
 }
 static inline int max(int a, int b) {
-    return (a > b ? a : b);
+    return a > b ? a : b;
+}
+static inline int clamp(int v, int lo, int hi) {
+    return max(lo, min(v, hi));
+}
+static inline int min4(int a, int b, int c, int d) {
+    return min(min(min(a, b), c), d);
+}
+static inline int max4(int a, int b, int c, int d) {
+    return max(max(max(a, b), c), d);
+}
+static inline bool isTopLeft(const Vec2 &a, const Vec2 &b) {
+    return (a.y < b.y) || (a.y == b.y && a.x < b.x);
 }
 static inline int edge(const Vec2 &a, const Vec2 &b, const Vec2 &c) {
-    return fxMul((c.x - a.x), (b.y - a.y)) - fxMul((c.y - a.y), (b.x - a.x));
+    return fxMul(b.y - a.y, c.x - a.x) - fxMul(b.x - a.x, c.y - a.y);
 }
-static inline int clamp(int v, int a, int b) {
-    return min(b, max(v, a));
+static inline bool isInsideTriangle(int px, int py, const Vec2 &a, const Vec2 &b, const Vec2 &c) {
+    int e0 = edge(a, b, {px, py});
+    int e1 = edge(b, c, {px, py});
+    int e2 = edge(c, a, {px, py});
+
+    return (e0 > 0 || (e0 == 0 && isTopLeft(b, c))) && (e1 > 0 || (e1 == 0 && isTopLeft(c, a))) &&
+           (e2 > 0 || (e2 == 0 && isTopLeft(a, b)));
 }
-static inline int min3(int a, int b, int c) {
-    return min(min(a, b), c);
-}
-static inline int max3(int a, int b, int c) {
-    return max(max(a, b), c);
-}
-static inline bool isTopLeft(a : V2, b : V2) {
-    return a.y < b.y || (a.y == = b.y && a.x > b.x);
-}
-static inline void scaleToRef(const Vec2 &v, int s, Vec2 &ref) {
-    ref.x = fxMul(v.x, s);
-    ref.y = fxMul(v.y, s);
-}
-static inline void add3ToRef(const Vec2 &a, const Vec2 &b, const Vec2 &c, Vec2 &ref) {
-    ref.x = a.x + b.x + c.x;
-    ref.y = a.y + b.y + c.y;
-}
-static inline void divToRef(const Vec2 &a, const Vec2 &b, Vec2 &ref) {
-    ref.x = fxDiv(a.x, b.x);
-    ref.y = fxDiv(a.y, b.y);
+static inline Vec2 interpolateUV(int px, int py, const Vec2 &a, const Vec2 &b, const Vec2 &c,
+                                 const Vec2 &ua, const Vec2 &ub, const Vec2 &uc) {
+    int area = edge(a, b, c);
+    if (area == fxZero)
+        return {fxZero, fxZero};
+
+    int w0 = fxDiv(edge(b, c, {px, py}), area);
+    int w1 = fxDiv(edge(c, a, {px, py}), area);
+    int w2 = fxDiv(edge(a, b, {px, py}), area);
+
+    return {fxMul(ua.x, w0) + fxMul(ub.x, w1) + fxMul(uc.x, w2),
+            fxMul(ua.y, w0) + fxMul(ub.y, w1) + fxMul(uc.y, w2)};
 }
 
-const int fxZero = fx8FromInt(0);
-const int fxOne = fx8FromInt(1);
-const int fxHalf = fx8FromInt(0.5);
+static void drawInterpolatedQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2,
+                                 const Vertex &v3, Image_ dst, Image_ tex) {
+    const Vec2 &p0 = v0.pos, &p1 = v1.pos, &p2 = v2.pos, &p3 = v3.pos;
+    const Vec2 &uv0 = v0.uv, &uv1 = v1.uv, &uv2 = v2.uv, &uv3 = v3.uv;
 
-static int shadeTexturedPixel(const Vec2 &area, const Vertex *v0, const Vertex *v1,
-                              const Vertex *v2, int w0, int w1, int w2, Image_ tex, int texWidth,
-                              int texHeight) {
-    // Calculate uv coords from given barycentric coords.
-    Vec2 _uv0, _uv1, _uv2, _uv;
-    scaleToRef(v0->uv, w0, _uv0);
-    scaleToRef(v1->uv, w1, _uv1);
-    scaleToRef(v2->uv, w2, _uv2);
-    add3ToRef(_uv0, _uv1, _uv2, _uv);
-    divToRef(_uv, area, _uv);
-    // Sample texture at uv coords, repeating the texture.
-    const int u = fxWrap(_uv.x);
-    const int v = fxWrap(_uv.y);
-    const int x = fxToInt(fxMul(u, texWidth));
-    const int y = fxToInt(fxMul(v, texHeight));
-    return ImageMethods::getPixel(tex, x, y);
-}
+    int dx1 = p1.x - p0.x, dy1 = p1.y - p0.y;
+    int dx2 = p3.x - p0.x, dy2 = p3.y - p0.y;
 
-static void drawTexturedTri(const Vertex *verts[], const int indices[], Image_ dst, Image_ tex) {
-    const Vertex *v0 = verts[indices[0]];
-    const Vertex *v1 = verts[indices[1]];
-    const Vertex *v2 = verts[indices[2]];
-    const Vec2 &p0 = v0->pos;
-    const Vec2 &p1 = v1->pos;
-    const Vec2 &p2 = v2->pos;
-
-    const int a = edge(p0, p1, p2);
-    if (a <= 0)
+    int denom = fxMul(dx1, dy2) - fxMul(dx2, dy1);
+    if (denom == fxZero)
         return;
-    Vec2 area(a, a);
 
-    const int dstWidth = fx8FromInt(dst->width());
-    const int dstHeight = fx8FromInt(dst->height());
-    const int texWidth = fx8FromInt(tex->width());
-    const int texHeight = fx8FromInt(tex->height());
+    int minX = min4(p0.x, p1.x, p2.x, p3.x);
+    int minY = min4(p0.y, p1.y, p2.y, p3.y);
+    int maxX = max4(p0.x, p1.x, p2.x, p3.x);
+    int maxY = max4(p0.y, p1.y, p2.y, p3.y);
 
-    const int left = clamp(min3(p0.x, p1.x, p2.x) + fxHalf, 0, dstWidth - fxOne);
-    const int top = clamp(min3(p0.y, p1.y, p2.y) + fxHalf, 0, dstHeight - fxOne);
-    const int right = clamp(max3(p0.x, p1.x, p2.x) - fxHalf, 0, dstWidth - fxOne);
-    const int bottom = clamp(max3(p0.y, p1.y, p2.y) - fxHalf, 0, dstHeight - fxOne);
+    int dstW = fxFromFloat(dst->width());
+    int dstH = fxFromFloat(dst->height());
 
-    Vec2 p(left, top);
+    Bounds pbounds = {clamp(minX, 0, dstW), clamp(minY, 0, dstH), clamp(maxX, 0, dstW),
+                      clamp(maxY, 0, dstH)};
 
-    // Get the barycentric interpolants
-    const int A01 = p1.y - p0.y;
-    const int B01 = p0.x - p1.x;
-    const int A12 = p2.y - p1.y;
-    const int B12 = p1.x - p2.x;
-    const int A20 = p0.y - p2.y;
-    const int B20 = p2.x - p0.x;
+    Vec2 p;
+    for (p.y = pbounds.top; p.y < pbounds.bottom; p.y += fxOne) {
+        for (p.x = pbounds.left; p.x < pbounds.right; p.x += fxOne) {
+            int sampleX = p.x + fxHalf;
+            int sampleY = p.y + fxHalf;
 
-    int w0_row = edge(p1, p2, p);
-    int w1_row = edge(p2, p0, p);
-    int w2_row = edge(p0, p1, p);
+            if (isInsideTriangle(sampleX, sampleY, p0, p3, p2)) {
+                // First triangle: (p0, p3, p2)
+                Vec2 uv = interpolateUV(sampleX, sampleY, p0, p3, p2, uv0, uv3, uv2);
+                int u = fxWrap(uv.x);
+                int v = fxWrap(uv.y);
 
-    // This loop doesn't attempt to filter pixels outside the triangle, and this results in a lot of
-    // extra evaluations. We should do some prefiltering.
-    for (; p.y <= bottom; p.y += fxOne) {
-        int w0 = w0_row;
-        int w1 = w1_row;
-        int w2 = w2_row;
-        for (p.x = left; p.x <= right; p.x += fxOne) {
-            if ((w0 > 0 || (w0 == 0 && isTopLeft(p1, p2))) &&
-                (w1 > 0 || (w1 == 0 && isTopLeft(p2, p0))) &&
-                (w2 > 0 || (w2 == 0 && isTopLeft(p0, p1)))) {
-                const int color =
-                    shadeTexturedPixel(area, v0, v1, v2, w0, w1, w2, tex, texWidth, texHeight);
-                if (color) {
+                int x = fxToInt(fxMul(u, fxFromFloat(tex->width())));
+                int y = fxToInt(fxMul(v, fxFromFloat(tex->height())));
+                int color = ImageMethods::getPixel(tex, x, y);
+
+                if (color)
                     ImageMethods::setPixel(dst, fxToInt(p.x), fxToInt(p.y), color);
-                }
+            } else if (isInsideTriangle(sampleX, sampleY, p2, p1, p0)) {
+                // Second triangle: (p2, p1, p0)
+                Vec2 uv = interpolateUV(sampleX, sampleY, p2, p1, p0, uv2, uv1, uv0);
+                int u = fxWrap(uv.x);
+                int v = fxWrap(uv.y);
+
+                int x = fxToInt(fxMul(u, fxFromFloat(tex->width())));
+                int y = fxToInt(fxMul(v, fxFromFloat(tex->height())));
+                int color = ImageMethods::getPixel(tex, x, y);
+
+                if (color)
+                    ImageMethods::setPixel(dst, fxToInt(p.x), fxToInt(p.y), color);
             }
-            w0 += A12;
-            w1 += A20;
-            w2 += A01;
         }
-        w0_row += B12;
-        w1_row += B20;
-        w2_row += B01;
     }
 }
 
-static void drawTexturedQuad(Image_ dst, Image_ tex, RefCollection *args) {
-    Vertex v0, v1, v2, v3;
-    const Vertex *verts[4] = {&v0, &v1, &v2, &v3};
-
-    v0.pos.set(fx8FromInt(pxt::toInt(args->getAt(0))), fx8FromInt(pxt::toInt(args->getAt(1))));
-    v1.pos.set(fx8FromInt(pxt::toInt(args->getAt(4))), fx8FromInt(pxt::toInt(args->getAt(5))));
-    v2.pos.set(fx8FromInt(pxt::toInt(args->getAt(8))), fx8FromInt(pxt::toInt(args->getAt(9))));
-    v3.pos.set(fx8FromInt(pxt::toInt(args->getAt(12))), fx8FromInt(pxt::toInt(args->getAt(13))));
-    v0.uv.set(fx8FromInt(pxt::toInt(args->getAt(2))), fx8FromInt(pxt::toInt(args->getAt(3))));
-    v1.uv.set(fx8FromInt(pxt::toInt(args->getAt(6))), fx8FromInt(pxt::toInt(args->getAt(7))));
-    v2.uv.set(fx8FromInt(pxt::toInt(args->getAt(10))), fx8FromInt(pxt::toInt(args->getAt(11))));
-    v3.uv.set(fx8FromInt(pxt::toInt(args->getAt(14))), fx8FromInt(pxt::toInt(args->getAt(15))));
-
-    drawTexturedTri(verts, TRI0_INDICES, dst, tex);
-    drawTexturedTri(verts, TRI1_INDICES, dst, tex);
-}
-
-//%
 void _drawTexturedQuad(Image_ dst, Image_ tex, pxt::RefCollection *args) {
-    drawTexturedQuad(dst, tex, args);
+    Vertex v0 = {{fxFromFloat(args->getAt(0)), fxFromFloat(args->getAt(1))},
+                 {fxFromFloat(args->getAt(2)), fxFromFloat(args->getAt(3))}};
+    Vertex v1 = {{fxFromFloat(args->getAt(4)), fxFromFloat(args->getAt(5))},
+                 {fxFromFloat(args->getAt(6)), fxFromFloat(args->getAt(7))}};
+    Vertex v2 = {{fxFromFloat(args->getAt(8)), fxFromFloat(args->getAt(9))},
+                 {fxFromFloat(args->getAt(10)), fxFromFloat(args->getAt(11))}};
+    Vertex v3 = {{fxFromFloat(args->getAt(12)), fxFromFloat(args->getAt(13))},
+                 {fxFromFloat(args->getAt(14)), fxFromFloat(args->getAt(15))}};
+
+    drawInterpolatedQuad(v0, v1, v2, v3, dst, tex);
 }
+
 } // namespace gpu

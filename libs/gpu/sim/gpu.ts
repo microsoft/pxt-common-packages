@@ -1,19 +1,26 @@
 namespace pxsim.gpu {
+    /**
+     * Quad layout (wound clockwise)
+     * (i:0,uv:0,0) (i:1,uv:1,0)
+     *   +------------+
+     *   |\__         |
+     *   |   \__      |
+     *   |      \__   |
+     *   |         \__|
+     *   +------------+
+     * (i:3,uv:0,1) (i:2,uv:1,1)
+     */
+
+
     type V2 = { x: number; y: number };
     type Vertex = { pos: V2; uv: V2 };
     type Bounds = { left: number; top: number; right: number; bottom: number };
-
-    type DrawTriArgs = {
-        verts: Vertex[];
-        indices: number[];
-        dst: RefImage;
-        tex: RefImage;
-    };
 
     type Ops = {
         initFx(v: number): number;
         toFixed(v: number): number;
         toInt(v: number): number;
+        round(v: number): number;
         mul(a: number, b: number): number;
         div(a: number, b: number): number;
     };
@@ -30,6 +37,9 @@ namespace pxsim.gpu {
         toInt(v: number): number {
             // Convert to number
             return v >> 8;
+        },
+        round(v: number): number {
+            return (v + 128) >> 8;
         },
         mul(a: number, b: number): number {
             return ((a * b) | 0) >> 8;
@@ -51,6 +61,9 @@ namespace pxsim.gpu {
         toInt(v: number): number {
             // Already a number
             return v | 0;
+        },
+        round(v: number): number {
+            return Math.round(v);
         },
         mul(a: number, b: number): number {
             return a * b;
@@ -78,51 +91,40 @@ namespace pxsim.gpu {
     function clamp(v: number, min: number, max: number): number {
         return Math.min(max, Math.max(v, min));
     }
-    function min3(a: number, b: number, c: number): number {
-        return Math.min(Math.min(a, b), c);
+    function min4(a: number, b: number, c: number, d: number): number {
+        return Math.min(Math.min(Math.min(a, b), c), d);
     }
-    function max3(a: number, b: number, c: number): number {
-        return Math.max(Math.max(a, b), c);
+    function max4(a: number, b: number, c: number, d: number): number {
+        return Math.max(Math.max(Math.max(a, b), c), d);
     }
     function isTopLeft(a: V2, b: V2): boolean {
-        return a.y < b.y || (a.y === b.y && a.x > b.x);
+        return a.y < b.y || (a.y === b.y && a.x < b.x);
     }
-    function scaleToRef(v: V2, s: number, ref: V2): V2 {
-        ref.x = ops.mul(v.x, s);
-        ref.y = ops.mul(v.y, s);
-        return ref;
+    function isInsideTriangle(px: number, py: number, a: V2, b: V2, c: V2): boolean {
+        const e0 = edge(a, b, { x: px, y: py });
+        const e1 = edge(b, c, { x: px, y: py });
+        const e2 = edge(c, a, { x: px, y: py });
+
+        return (
+            (e0 > 0 || (e0 === 0 && isTopLeft(b, c))) &&
+            (e1 > 0 || (e1 === 0 && isTopLeft(c, a))) &&
+            (e2 > 0 || (e2 === 0 && isTopLeft(a, b)))
+        );
     }
-    function add3ToRef(a: V2, b: V2, c: V2, ref: V2): V2 {
-        ref.x = a.x + b.x + c.x;
-        ref.y = a.y + b.y + c.y;
-        return ref;
-    }
-    function divToRef(a: V2, b: V2, ref: V2): V2 {
-        ref.x = ops.div(a.x, b.x);
-        ref.y = ops.div(a.y, b.y);
-        return ref;
+    function interpolateUV(px: number, py: number, a: V2, b: V2, c: V2, ua: V2, ub: V2, uc: V2, invArea: number): V2 {
+        const w0 = ops.mul(edge(b, c, { x: px, y: py }), invArea);
+        const w1 = ops.mul(edge(c, a, { x: px, y: py }), invArea);
+        const w2 = ops.mul(edge(a, b, { x: px, y: py }), invArea);
+        //const w2 = fxOne - w0 - w1;
+
+        return {
+            x: ops.mul(ua.x, w0) + ops.mul(ub.x, w1) + ops.mul(uc.x, w2),
+            y: ops.mul(ua.y, w0) + ops.mul(ub.y, w1) + ops.mul(uc.y, w2)
+        };
     }
 
-    function drawTexturedQuad(
-        dst: RefImage,
-        tex: RefImage,
-        args: RefCollection
-    ) {
-        /**
-         * Quad layout (wound clockwise)
-         * (i:0,uv:0,0) (i:1,uv:1,0)
-         *   +------------+
-         *   |\__         |
-         *   |   \__      |
-         *   |      \__   |
-         *   |         \__|
-         *   +------------+
-         * (i:3,uv:0,1) (i:2,uv:1,1)
-         */
+    function drawTexturedQuad(dst: RefImage, tex: RefImage, args: RefCollection) {
 
-        // Triangle indices. Triangles are wound counterclockwise.
-        const TRI0_INDICES = [0, 3, 2];
-        const TRI1_INDICES = [2, 1, 0];
         const v0: Vertex = {
             pos: { x: ops.initFx(args.getAt(0)), y: ops.initFx(args.getAt(1)) },
             uv: { x: ops.initFx(args.getAt(2)), y: ops.initFx(args.getAt(3)) },
@@ -134,139 +136,73 @@ namespace pxsim.gpu {
         const v2: Vertex = {
             pos: { x: ops.initFx(args.getAt(8)), y: ops.initFx(args.getAt(9)) },
             uv: {
-                x: ops.initFx(args.getAt(10)),
-                y: ops.initFx(args.getAt(11)),
+                x: ops.initFx(args.getAt(10)), y: ops.initFx(args.getAt(11)),
             },
         };
         const v3: Vertex = {
-            pos: {
-                x: ops.initFx(args.getAt(12)),
-                y: ops.initFx(args.getAt(13)),
-            },
-            uv: {
-                x: ops.initFx(args.getAt(14)),
-                y: ops.initFx(args.getAt(15)),
-            },
+            pos: { x: ops.initFx(args.getAt(12)), y: ops.initFx(args.getAt(13)), },
+            uv: { x: ops.initFx(args.getAt(14)), y: ops.initFx(args.getAt(15)), },
         };
-        const verts = [v0, v1, v2, v3];
 
-        drawTexturedTri({ verts, indices: TRI0_INDICES, dst, tex });
-        drawTexturedTri({ verts, indices: TRI1_INDICES, dst, tex });
+        drawInterpolatedQuad(v0, v1, v2, v3, dst, tex);
     }
 
-    function drawTexturedTri(args: DrawTriArgs): void {
-        const v0 = args.verts[args.indices[0]];
-        const v1 = args.verts[args.indices[1]];
-        const v2 = args.verts[args.indices[2]];
-        const p0 = v0.pos;
-        const p1 = v1.pos;
-        const p2 = v2.pos;
-        const c0 = v0.uv;
-        const c1 = v1.uv;
-        const c2 = v2.uv;
+    function drawInterpolatedQuad(v0: Vertex, v1: Vertex, v2: Vertex, v3: Vertex, dst: RefImage, tex: RefImage) {
+        const p0 = v0.pos, p1 = v1.pos, p2 = v2.pos, p3 = v3.pos;
+        const uv0 = v0.uv, uv1 = v1.uv, uv2 = v2.uv, uv3 = v3.uv;
 
-        const area = edge(p0, p1, p2);
-        if (area <= 0) return;
+        const dx1 = p1.x - p0.x, dy1 = p1.y - p0.y;
+        const dx2 = p3.x - p0.x, dy2 = p3.y - p0.y;
 
-        const dstWidth = ops.toFixed(
-            clamp(args.dst._width, 0, args.dst._width)
-        );
-        const dstHeight = ops.toFixed(
-            clamp(args.dst._height, 0, args.dst._height)
-        );
-        const texWidth = ops.toFixed(
-            clamp(args.tex._width, 0, args.tex._width)
-        );
-        const texHeight = ops.toFixed(
-            clamp(args.tex._height, 0, args.tex._height)
-        );
+        const denom = ops.mul(dx1, dy2) - ops.mul(dx2, dy1);
+        if (denom === fxZero) return;
 
-        // Temp vars
-        const _uv0: V2 = { x: fxZero, y: fxZero };
-        const _uv1: V2 = { x: fxZero, y: fxZero };
-        const _uv2: V2 = { x: fxZero, y: fxZero };
-        const _uv: V2 = { x: fxZero, y: fxZero };
+        const texWfx = ops.toFixed(tex._width);
+        const texHfx = ops.toFixed(tex._height);
+        const halfTexelU = ops.div(fxOne, tex._width << 1);
+        const halfTexelV = ops.div(fxOne, tex._height << 1);
 
-        // Get the barycentric pixel interpolants
-        const A01 = p1.y - p0.y;
-        const B01 = p0.x - p1.x;
-        const A12 = p2.y - p1.y;
-        const B12 = p1.x - p2.x;
-        const A20 = p0.y - p2.y;
-        const B20 = p2.x - p0.x;
+        const areaA = edge(p0, p3, p2);
+        const invAreaA = areaA !== fxZero ? ops.div(fxOne, areaA) : fxZero;
 
-        const U01 = c1.x - c0.x;
-        const V01 = c1.y - c0.y;
-        const U12 = c2.x - c1.x;
-        const V12 = c2.y - c1.y;
-        const U20 = c0.x - c2.x;
-        const V20 = c0.y - c2.y;
+        const areaB = edge(p2, p1, p0);
+        const invAreaB = areaB !== fxZero ? ops.div(fxOne, areaB) : fxZero;
 
-        const minX = min3(p0.x, p1.x, p2.x);
-        const minY = min3(p0.y, p1.y, p2.y);
-        const maxX = max3(p0.x, p1.x, p2.x);
-        const maxY = max3(p0.y, p1.y, p2.y);
+        const minX = min4(p0.x, p1.x, p2.x, p3.x);
+        const minY = min4(p0.y, p1.y, p2.y, p3.y);
+        const maxX = max4(p0.x, p1.x, p2.x, p3.x);
+        const maxY = max4(p0.y, p1.y, p2.y, p3.y);
 
         const pbounds: Bounds = {
-            left: clamp(minX + fxHalf, 0, dstWidth - fxOne),
-            top: clamp(minY + fxHalf, 0, dstHeight - fxOne),
-            right: clamp(maxX - fxHalf, 0, dstWidth - fxOne),
-            bottom: clamp(maxY - fxHalf, 0, dstHeight - fxOne),
+            left: clamp(minX, 0, ops.toFixed(dst._width)),
+            top: clamp(minY, 0, ops.toFixed(dst._height)),
+            right: clamp(maxX, 0, ops.toFixed(dst._width)),
+            bottom: clamp(maxY, 0, ops.toFixed(dst._height))
         };
-        const p: V2 = { x: pbounds.left, y: pbounds.top };
 
-        let w0_row = edge(p1, p2, p);
-        let w1_row = edge(p2, p0, p);
-        let w2_row = edge(p0, p1, p);
+        for (let py = pbounds.top; py < pbounds.bottom; py += fxOne) {
+            for (let px = pbounds.left; px < pbounds.right; px += fxOne) {
+                const sampleX = px + fxHalf;
+                const sampleY = py + fxHalf;
 
-        function shadeTexturedPixel(
-            w0: number,
-            w1: number,
-            w2: number
-        ): number {
-            // Calculate uv coords from given barycentric coords.
-            scaleToRef(v0.uv, w0, _uv0);
-            scaleToRef(v1.uv, w1, _uv1);
-            scaleToRef(v2.uv, w2, _uv2);
-            add3ToRef(_uv0, _uv1, _uv2, _uv);
-            divToRef(_uv, { x: area, y: area }, _uv);
-            // Sample texture at uv coords, repeating the texture.
-            const u = wrapFx(_uv.x);
-            const v = wrapFx(_uv.y);
-            const x = ops.toInt(ops.mul(u, texWidth));
-            const y = ops.toInt(ops.mul(v, texHeight));
-            return ImageMethods.getPixel(args.tex, x, y);
-        }
-
-        // This loop doesn't attempt to filter pixels outside the triangle, and this results in a lot of
-        // extra evaluations. We should do some prefiltering.
-        for (; p.y <= pbounds.bottom; p.y += fxOne) {
-            let w0 = w0_row;
-            let w1 = w1_row;
-            let w2 = w2_row;
-            for (p.x = pbounds.left; p.x <= pbounds.right; p.x += fxOne) {
-                if (
-                    (w0 > 0 || (w0 === 0 && isTopLeft(p1, p2))) &&
-                    (w1 > 0 || (w1 === 0 && isTopLeft(p2, p0))) &&
-                    (w2 > 0 || (w2 === 0 && isTopLeft(p0, p1)))
-                ) {
-                    const color = shadeTexturedPixel(w0, w1, w2);
-                    if (color) {
-                        ImageMethods.setPixel(
-                            args.dst,
-                            ops.toInt(p.x),
-                            ops.toInt(p.y),
-                            color
-                        );
-                    }
+                if (invAreaA && isInsideTriangle(sampleX, sampleY, p0, p3, p2)) {
+                    const uv = interpolateUV(sampleX, sampleY, p0, p3, p2, uv0, uv3, uv2, invAreaA);
+                    const uWrap = wrapFx(uv.x + halfTexelU);
+                    const vWrap = wrapFx(uv.y + halfTexelV);
+                    const x = ops.round(ops.mul(uWrap, texWfx));
+                    const y = ops.round(ops.mul(vWrap, texHfx));
+                    const color = ImageMethods.getPixel(tex, x, y);
+                    if (color) ImageMethods.setPixel(dst, ops.round(px), ops.round(py), color);
+                } else if (invAreaB && isInsideTriangle(sampleX, sampleY, p2, p1, p0)) {
+                    const uv = interpolateUV(sampleX, sampleY, p2, p1, p0, uv2, uv1, uv0, invAreaB);
+                    const uWrap = wrapFx(uv.x + halfTexelU);
+                    const vWrap = wrapFx(uv.y + halfTexelV);
+                    const x = ops.round(ops.mul(uWrap, texWfx));
+                    const y = ops.round(ops.mul(vWrap, texHfx));
+                    const color = ImageMethods.getPixel(tex, x, y);
+                    if (color) ImageMethods.setPixel(dst, ops.round(px), ops.round(py), color);
                 }
-                w0 += A12;
-                w1 += A20;
-                w2 += A01;
             }
-            w0_row += B12;
-            w1_row += B20;
-            w2_row += B01;
         }
     }
 
