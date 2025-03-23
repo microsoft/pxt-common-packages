@@ -1,16 +1,16 @@
-namespace pxsim.gpu {
-    /**
-     * Quad layout (wound clockwise)
-     * (i:0,uv:0,0) (i:1,uv:1,0)
-     *   +------------+
-     *   |\__         |
-     *   |   \__      |
-     *   |      \__   |
-     *   |         \__|
-     *   +------------+
-     * (i:3,uv:0,1) (i:2,uv:1,1)
-     */
+/**
+ * Quad layout (wound clockwise)
+ * (i:0,uv:0,0) (i:1,uv:1,0)
+ *   +------------+
+ *   |\__         |
+ *   |   \__      |
+ *   |      \__   |
+ *   |         \__|
+ *   +------------+
+ * (i:3,uv:0,1) (i:2,uv:1,1)
+ */
 
+namespace pxsim.gpu {
     type V2 = { x: number; y: number };
     type Vertex = { pos: V2; uv: V2 };
     type Bounds = { left: number; top: number; right: number; bottom: number };

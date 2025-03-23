@@ -1,5 +1,17 @@
 #include "pxt.h"
 
+/**
+ * Quad layout (wound clockwise)
+ * (i:0,uv:0,0) (i:1,uv:1,0)
+ *   +------------+
+ *   |\__         |
+ *   |   \__      |
+ *   |      \__   |
+ *   |         \__|
+ *   +------------+
+ * (i:3,uv:0,1) (i:2,uv:1,1)
+ */
+
 namespace ImageMethods {
     void setPixel(Image_ img, int x, int y, int c);
     int getPixel(Image_ img, int x, int y);
@@ -43,7 +55,8 @@ inline int fxRound(int v) {
 
 inline int wrapFx(int v) {
     int r = v % FX_ONE;
-    if (r < 0) r += FX_ONE;
+    if (r < 0)
+        r += FX_ONE;
     return r;
 }
 
@@ -61,11 +74,8 @@ inline bool isInsideTriangle(int px, int py, const V2 &a, const V2 &b, const V2 
     int e1 = edge(b, c, p);
     int e2 = edge(c, a, p);
 
-    return (
-        (e0 > 0 || (e0 == 0 && isTopLeft(b, c))) &&
-        (e1 > 0 || (e1 == 0 && isTopLeft(c, a))) &&
-        (e2 > 0 || (e2 == 0 && isTopLeft(a, b)))
-    );
+    return ((e0 > 0 || (e0 == 0 && isTopLeft(b, c))) && (e1 > 0 || (e1 == 0 && isTopLeft(c, a))) &&
+            (e2 > 0 || (e2 == 0 && isTopLeft(a, b))));
 }
 
 inline int min(int a, int b) {
@@ -88,19 +98,18 @@ inline int clamp(int v, int a, int b) {
     return min(max(v, a), b);
 }
 
-void interpolateUV(int px, int py, const V2 &a, const V2 &b, const V2 &c,
-                 const V2 &ua, const V2 &ub, const V2 &uc, int invArea, V2 &uv) {
+void interpolateUV(int px, int py, const V2 &a, const V2 &b, const V2 &c, const V2 &ua,
+                   const V2 &ub, const V2 &uc, int invArea, V2 &uv) {
     int w0 = fxMul(edge(b, c, p), invArea);
     int w1 = fxMul(edge(c, a, p), invArea);
     int w2 = fxMul(edge(a, b, p), invArea);
 
-    
     uv.x = fxMul(ua.x, w0) + fxMul(ub.x, w1) + fxMul(uc.x, w2);
     uv.y = fxMul(ua.y, w0) + fxMul(ub.y, w1) + fxMul(uc.y, w2);
 }
 
 void drawInterpolatedQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, const Vertex &v3,
-                           Image_ dst, Image_ tex) {
+                          Image_ dst, Image_ tex) {
     const V2 &p0 = v0.pos, &p1 = v1.pos, &p2 = v2.pos, &p3 = v3.pos;
     const V2 &uv0 = v0.uv, &uv1 = v1.uv, &uv2 = v2.uv, &uv3 = v3.uv;
 
@@ -151,16 +160,16 @@ void drawInterpolatedQuad(const Vertex &v0, const Vertex &v1, const Vertex &v2, 
 void _drawTexturedQuad(Image_ dst, Image_ tex, pxt::RefCollection *args) {
     Vertex v0, v1, v2, v3;
     v0.pos = {fxInit(pxt::toInt(args->getAt(0))), fxInit(pxt::toInt(args->getAt(1)))};
-    v0.uv  = {fxInit(pxt::toInt(args->getAt(2))), fxInit(pxt::toInt(args->getAt(3)))};
+    v0.uv = {fxInit(pxt::toInt(args->getAt(2))), fxInit(pxt::toInt(args->getAt(3)))};
 
     v1.pos = {fxInit(pxt::toInt(args->getAt(4))), fxInit(pxt::toInt(args->getAt(5)))};
-    v1.uv  = {fxInit(pxt::toInt(args->getAt(6))), fxInit(pxt::toInt(args->getAt(7)))};
+    v1.uv = {fxInit(pxt::toInt(args->getAt(6))), fxInit(pxt::toInt(args->getAt(7)))};
 
     v2.pos = {fxInit(pxt::toInt(args->getAt(8))), fxInit(pxt::toInt(args->getAt(9)))};
-    v2.uv  = {fxInit(pxt::toInt(args->getAt(10))), fxInit(pxt::toInt(args->getAt(11)))};
+    v2.uv = {fxInit(pxt::toInt(args->getAt(10))), fxInit(pxt::toInt(args->getAt(11)))};
 
     v3.pos = {fxInit(pxt::toInt(args->getAt(12))), fxInit(pxt::toInt(args->getAt(13)))};
-    v3.uv  = {fxInit(pxt::toInt(args->getAt(14))), fxInit(pxt::toInt(args->getAt(15)))};
+    v3.uv = {fxInit(pxt::toInt(args->getAt(14))), fxInit(pxt::toInt(args->getAt(15)))};
 
     drawInterpolatedQuad(v0, v1, v2, v3, dst, tex);
 }
