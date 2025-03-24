@@ -4,8 +4,8 @@
 //% block="Browser Events"
 namespace browserEvents {
     export enum Event {
-        PointerDown = 6857,
-        PointerUp = 6858,
+        PointerDown = 6858,
+        PointerUp = 6857,
         PointerMove = 6859,
         PointerLeave = 6860,
         PointerEnter = 6861,
@@ -19,8 +19,8 @@ namespace browserEvents {
 
     export enum MouseButtonId {
         Left = 1,
-        Right = 2,
-        Wheel = 3,
+        Right = 3,
+        Wheel = 2,
         Back = 4,
         Forward = 5
     }
