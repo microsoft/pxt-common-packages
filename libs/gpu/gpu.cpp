@@ -100,6 +100,8 @@ inline int clamp(int v, int a, int b) {
 
 void interpolateUV(int px, int py, const V2 &a, const V2 &b, const V2 &c, const V2 &ua,
                    const V2 &ub, const V2 &uc, int invArea, V2 &uv) {
+    V2 p = { px, py };
+
     int w0 = fxMul(edge(b, c, p), invArea);
     int w1 = fxMul(edge(c, a, p), invArea);
     int w2 = fxMul(edge(a, b, p), invArea);

@@ -14,6 +14,7 @@
         "hitbox.ts",
         "renderText.ts",
         "spritesay.ts",
+        "rotation.ts",
         "sprites.ts",
         "sprite.ts",
         "extendableSprite.ts",
@@ -63,6 +64,7 @@
         "settings": "file:../settings",
         "screen": "file:../screen",
         "mixer": "file:../mixer",
-        "power": "file:../power"
+        "power": "file:../power",
+        "gpu": "file:../gpu"
     }
 }

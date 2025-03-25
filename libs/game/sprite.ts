@@ -229,6 +229,22 @@ class Sprite extends sprites.BaseSprite {
         this.sx = this.sy = v;
     }
 
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="rotation" callInDebugger
+    get rotation(): number {
+        return this._rotatedBBox ? this._rotatedBBox.rotation : 0;
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="rotation"
+    set rotation(value: number) {
+        if (!this._rotatedBBox) {
+            this._rotatedBBox = new sprites.RotatedBoundingBox(this.x, this.y, this.width * this.sx, this.height * this.sy);
+        }
+        else {
+            this._rotatedBBox.rotation = value;
+        }
+    }
+
     private _data: any;
     /**
      * Custom data
@@ -269,6 +285,7 @@ class Sprite extends sprites.BaseSprite {
     private sayRenderer: sprites.BaseSpriteSayRenderer;
 
     _hitbox: game.Hitbox;
+    _rotatedBBox: sprites.RotatedBoundingBox;
     _overlappers: number[];
     _alreadyChecked: number[];
     _kindsOverlappedWith: number[];
@@ -365,6 +382,10 @@ class Sprite extends sprites.BaseSprite {
     protected recalcSize(): void {
         this._width = Fx8(this._image.width * this.sx);
         this._height = Fx8(this._image.height * this.sy);
+        if (this._rotatedBBox) {
+            this._rotatedBBox.setDimensions(this._image.width * this.sx, this._image.height * this.sy);
+            this._rotatedBBox.setPosition(this.x, this.y);
+        }
         this.resetHitbox();
     }
 
@@ -688,15 +709,29 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
     //% weight=90
-    overlapsWith(other: Sprite) {
+    overlapsWith(other: Sprite): boolean {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
-        if (this.flags & SPRITE_NO_SPRITE_OVERLAPS)
+        if (this.flags & SPRITE_NO_SPRITE_OVERLAPS) {
             return false
-        if (other.flags & SPRITE_NO_SPRITE_OVERLAPS)
+        }
+        if (other.flags & SPRITE_NO_SPRITE_OVERLAPS) {
             return false
-        if (this.flags & sprites.Flag.HitboxOverlaps || other.flags & sprites.Flag.HitboxOverlaps)
+        }
+        if (this._rotatedBBox) {
+            if (other._rotatedBBox) {
+                return this._rotatedBBox.overlaps(other._rotatedBBox);
+            }
+            else {
+                return this._rotatedBBox.overlapsAABB(other.left, other.top, other.right, other.bottom);
+            }
+        }
+        else if (other._rotatedBBox) {
+            return other.overlapsWith(this);
+        }
+        if (this.flags & sprites.Flag.HitboxOverlaps || other.flags & sprites.Flag.HitboxOverlaps) {
             return other._hitbox.overlapsWith(this._hitbox);
+        }
         if (!other._hitbox.overlapsWith(this._hitbox))
             return false;
         if (!this.isScaled() && !other.isScaled()) {
@@ -1117,9 +1152,16 @@ class Sprite extends sprites.BaseSprite {
     }
 
     protected drawSprite(drawLeft: number, drawTop: number) {
-        if (!this.isScaled())
+        if (this._rotatedBBox) {
+            const camera = game.currentScene().camera;
+            const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
+            const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
+            this._rotatedBBox.drawTexture(screen, this.image, ox, oy);
+        }
+        else if (!this.isScaled()) {
             screen.drawTransparentImage(this._image, drawLeft, drawTop);
-        else
+        }
+        else {
             screen.blit(
                 // dst rect in screen
                 drawLeft, drawTop,
@@ -1130,5 +1172,12 @@ class Sprite extends sprites.BaseSprite {
                 0, 0,
                 this._image.width, this._image.height,
                 true, false);
+        }
+    }
+
+    protected updateRotation() {
+        if (this._rotatedBBox) {
+            this._rotatedBBox.setPosition(this.x, this.y);
+        }
     }
 }
