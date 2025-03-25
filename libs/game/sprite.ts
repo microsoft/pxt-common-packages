@@ -103,9 +103,9 @@ class Sprite extends sprites.BaseSprite {
     _fy: Fx8 // friction
     _sx: Fx8 // scale
     _sy: Fx8 // scale
-    _rotation: Fx8
     _width: Fx8 // scaled width
     _height: Fx8 // scaled height
+    _rotatedBBox: sprites.RotatedBoundingBox;
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
@@ -116,6 +116,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockCombine block="x"
     set x(v: number) {
         this.left = v - (this.width / 2)
+        this.resetBBoxPosition();
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -127,6 +128,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockCombine block="y"
     set y(v: number) {
         this.top = v - (this.height / 2)
+        this.resetBBoxPosition();
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -226,19 +228,20 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="rotation (radians)" callInDebugger
     get rotation(): number {
-        return Fx.toFloat(this._rotation);
+        return this._rotatedBBox ? this._rotatedBBox.rotation : 0;
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="rotation (radians)"
     set rotation(v: number) {
-        const y = this.y;
         const x = this.x;
-
-        this._rotation = Fx8(v);
+        const y = this.y;
+        if (!this._rotatedBBox) {
+            this._rotatedBBox = new sprites.RotatedBoundingBox(this.x, this.y, this.width, this.height);
+        }
+        this._rotatedBBox.setRotation(v);
         this.recalcSize();
-
-        this.y = y;
         this.x = x;
+        this.y = y;
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -315,7 +318,6 @@ class Sprite extends sprites.BaseSprite {
         this.fy = 0
         this._sx = Fx.oneFx8;
         this._sy = Fx.oneFx8;
-        this._rotation = Fx.zeroFx8;
         this.flags = 0
         this.setImage(img);
         this.setKind(-1); // not a member of any type by default
@@ -387,10 +389,12 @@ class Sprite extends sprites.BaseSprite {
     }
 
     protected recalcSize(): void {
-        if (this.isRotated()) {
-            const dimensions = helpers.scaledRotatedImageDimensions(this._image, this.sx, this.sy, this.rotation);
-            this._width = Fx8(dimensions.width);
-            this._height = Fx8(dimensions.height);
+        if (this._rotatedBBox) {
+            this._rotatedBBox.setDimensions(this._image.width * this.sx, this._image.height * this.sy);
+            this._rotatedBBox.setPosition(this.x, this.y);
+
+            this._width = Fx8(this._rotatedBBox.width);
+            this._height = Fx8(this._rotatedBBox.height);
         }
         else {
             this._width = Fx8(this._image.width * this.sx);
@@ -401,10 +405,6 @@ class Sprite extends sprites.BaseSprite {
 
     private isScaled(): boolean {
         return this._sx !== Fx.oneFx8 || this._sy !== Fx.oneFx8;
-    }
-
-    private isRotated(): boolean {
-        return this._rotation !== Fx.zeroFx8;
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -723,7 +723,7 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
     //% help=sprites/sprite/overlaps-with
     //% weight=90
-    overlapsWith(other: Sprite) {
+    overlapsWith(other: Sprite): boolean {
         control.enablePerfCounter("overlapsCPP")
         if (other == this) return false;
         if (this.flags & SPRITE_NO_SPRITE_OVERLAPS)
@@ -732,19 +732,16 @@ class Sprite extends sprites.BaseSprite {
             return false
         if (this.flags & sprites.Flag.HitboxOverlaps || other.flags & sprites.Flag.HitboxOverlaps)
             return other._hitbox.overlapsWith(this._hitbox);
-        if (this.isRotated() || other.isRotated()) {
-            return helpers.imageOverlapsRotateScaled(
-                this._image,
-                other.left - this.left,
-                other.top - this.top,
-                this.sx,
-                this.sy,
-                this.rotation,
-                other._image,
-                other.sx,
-                other.sy,
-                other.rotation
-            )
+        if (this._rotatedBBox) {
+            if (other._rotatedBBox) {
+                return this._rotatedBBox.overlaps(other._rotatedBBox);
+            }
+            else {
+                return this._rotatedBBox.overlapsAABB(other.left, other.top, other.right, other.bottom);
+            }
+        }
+        else if (other._rotatedBBox) {
+            return other.overlapsWith(this);
         }
         if (!other._hitbox.overlapsWith(this._hitbox))
             return false;
@@ -1166,7 +1163,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     protected drawSprite(drawLeft: number, drawTop: number) {
-        if (this.isRotated()) {
+        if (this._rotatedBBox) {
             helpers.imageDrawRotateScaled(
                 screen,
                 drawLeft,
@@ -1191,5 +1188,11 @@ class Sprite extends sprites.BaseSprite {
                 0, 0,
                 this._image.width, this._image.height,
                 true, false);
+    }
+
+    protected resetBBoxPosition() {
+        if (this._rotatedBBox) {
+            this._rotatedBBox.setPosition(this.x, this.y);
+        }
     }
 }

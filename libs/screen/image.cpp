@@ -1,4 +1,6 @@
 #include "pxt.h"
+#include <limits>
+
 
 #if IMAGE_BITS == 1
 // OK
@@ -1125,12 +1127,33 @@ bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
     return false;
 }
 
+#define FX_SHIFT 16
+#define FX_ONE (1 << FX_SHIFT)
+#define FX_HALF (FX_ONE >> 1)
+
+inline int fxMul(int a, int b) {
+    return (int)(((int64_t)a * b) >> FX_SHIFT);
+}
+
+inline int fxDiv(int a, int b) {
+    return (int)(((int64_t)a << FX_SHIFT) / b);
+}
+
+inline int fxInit(int v) {
+    return v << FX_SHIFT;
+}
+
+inline int fxToInt(int v) {
+    return v >> FX_SHIFT;
+}
+
+
 //%
 void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
     int xDst = pxt::toInt(args->getAt(0));
     int yDst = pxt::toInt(args->getAt(1));
-    double sx = pxt::toDouble(args->getAt(2));
-    double sy = pxt::toDouble(args->getAt(3));
+    int sx = pxt::toDouble(args->getAt(2)) * FX_ONE;
+    int sy = pxt::toDouble(args->getAt(3)) * FX_ONE;
     double angle = pxt::toDouble(args->getAt(4));
     int transparent = pxt::toInt(args->getAt(5));
 
@@ -1151,22 +1174,22 @@ void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
         angle = fmod(angle + 3.14159265359, 6.28318530718);
     }
 
-    double xShear = -1.0 * tan(angle / 2.0);
-    double yShear = sin(angle);
+    int xShear = (-1.0 * tan(angle / 2.0)) * FX_ONE;
+    int yShear = (sin(angle)) * FX_ONE;
 
-    double scaledWidth = sx * src->width();
-    double scaledHeight = sy * src->height();
+    int scaledWidth = sx * src->width();
+    int scaledHeight = sy * src->height();
 
-    int minX = 999999;
-    int minY = 999999;
-    int maxX = -999999;
-    int maxY = -999999;
+    int minX = std::numeric_limits<int>::max();;
+    int minY = std::numeric_limits<int>::max();;
+    int maxX = std::numeric_limits<int>::min();;
+    int maxY = std::numeric_limits<int>::min();;
 
     for (int y = 0; y < scaledHeight; y += scaledHeight - 1) {
         for (int x = 0; x < scaledWidth; x += scaledWidth - 1) {
-            int newX = x + y * xShear;
-            int newY = y + newX * yShear;
-            newX = newX + newY * xShear;
+            int newX = x + fxMul(y, xShear);
+            int newY = y + fxMul(newX, yShear);
+            newX = newX + fxMul(newY, xShear);
             minX = min(minX, newX);
             minY = min(minY, newY);
             maxX = max(maxX, newX);
@@ -1174,90 +1197,31 @@ void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
         }
     }
 
-    int rotatedWidth = maxX - minX + 1;
-    int rotatedHeight = maxY - minY + 1;
+    int rotatedWidth = maxX - minX + FX_ONE;
+    int rotatedHeight = maxY - minY + FX_ONE;
 
     dst->makeWritable();
 
-    for (int x = 0; x < rotatedWidth; x++) {
-        for (int y = 0; y < rotatedHeight; y++) {
-            double ox = (x + minX) - (y + minY) * xShear;
-            double oy = (y + minY) - ox * yShear;
-            ox = ox - oy * xShear;
+    for (int x = 0; x < rotatedWidth; x += FX_ONE) {
+        for (int y = 0; y < rotatedHeight; y += FX_ONE) {
+            int ox = (x + minX) - fxMul((y + minY), xShear);
+            int oy = (y + minY) - fxMul(ox, yShear);
+            ox = ox - fxMul(oy, xShear);
 
             int color = 0;
             if (flip) {
-                color = getPixel(src, (scaledWidth - ox - 1) / sx, (scaledHeight - oy - 1) / sy);
+                color = getPixel(src, fxToInt(fxDiv((scaledWidth - ox - 1), sx)), fxToInt(fxDiv((scaledHeight - oy - 1), sy)));
             }
             else {
-                color = getPixel(src, ox / sx, oy / sy);
+                color = getPixel(src, fxToInt(fxDiv(ox, sx)), fxToInt(fxDiv(oy, sy)));
             }
 
             if (!transparent || color) {
-                setPixel(dst, xDst + x, yDst + y, color);
+                setPixel(dst, xDst + fxToInt(x), yDst + fxToInt(y), color);
             }
         }
     }
 }
-
-void writeNumber(uint8_t *dst, uint8_t *src) {
-    *(uint16_t *)dst = *(uint16_t *)src;
-}
-
-//%
-void _scaledRotatedImageDimensions(Image_ img, pxt::RefCollection *args, Buffer result) {
-    double sx = pxt::toDouble(args->getAt(0));
-    double sy = pxt::toDouble(args->getAt(1));
-    double angle = pxt::toDouble(args->getAt(2));
-
-    bool flip = false;
-
-    angle = fmod(angle, 6.28318530718);
-
-    if (angle < 0) {
-        angle = angle + 3.14159265359;
-    }
-
-    if (angle > 1.57079632679 && angle <= 4.71238898038) {
-        flip = true;
-        angle = fmod(angle + 3.14159265359, 6.28318530718);
-    }
-
-    double xShear = -1.0 * tan(angle / 2.0);
-    double yShear = sin(angle);
-
-    double scaledWidth = sx * img->width();
-    double scaledHeight = sy * img->height();
-
-    int minX = 999999;
-    int minY = 999999;
-    int maxX = -999999;
-    int maxY = -999999;
-
-    for (int y = 0; y < scaledHeight; y += scaledHeight - 1) {
-        for (int x = 0; x < scaledWidth; x += scaledWidth - 1) {
-            int newX = x + y * xShear;
-            int newY = y + newX * yShear;
-            newX = newX + newY * xShear;
-            minX = min(minX, newX);
-            minY = min(minY, newY);
-            maxX = max(maxX, newX);
-            maxY = max(maxY, newY);
-        }
-    }
-
-    uint16_t rotatedWidth = maxX - minX + 1;
-    uint16_t rotatedHeight = maxY - minY + 1;
-
-    writeNumber(result->data, (uint8_t *)&rotatedWidth);
-    writeNumber(result->data + 2, (uint8_t *)&rotatedHeight);
-}
-
-//%
-bool _checkRotatedScaledOverlap(Image_ dst, Image_ src, pxt::RefCollection *args) {
-    return false;
-}
-
 
 //%
 bool _blit(Image_ img, Image_ src, pxt::RefCollection *args) {
