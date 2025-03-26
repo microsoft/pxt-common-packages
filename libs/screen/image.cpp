@@ -1147,6 +1147,14 @@ inline int fxToInt(int v) {
     return v >> FX_SHIFT;
 }
 
+inline int fxFloor(int v) {
+    return v & 0xffff0000;
+}
+
+#define SHEAR(x, y, xShear, yShear) \
+newX = fxFloor(x + fxMul(y, xShear)); \
+newY = fxFloor(y + fxMul(newX, yShear)); \
+newX = fxFloor(newX + fxMul(newY, xShear));
 
 //%
 void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
@@ -1180,44 +1188,64 @@ void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
     int scaledWidth = sx * src->width();
     int scaledHeight = sy * src->height();
 
-    int minX = std::numeric_limits<int>::max();;
-    int minY = std::numeric_limits<int>::max();;
-    int maxX = std::numeric_limits<int>::min();;
-    int maxY = std::numeric_limits<int>::min();;
+    int newX = 0;
+    int newY = 0;
 
-    for (int y = 0; y < scaledHeight; y += scaledHeight - 1) {
-        for (int x = 0; x < scaledWidth; x += scaledWidth - 1) {
-            int newX = x + fxMul(y, xShear);
-            int newY = y + fxMul(newX, yShear);
-            newX = newX + fxMul(newY, xShear);
-            minX = min(minX, newX);
-            minY = min(minY, newY);
-            maxX = max(maxX, newX);
-            maxY = max(maxY, newY);
-        }
-    }
+    SHEAR(0, 0, xShear, yShear);
+    int minX = newX;
+    int minY = newY;
+    int maxX = newX;
+    int maxY = newY;
 
-    int rotatedWidth = maxX - minX + FX_ONE;
-    int rotatedHeight = maxY - minY + FX_ONE;
+    SHEAR(scaledWidth - FX_ONE, 0, xShear, yShear);
+    minX = min(minX, newX);
+    minY = min(minY, newY);
+    maxX = max(maxX, newX);
+    maxY = max(maxY, newY);
+
+    SHEAR(scaledWidth - FX_ONE, scaledHeight - FX_ONE, xShear, yShear);
+    minX = min(minX, newX);
+    minY = min(minY, newY);
+    maxX = max(maxX, newX);
+    maxY = max(maxY, newY);
+
+    SHEAR(0, scaledHeight - FX_ONE, xShear, yShear);
+    minX = min(minX, newX);
+    minY = min(minY, newY);
+    maxX = max(maxX, newX);
+    maxY = max(maxY, newY);
 
     dst->makeWritable();
 
-    for (int x = 0; x < rotatedWidth; x += FX_ONE) {
-        for (int y = 0; y < rotatedHeight; y += FX_ONE) {
-            int ox = (x + minX) - fxMul((y + minY), xShear);
-            int oy = (y + minY) - fxMul(ox, yShear);
-            ox = ox - fxMul(oy, xShear);
+    if (flip) {
+        for (int y = 0; y < scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv((scaledWidth - x - 1), sx)),
+                    fxToInt(fxDiv((scaledHeight - y - 1), sy))
+                );
 
-            int color = 0;
-            if (flip) {
-                color = getPixel(src, fxToInt(fxDiv((scaledWidth - ox - 1), sx)), fxToInt(fxDiv((scaledHeight - oy - 1), sy)));
-            }
-            else {
-                color = getPixel(src, fxToInt(fxDiv(ox, sx)), fxToInt(fxDiv(oy, sy)));
-            }
+                if (!color) continue;
 
-            if (!transparent || color) {
-                setPixel(dst, xDst + fxToInt(x), yDst + fxToInt(y), color);
+                SHEAR(x, y, xShear, yShear);
+                setPixel(dst, xDst + fxToInt(newX - minX), yDst + fxToInt(newY - minY), color);
+            }
+        }
+    }
+    else {
+        for (int y = 0; y < scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv(x, sx)),
+                    fxToInt(fxDiv(y, sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, xShear, yShear);
+                setPixel(dst, xDst + fxToInt(newX - minX), yDst + fxToInt(newY - minY), color);
             }
         }
     }

@@ -991,27 +991,24 @@ namespace pxsim.ImageMethods {
             }
         }
 
-        const rotatedWidth = maxX - minX + 1;
-        const rotatedHeight = maxY - minY + 1;
-
         dst.makeWritable();
 
-        for (let x = 0; x < rotatedWidth; x++) {
-            for (let y = 0; y < rotatedHeight; y++) {
-                let ox = (x + minX) - (y + minY) * xShear;
-                const oy = (y + minY) - ox * yShear
-                ox = ox - oy * xShear;
+        for (let x = 0; x < scaledWidth; x++) {
+            for (let y = 0; y < scaledHeight; y++) {
+                let newX = (x + y * xShear) | 0;
+                const newY = (y + newX * yShear) | 0
+                newX = (newX + newY * xShear) | 0;
 
                 let color: number;
                 if (flip) {
-                    color = getPixel(src, (scaledWidth - ox - 1) / sx, (scaledHeight - oy - 1) / sy);
+                    color = getPixel(src, (scaledWidth - x - 1) / sx, (scaledHeight - y - 1) / sy);
                 }
                 else {
-                    color = getPixel(src, ox / sx, oy / sy);
+                    color = getPixel(src, x / sx, y / sy);
                 }
 
                 if (!transparent || color) {
-                    setPixel(dst, xDst + x, yDst + y, color);
+                    setPixel(dst, xDst + newX - minX, yDst + newY - minY, color);
                 }
             }
         }
