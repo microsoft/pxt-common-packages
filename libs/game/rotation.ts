@@ -1,4 +1,6 @@
 namespace sprites {
+    let aabbPoints: number[];
+
     export class RotatedBoundingBox {
         protected _rotation: number;
         protected _width: number;
@@ -9,35 +11,35 @@ namespace sprites {
         protected cornerAngle: number;
 
         public get x0(): number {
-            return this.anchor.x + this.points[0];
+            return this.points[0];
         }
 
         public get y0(): number {
-            return this.anchor.y + this.points[1];
+            return this.points[1];
         }
 
         public get x1(): number {
-            return this.anchor.x + this.points[2];
+            return this.points[2];
         }
 
         public get y1(): number {
-            return this.anchor.y + this.points[3];
+            return this.points[3];
         }
 
         public get x2(): number {
-            return this.anchor.x + this.points[4];
+            return this.points[4];
         }
 
         public get y2(): number {
-            return this.anchor.y + this.points[5];
+            return this.points[5];
         }
 
         public get x3(): number {
-            return this.anchor.x + this.points[6];
+            return this.points[6];
         }
 
         public get y3(): number {
-            return this.anchor.y + this.points[7];
+            return this.points[7];
         }
 
         public get rotation() {
@@ -102,41 +104,25 @@ namespace sprites {
         }
 
         overlapsAABB(left: number, top: number, right: number, bottom: number) {
+            if (!aabbPoints) {
+                aabbPoints = [];
+            }
+
+            aabbPoints[0] = left;
+            aabbPoints[1] = top;
+            aabbPoints[2] = right;
+            aabbPoints[3] = top;
+            aabbPoints[4] = right;
+            aabbPoints[5] = bottom;
+            aabbPoints[6] = left;
+            aabbPoints[7] = bottom;
             return doRectanglesIntersect(
                 this.points,
                 this.anchor.x,
                 this.anchor.y,
-                [
-                    left, top,
-                    right, top,
-                    right, bottom,
-                    left, bottom
-                ],
+                aabbPoints,
                 0,
                 0
-            );
-        }
-
-        drawTexture(dest: Image, texture: Image, drawOffsetX: number, drawOffsetY: number) {
-            gpu.drawTexturedQuad(
-                dest,
-                texture,
-                this.x0 - drawOffsetX,
-                this.y0 - drawOffsetY,
-                0,
-                1,
-                this.x1 - drawOffsetX,
-                this.y1 - drawOffsetY,
-                1,
-                1,
-                this.x2 - drawOffsetX,
-                this.y2 - drawOffsetY,
-                1,
-                0,
-                this.x3 - drawOffsetX,
-                this.y3 - drawOffsetY,
-                0,
-                0,
             );
         }
 

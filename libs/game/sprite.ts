@@ -1165,10 +1165,28 @@ class Sprite extends sprites.BaseSprite {
 
     protected drawSprite(drawLeft: number, drawTop: number) {
         if (this._rotatedBBox) {
-            const camera = game.currentScene().camera;
-            const ox = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetX;
-            const oy = (this.flags & sprites.Flag.RelativeToCamera) ? 0 : camera.drawOffsetY;
-            this._rotatedBBox.drawTexture(screen, this.image, ox, oy);
+            drawLeft += this.width >> 1;
+            drawTop += this.height >> 1;
+            gpu.drawTexturedQuad(
+                screen,
+                this.image,
+                this._rotatedBBox.x0 + drawLeft,
+                this._rotatedBBox.y0 + drawTop,
+                0,
+                1,
+                this._rotatedBBox.x1 + drawLeft,
+                this._rotatedBBox.y1 + drawTop,
+                1,
+                1,
+                this._rotatedBBox.x2 + drawLeft,
+                this._rotatedBBox.y2 + drawTop,
+                1,
+                0,
+                this._rotatedBBox.x3 + drawLeft,
+                this._rotatedBBox.y3 + drawTop,
+                0,
+                0,
+            );
         }
         else if (!this.isScaled()) {
             screen.drawTransparentImage(this._image, drawLeft, drawTop);
