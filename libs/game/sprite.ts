@@ -1167,8 +1167,7 @@ class Sprite extends sprites.BaseSprite {
                 this._image,
                 this.sx,
                 this.sy,
-                this.rotation,
-                true
+                this.rotation
             );
         }
         else if (!this.isScaled())

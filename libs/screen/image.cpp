@@ -1129,7 +1129,6 @@ bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
 
 #define FX_SHIFT 16
 #define FX_ONE (1 << FX_SHIFT)
-#define FX_HALF (FX_ONE >> 1)
 
 inline int fxMul(int a, int b) {
     return (int)(((int64_t)a * b) >> FX_SHIFT);
@@ -1139,10 +1138,6 @@ inline int fxDiv(int a, int b) {
     return (int)(((int64_t)a << FX_SHIFT) / b);
 }
 
-inline int fxInit(int v) {
-    return v << FX_SHIFT;
-}
-
 inline int fxToInt(int v) {
     return v >> FX_SHIFT;
 }
@@ -1150,6 +1145,11 @@ inline int fxToInt(int v) {
 inline int fxFloor(int v) {
     return v & 0xffff0000;
 }
+
+#define TWO_PI 6.28318530718
+#define PI 3.14159265359
+#define HALF_PI 1.57079632679
+#define THREE_HALF_PI 4.71238898038
 
 #define SHEAR(x, y, xShear, yShear) \
 newX = fxFloor(x + fxMul(y, xShear)); \
@@ -1163,23 +1163,22 @@ void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
     int sx = pxt::toDouble(args->getAt(2)) * FX_ONE;
     int sy = pxt::toDouble(args->getAt(3)) * FX_ONE;
     double angle = pxt::toDouble(args->getAt(4));
-    int transparent = pxt::toInt(args->getAt(5));
 
-    if (sx <= 0 || sy <= 0) {
+    if (sx <= 0 || sy <= 0 || xDst >= dst->width() || yDst >= dst->height()) {
         return;
     }
 
     bool flip = false;
 
-    angle = fmod(angle, 6.28318530718);
+    angle = fmod(angle, TWO_PI);
 
     if (angle < 0) {
-        angle = angle + 3.14159265359;
+        angle = angle + PI;
     }
 
-    if (angle > 1.57079632679 && angle <= 4.71238898038) {
+    if (angle > HALF_PI && angle <= THREE_HALF_PI) {
         flip = true;
-        angle = fmod(angle + 3.14159265359, 6.28318530718);
+        angle = fmod(angle + PI, TWO_PI);
     }
 
     int xShear = (-1.0 * tan(angle / 2.0)) * FX_ONE;
@@ -1214,6 +1213,13 @@ void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
     minY = min(minY, newY);
     maxX = max(maxX, newX);
     maxY = max(maxY, newY);
+
+    if (
+        xDst + fxToInt(maxX - minX) < 0 ||
+        yDst + fxToInt(maxY - minY) < 0
+    ) {
+        return;
+    }
 
     dst->makeWritable();
 

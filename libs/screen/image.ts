@@ -283,14 +283,13 @@ namespace helpers {
         _fillPolygon4(img, _blitArgs);
     }
 
-    export function imageDrawRotateScaled(dest: Image, destX: number, destY: number, src: Image, sx: number, sy: number, angle: number, transparent: boolean) {
+    export function imageDrawRotateScaled(dest: Image, destX: number, destY: number, src: Image, sx: number, sy: number, angle: number) {
         _blitArgs = _blitArgs || [];
         _blitArgs[0] = destX | 0;
         _blitArgs[1] = destY | 0;
         _blitArgs[2] = sx;
         _blitArgs[3] = sy;
         _blitArgs[4] = angle;
-        _blitArgs[5] = transparent ? 1 : 0;
         _drawScaledRotatedImage(dest, src, _blitArgs);
     }
 
