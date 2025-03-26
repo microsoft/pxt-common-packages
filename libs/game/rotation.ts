@@ -96,8 +96,8 @@ namespace sprites {
             this.points[3] = this._y + Math.sin(Math.PI - this.cornerAngle + angle) * this.cornerDistance;
             this.points[4] = this._x + Math.cos(Math.PI + this.cornerAngle + angle) * this.cornerDistance;
             this.points[5] = this._y + Math.sin(Math.PI + this.cornerAngle + angle) * this.cornerDistance;
-            this.points[6] = this._x + Math.cos(-this.cornerAngle + angle) * this.cornerDistance;
-            this.points[7] = this._y + Math.sin(-this.cornerAngle + angle) * this.cornerDistance
+            this.points[6] = this._x + Math.cos(angle - this.cornerAngle) * this.cornerDistance;
+            this.points[7] = this._y + Math.sin(angle - this.cornerAngle) * this.cornerDistance
         }
 
         setPosition(x: number, y: number) {
@@ -154,47 +154,48 @@ namespace sprites {
     // adapted from https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
     // but optimized for rectangles
     function doRectanglesIntersect(a: number[], b: number[]) {
-        const rects = [a, b];
+        return !(checkForNonIntersection(a, b) || checkForNonIntersection(b, a));
+    }
 
-        for (const rect of rects) {
-            // we only need to check the first two sides because the
-            // normals are the same for the other two
-            for (let pointIndex = 0; pointIndex < 4; pointIndex += 2) {
-                const normalX = rect[pointIndex + 3] - rect[pointIndex + 1];
-                const normalY = rect[pointIndex] - rect[pointIndex + 2];
+    function checkForNonIntersection(a: number[], b: number[]) {
+        // we only need to check the first two sides because the
+        // normals are the same for the other two
+        for (let pointIndex = 0; pointIndex < 4; pointIndex += 2) {
+            const normalX = a[pointIndex + 3] - a[pointIndex + 1];
+            const normalY = a[pointIndex] - a[pointIndex + 2];
 
-                let minA: number = undefined;
-                let maxA: number = undefined;
-                let minB: number = undefined;
-                let maxB: number = undefined;
+            let minA: number = undefined;
+            let maxA: number = undefined;
+            let minB: number = undefined;
+            let maxB: number = undefined;
 
-                for (let i = 0; i < 8; i += 2) {
-                    const projected = normalX * a[i] + normalY * a[i + 1];
+            for (let i = 0; i < 8; i += 2) {
+                const projected = normalX * a[i] + normalY * a[i + 1];
 
-                    if (minA === undefined || projected < minA) {
-                        minA = projected;
-                    }
-                    if (maxA == undefined || projected > maxA) {
-                        maxA = projected;
-                    }
+                if (minA === undefined || projected < minA) {
+                    minA = projected;
                 }
-
-                for (let i = 0; i < 8; i += 2) {
-                    const projected = normalX * b[i] + normalY * b[i + 1];
-
-                    if (minB === undefined || projected < minB) {
-                        minB = projected;
-                    }
-                    if (maxB == undefined || projected > maxB) {
-                        maxB = projected;
-                    }
-                }
-
-                if (maxA < minB || maxB < minA) {
-                    return false;
+                if (maxA == undefined || projected > maxA) {
+                    maxA = projected;
                 }
             }
+
+            for (let i = 0; i < 8; i += 2) {
+                const projected = normalX * b[i] + normalY * b[i + 1];
+
+                if (minB === undefined || projected < minB) {
+                    minB = projected;
+                }
+                if (maxB == undefined || projected > maxB) {
+                    maxB = projected;
+                }
+            }
+
+            if (maxA < minB || maxB < minA) {
+                return true;
+            }
         }
-        return true;
+
+        return false;
     }
 }
