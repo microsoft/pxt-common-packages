@@ -139,8 +139,8 @@ namespace sprites {
                 maxY = Math.max(maxY, this.points[i + 1]);
             }
 
-            this._width = maxX - minX;
-            this._height = maxY - minY;
+            this._width = (maxX - minX) | 0;
+            this._height = (maxY - minY) | 0;
         }
     }
 
