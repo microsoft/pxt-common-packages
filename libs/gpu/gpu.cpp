@@ -119,10 +119,8 @@ __attribute__((optimize("-O3"))) void drawInterpolatedQuad(const Vertex &v0, con
     const int minY = min4(p0.y, p1.y, p2.y, p3.y);
     const int maxX = max4(p0.x, p1.x, p2.x, p3.x);
     const int maxY = max4(p0.y, p1.y, p2.y, p3.y);
-    const int areaA = edge(p0, p3, p2.x, p2.y);
-    const int invAreaA = areaA ? fxDiv(FX_ONE, areaA) : 0;
-    const int areaB = edge(p2, p1, p0.x, p0.y);
-    const int invAreaB = areaB ? fxDiv(FX_ONE, areaB) : 0;
+    const int area = edge(p0, p3, p2.x, p2.y);
+    const int invArea = area ? fxDiv(FX_ONE, area) : 0;
 
     const int dstWfx = fxInit(dst->width());
     const int dstHfx = fxInit(dst->height());
@@ -134,14 +132,13 @@ __attribute__((optimize("-O3"))) void drawInterpolatedQuad(const Vertex &v0, con
 
     for (int py = top; py < bottom; py += FX_ONE) {
         for (int px = left; px < right; px += FX_ONE) {
-            int u = 0, v = 0;
-            if (invAreaA && isInsideTriangle(px, py, p0, p3, p2)) {
-                interpolateUV(px, py, p0, p3, p2, uv0, uv3, uv2, invAreaA, u, v);
-            } else if (invAreaB && isInsideTriangle(px, py, p2, p1, p0)) {
-                interpolateUV(px, py, p2, p1, p0, uv2, uv1, uv0, invAreaB, u, v);
-            } else {
+            if (!invArea ||
+                (!isInsideTriangle(px, py, p0, p3, p2) && !isInsideTriangle(px, py, p2, p1, p0)))
                 continue;
-            }
+
+            int u = 0, v = 0;
+            interpolateUV(px, py, p0, p3, p2, uv0, uv3, uv2, invArea, u, v);
+
             const int texX = fxToInt(fxMul(wrapFx(u), texWfx));
             const int texY = fxToInt(fxMul(wrapFx(v), texHfx));
             const int color = ImageMethods::getPixel(tex, texX, texY);
