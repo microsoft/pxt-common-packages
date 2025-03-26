@@ -201,9 +201,11 @@ class Sprite extends sprites.BaseSprite {
     //% blockCombine block="sx (scale x)"
     set sx(v: number) {
         const x = this.x;
+        const y = this.y;
         this._sx = Fx8(Math.max(0, v));
         this.recalcSize();
-        this.left = x - this.width / 2;
+        this.x = x;
+        this.y = y;
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="sy (scale y)" callInDebugger
@@ -213,10 +215,12 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="sy (scale y)"
     set sy(v: number) {
+        const x = this.x;
         const y = this.y;
         this._sy = Fx8(Math.max(0, v));
         this.recalcSize();
-        this.top = y - this.height / 2;
+        this.x = x;
+        this.y = y;
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="scale" callInDebugger
@@ -237,12 +241,17 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="rotation"
     set rotation(value: number) {
+        const x = this.x;
+        const y = this.y;
         if (!this._rotatedBBox) {
-            this._rotatedBBox = new sprites.RotatedBoundingBox(this.x, this.y, this.width * this.sx, this.height * this.sy);
+            this._rotatedBBox = new sprites.RotatedBoundingBox(this, this.width * this.sx, this.height * this.sy);
         }
         else {
             this._rotatedBBox.rotation = value;
         }
+        this.recalcSize();
+        this.x = x;
+        this.y = y;
     }
 
     private _data: any;
@@ -380,11 +389,14 @@ class Sprite extends sprites.BaseSprite {
     }
 
     protected recalcSize(): void {
-        this._width = Fx8(this._image.width * this.sx);
-        this._height = Fx8(this._image.height * this.sy);
         if (this._rotatedBBox) {
             this._rotatedBBox.setDimensions(this._image.width * this.sx, this._image.height * this.sy);
-            this._rotatedBBox.setPosition(this.x, this.y);
+            this._width = Fx8(this._rotatedBBox.width);
+            this._height = Fx8(this._rotatedBBox.height);
+        }
+        else {
+            this._width = Fx8(this._image.width * this.sx);
+            this._height = Fx8(this._image.height * this.sy);
         }
         this.resetHitbox();
     }
@@ -1172,12 +1184,6 @@ class Sprite extends sprites.BaseSprite {
                 0, 0,
                 this._image.width, this._image.height,
                 true, false);
-        }
-    }
-
-    protected updateRotation() {
-        if (this._rotatedBBox) {
-            this._rotatedBBox.setPosition(this.x, this.y);
         }
     }
 }
