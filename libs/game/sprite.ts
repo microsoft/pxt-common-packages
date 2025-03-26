@@ -116,7 +116,6 @@ class Sprite extends sprites.BaseSprite {
     //% blockCombine block="x"
     set x(v: number) {
         this.left = v - (this.width / 2)
-        this.resetBBoxPosition();
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -128,7 +127,6 @@ class Sprite extends sprites.BaseSprite {
     //% blockCombine block="y"
     set y(v: number) {
         this.top = v - (this.height / 2)
-        this.resetBBoxPosition();
     }
 
     //% group="Physics" blockSetVariable="mySprite"
@@ -236,7 +234,7 @@ class Sprite extends sprites.BaseSprite {
         const x = this.x;
         const y = this.y;
         if (!this._rotatedBBox) {
-            this._rotatedBBox = new sprites.RotatedBoundingBox(this.x, this.y, this.width, this.height);
+            this._rotatedBBox = new sprites.RotatedBoundingBox(this, this.width, this.height);
         }
         this._rotatedBBox.setRotation(v);
         this.recalcSize();
@@ -391,8 +389,6 @@ class Sprite extends sprites.BaseSprite {
     protected recalcSize(): void {
         if (this._rotatedBBox) {
             this._rotatedBBox.setDimensions(this._image.width * this.sx, this._image.height * this.sy);
-            this._rotatedBBox.setPosition(this.x, this.y);
-
             this._width = Fx8(this._rotatedBBox.width);
             this._height = Fx8(this._rotatedBBox.height);
         }
@@ -1188,11 +1184,5 @@ class Sprite extends sprites.BaseSprite {
                 0, 0,
                 this._image.width, this._image.height,
                 true, false);
-    }
-
-    protected resetBBoxPosition() {
-        if (this._rotatedBBox) {
-            this._rotatedBBox.setPosition(this.x, this.y);
-        }
     }
 }
