@@ -105,6 +105,10 @@ namespace game {
         if (s._hitbox && s._hitbox.isValid())
             return s._hitbox;
 
+        if (s._rotatedBBox) {
+            return new Hitbox(s, Fx8(s._rotatedBBox.width), Fx8(s._rotatedBBox.height), Fx.zeroFx8, Fx.zeroFx8);
+        }
+
         const i = s.image;
         let minX = Fx8(i.width);
         let minY = Fx8(i.height);

@@ -362,7 +362,7 @@ class Sprite extends sprites.BaseSprite {
     }
 
     calcDimensionalHash() {
-        return this._image.revision() + Fx.toIntShifted(this._width, 8) + Fx.toIntShifted(this._height, 16);
+        return this._image.revision() + Fx.toIntShifted(this._width, 8) + Fx.toIntShifted(this._height, 16) + this.rotation;
     }
 
     resetHitbox() {
@@ -728,7 +728,9 @@ class Sprite extends sprites.BaseSprite {
             return false
         if (this.flags & sprites.Flag.HitboxOverlaps || other.flags & sprites.Flag.HitboxOverlaps)
             return other._hitbox.overlapsWith(this._hitbox);
-        if (this._rotatedBBox) {
+        if (!other._hitbox.overlapsWith(this._hitbox))
+            return false;
+        else if (this._rotatedBBox) {
             if (other._rotatedBBox) {
                 return this._rotatedBBox.overlaps(other._rotatedBBox);
             }
@@ -739,8 +741,6 @@ class Sprite extends sprites.BaseSprite {
         else if (other._rotatedBBox) {
             return other.overlapsWith(this);
         }
-        if (!other._hitbox.overlapsWith(this._hitbox))
-            return false;
         else if (!this.isScaled() && !other.isScaled()) {
             return other._image.overlapsWith(
                 this._image,
@@ -1160,7 +1160,7 @@ class Sprite extends sprites.BaseSprite {
 
     protected drawSprite(drawLeft: number, drawTop: number) {
         if (this._rotatedBBox) {
-            helpers.imageDrawRotateScaled(
+            helpers.imageDrawScaledRotated(
                 screen,
                 drawLeft,
                 drawTop,
