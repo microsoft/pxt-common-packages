@@ -960,7 +960,7 @@ namespace pxsim.ImageMethods {
         drawScaledRotatedImage(dst, src, args);
     }
 
-    export function drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {// destX: number, destY: number, src: Image, sx: number, sy: number, angle: number) {
+    export function drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {
         const xDst = args.getAt(0) as number;
         const yDst = args.getAt(1) as number;
         const sx = ((args.getAt(2) as number) * FX_ONE);
@@ -971,24 +971,17 @@ namespace pxsim.ImageMethods {
             return;
         }
 
-        // Get the angle into a nice range
         angle %= TWO_PI;
         if (angle < 0) {
             angle += Math.PI;
         }
 
-        // The shear process below only works for -90 to 90.
-        // Outside that range, we need to do a 180 rotation first
         let flip = false;
         if (angle > HALF_PI && angle <= THREE_HALF_PI) {
             flip = true
             angle = (angle + Math.PI) % TWO_PI
         }
 
-        // We're doing 3 shears:
-        // 1. shear x by -tan(angle / 2)
-        // 2. shear y by sin(angle)
-        // 3. shear x by -tan(angle / 2) again
         const xShear = (-Math.tan(angle / 2) * FX_ONE);
         const yShear = (Math.sin(angle) * FX_ONE);
 

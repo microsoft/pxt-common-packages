@@ -1,5 +1,4 @@
 #include "pxt.h"
-#include <limits>
 
 
 #if IMAGE_BITS == 1

@@ -223,6 +223,18 @@ class Sprite extends sprites.BaseSprite {
         this.y = y;
         this.x = x;
     }
+
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="scale" callInDebugger
+    get scale(): number {
+        return Math.max(this.sx, this.sy);
+    }
+    //% group="Physics" blockSetVariable="mySprite"
+    //% blockCombine block="scale"
+    set scale(v: number) {
+        this.sx = this.sy = v;
+    }
+
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="rotation (radians)" callInDebugger
     get rotation(): number {
@@ -243,14 +255,14 @@ class Sprite extends sprites.BaseSprite {
     }
 
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="scale" callInDebugger
-    get scale(): number {
-        return Math.max(this.sx, this.sy);
+    //% blockCombine block="rotation (degrees)" callInDebugger
+    get rotationDegrees(): number {
+        return this.rotation * 180 / Math.PI;
     }
     //% group="Physics" blockSetVariable="mySprite"
-    //% blockCombine block="scale"
-    set scale(v: number) {
-        this.sx = this.sy = v;
+    //% blockCombine block="rotation (degrees)"
+    set rotationDegrees(v: number) {
+        this.rotation = v * Math.PI / 180;
     }
 
     private _data: any;
