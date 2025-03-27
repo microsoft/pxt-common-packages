@@ -16,6 +16,11 @@ char* getTextPromptString() {
 }
 
 //%
+char* getLocalizedInstructions() {
+    return NULL;
+}
+
+//%
 int getTextPromptSelectionStart() {
     return 0;
 }
