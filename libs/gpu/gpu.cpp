@@ -29,10 +29,6 @@ struct V2 {
     V2(int x, int y) : x(x), y(y) {}
 };
 
-struct Vertex {
-    V2 pos, uv;
-};
-
 inline int fxMul(int a, int b) {
     return (int)(((int64_t)a * b) >> FX_SHIFT);
 }
@@ -47,13 +43,6 @@ inline int fxInit(int v) {
 
 inline int fxToInt(int v) {
     return v >> FX_SHIFT;
-}
-
-inline int wrapFx(int v) {
-    int r = v % FX_ONE;
-    if (r < 0)
-        r += FX_ONE;
-    return r;
 }
 
 inline int min(int a, int b) {
@@ -93,23 +82,8 @@ inline __attribute__((always_inline)) bool isInsideTriangle(int px, int py, cons
             (e2 > 0 || (e2 == 0 && isTopLeft(a, b))));
 }
 
-inline __attribute__((always_inline)) void interpolateUV(int px, int py, const V2 &a, const V2 &b,
-                                                         const V2 &c, const V2 &ua, const V2 &ub,
-                                                         const V2 &uc, int invArea, int &outU,
-                                                         int &outV) {
-    const int w0 = fxMul(edge(b, c, px, py), invArea);
-    const int w1 = fxMul(edge(c, a, px, py), invArea);
-    const int w2 = fxMul(edge(a, b, px, py), invArea);
-    outU = fxMul(ua.x, w0) + fxMul(ub.x, w1) + fxMul(uc.x, w2);
-    outV = fxMul(ua.y, w0) + fxMul(ub.y, w1) + fxMul(uc.y, w2);
-}
-
-__attribute__((optimize("-O3"))) void drawInterpolatedQuad(const Vertex &v0, const Vertex &v1,
-                                                           const Vertex &v2, const Vertex &v3,
-                                                           Image_ dst, Image_ tex) {
-    const V2 &p0 = v0.pos, &p1 = v1.pos, &p2 = v2.pos, &p3 = v3.pos;
-    const V2 &uv0 = v0.uv, &uv1 = v1.uv, &uv2 = v2.uv, &uv3 = v3.uv;
-
+__attribute__((optimize("-O3"))) void drawInterpolatedQuad(const V2 &p0, const V2 &p1, const V2 &p2,
+                                                           const V2 &p3, Image_ dst, Image_ tex) {
     const int texW = tex->width();
     const int texH = tex->height();
     const int texWfx = fxInit(texW);
@@ -119,8 +93,6 @@ __attribute__((optimize("-O3"))) void drawInterpolatedQuad(const Vertex &v0, con
     const int minY = min4(p0.y, p1.y, p2.y, p3.y);
     const int maxX = max4(p0.x, p1.x, p2.x, p3.x);
     const int maxY = max4(p0.y, p1.y, p2.y, p3.y);
-    const int area = edge(p0, p3, p2.x, p2.y);
-    const int invArea = area ? fxDiv(FX_ONE, area) : 0;
 
     const int dstWfx = fxInit(dst->width());
     const int dstHfx = fxInit(dst->height());
@@ -130,17 +102,30 @@ __attribute__((optimize("-O3"))) void drawInterpolatedQuad(const Vertex &v0, con
     const int top = clamp(minY, 0, dstHfx);
     const int bottom = clamp(maxY, 0, dstHfx);
 
+    const int area0 = edge(p0, p3, p2.x, p2.y);
+    const int area1 = edge(p2, p1, p0.x, p0.y);
+    const int invArea0 = area0 ? fxDiv(FX_ONE, area0) : 0;
+    const int invArea1 = area1 ? fxDiv(FX_ONE, area1) : 0;
+
     for (int py = top; py < bottom; py += FX_ONE) {
         for (int px = left; px < right; px += FX_ONE) {
-            if (!invArea ||
-                (!isInsideTriangle(px, py, p0, p3, p2) && !isInsideTriangle(px, py, p2, p1, p0)))
+            int u, v;
+            if (isInsideTriangle(px, py, p0, p3, p2)) {
+                int w1 = fxMul(edge(p2, p0, px, py), invArea0);
+                int w2 = fxMul(edge(p0, p3, px, py), invArea0);
+                u = w2;
+                v = w1 + w2;
+            } else if (isInsideTriangle(px, py, p2, p1, p0)) {
+                int w0 = fxMul(edge(p1, p0, px, py), invArea1);
+                int w1 = fxMul(edge(p0, p2, px, py), invArea1);
+                u = w0 + w1;
+                v = w0;
+            } else {
                 continue;
+            }
 
-            int u = 0, v = 0;
-            interpolateUV(px, py, p0, p3, p2, uv0, uv3, uv2, invArea, u, v);
-
-            const int texX = fxToInt(fxMul(wrapFx(u), texWfx));
-            const int texY = fxToInt(fxMul(wrapFx(v), texHfx));
+            const int texX = fxToInt(fxMul(u, texWfx));
+            const int texY = fxToInt(fxMul(v, texHfx));
             const int color = ImageMethods::getPixel(tex, texX, texY);
             if (color)
                 ImageMethods::setPixel(dst, fxToInt(px), fxToInt(py), color);
@@ -150,20 +135,12 @@ __attribute__((optimize("-O3"))) void drawInterpolatedQuad(const Vertex &v0, con
 
 //%
 void _drawTexturedQuad(Image_ dst, Image_ tex, pxt::RefCollection *args) {
-    Vertex v0, v1, v2, v3;
-    v0.pos = {fxInit(pxt::toInt(args->getAt(0))), fxInit(pxt::toInt(args->getAt(1)))};
-    v0.uv = {fxInit(pxt::toInt(args->getAt(2))), fxInit(pxt::toInt(args->getAt(3)))};
+    V2 p0 = {fxInit(pxt::toInt(args->getAt(0))), fxInit(pxt::toInt(args->getAt(1)))};
+    V2 p1 = {fxInit(pxt::toInt(args->getAt(4))), fxInit(pxt::toInt(args->getAt(5)))};
+    V2 p2 = {fxInit(pxt::toInt(args->getAt(8))), fxInit(pxt::toInt(args->getAt(9)))};
+    V2 p3 = {fxInit(pxt::toInt(args->getAt(12))), fxInit(pxt::toInt(args->getAt(13)))};
 
-    v1.pos = {fxInit(pxt::toInt(args->getAt(4))), fxInit(pxt::toInt(args->getAt(5)))};
-    v1.uv = {fxInit(pxt::toInt(args->getAt(6))), fxInit(pxt::toInt(args->getAt(7)))};
-
-    v2.pos = {fxInit(pxt::toInt(args->getAt(8))), fxInit(pxt::toInt(args->getAt(9)))};
-    v2.uv = {fxInit(pxt::toInt(args->getAt(10))), fxInit(pxt::toInt(args->getAt(11)))};
-
-    v3.pos = {fxInit(pxt::toInt(args->getAt(12))), fxInit(pxt::toInt(args->getAt(13)))};
-    v3.uv = {fxInit(pxt::toInt(args->getAt(14))), fxInit(pxt::toInt(args->getAt(15)))};
-
-    drawInterpolatedQuad(v0, v1, v2, v3, dst, tex);
+    drawInterpolatedQuad(p0, p1, p2, p3, dst, tex);
 }
 
 } // namespace gpu
