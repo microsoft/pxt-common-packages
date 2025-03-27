@@ -4,8 +4,8 @@
 //% block="Browser Events"
 namespace browserEvents {
     export enum Event {
-        PointerDown = 6858,
-        PointerUp = 6857,
+        PointerDown = 6857,
+        PointerUp = 6858,
         PointerMove = 6859,
         PointerLeave = 6860,
         PointerEnter = 6861,
@@ -39,8 +39,8 @@ namespace browserEvents {
         protected releaseListeners: ((x: number, y: number) => void)[];
 
         constructor(public id: number) {
-            control.internalOnEvent(Event.PointerDown, this.id, () => this.setPressed(false), 16);
-            control.internalOnEvent(Event.PointerUp, this.id, () => this.setPressed(true), 16);
+            control.internalOnEvent(Event.PointerDown, this.id, () => this.setPressed(true), 16);
+            control.internalOnEvent(Event.PointerUp, this.id, () => this.setPressed(false), 16);
 
             this._pressed = false;
             this.pressListeners = [];
@@ -93,12 +93,12 @@ namespace browserEvents {
         //% block="pause until $this mouse button is $event"
         //% group="Mouse"
         //% weight=30
-        pauseUntil(event: KeyEvent) {
+        pauseUntil(event: MouseButtonEvent) {
             control.waitForEvent(event, this.id)
         }
 
-        addEventListener(event: KeyEvent, handler: (x: number, y: number) => void) {
-            if (event === KeyEvent.Pressed) {
+        addEventListener(event: MouseButtonEvent, handler: (x: number, y: number) => void) {
+            if (event === MouseButtonEvent.Pressed) {
                 this.pressListeners.push(handler);
             }
             else {
@@ -106,8 +106,8 @@ namespace browserEvents {
             }
         }
 
-        removeEventListener(event: KeyEvent, handler: (x: number, y: number) => void) {
-            if (event === KeyEvent.Pressed) {
+        removeEventListener(event: MouseButtonEvent, handler: (x: number, y: number) => void) {
+            if (event === MouseButtonEvent.Pressed) {
                 this.pressListeners = this.pressListeners.filter(p => p !== handler);
             }
             else {
