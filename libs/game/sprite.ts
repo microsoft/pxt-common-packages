@@ -744,10 +744,39 @@ class Sprite extends sprites.BaseSprite {
             return false;
         else if (this._rotatedBBox) {
             if (other._rotatedBBox) {
-                return this._rotatedBBox.overlaps(other._rotatedBBox);
+                if (this._rotatedBBox.overlaps(other._rotatedBBox)) {
+                    return helpers.checkOverlapsTwoScaledRotatedImages(
+                        other.image,
+                        this.left - other.left,
+                        this.top - other.top,
+                        other.sx,
+                        other.sy,
+                        other.rotation,
+                        this.image,
+                        this.sx,
+                        this.sy,
+                        this.rotation
+                    );
+                }
+                else {
+                    return false;
+                }
             }
             else {
-                return this._rotatedBBox.overlapsAABB(other.left, other.top, other.right, other.bottom);
+                if (this._rotatedBBox.overlapsAABB(other.left, other.top, other.right, other.bottom)) {
+                    return helpers.checkOverlapsScaledRotatedImage(
+                        other.image,
+                        this.left - other.left,
+                        this.top - other.top,
+                        this.image,
+                        this.sx,
+                        this.sy,
+                        this.rotation
+                    );
+                }
+                else {
+                    return false;
+                }
             }
         }
         else if (other._rotatedBBox) {

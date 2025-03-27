@@ -956,19 +956,44 @@ namespace pxsim.ImageMethods {
         return v | 0;
     }
 
-    export function _drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {
-        drawScaledRotatedImage(dst, src, args);
+    interface ParsedShearArgs {
+        sx: number;
+        sy: number;
+        scaledWidth: number;
+        scaledHeight: number;
+        minX: number;
+        minY: number;
+        maxX: number;
+        maxY: number;
+        xShear: number;
+        yShear: number;
+        flip: boolean;
     }
 
-    export function drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {
-        const xDst = args.getAt(0) as number;
-        const yDst = args.getAt(1) as number;
-        const sx = ((args.getAt(2) as number) * FX_ONE);
-        const sy = ((args.getAt(3) as number) * FX_ONE);
-        let angle = args.getAt(4) as number;
+    function parseShearArgs(src: RefImage, args: RefCollection, argIndex: number): ParsedShearArgs {
+        const parsed: ParsedShearArgs = {
+            sx: 0,
+            sy: 0,
+            scaledWidth: 0,
+            scaledHeight: 0,
+            minX: 0,
+            minY: 0,
+            maxX: 0,
+            maxY: 0,
+            xShear: 0,
+            yShear: 0,
+            flip: false
+        };
 
-        if (sx <= 0 || sy <= 0 || xDst >= dst._width || yDst >= dst._height) {
-            return;
+        const sx = ((args.getAt(argIndex) as number) * FX_ONE);
+        const sy = ((args.getAt(argIndex + 1) as number) * FX_ONE);
+        let angle = args.getAt(argIndex + 2) as number;
+
+        parsed.sx = sx;
+        parsed.sy = sy;
+
+        if (sx <= 0 || sy <= 0) {
+            return parsed;
         }
 
         angle %= TWO_PI;
@@ -988,80 +1013,331 @@ namespace pxsim.ImageMethods {
         const scaledWidth = src._width * sx;
         const scaledHeight = src._height * sy;
 
-        let newX = 0;
-        let newY = 0;
+        let shearedX = 0;
+        let shearedY = 0;
 
         const SHEAR = (x: number, y: number) => {
-            newX = fxFloor(x + fxMul(y, xShear));
-            newY = fxFloor(y + fxMul(newX, yShear));
-            newX = fxFloor(newX + fxMul(newY, xShear));
+            shearedX = fxFloor(x + fxMul(y, xShear));
+            shearedY = fxFloor(y + fxMul(shearedX, yShear));
+            shearedX = fxFloor(shearedX + fxMul(shearedY, xShear));
         }
 
         SHEAR(0, 0);
-        let minX = newX;
-        let minY = newY;
-        let maxX = newX;
-        let maxY = newY;
+        let minX = shearedX;
+        let minY = shearedY;
+        let maxX = shearedX;
+        let maxY = shearedY;
 
         SHEAR(scaledWidth - FX_ONE, 0);
-        minX = Math.min(minX, newX);
-        minY = Math.min(minY, newY);
-        maxX = Math.max(maxX, newX);
-        maxY = Math.max(maxY, newY);
+        minX = Math.min(minX, shearedX);
+        minY = Math.min(minY, shearedY);
+        maxX = Math.max(maxX, shearedX);
+        maxY = Math.max(maxY, shearedY);
 
         SHEAR(scaledWidth - FX_ONE, scaledHeight - FX_ONE);
-        minX = Math.min(minX, newX);
-        minY = Math.min(minY, newY);
-        maxX = Math.max(maxX, newX);
-        maxY = Math.max(maxY, newY);
+        minX = Math.min(minX, shearedX);
+        minY = Math.min(minY, shearedY);
+        maxX = Math.max(maxX, shearedX);
+        maxY = Math.max(maxY, shearedY);
 
         SHEAR(0, scaledHeight - FX_ONE);
-        minX = Math.min(minX, newX);
-        minY = Math.min(minY, newY);
-        maxX = Math.max(maxX, newX);
-        maxY = Math.max(maxY, newY);
+        minX = Math.min(minX, shearedX);
+        minY = Math.min(minY, shearedY);
+        maxX = Math.max(maxX, shearedX);
+        maxY = Math.max(maxY, shearedY);
+
+        parsed.minX = minX;
+        parsed.minY = minY;
+        parsed.maxX = maxX;
+        parsed.maxY = maxY;
+        parsed.scaledWidth = scaledWidth;
+        parsed.scaledHeight = scaledHeight;
+        parsed.xShear = xShear;
+        parsed.yShear = yShear;
+        parsed.flip = flip;
+
+        return parsed;
+    }
+
+    export function _drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {
+        drawScaledRotatedImage(dst, src, args);
+    }
+
+    export function drawScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection) {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        if (xDst >= dst._width || yDst >= dst._height) {
+            return;
+        }
+
+        const shearArgs = parseShearArgs(src, args, 2);
 
         if (
-            xDst + fxToInt(maxX - minX) < 0 ||
-            yDst + fxToInt(maxY - minY) < 0
+            shearArgs.sx <= 0 ||
+            shearArgs.sy <= 0 ||
+            xDst + fxToInt(shearArgs.maxX - shearArgs.minX) < 0 ||
+            yDst + fxToInt(shearArgs.maxY - shearArgs.minY) < 0
         ) {
             return;
         }
 
+        let shearedX = 0;
+        let shearedY = 0;
+
+        const SHEAR = (x: number, y: number) => {
+            shearedX = fxFloor(x + fxMul(y, shearArgs.xShear));
+            shearedY = fxFloor(y + fxMul(shearedX, shearArgs.yShear));
+            shearedX = fxFloor(shearedX + fxMul(shearedY, shearArgs.xShear));
+        }
+
         dst.makeWritable();
 
-        if (flip) {
-            for (let y = 0; y < scaledHeight; y += FX_ONE) {
-                for (let x = 0; x < scaledWidth; x += FX_ONE) {
+        if (shearArgs.flip) {
+            for (let y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+                for (let x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
                     let color = getPixel(
                         src,
-                        fxToInt(fxDiv((scaledWidth - x - 1), sx)),
-                        fxToInt(fxDiv((scaledHeight - y - 1), sy))
+                        fxToInt(fxDiv((shearArgs.scaledWidth - x - 1), shearArgs.sx)),
+                        fxToInt(fxDiv((shearArgs.scaledHeight - y - 1), shearArgs.sy))
                     );
 
                     if (!color) continue;
 
                     SHEAR(x, y);
-                    setPixel(dst, xDst + fxToInt(newX - minX), yDst + fxToInt(newY - minY), color);
+                    setPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY), color);
                 }
             }
         }
         else {
-            for (let y = 0; y < scaledHeight; y += FX_ONE) {
-                for (let x = 0; x < scaledWidth; x += FX_ONE) {
+            for (let y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+                for (let x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
                     let color = getPixel(
                         src,
-                        fxToInt(fxDiv(x, sx)),
-                        fxToInt(fxDiv(y, sy))
+                        fxToInt(fxDiv(x, shearArgs.sx)),
+                        fxToInt(fxDiv(y, shearArgs.sy))
                     );
 
                     if (!color) continue;
 
                     SHEAR(x, y);
-                    setPixel(dst, xDst + fxToInt(newX - minX), yDst + fxToInt(newY - minY), color);
+                    setPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY), color);
                 }
             }
         }
+    }
+
+    export function _checkOverlapsScaledRotatedImage(dst: RefImage, src: RefImage, args: RefCollection): boolean {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        if (xDst >= dst._width || yDst >= dst._height) {
+            return false;
+        }
+
+        const shearArgs = parseShearArgs(src, args, 2);
+
+        if (
+            shearArgs.sx <= 0 ||
+            shearArgs.sy <= 0 ||
+            xDst + fxToInt(shearArgs.maxX - shearArgs.minX) < 0 ||
+            yDst + fxToInt(shearArgs.maxY - shearArgs.minY) < 0
+        ) {
+            return false;
+        }
+
+        let shearedX = 0;
+        let shearedY = 0;
+
+        const SHEAR = (x: number, y: number) => {
+            shearedX = fxFloor(x + fxMul(y, shearArgs.xShear));
+            shearedY = fxFloor(y + fxMul(shearedX, shearArgs.yShear));
+            shearedX = fxFloor(shearedX + fxMul(shearedY, shearArgs.xShear));
+        }
+
+
+        if (shearArgs.flip) {
+            for (let y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+                for (let x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
+                    let color = getPixel(
+                        src,
+                        fxToInt(fxDiv((shearArgs.scaledWidth - x - 1), shearArgs.sx)),
+                        fxToInt(fxDiv((shearArgs.scaledHeight - y - 1), shearArgs.sy))
+                    );
+
+                    if (!color) continue;
+
+                    SHEAR(x, y);
+                    if (getPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else {
+            for (let y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+                for (let x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
+                    let color = getPixel(
+                        src,
+                        fxToInt(fxDiv(x, shearArgs.sx)),
+                        fxToInt(fxDiv(y, shearArgs.sy))
+                    );
+
+                    if (!color) continue;
+
+                    SHEAR(x, y);
+                    if (getPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    export function _checkOverlapsTwoScaledRotatedImages(dst: RefImage, src: RefImage, args: RefCollection): boolean {
+        const xDst = args.getAt(0) as number;
+        const yDst = args.getAt(1) as number;
+        const dstArgs = parseShearArgs(dst, args, 2);
+
+        if (
+            dstArgs.sx <= 0 ||
+            dstArgs.sy <= 0 ||
+            xDst >= dstArgs.maxX - dstArgs.minX ||
+            yDst >= dstArgs.maxY - dstArgs.minY
+        ) {
+            return false;
+        }
+
+        const srcArgs = parseShearArgs(src, args, 5);
+
+        if (
+            srcArgs.sx <= 0 ||
+            srcArgs.sy <= 0 ||
+            xDst + srcArgs.maxX - srcArgs.minX < 0 ||
+            yDst + srcArgs.maxY - srcArgs.minY < 0
+        ) {
+            return false;
+        }
+
+        let shearedX = 0;
+        let shearedY = 0;
+        let unshearedX = 0;
+        let unshearedY = 0;
+
+        const SHEAR = (x: number, y: number, xShear: number, yShear: number) => {
+            shearedX = fxFloor(x + fxMul(y, xShear));
+            shearedY = fxFloor(y + fxMul(shearedX, yShear));
+            shearedX = fxFloor(shearedX + fxMul(shearedY, xShear));
+        }
+
+        const REVERSE_SHEAR = (x: number, y: number, xShear: number, yShear: number) => {
+            unshearedX = fxFloor(x - fxMul(y, xShear));
+            unshearedY = fxFloor(y - fxMul(unshearedX, yShear));
+            unshearedX = fxFloor(unshearedX - fxMul(unshearedY, xShear));
+        }
+
+        if (srcArgs.flip) {
+            for (let y = 0; y < srcArgs.scaledHeight; y += FX_ONE) {
+                for (let x = 0; x < srcArgs.scaledWidth; x += FX_ONE) {
+                    let color = getPixel(
+                        src,
+                        fxToInt(fxDiv((srcArgs.scaledWidth - x - FX_ONE), srcArgs.sx)),
+                        fxToInt(fxDiv((srcArgs.scaledHeight - y - FX_ONE), srcArgs.sy))
+                    );
+
+                    if (!color) continue;
+
+                    SHEAR(x, y, srcArgs.xShear, srcArgs.yShear);
+
+                    const screenX = xDst + shearedX - srcArgs.minX;
+                    const screenY = yDst + shearedY - srcArgs.minY;
+
+                    if (
+                        screenX < 0 ||
+                        screenY < 0 ||
+                        screenX >= dstArgs.maxX - dstArgs.minX ||
+                        screenY >= dstArgs.maxY - dstArgs.minY
+                    ) {
+                        continue;
+                    }
+
+                    REVERSE_SHEAR(screenX + dstArgs.minX, screenY + dstArgs.minY, dstArgs.xShear, dstArgs.yShear);
+
+                    if (dstArgs.flip) {
+                        if (
+                            getPixel(
+                                dst,
+                                fxToInt(fxDiv(dstArgs.scaledWidth - unshearedX - FX_ONE, dstArgs.sx)),
+                                fxToInt(fxDiv(dstArgs.scaledHeight - unshearedY - FX_ONE, dstArgs.sy))
+                            )
+                        ) {
+                            return true;
+                        }
+                    }
+                    else if (
+                        getPixel(
+                            dst,
+                            fxToInt(fxDiv(unshearedX, dstArgs.sx)),
+                            fxToInt(fxDiv(unshearedY, dstArgs.sy))
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+            }
+        }
+        else {
+            for (let y = 0; y < srcArgs.scaledHeight; y += FX_ONE) {
+                for (let x = 0; x < srcArgs.scaledWidth; x += FX_ONE) {
+                    let color = getPixel(
+                        src,
+                        fxToInt(fxDiv(x, srcArgs.sx)),
+                        fxToInt(fxDiv(y, srcArgs.sy))
+                    );
+
+                    if (!color) continue;
+
+                    SHEAR(x, y, srcArgs.xShear, srcArgs.yShear);
+
+                    const screenX = xDst + shearedX - srcArgs.minX;
+                    const screenY = yDst + shearedY - srcArgs.minY;
+
+                    if (
+                        screenX < 0 ||
+                        screenY < 0 ||
+                        screenX >= dstArgs.maxX - dstArgs.minX ||
+                        screenY >= dstArgs.maxY - dstArgs.minY
+                    ) {
+                        continue;
+                    }
+
+                    REVERSE_SHEAR(screenX + dstArgs.minX, screenY + dstArgs.minY, dstArgs.xShear, dstArgs.yShear);
+
+                    if (dstArgs.flip) {
+                        if (
+                            getPixel(
+                                dst,
+                                fxToInt(fxDiv(dstArgs.scaledWidth - unshearedX - FX_ONE, dstArgs.sx)),
+                                fxToInt(fxDiv(dstArgs.scaledHeight - unshearedY - FX_ONE, dstArgs.sy))
+                            )
+                        ) {
+                            return true;
+                        }
+                    }
+                    else if (
+                        getPixel(
+                            dst,
+                            fxToInt(fxDiv(unshearedX, dstArgs.sx)),
+                            fxToInt(fxDiv(unshearedY, dstArgs.sy))
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
 
