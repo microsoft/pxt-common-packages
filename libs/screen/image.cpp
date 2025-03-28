@@ -1,5 +1,6 @@
 #include "pxt.h"
 
+
 #if IMAGE_BITS == 1
 // OK
 #elif IMAGE_BITS == 4
@@ -1119,6 +1120,379 @@ bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
             }
             if (!transparent || cSrc) {
                 setCore(dst, xDstCur, yDstCur, cSrc);
+            }
+        }
+    }
+    return false;
+}
+
+#define FX_SHIFT 16
+#define FX_ONE (1 << FX_SHIFT)
+
+inline int fxMul(int a, int b) {
+    return (int)(((int64_t)a * b) >> FX_SHIFT);
+}
+
+inline int fxDiv(int a, int b) {
+    return (int)(((int64_t)a << FX_SHIFT) / b);
+}
+
+inline int fxToInt(int v) {
+    return v >> FX_SHIFT;
+}
+
+inline int fxFloor(int v) {
+    return v & 0xffff0000;
+}
+
+#define TWO_PI 6.28318530718
+#define PI 3.14159265359
+#define HALF_PI 1.57079632679
+#define THREE_HALF_PI 4.71238898038
+
+#define SHEAR(x, y, xShear, yShear) \
+shearedX = fxFloor(x + fxMul(y, xShear)); \
+shearedY = fxFloor(y + fxMul(shearedX, yShear)); \
+shearedX = fxFloor(shearedX + fxMul(shearedY, xShear));
+
+#define REVERSE_SHEAR(x, y, xShear, yShear) \
+unshearedX = fxFloor(x - fxMul(y, xShear)); \
+unshearedY = fxFloor(y - fxMul(unshearedX, yShear)); \
+unshearedX = fxFloor(unshearedX - fxMul(unshearedY, xShear));
+
+
+typedef struct {
+    int sx;
+    int sy;
+    int xShear;
+    int yShear;
+    int minX;
+    int minY;
+    int maxX;
+    int maxY;
+    int scaledWidth;
+    int scaledHeight;
+    bool flip;
+} ParsedShearArgs;
+
+ParsedShearArgs parseShearArgs(Image_ src, pxt::RefCollection *args, int argIndex) {
+    ParsedShearArgs parsed;
+    int sx = pxt::toDouble(args->getAt(argIndex)) * FX_ONE;
+    int sy = pxt::toDouble(args->getAt(argIndex + 1)) * FX_ONE;
+    double angle = pxt::toDouble(args->getAt(argIndex + 2));
+
+    parsed.sx = sx;
+    parsed.sy = sy;
+
+    if (sx <= 0 || sy <= 0) {
+        return parsed;
+    }
+
+    parsed.flip = false;
+
+    angle = fmod(angle, TWO_PI);
+
+    if (angle < 0) {
+        angle = angle + TWO_PI;
+    }
+
+    if (angle > HALF_PI && angle <= THREE_HALF_PI) {
+        parsed.flip = true;
+        angle = fmod(angle + PI, TWO_PI);
+    }
+
+    int xShear = (-1.0 * tan(angle / 2.0)) * FX_ONE;
+    int yShear = (sin(angle)) * FX_ONE;
+
+    int scaledWidth = sx * src->width();
+    int scaledHeight = sy * src->height();
+
+    int shearedX = 0;
+    int shearedY = 0;
+
+    SHEAR(0, 0, xShear, yShear);
+    int minX = shearedX;
+    int minY = shearedY;
+    int maxX = shearedX;
+    int maxY = shearedY;
+
+    SHEAR(scaledWidth - FX_ONE, 0, xShear, yShear);
+    minX = min(minX, shearedX);
+    minY = min(minY, shearedY);
+    maxX = max(maxX, shearedX);
+    maxY = max(maxY, shearedY);
+
+    SHEAR(scaledWidth - FX_ONE, scaledHeight - FX_ONE, xShear, yShear);
+    minX = min(minX, shearedX);
+    minY = min(minY, shearedY);
+    maxX = max(maxX, shearedX);
+    maxY = max(maxY, shearedY);
+
+    SHEAR(0, scaledHeight - FX_ONE, xShear, yShear);
+    minX = min(minX, shearedX);
+    minY = min(minY, shearedY);
+    maxX = max(maxX, shearedX);
+    maxY = max(maxY, shearedY);
+
+    parsed.minX = minX;
+    parsed.minY = minY;
+    parsed.maxX = maxX;
+    parsed.maxY = maxY;
+    parsed.scaledWidth = scaledWidth;
+    parsed.scaledHeight = scaledHeight;
+    parsed.xShear = xShear;
+    parsed.yShear = yShear;
+
+    return parsed;
+}
+
+//%
+void _drawScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
+    int xDst = pxt::toInt(args->getAt(0));
+    int yDst = pxt::toInt(args->getAt(1));
+    if (xDst >= dst->width() || yDst >= dst->height()) {
+        return;
+    }
+
+    ParsedShearArgs shearArgs = parseShearArgs(src, args, 2);
+
+    if (
+        shearArgs.sx <= 0 ||
+        shearArgs.sy <= 0 ||
+        xDst + fxToInt(shearArgs.maxX - shearArgs.minX) < 0 ||
+        yDst + fxToInt(shearArgs.maxY - shearArgs.minY) < 0
+    ) {
+        return;
+    }
+
+    int shearedX = 0;
+    int shearedY = 0;
+
+    dst->makeWritable();
+
+    if (shearArgs.flip) {
+        for (int y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv((shearArgs.scaledWidth - x - FX_ONE), shearArgs.sx)),
+                    fxToInt(fxDiv((shearArgs.scaledHeight - y - FX_ONE), shearArgs.sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, shearArgs.xShear, shearArgs.yShear);
+                setPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY), color);
+            }
+        }
+    }
+    else {
+        for (int y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv(x, shearArgs.sx)),
+                    fxToInt(fxDiv(y,shearArgs. sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, shearArgs.xShear, shearArgs.yShear);
+                setPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY), color);
+            }
+        }
+    }
+}
+
+//%
+bool _checkOverlapsScaledRotatedImage(Image_ dst, Image_ src, pxt::RefCollection *args) {
+    int xDst = pxt::toInt(args->getAt(0));
+    int yDst = pxt::toInt(args->getAt(1));
+    if (xDst >= dst->width() || yDst >= dst->height()) {
+        return false;
+    }
+
+    ParsedShearArgs shearArgs = parseShearArgs(src, args, 2);
+
+    if (
+        shearArgs.sx <= 0 ||
+        shearArgs.sy <= 0 ||
+        xDst + fxToInt(shearArgs.maxX - shearArgs.minX) < 0 ||
+        yDst + fxToInt(shearArgs.maxY - shearArgs.minY) < 0
+    ) {
+        return false;
+    }
+
+    int shearedX = 0;
+    int shearedY = 0;
+
+    if (shearArgs.flip) {
+        for (int y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv((shearArgs.scaledWidth - x - FX_ONE), shearArgs.sx)),
+                    fxToInt(fxDiv((shearArgs.scaledHeight - y - FX_ONE), shearArgs.sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, shearArgs.xShear, shearArgs.yShear);
+                if (getPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY))) {
+                    return true;
+                }
+            }
+        }
+    }
+    else {
+        for (int y = 0; y < shearArgs.scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv(x, shearArgs.sx)),
+                    fxToInt(fxDiv(y,shearArgs. sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, shearArgs.xShear, shearArgs.yShear);
+                if (getPixel(dst, xDst + fxToInt(shearedX - shearArgs.minX), yDst + fxToInt(shearedY - shearArgs.minY))) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+//%
+bool _checkOverlapsTwoScaledRotatedImages(Image_ dst, Image_ src, pxt::RefCollection *args) {
+    int xDst = pxt::toInt(args->getAt(0)) * FX_ONE;
+    int yDst = pxt::toInt(args->getAt(1)) * FX_ONE;
+    ParsedShearArgs dstArgs = parseShearArgs(dst, args, 2);
+
+    if (
+        dstArgs.sx <= 0 ||
+        dstArgs.sy <= 0 ||
+        xDst >= dstArgs.maxX - dstArgs.minX ||
+        yDst >= dstArgs.maxY - dstArgs.minY
+    ) {
+        return false;
+    }
+
+    ParsedShearArgs srcArgs = parseShearArgs(src, args, 5);
+
+    if (
+        srcArgs.sx <= 0 ||
+        srcArgs.sy <= 0 ||
+        xDst + srcArgs.maxX - srcArgs.minX < 0 ||
+        yDst + srcArgs.maxY - srcArgs.minY < 0
+    ) {
+        return false;
+    }
+
+    int shearedX = 0;
+    int shearedY = 0;
+    int unshearedX = 0;
+    int unshearedY = 0;
+
+    if (srcArgs.flip) {
+        for (int y = 0; y < srcArgs.scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < srcArgs.scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv((srcArgs.scaledWidth - x - FX_ONE), srcArgs.sx)),
+                    fxToInt(fxDiv((srcArgs.scaledHeight - y - FX_ONE), srcArgs.sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, srcArgs.xShear, srcArgs.yShear);
+
+                int screenX = xDst + shearedX - srcArgs.minX;
+                int screenY = yDst + shearedY - srcArgs.minY;
+
+                if (
+                    screenX < 0 ||
+                    screenY < 0 ||
+                    screenX >= dstArgs.maxX - dstArgs.minX ||
+                    screenY >= dstArgs.maxY - dstArgs.minY
+                ) {
+                    continue;
+                }
+
+                REVERSE_SHEAR(screenX + dstArgs.minX, screenY + dstArgs.minY, dstArgs.xShear, dstArgs.yShear);
+
+                if (dstArgs.flip) {
+                    if (
+                        getPixel(
+                            dst,
+                            fxToInt(fxDiv(dstArgs.scaledWidth - unshearedX - FX_ONE, dstArgs.sx)),
+                            fxToInt(fxDiv(dstArgs.scaledHeight - unshearedY - FX_ONE, dstArgs.sy))
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+                else if (
+                    getPixel(
+                        dst,
+                        fxToInt(fxDiv(unshearedX, dstArgs.sx)),
+                        fxToInt(fxDiv(unshearedY, dstArgs.sy))
+                    )
+                ) {
+                    return true;
+                }
+            }
+        }
+    }
+    else {
+        for (int y = 0; y < srcArgs.scaledHeight; y += FX_ONE) {
+            for (int x = 0; x < srcArgs.scaledWidth; x += FX_ONE) {
+                int color = getPixel(
+                    src,
+                    fxToInt(fxDiv(x, srcArgs.sx)),
+                    fxToInt(fxDiv(y, srcArgs.sy))
+                );
+
+                if (!color) continue;
+
+                SHEAR(x, y, srcArgs.xShear, srcArgs.yShear);
+
+                int screenX = xDst + shearedX - srcArgs.minX;
+                int screenY = yDst + shearedY - srcArgs.minY;
+
+                if (
+                    screenX < 0 ||
+                    screenY < 0 ||
+                    screenX >= dstArgs.maxX - dstArgs.minX ||
+                    screenY >= dstArgs.maxY - dstArgs.minY
+                ) {
+                    continue;
+                }
+
+                REVERSE_SHEAR(screenX + dstArgs.minX, screenY + dstArgs.minY, dstArgs.xShear, dstArgs.yShear);
+
+                if (dstArgs.flip) {
+                    if (
+                        getPixel(
+                            dst,
+                            fxToInt(fxDiv(dstArgs.scaledWidth - unshearedX - FX_ONE, dstArgs.sx)),
+                            fxToInt(fxDiv(dstArgs.scaledHeight - unshearedY - FX_ONE, dstArgs.sy))
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+                else if (
+                    getPixel(
+                        dst,
+                        fxToInt(fxDiv(unshearedX, dstArgs.sx)),
+                        fxToInt(fxDiv(unshearedY, dstArgs.sy))
+                    )
+                ) {
+                    return true;
+                }
             }
         }
     }

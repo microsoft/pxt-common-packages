@@ -14,6 +14,7 @@
         "hitbox.ts",
         "renderText.ts",
         "spritesay.ts",
+        "rotation.ts",
         "sprites.ts",
         "sprite.ts",
         "extendableSprite.ts",
