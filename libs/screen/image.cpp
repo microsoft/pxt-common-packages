@@ -1193,7 +1193,7 @@ ParsedShearArgs parseShearArgs(Image_ src, pxt::RefCollection *args, int argInde
     angle = fmod(angle, TWO_PI);
 
     if (angle < 0) {
-        angle = angle + PI;
+        angle = angle + TWO_PI;
     }
 
     if (angle > HALF_PI && angle <= THREE_HALF_PI) {

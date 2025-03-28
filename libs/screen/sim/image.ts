@@ -998,7 +998,7 @@ namespace pxsim.ImageMethods {
 
         angle %= TWO_PI;
         if (angle < 0) {
-            angle += Math.PI;
+            angle += TWO_PI;
         }
 
         let flip = false;
@@ -1097,8 +1097,8 @@ namespace pxsim.ImageMethods {
                 for (let x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
                     let color = getPixel(
                         src,
-                        fxToInt(fxDiv((shearArgs.scaledWidth - x - 1), shearArgs.sx)),
-                        fxToInt(fxDiv((shearArgs.scaledHeight - y - 1), shearArgs.sy))
+                        fxToInt(fxDiv((shearArgs.scaledWidth - x - FX_ONE), shearArgs.sx)),
+                        fxToInt(fxDiv((shearArgs.scaledHeight - y - FX_ONE), shearArgs.sy))
                     );
 
                     if (!color) continue;
@@ -1159,8 +1159,8 @@ namespace pxsim.ImageMethods {
                 for (let x = 0; x < shearArgs.scaledWidth; x += FX_ONE) {
                     let color = getPixel(
                         src,
-                        fxToInt(fxDiv((shearArgs.scaledWidth - x - 1), shearArgs.sx)),
-                        fxToInt(fxDiv((shearArgs.scaledHeight - y - 1), shearArgs.sy))
+                        fxToInt(fxDiv((shearArgs.scaledWidth - x - FX_ONE), shearArgs.sx)),
+                        fxToInt(fxDiv((shearArgs.scaledHeight - y - FX_ONE), shearArgs.sy))
                     );
 
                     if (!color) continue;
