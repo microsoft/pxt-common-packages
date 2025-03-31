@@ -13,20 +13,19 @@ namespace pxsim.input {
         setThermometerUnit(unit);
 
         const deg = b.getLevel();
-        return  unit == pxsim.TemperatureUnit.Celsius ? deg
+        return  unit == pxsim.TemperatureUnit.Celsius ? deg 
             : ((deg * 18) / 10 + 32) >> 0;
     }
 
     export function onTemperatureConditionChanged(condition: number, temperature: number, unit: number, body: RefAction) {
-        thread.typeCheck(body)
         let b = thermometerState();
         b.setUsed();
         setThermometerUnit(unit);
 
-        const t = unit == pxsim.TemperatureUnit.Celsius
-            ? temperature
+        const t = unit == pxsim.TemperatureUnit.Celsius 
+            ? temperature 
             : (((temperature - 32) * 10) / 18 >> 0);
-
+        
         if (condition === DAL.LEVEL_THRESHOLD_HIGH) {
             b.setHighThreshold(t);
         }

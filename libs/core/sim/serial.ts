@@ -29,12 +29,10 @@ namespace pxsim.SerialDeviceMethods {
     }
 
     export function onEvent(device: SerialDevice, event: number, handler: RefAction) {
-        thread.typeCheck(handler);
         device.onEvent(event, handler);
     }
 
     export function onDelimiterReceived(device: SerialDevice, delimiter: number, handler: RefAction): void {
-        thread.typeCheck(handler);
         device.onDelimiterReceived(delimiter, handler);
     }
 }

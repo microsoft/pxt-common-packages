@@ -11,13 +11,11 @@ namespace pxsim.network {
     }
 
     export function onInfraredPacket(body: RefAction): void {
-        thread.typeCheck(body);
         const state = getInfraredState();
         state.listen(body);
     }
 
     export function onInfraredError(body: RefAction): void {
-        thread.typeCheck(body);
         const state = getInfraredState();
         state.listenError(body);
     }

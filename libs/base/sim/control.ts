@@ -1,7 +1,6 @@
 namespace pxsim.pxtcore {
     // TODO: add in support for mode, as in CODAL
     export function registerWithDal(id: number, evid: number, handler: RefAction, mode: number = 0) {
-        thread.typeCheck(handler);
         board().bus.listen(id, evid, handler, mode);
     }
 
@@ -90,7 +89,6 @@ namespace pxsim.control {
         return "sim";
     }
     export function internalOnEvent(id: number, evid: number, handler: RefAction) {
-        thread.typeCheck(handler);
         pxtcore.registerWithDal(id, evid, handler)
     }
     export function waitForEvent(id: number, evid: number) {

@@ -4,8 +4,6 @@ namespace pxsim.tts {
     }
 
     export function _speakAsync(text: string, pitch?: number, rate?: number, volume?: number, language?: string, onStart?: RefAction, onBoundary?: RefAction): Promise<void> {
-        thread.typeCheck(onStart);
-        thread.typeCheck(onBoundary);
         return new Promise<void>((resolve, reject) => {
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.voice = getVoiceForLanguage(language || _getLanguageCode());

@@ -46,13 +46,11 @@ namespace pxsim.DigitalInOutPinMethods {
     * that this pin was either ``high`` or ``low``.
     */
     export function onPulsed(name: pins.DigitalInOutPin, high: boolean, body: RefAction): void {
-        thread.typeCheck(body);
         pins.markUsed(name);
         onEvent(name, high ? DAL.DEVICE_PIN_EVT_PULSE_HI : DAL.DEVICE_PIN_EVT_PULSE_LO, body);
     }
 
     export function onEvent(name: pins.DigitalInOutPin, ev: number, body: RefAction): void {
-        thread.typeCheck(body);
         pins.markUsed(name);
         name.onEvent(ev, body);
     }

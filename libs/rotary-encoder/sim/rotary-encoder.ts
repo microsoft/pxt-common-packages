@@ -24,7 +24,6 @@ namespace pxsim.encoders {
 
 namespace pxsim.RotaryEncoderMethods {
     export function onChanged(encoder: pxsim.encoders.RotaryEncoder, handler: RefAction): void {
-        thread.typeCheck(handler);
         encoder.onChanged(handler);
     }
 

@@ -7,7 +7,6 @@ namespace pxsim.input {
     }
 
     export function onLoudSound(body: RefAction) {
-        thread.typeCheck(body);
         let b = microphoneState();
         if (!b) return;
         b.setUsed();
