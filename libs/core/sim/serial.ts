@@ -16,6 +16,7 @@ namespace pxsim.SerialDeviceMethods {
     }
 
     export function writeBuffer(device: SerialDevice, buffer: RefBuffer) {
+        BufferMethods.typeCheck(buffer);
         device.writeBuffer(buffer);
     }
 
