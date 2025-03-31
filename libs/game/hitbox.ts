@@ -88,15 +88,15 @@ namespace game {
         overlapsWith(other: Hitbox): boolean {
             this.updateIfInvalid();
             other.updateIfInvalid();
-            if (this.contains(other.left, other.top)) return true;
-            if (this.contains(other.left, other.bottom)) return true;
-            if (this.contains(other.right, other.top)) return true;
-            if (this.contains(other.right, other.bottom)) return true;
-            if (other.contains(this.left, this.top)) return true;
-            if (other.contains(this.left, this.bottom)) return true;
-            if (other.contains(this.right, this.top)) return true;
-            if (other.contains(this.right, this.bottom)) return true;
-            return false;
+            if (
+                this.left > other.right ||
+                this.top > other.bottom ||
+                this.right < other.left ||
+                this.bottom < other.top
+            ) {
+                return false;
+            }
+            return true;
         }
     }
 
@@ -104,6 +104,10 @@ namespace game {
     export function calculateHitBox(s: Sprite): Hitbox {
         if (s._hitbox && s._hitbox.isValid())
             return s._hitbox;
+
+        if (s._rotatedBBox) {
+            return new Hitbox(s, Fx8(s._rotatedBBox.width), Fx8(s._rotatedBBox.height), Fx.zeroFx8, Fx.zeroFx8);
+        }
 
         const i = s.image;
         let minX = Fx8(i.width);
