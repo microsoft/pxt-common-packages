@@ -50,6 +50,7 @@ namespace pxsim.radio {
     }
 
     export function onDataReceived(handler: RefAction): void {
+        thread.typeCheck(handler);
         const state = pxsim.getRadioState();
         state.datagram.onReceived(handler);
     }

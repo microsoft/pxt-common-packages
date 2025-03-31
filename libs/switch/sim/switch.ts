@@ -24,6 +24,7 @@ namespace pxsim {
 
 namespace pxsim.input {
     export function onSwitchMoved(direction: number, body: RefAction) {
+        thread.typeCheck(body);
         pxtcore.registerWithDal(SlideSwitchState.id, direction, body);
     }
 

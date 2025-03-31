@@ -11,11 +11,13 @@ namespace pxsim.network {
     }
 
     export function onCablePacket(body: RefAction): void {
+        thread.typeCheck(body);
         const state = getCableState();
         state.listen(body);
     }
 
     export function onCableError(body: RefAction): void {
+        thread.typeCheck(body);
         const state = getCableState();
         state.listenError(body);
     }

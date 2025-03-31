@@ -7,6 +7,7 @@ namespace pxsim.input {
     }
 
     export function onLightConditionChanged(condition: number, body: RefAction) {
+        thread.typeCheck(body);
         let b = lightSensorState();
         b.setUsed();
 
@@ -20,5 +21,5 @@ namespace pxsim.input {
             case DAL.SENSOR_THRESHOLD_LOW: b.setLowThreshold(value); break;
             case DAL.SENSOR_THRESHOLD_HIGH: b.setHighThreshold(value); break;
         }
-    }    
+    }
 }

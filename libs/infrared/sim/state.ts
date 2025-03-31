@@ -1,5 +1,5 @@
 namespace pxsim {
-    export class InfraredState {        
+    export class InfraredState {
         packet: RefBuffer;
         // notify view that a packet was received
         packetReceived = false;
@@ -15,7 +15,7 @@ namespace pxsim {
         private handleMessage(msg: SimulatorMessage) {
             if (msg.type === "irpacket") {
                 const irpacket = <SimulatorInfraredPacketMessage>msg;
-                this.receive(irpacket.packet);    
+                this.receive(irpacket.packet);
             }
         }
 
@@ -28,11 +28,11 @@ namespace pxsim {
         }
 
         listen(body: RefAction) {
-            pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT, body);            
+            pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT, body);
         }
 
         listenError(body: RefAction) {
-            pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_ERROR_EVENT, body);            
+            pxtcore.registerWithDal(this.IR_COMPONENT_ID, this.IR_PACKET_ERROR_EVENT, body);
         }
 
         receive(buf: Uint8Array) {
@@ -41,7 +41,7 @@ namespace pxsim {
             board().bus.queue(this.IR_COMPONENT_ID, this.IR_PACKET_EVENT);
         }
     }
-    
+
     export interface InfraredBoard extends CommonBoard {
         irState: InfraredState;
     }
