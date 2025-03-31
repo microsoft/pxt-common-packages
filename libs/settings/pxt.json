@@ -12,6 +12,7 @@
         "RP2040Flash.cpp",
         "settings.cpp",
         "settings.ts",
+        "targetoverrides.ts",
         "shims.d.ts"
     ],
     "public": true,
