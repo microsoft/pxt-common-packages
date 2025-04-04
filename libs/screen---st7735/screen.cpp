@@ -170,9 +170,9 @@ class WDisplay {
 
         // SER pin (or first bit of second HC) is orientation
         if (hc & 0x0010)
-            *cfg0 = ((*cfg0) & 0x3f) | 0x80;
+            *cfg0 = ((*cfg0) & 0xffffff3f) | 0x80;
         else
-            *cfg0 |= ((*cfg0) & 0x3f) | 0x40;
+            *cfg0 = ((*cfg0) & 0xffffff3f) | 0x40;
 
         uint32_t configId = (hc & 0xe0) >> 5;
 
