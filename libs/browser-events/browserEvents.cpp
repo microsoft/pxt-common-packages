@@ -28,6 +28,10 @@ int wheelDz() {
 }
 
 //%
+void _setCursorVisible(bool visible) {
+}
+
+//%
 int currentTime() {
     return -1;
 }

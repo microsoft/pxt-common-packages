@@ -9,6 +9,8 @@ declare namespace browserEvents {
     function wheelDy(): number;
     //% shim=browserEvents::wheelDz
     function wheelDz(): number;
+    //% shim=browserEvents::_setCursorVisible
+    function _setCursorVisible(visible: boolean): void;
 
     //% shim=browserEvents::currentTime
     function currentTime(): number;

@@ -62,15 +62,44 @@ namespace pxsim.browserEvents {
         ArrowRight = 39,
         PageDown = 34,
         End = 35,
-        Home = 36
+        Home = 36,
+        LeftShift = 1016,
+        RightShift = 1017,
+        LeftControl = 1018,
+        RightControl = 1019,
+        Backspace = 8,
+        Delete = 46,
     }
 
     export function onKeyboardEvent(event: KeyboardEvent, pressed: boolean) {
+        const eventValue = getValueForKey(event);
+
+        fireEvent(eventValue as Key, pressed);
+
+        if (eventValue === Key.Shift) {
+            if (event.location === event.DOM_KEY_LOCATION_LEFT) {
+                fireEvent(Key.LeftShift, pressed);
+            }
+            else if (event.location === event.DOM_KEY_LOCATION_RIGHT) {
+                fireEvent(Key.RightShift, pressed);
+            }
+        }
+        if (eventValue === Key.Control) {
+            if (event.location === event.DOM_KEY_LOCATION_LEFT) {
+                fireEvent(Key.LeftControl, pressed);
+            }
+            else if (event.location === event.DOM_KEY_LOCATION_RIGHT) {
+                fireEvent(Key.RightControl, pressed);
+            }
+        }
+    }
+
+    function fireEvent(key: Key, pressed: boolean) {
         if (pressed) {
-            board().bus.queue(6866, getValueForKey(event));
+            board().bus.queue(6866, key);
         }
         else {
-            board().bus.queue(6867, getValueForKey(event));
+            board().bus.queue(6867, key);
         }
     }
 
@@ -249,6 +278,10 @@ namespace pxsim.browserEvents {
                 return Key.End;
             case "Home":
                 return Key.Home;
+            case "Delete":
+                return Key.Delete;
+            case "Backspace":
+                return Key.Backspace;
             default:
                 return 0;
         }
