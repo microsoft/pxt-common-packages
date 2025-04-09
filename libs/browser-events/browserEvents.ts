@@ -4,29 +4,47 @@
 //% block="Browser Events"
 namespace browserEvents {
     export enum Event {
+        //% block="pointer down"
         PointerDown = 6857,
+        //% block="pointer up"
         PointerUp = 6858,
+        //% block="pointer move"
         PointerMove = 6859,
+        //% block="pointer leave"
         PointerLeave = 6860,
+        //% block="pointer enter"
         PointerEnter = 6861,
+        //% block="pointer cancel"
         PointerCancel = 6862,
+        //% block="pointer over"
         PointerOver = 6863,
+        //% block="pointer out"
         PointerOut = 6864,
+        //% block="wheel"
         Wheel = 6865,
+        //% block="key down"
         KeyDown = 6866,
+        //% block="key up"
         KeyUp = 6867
     }
 
     export enum MouseButtonId {
+        //% block="left"
         Left = 1,
+        //% block="right"
         Right = 3,
+        //% block="wheel"
         Wheel = 2,
+        //% block="back"
         Back = 4,
+        //% block="forward"
         Forward = 5
     }
 
     export enum MouseButtonEvent {
+        //% block="pressed"
         Pressed = Event.PointerDown,
+        //% block="released"
         Released = Event.PointerUp,
     }
 
@@ -145,6 +163,14 @@ namespace browserEvents {
         control.onEvent(Event.Wheel, 0, () => {
             handler(wheelDx(), wheelDy(), wheelDz());
         });
+    }
+
+    //% blockId=browserEvents_setCursorVisible
+    //% block="set cursor visible $visible"
+    //% group="Mouse"
+    //% weight=0
+    export function setCursorVisible(visible: boolean) {
+        _setCursorVisible(visible);
     }
 
     //% fixedInstance whenUsed block="left"
