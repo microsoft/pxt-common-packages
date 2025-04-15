@@ -48,40 +48,50 @@ namespace browserEvents {
         Released = Event.PointerUp,
     }
 
+    //% whenUsed
+    const INTERNAL_POINTER_DOWN = 6868;
+    //% whenUsed
+    const INTERNAL_POINTER_UP = 6869;
+
+    type MouseHandler = (x: number, y: number) => void;
+
     //% fixedInstances
     export class MouseButton {
         protected _pressed: boolean;
-        protected pressHandler: (x: number, y: number) => void;
-        protected pressListeners: ((x: number, y: number) => void)[];
-        protected releaseHandler: (x: number, y: number) => void;
-        protected releaseListeners: ((x: number, y: number) => void)[];
+
+        protected sceneStack: _SceneButtonHandlers<MouseHandler>[];
+
+        protected get state(): _SceneButtonHandlers<MouseHandler> {
+            return this.sceneStack[this.sceneStack.length - 1];
+        }
 
         constructor(public id: number) {
-            control.internalOnEvent(Event.PointerDown, this.id, () => this.setPressed(true), 16);
-            control.internalOnEvent(Event.PointerUp, this.id, () => this.setPressed(false), 16);
+            control.internalOnEvent(INTERNAL_POINTER_DOWN, this.id, () => this.setPressed(true), 16);
+            control.internalOnEvent(INTERNAL_POINTER_UP, this.id, () => this.setPressed(false), 16);
 
             this._pressed = false;
-            this.pressListeners = [];
-            this.releaseListeners = [];
+
+            this.sceneStack = [new _SceneButtonHandlers<MouseHandler>(id, invokeMouseHandler)];
+
+            game.addScenePushHandler(() => {
+                this.sceneStack.push(new _SceneButtonHandlers<MouseHandler>(id, invokeMouseHandler));
+            });
+            game.addScenePopHandler(() => {
+                this.sceneStack.pop();
+                if (this.sceneStack.length === 0) {
+                    this.sceneStack = [new _SceneButtonHandlers<MouseHandler>(id, invokeMouseHandler)];
+                }
+            });
         }
 
         setPressed(pressed: boolean) {
             this._pressed = pressed;
+
             if (pressed) {
-                if (this.pressHandler) {
-                    this.pressHandler(mouseX(), mouseY());
-                }
-                for (const handler of this.pressListeners) {
-                    handler(mouseX(), mouseY());
-                }
+                control.raiseEvent(MouseButtonEvent.Pressed, this.id);
             }
             else {
-                if (this.releaseHandler) {
-                    this.releaseHandler(mouseX(), mouseY());
-                }
-                for (const handler of this.releaseListeners) {
-                    handler(mouseX(), mouseY());
-                }
+                control.raiseEvent(MouseButtonEvent.Released, this.id);
             }
         }
 
@@ -91,12 +101,7 @@ namespace browserEvents {
         //% group="Mouse"
         //% weight=50
         onEvent(event: MouseButtonEvent, handler: (x: number, y: number) => void) {
-            if (event === MouseButtonEvent.Pressed) {
-                this.pressHandler = handler;
-            }
-            else {
-                this.releaseHandler = handler;
-            }
+            this.state.onEvent(event, handler);
         }
 
         //% blockId=browserEvents_mouseButton_isPressed
@@ -116,22 +121,70 @@ namespace browserEvents {
         }
 
         addEventListener(event: MouseButtonEvent, handler: (x: number, y: number) => void) {
-            if (event === MouseButtonEvent.Pressed) {
-                this.pressListeners.push(handler);
-            }
-            else {
-                this.releaseListeners.push(handler);
-            }
+            this.state.addEventListener(event, handler);
         }
 
         removeEventListener(event: MouseButtonEvent, handler: (x: number, y: number) => void) {
-            if (event === MouseButtonEvent.Pressed) {
-                this.pressListeners = this.pressListeners.filter(p => p !== handler);
-            }
-            else {
-                this.releaseListeners = this.releaseListeners.filter(p => p !== handler);
+            this.state.removeEventListener(event, handler);
+        }
+    }
+
+    export class _SceneButtonHandlers<U> {
+        protected handlers: ButtonHandler<U>[];
+
+        constructor(public id: number, protected invokeHandler: (handler: U) => void) {
+            this.handlers = [];
+        }
+
+        onEvent(event: number, handler: U) {
+            this.getHandler(event, true).handler = handler;
+        }
+
+        addEventListener(event: number, handler: U) {
+            this.getHandler(event, true).listeners.push(handler);
+        }
+
+        removeEventListener(event: number, handler: U) {
+            const eventHandler = this.getHandler(event);
+
+            if (eventHandler) {
+                eventHandler.listeners = eventHandler.listeners.filter(h => h !== handler);
             }
         }
+
+        protected getHandler(event: number, createIfMissing?: boolean) {
+            for (const handler of this.handlers) {
+                if (handler.event === event) return handler;
+            }
+
+            if (createIfMissing) {
+                const newHandler = new ButtonHandler<U>(event, this.id, this.invokeHandler);
+                this.handlers.push(newHandler);
+                return newHandler;
+            }
+
+            return undefined;
+        }
+    }
+
+    class ButtonHandler<U> {
+        handler: U;
+        listeners: U[] = [];
+
+        constructor(public readonly event: number, id: number, invokeHandler: (handler: U) => void) {
+            control.onEvent(event, id, () => {
+                if (this.handler) {
+                    invokeHandler(this.handler);
+                }
+                for (const listener of this.listeners) {
+                    invokeHandler(listener);
+                }
+            });
+        }
+    }
+
+    function invokeMouseHandler(handler: MouseHandler) {
+        handler(mouseX(), mouseY());
     }
 
     //% blockId=browserEvents_onEvent

@@ -5,6 +5,11 @@ namespace pxsim.browserEvents {
 
     const THROTTLE_INTERVAL = 50;
 
+    export const INTERNAL_KEY_DOWN = 6870;
+    export const INTERNAL_KEY_UP = 6871;
+    export const INTERNAL_POINTER_DOWN = 6868;
+    export const INTERNAL_POINTER_UP = 6869;
+
     export type MouseEvent = "pointerdown" | "pointerup" | "pointermove" | "pointerleave" | "pointerenter" | "pointercancel" | "pointerover" | "pointerout";
     export class MouseState {
         protected x: number;
@@ -43,10 +48,19 @@ namespace pxsim.browserEvents {
                 "pointerout",
             ];
 
+            let eventId = 6857 + events.indexOf(event.type);
+
+            if (event.type === "pointerdown") {
+                eventId = INTERNAL_POINTER_DOWN;
+            }
+            else if (event.type === "pointerup") {
+                eventId = INTERNAL_POINTER_UP;
+            }
+
             // We add 1 to the button here because the left button is 0 and
             // that's used as a wildcard in our event bus
             board().bus.queue(
-                6857 + events.indexOf(event.type),
+                eventId,
                 (event.button || 0) + 1
             );
         }
