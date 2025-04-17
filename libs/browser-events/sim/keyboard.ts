@@ -96,10 +96,10 @@ namespace pxsim.browserEvents {
 
     function fireEvent(key: Key, pressed: boolean) {
         if (pressed) {
-            board().bus.queue(6866, key);
+            board().bus.queue(INTERNAL_KEY_DOWN, key);
         }
         else {
-            board().bus.queue(6867, key);
+            board().bus.queue(INTERNAL_KEY_UP, key);
         }
     }
 

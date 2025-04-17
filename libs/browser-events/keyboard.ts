@@ -73,12 +73,17 @@ namespace browserEvents {
 
     export enum KeyEvent {
         //% block="pressed"
-        Pressed,
+        Pressed = 6872,
         //% block="released"
-        Released,
+        Released = 6873,
         //% block="repeat"
-        Repeat
+        Repeat = 6874
     }
+
+    //% whenUsed
+    const INTERNAL_KEY_DOWN = 6870;
+    //% whenUsed
+    const INTERNAL_KEY_UP = 6871;
 
     export function keyToString(key: Key) {
         switch (key) {
@@ -229,83 +234,7 @@ namespace browserEvents {
     let defaultRepeatDelay = 500;
     let defaultRepeatInterval = 30;
 
-    class KeySceneState {
-        protected pressHandler: () => void;
-        protected pressListeners: (() => void)[];
-        protected releaseHandler: () => void;
-        protected releaseListeners: (() => void)[];
-        protected repeatHandler: () => void;
-        protected repeatListeners: (() => void)[];
-
-        constructor(public id: number) {
-            this.pressListeners = [];
-            this.releaseListeners = [];
-            this.repeatListeners = [];
-        }
-
-        onEvent(event: KeyEvent, handler: () => void) {
-            if (event === KeyEvent.Pressed) {
-                this.pressHandler = handler;
-            }
-            else if (event === KeyEvent.Released) {
-                this.releaseHandler = handler;
-            }
-            else {
-                this.repeatHandler = handler;
-            }
-        }
-
-        addEventListener(event: KeyEvent, handler: () => void) {
-            if (event === KeyEvent.Pressed) {
-                this.pressListeners.push(handler);
-            }
-            else if (event === KeyEvent.Released) {
-                this.releaseListeners.push(handler);
-            }
-            else {
-                this.repeatListeners.push(handler);
-            }
-        }
-
-        removeEventListener(event: KeyEvent, handler: () => void) {
-            if (event === KeyEvent.Pressed) {
-                this.pressListeners = this.pressListeners.filter(p => p !== handler);
-            }
-            else if (event === KeyEvent.Released) {
-                this.releaseListeners = this.releaseListeners.filter(p => p !== handler);;
-            }
-            else {
-                this.repeatListeners = this.repeatListeners.filter(p => p !== handler);
-            }
-        }
-
-        raiseButtonPressed() {
-            if (this.pressHandler) {
-                this.pressHandler();
-            }
-            for (const handler of this.pressListeners) {
-                handler();
-            }
-        }
-
-        raiseButtonReleased() {
-            if (this.releaseHandler) {
-                this.releaseHandler();
-            }
-            for (const handler of this.releaseListeners) {
-                handler();
-            }
-        }
-
-        raiseButtonRepeat() {
-            if (this.repeatHandler) {
-                this.repeatHandler();
-            }
-            for (const handler of this.repeatListeners) {
-                handler();
-            }
-        }
-    }
+    type KeyHandler = () => void;
 
     //% fixedInstances
     export class KeyButton {
@@ -315,16 +244,16 @@ namespace browserEvents {
         private _repeatCount: number;
         private _pressedElapsed: number;
 
-        protected sceneStack: KeySceneState[];
+        protected sceneStack: _SceneButtonHandlers<KeyHandler>[];
 
-        protected get state(): KeySceneState {
+        protected get state(): _SceneButtonHandlers<KeyHandler> {
             return this.sceneStack[this.sceneStack.length - 1];
         }
 
         constructor(public id: number) {
-            // use internalOnEvent so that events fire regardless of the current scen
-            control.internalOnEvent(Event.KeyUp, this.id, () => this.setPressed(false), 16);
-            control.internalOnEvent(Event.KeyDown, this.id, () => this.setPressed(true), 16);
+            // use internalOnEvent so that events fire regardless of the current scene
+            control.internalOnEvent(INTERNAL_KEY_UP, this.id, () => this.setPressed(false), 16);
+            control.internalOnEvent(INTERNAL_KEY_DOWN, this.id, () => this.setPressed(true), 16);
             this._pressed = false;
 
             // this code may run before game/scene.ts, in which case calling this.__registerUpdate
@@ -347,16 +276,16 @@ namespace browserEvents {
                 _buttonsPendingInit.push(this);
             }
 
-            this.sceneStack = [new KeySceneState(id)];
+            this.sceneStack = [new _SceneButtonHandlers<KeyHandler>(id, invokeKeyHandler)];
 
             game.addScenePushHandler(() => {
-                this.sceneStack.push(new KeySceneState(id));
+                this.sceneStack.push(new _SceneButtonHandlers<KeyHandler>(id, invokeKeyHandler));
                 this.__registerUpdate();
             });
             game.addScenePopHandler(() => {
                 this.sceneStack.pop();
                 if (this.sceneStack.length === 0) {
-                    this.sceneStack = [new KeySceneState(id)];
+                    this.sceneStack = [new _SceneButtonHandlers<KeyHandler>(id, invokeKeyHandler)];
                     this.__registerUpdate();
                 }
             });
@@ -369,10 +298,10 @@ namespace browserEvents {
             if (pressed) {
                 this._repeatCount = 0;
                 this._pressedElapsed = 0;
-                this.state.raiseButtonPressed();
+                control.raiseEvent(KeyEvent.Pressed, this.id);
             }
             else {
-                this.state.raiseButtonReleased();
+                control.raiseEvent(KeyEvent.Released, this.id);
             }
         }
 
@@ -422,13 +351,17 @@ namespace browserEvents {
             const count = Math.floor((this._pressedElapsed - delay - interval) / interval);
             if (count != this._repeatCount) {
                 this._repeatCount = count;
-                this.state.raiseButtonRepeat();
+                control.raiseEvent(KeyEvent.Repeat, this.id);
             }
         }
 
         __registerUpdate() {
             game.eventContext().registerFrameHandler(scene.CONTROLLER_PRIORITY, () => this.__update());
         }
+    }
+
+    function invokeKeyHandler(handler: KeyHandler) {
+        handler();
     }
 
     //% fixedInstance whenUsed
