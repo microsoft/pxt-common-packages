@@ -13,7 +13,7 @@ jobs:
 
   tag-version:
     needs: check-merge
-    if: needs.check-merge.outputs.is_merged_pr == 'true'
+    if: needs.check-merge.outputs.is_merged_pr == true
     runs-on: ubuntu-latest
     outputs:
       did_tag: ${{ steps.tag-op.outputs.did_tag }}
@@ -48,7 +48,7 @@ jobs:
 
   not-tag-version:
     needs: check-merge
-    if: needs.check-merge.outputs.is_merged_pr == 'false'
+    if: needs.check-merge.outputs.is_merged_pr == false
     runs-on: ubuntu-latest
     outputs:
       did_tag: false
@@ -60,6 +60,6 @@ jobs:
     needs: [tag-version, not-tag-version]
     if: always()
     outputs:
-      did_tag: ${{ needs.tag-version.outputs.did_tag || 'false' }}
+      did_tag: ${{ fromJSON(needs.tag-version.outputs.did_tag || 'false') }}
     steps:
-      - run: echo "Returning did_tag = ${{ needs.tag-version.outputs.did_tag || 'false' }}"
+      - run: echo "Returning did_tag = ${{ fromJSON(needs.tag-version.outputs.did_tag || 'false') }}"

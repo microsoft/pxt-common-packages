@@ -1,4 +1,5 @@
 name: Check if the commit is part of a merged PR
+
 on:
   workflow_call:
     outputs:
@@ -10,7 +11,7 @@ jobs:
   check-pr:
     runs-on: ubuntu-latest
     outputs:
-      is_merged_pr: ${{ steps.check-pr.outputs.is_merged_pr }}
+      is_merged_pr: ${{ steps.check-pr.outputs.result }}
     steps:
       - name: Check if this commit is from a merged PR
         id: check-pr
@@ -23,6 +24,5 @@ jobs:
               repo: context.repo.repo,
               commit_sha: commitSha
             });
-            console.log("Found PRs:", prs);
             const mergedPr = prs.find(pr => pr.merged_at !== null);
-            core.setOutput("is_merged_pr", mergedPr ? "true" : "false");
+            return Boolean(mergedPr);
