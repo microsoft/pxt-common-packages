@@ -32,12 +32,16 @@ namespace music {
     function _init() {
         if (stateStack) return;
         stateStack = [new PlayableState()];
+    }
 
-        game.addScenePushHandler(() => {
+    export function _initializeSceneStack(addScenePushHandler: (handler: () => void) => void, addScenePopHandler: (handler: () => void) => void) {
+        _init();
+
+        addScenePushHandler(() => {
             stateStack.push(new PlayableState());
         });
 
-        game.addScenePopHandler(() => {
+        addScenePopHandler(() => {
             stateStack.pop();
             if (stateStack.length === 0) stateStack.push(new PlayableState());
         });

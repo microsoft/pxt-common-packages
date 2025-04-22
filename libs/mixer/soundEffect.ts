@@ -307,7 +307,7 @@ namespace music {
         if (res.waveShape === WaveShape.Noise) {
             // The primary waveforms don't produce sounds that are similar to noise,
             // but adding an effect sorta does
-            if (Math.percentChance(20)) {
+            if (Math.random() < 0.2) {
                 res.waveShape = randomWave();
                 res.effect = randomEffect();
             }
@@ -317,7 +317,7 @@ namespace music {
 
             // Adding an effect can drastically alter the sound, so keep it
             // at a low percent chance unless there already is one
-            if (res.effect !== SoundExpressionEffect.None || Math.percentChance(10)) {
+            if (res.effect !== SoundExpressionEffect.None || Math.random() < 0.1) {
                 res.effect = randomEffect();
             }
         }
