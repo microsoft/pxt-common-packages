@@ -26,24 +26,41 @@ jobs:
         id: tag-op
         shell: bash
         run: |
-          TAGGED=false
+          set -euxo pipefail
+
+          echo "==> Fetching tags"
           git fetch --tags
+
           COMMIT_SHA="${{ github.sha }}"
+          echo "==> Current commit SHA: $COMMIT_SHA"
+
           COMMIT_MSG=$(git log -1 --pretty=%s "$COMMIT_SHA")
-          echo "Commit message: $COMMIT_MSG"
+          echo "==> Commit message: '$COMMIT_MSG'"
+
+          TAGGED=false
+
+          # Check if commit matches bump pattern
           if [[ "$COMMIT_MSG" =~ \[pxt-cli\]\ bump\ version\ to\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             VERSION="v${BASH_REMATCH[1]}"
+            echo "==> Detected bump version: $VERSION"
+
+            # Check if tag already exists
             if git rev-parse "$VERSION" >/dev/null 2>&1; then
               echo "::warning::Tag $VERSION already exists — skipping tagging."
             else
-              echo "Tagging commit $COMMIT_SHA with $VERSION"
+              echo "==> Tagging commit $COMMIT_SHA with tag $VERSION"
               git tag "$VERSION" "$COMMIT_SHA"
+
+              echo "==> Pushing tag $VERSION to origin"
               git push origin "$VERSION"
+
               TAGGED=true
             fi
           else
-            echo "No bump commit found — skipping tag."
+            echo "==> No bump commit detected — skipping tag creation."
           fi
+
+          echo "==> Final tagging result: TAGGED=$TAGGED"
           echo "did_tag=$TAGGED" >> "$GITHUB_OUTPUT"
 
   not-tag-version:
