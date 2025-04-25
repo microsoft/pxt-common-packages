@@ -14,8 +14,8 @@ jobs:
   check-pr:
     runs-on: ubuntu-latest
     outputs:
-      is_merged_pr: ${{ steps.check-pr.outputs.result }}
-      pr_head_sha: ${{ steps.check-pr.outputs.head_sha }}
+      is_merged_pr: ${{ steps.parse-check-pr.outputs.is_merged_pr }}
+      pr_head_sha: ${{ steps.parse-check-pr.outputs.pr_head_sha }}
     steps:
       - name: Check if this commit is from a merged PR
         id: check-pr
@@ -23,19 +23,24 @@ jobs:
         with:
           result-encoding: string
           script: |
-            await (async () => {
-              const commitSha = context.sha;
-              const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                commit_sha: commitSha
-              });
-              const mergedPr = prs.find(pr => pr.merged_at !== null);
-              const isMerged = Boolean(mergedPr);
-              if (isMerged) {
-                core.info(`Merged PR head SHA: ${mergedPr.head.sha}`);
-                return { result: true, head_sha: mergedPr.head.sha };
-              } else {
-                return { result: false, head_sha: '' };
-              }
-            })();
+            const commitSha = context.sha;
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: commitSha
+            });
+            const mergedPr = prs.find(pr => pr.merged_at !== null);
+            const isMerged = Boolean(mergedPr);
+            if (isMerged) {
+              core.info(`Merged PR head SHA: ${mergedPr.head.sha}`);
+              return { result: true, head_sha: mergedPr.head.sha };
+            } else {
+              return { result: false, head_sha: '' };
+            }
+      - name: Parse outputs
+        id: parse-check-pr
+        shell: bash
+        run: |
+          echo "Parsing result: ${{ steps.check-pr.outputs.result }}"
+          echo "::set-output name=is_merged_pr::$(echo '${{ steps.check-pr.outputs.result }}' | jq -r '.is_merged_pr')"
+          echo "::set-output name=pr_head_sha::$(echo '${{ steps.check-pr.outputs.result }}' | jq -r '.pr_head_sha')"
