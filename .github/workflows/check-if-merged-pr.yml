@@ -6,12 +6,16 @@ on:
       is_merged_pr:
         description: "Whether the current push came from a merged PR"
         value: ${{ jobs.check-pr.outputs.is_merged_pr }}
+      pr_head_sha:
+        description: "The head SHA of the merged PR"
+        value: ${{ jobs.check-pr.outputs.pr_head_sha }}
 
 jobs:
   check-pr:
     runs-on: ubuntu-latest
     outputs:
       is_merged_pr: ${{ steps.check-pr.outputs.result }}
+      pr_head_sha: ${{ steps.check-pr.outputs.head_sha }}
     steps:
       - name: Check if this commit is from a merged PR
         id: check-pr
@@ -27,7 +31,13 @@ jobs:
                 commit_sha: commitSha
               });
               const mergedPr = prs.find(pr => pr.merged_at !== null);
-              const result = Boolean(mergedPr);
-              core.info(`is_merged_pr = ${result}`);
-              core.setOutput('result', result);
+              const isMerged = Boolean(mergedPr);
+              if (isMerged) {
+                core.setOutput('result', true);
+                core.setOutput('head_sha', mergedPr.head.sha);
+                core.info(`Merged PR head SHA: ${mergedPr.head.sha}`);
+              } else {
+                core.setOutput('result', false);
+                core.setOutput('head_sha', '');
+              }
             })();
