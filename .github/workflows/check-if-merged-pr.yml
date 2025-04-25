@@ -29,14 +29,22 @@ jobs:
               repo: context.repo.repo,
               commit_sha: commitSha
             });
-            const mergedPr = prs.find(pr => pr.merged_at !== null);
-            const isMerged = Boolean(mergedPr);
-            if (isMerged) {
-              core.info(`Merged PR head SHA: ${mergedPr.head.sha}`);
-              return JSON.stringify({ is_merged_pr: true, pr_head_sha: mergedPr.head.sha });
-            } else {
+
+            if (!prs.length) {
+              core.info('No PRs associated with this commit.');
               return JSON.stringify({ is_merged_pr: false, pr_head_sha: '' });
             }
+
+            const mergedPr = prs.find(pr => pr.merged_at !== null);
+      
+            if (!mergedPr) {
+              core.info('PRs found, but none were merged.');
+              return JSON.stringify({ is_merged_pr: false, pr_head_sha: '' });
+            }
+
+            core.info(`Found merged PR head SHA: ${mergedPr.head.sha}`);
+            return JSON.stringify({ is_merged_pr: true, pr_head_sha: mergedPr.head.sha });
+
       - name: Parse outputs
         id: parse-check-pr
         shell: bash
