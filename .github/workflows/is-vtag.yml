@@ -13,6 +13,10 @@ jobs:
     outputs:
       is_vtag: ${{ fromJSON(steps.check-tag.outputs.is_vtag) }}
     steps:
+      - name: Context
+        run: |
+          echo "GITHUB_REF_TYPE=${GITHUB_REF_TYPE}"
+          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
       - name: Check tag pattern
         id: check-tag
         run: |
