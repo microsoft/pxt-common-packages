@@ -48,8 +48,8 @@ jobs:
       
           TAGGED=false
       
-          # Check if commit matches bump pattern
-          if [[ "$COMMIT_MSG" =~ \[pxt-cli\]\ bump\ version\ to\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+          # Check if commit matches bump pattern and PR#
+          if [[ "$COMMIT_MSG" =~ \[pxt-cli\]\ bump\ version\ to\ v([0-9]+\.[0-9]+\.[0-9]+)\ \(\#[0-9]+\) ]]; then
             VERSION="v${BASH_REMATCH[1]}"
             echo "==> Detected bump version: $VERSION"
       
@@ -63,7 +63,7 @@ jobs:
               TAGGED=true
             fi
           else
-            echo "==> No bump commit detected — skipping tag creation."
+            echo "==> No merged bump commit detected — skipping tag creation."
           fi
       
           echo "==> did_tag=$TAGGED"
