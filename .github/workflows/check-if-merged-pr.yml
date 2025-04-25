@@ -18,11 +18,14 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const commitSha = context.sha;
-            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              commit_sha: commitSha
-            });
-            const mergedPr = prs.find(pr => pr.merged_at !== null);
-            core.setOutput('result', Boolean(mergedPr));
+            await (async () => {})
+              const commitSha = context.sha;
+              const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: commitSha
+              });
+              const result = Boolean(mergedPr);
+              core.info(`is_merged_pr = ${result}`);
+              core.setOutput('result', result);
+            })();
