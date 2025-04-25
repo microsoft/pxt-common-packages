@@ -11,6 +11,16 @@ jobs:
   check-merge:
     uses: ./.github/workflows/check-if-merged-pr.yml
 
+  debug-check-merge-outputs:
+    needs: check-merge
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: check-merge outputs
+        run: |
+          echo "is_merged_pr = '${{ needs.check-merge.outputs.is_merged_pr }}'"
+          echo "pr_head_sha = '${{ needs.check-merge.outputs.pr_head_sha }}'"
+
   tag-version:
     needs: check-merge
     if: fromJSON(needs.check-merge.outputs.is_merged_pr || 'false') == true
