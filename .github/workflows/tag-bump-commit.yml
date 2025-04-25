@@ -41,18 +41,21 @@ jobs:
       
           PR_HEAD_SHA="${{ needs.check-merge.outputs.pr_head_sha }}"
           echo "==> PR head commit SHA: $PR_HEAD_SHA"
-      
+
+          echo "==> Fetching PR HEAD SHA commit from origin..."
+          git fetch origin $PR_HEAD_SHA
+
           echo "==> Fetching commit message for PR head..."
           COMMIT_MSG=$(git log -1 --pretty=%s "$PR_HEAD_SHA")
           echo "==> Commit message: '$COMMIT_MSG'"
-      
+
           TAGGED=false
-      
+
           # Check if commit matches bump pattern and PR#
           if [[ "$COMMIT_MSG" =~ \[pxt-cli\]\ bump\ version\ to\ v([0-9]+\.[0-9]+\.[0-9]+)\ \(\#[0-9]+\) ]]; then
             VERSION="v${BASH_REMATCH[1]}"
             echo "==> Detected bump version: $VERSION"
-      
+
             # Check if tag already exists
             if git rev-parse "$VERSION" >/dev/null 2>&1; then
               echo "::warning::Tag $VERSION already exists — skipping tagging."
@@ -65,10 +68,10 @@ jobs:
           else
             echo "==> No merged bump commit detected — skipping tag creation."
           fi
-      
+
           echo "==> did_tag=$TAGGED"
           echo "did_tag=$TAGGED" >> "$GITHUB_OUTPUT"
-        
+
   not-tag-version:
     needs: check-merge
     if: fromJSON(needs.check-merge.outputs.is_merged_pr || 'false') == false
