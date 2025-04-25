@@ -25,4 +25,4 @@ jobs:
               commit_sha: commitSha
             });
             const mergedPr = prs.find(pr => pr.merged_at !== null);
-            return Boolean(mergedPr);
+            core.setOutput('result', Boolean(mergedPr));

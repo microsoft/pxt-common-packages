@@ -13,7 +13,7 @@ jobs:
 
   tag-version:
     needs: check-merge
-    if: needs.check-merge.outputs.is_merged_pr == true
+    if: fromJSON(needs.check-merge.outputs.is_merged_pr) == true
     runs-on: ubuntu-latest
     outputs:
       did_tag: ${{ steps.tag-op.outputs.did_tag }}
@@ -48,7 +48,7 @@ jobs:
 
   not-tag-version:
     needs: check-merge
-    if: needs.check-merge.outputs.is_merged_pr == false
+    if: fromJSON(needs.check-merge.outputs.is_merged_pr) == false
     runs-on: ubuntu-latest
     outputs:
       did_tag: false

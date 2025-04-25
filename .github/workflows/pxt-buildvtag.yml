@@ -13,7 +13,7 @@ jobs:
     name: buildvtag
     # Only run this job if the push is a version tag
     needs: filter-vtags
-    if: needs.filter-vtags.outputs.is_vtag == true
+    if: fromJSON(needs.filter-vtags.outputs.is_vtag) == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
