@@ -60,6 +60,6 @@ jobs:
     needs: [tag-version, not-tag-version]
     if: always()
     outputs:
-      did_tag: ${{ fromJSON(needs.tag-version.outputs.did_tag || 'false') }}
+      did_tag: ${{ needs.tag-version.outputs.did_tag || false }}
     steps:
-      - run: echo "Returning did_tag = ${{ fromJSON(needs.tag-version.outputs.did_tag || 'false') }}"
+      - run: echo "Returning did_tag = ${{ needs.tag-version.outputs.did_tag || false }}"

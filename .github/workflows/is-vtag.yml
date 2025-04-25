@@ -11,7 +11,7 @@ jobs:
   filter-vtags:
     runs-on: ubuntu-latest
     outputs:
-      is_vtag: ${{ fromJSON(steps.check-tag.outputs.is_vtag) }}
+      is_vtag: ${{ steps.check-tag.outputs.is_vtag }}
     steps:
       - name: Context
         run: |
