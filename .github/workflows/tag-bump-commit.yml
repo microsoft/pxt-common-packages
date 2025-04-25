@@ -38,15 +38,12 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-      
-          PR_HEAD_SHA="${{ needs.check-merge.outputs.pr_head_sha }}"
-          echo "==> PR head commit SHA: $PR_HEAD_SHA"
 
-          echo "==> Fetching PR HEAD SHA commit from origin..."
-          git fetch origin $PR_HEAD_SHA
+          COMMIT_SHA="${{ github.sha }}"
+          echo "==> Current merge commit SHA: $COMMIT_SHA"
 
-          echo "==> Fetching commit message for PR head..."
-          COMMIT_MSG=$(git log -1 --pretty=%s "$PR_HEAD_SHA")
+          echo "==> Fetching commit message..."
+          COMMIT_MSG=$(git log -1 --pretty=%s "$COMMIT_SHA")
           echo "==> Commit message: '$COMMIT_MSG'"
 
           TAGGED=false
@@ -60,8 +57,8 @@ jobs:
             if git rev-parse "$VERSION" >/dev/null 2>&1; then
               echo "::warning::Tag $VERSION already exists — skipping tagging."
             else
-              echo "==> Tagging $PR_HEAD_SHA with $VERSION"
-              git tag "$VERSION" "$PR_HEAD_SHA"
+              echo "==> Tagging $COMMIT_SHA with $VERSION"
+              git tag "$VERSION" "$COMMIT_SHA"
               git push origin "$VERSION"
               TAGGED=true
             fi
