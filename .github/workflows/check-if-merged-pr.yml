@@ -17,6 +17,7 @@ jobs:
         id: check-pr
         uses: actions/github-script@v7
         with:
+          result-encoding: string
           script: |
             await (async () => {
               const commitSha = context.sha;
