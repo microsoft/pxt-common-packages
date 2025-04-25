@@ -33,9 +33,9 @@ jobs:
             const isMerged = Boolean(mergedPr);
             if (isMerged) {
               core.info(`Merged PR head SHA: ${mergedPr.head.sha}`);
-              return { result: true, head_sha: mergedPr.head.sha };
+              return JSON.stringify({ result: true, head_sha: mergedPr.head.sha });
             } else {
-              return { result: false, head_sha: '' };
+              return JSON.stringify({ result: false, head_sha: '' });
             }
       - name: Parse outputs
         id: parse-check-pr
