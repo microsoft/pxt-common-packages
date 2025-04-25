@@ -11,7 +11,7 @@ jobs:
   check-merge:
     uses: ./.github/workflows/check-if-merged-pr.yml
 
-  debug-check-merge-outputs:
+  check-merge-outputs:
     needs: check-merge
     runs-on: ubuntu-latest
     if: always()

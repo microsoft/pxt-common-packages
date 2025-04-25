@@ -33,11 +33,9 @@ jobs:
               const mergedPr = prs.find(pr => pr.merged_at !== null);
               const isMerged = Boolean(mergedPr);
               if (isMerged) {
-                core.setOutput('result', true);
-                core.setOutput('head_sha', mergedPr.head.sha);
                 core.info(`Merged PR head SHA: ${mergedPr.head.sha}`);
+                return { result: true, head_sha: mergedPr.head.sha };
               } else {
-                core.setOutput('result', false);
-                core.setOutput('head_sha', '');
+                return { result: false, head_sha: '' };
               }
             })();
