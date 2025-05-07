@@ -29,7 +29,7 @@ class WStorage {
 #elif defined(SAMD21)
           fs(flash, 256 * 1024 - size, size),
 #elif defined(MICROBIT_CODAL) && MICROBIT_CODAL
-          fs(flash, MICROBIT_TOP_OF_FLASH - size, size),
+          fs(flash, FLASH_TOP - size, size),
 #elif defined(NRF52_SERIES)
 #define NRF_BOOTLOADER_START *(uint32_t *)0x10001014
           fs(flash,
