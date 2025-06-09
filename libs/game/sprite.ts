@@ -316,6 +316,10 @@ class Sprite extends sprites.BaseSprite {
     constructor(img: Image) {
         super(scene.SPRITE_Z);
 
+        if (!img) {
+            throw "Sprite image cannot be undefined or null";
+        }
+
         this._x = Fx8(screen.width - img.width >> 1);
         this._y = Fx8(screen.height - img.height >> 1);
         this._lastX = this._x;
