@@ -96,6 +96,7 @@ namespace Math {
     //% block="$MEMBER"
     //% constantShim
     //% weight=0
+    //% help=math/constant
     export function _constant(MEMBER: number): number {
         return MEMBER;
     }
