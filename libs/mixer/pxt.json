@@ -17,6 +17,8 @@
         "instrument.ts",
         "sequencer.ts",
         "playable.ts",
+        "monosynth.cpp",
+        "monosynth.ts",
         "pxtparts.json",
         "headphone.svg"
     ],
