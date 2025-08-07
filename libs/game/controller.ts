@@ -44,18 +44,18 @@ namespace controller {
         }
         _players[ctrl.playerIndex - 1] = ctrl;
     }
-
+    // why did Richard Knoll keep the player 1 function private but exported it
     export function _player1(): Controller {
         if (!_players || !_players[0])
             new Controller(1, [controller.left, controller.up, controller.right, controller.down, controller.A, controller.B, controller.menu]);
         return _players[0];
     }
-
+   // for all 4 plays in the controller
     export function players(): Controller[] {
         _player1(); // ensure player1 is present
         return _players.filter(ctrl => !!ctrl);
     }
-
+// for when sprite is controlled
     export class ControlledSprite {
         public _inputLastFrame: boolean;
         constructor(
@@ -64,14 +64,14 @@ namespace controller {
             public vy: number
         ) { }
     }
-
+// when player sprites got moved but hard where they got idea to get these functions exportingf
     export function _moveSprites() {
         // todo: move to current scene
         control.enablePerfCounter("controller")
         players().forEach(ctrl => ctrl.__preUpdate());
     }
 
-    //% fixedInstances
+    / /% fixedInstances
     export class Controller {
         playerIndex: number;
         buttons: Button[];
