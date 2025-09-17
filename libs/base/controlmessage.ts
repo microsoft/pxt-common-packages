@@ -12,6 +12,9 @@ namespace control.simmessages {
     //% shim=pxt::readMessageData
     declare function readMessageData(): Buffer;
 
+    //% shim=pxt::getTutorialStep
+    export declare function getTutorialStep(): number; // TODO thsparks : probably move this into its own namespace, not simmessages
+
     let handlers: { [channel: string] : (msg: Buffer) => void}
     function consumeMessages() {
         while(true) {

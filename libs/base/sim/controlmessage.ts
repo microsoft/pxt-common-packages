@@ -23,6 +23,11 @@ namespace pxsim.pxtcore {
         const msg = state && state.read();
         return msg && new RefBuffer(msg.data);
     }
+
+    export function getTutorialStep(): number {
+        const step = pxsim.runtime?.tutorialStepNumber;
+        return step === undefined ? -1 : step;
+    }
 }
 
 namespace pxsim {
