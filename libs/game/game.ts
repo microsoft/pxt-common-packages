@@ -147,6 +147,7 @@ namespace game {
 
     let __waitAnyButton: () => void;
     let __gameOverHandler: (win: boolean) => void;
+    let __gameOverAlso: (win: boolean) => void;
     let __isOver = false;
 
     export function setWaitAnyButton(f: () => void) {
@@ -375,6 +376,11 @@ namespace game {
         _gameOverImpl(true, player);
     }
 
+    // Runs on game over, but does not prevent default game over behavior
+    export function onGameOverAlso(handler: (win: boolean) => void) {
+        __gameOverAlso = handler;
+    }
+
     function _mapScoreTypeToString(scoreType: ScoringType): string {
         switch (scoreType) {
             case ScoringType.HighScore: return "highscore";
@@ -392,6 +398,10 @@ namespace game {
         if (__gameOverHandler) {
             __gameOverHandler(win);
         } else {
+            if (__gameOverAlso) {
+                __gameOverAlso(win);
+            }
+
             const goc = game.gameOverConfig();
 
             const judged = !winnerOverride && goc.scoringType !== ScoringType.None;
