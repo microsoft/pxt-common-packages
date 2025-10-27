@@ -661,6 +661,7 @@ namespace tiles {
      */
     //% blockId=mapgettile block="tilemap col $col row $row"
     //% blockNamespace="scene" group="Locations"
+    //% duplicateShadowOnDrag
     //% weight=100 blockGap=8
     //% help=tiles/get-tile-location
     export function getTileLocation(col: number, row: number): Location {
