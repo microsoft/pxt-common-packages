@@ -207,6 +207,7 @@ namespace pxsim._wifi {
     }
 
     export async function socketWrite(fd: int32, data: RefBuffer): Promise<int32> {
+        BufferMethods.typeCheck(data);
         const sock = getSock(fd)
         if (!sock)
             return -11
@@ -284,6 +285,7 @@ namespace pxsim._wifi {
 
 namespace pxsim.crypto {
     export function _sha256(bufs: RefCollection): Promise<RefBuffer> {
+        Array_.typeCheck(bufs);
         let len = 0
         const buffers = bufs.toArray().filter(e => e instanceof RefBuffer).map((b: RefBuffer) => {
             len += b.data.length
