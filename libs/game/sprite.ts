@@ -109,97 +109,115 @@ class Sprite extends sprites.BaseSprite {
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/x#get
     get x(): number {
         return Fx.toFloat(Fx.add(this._x, Fx.div(this._width, Fx.twoFx8)));
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="x"
+    //% blockCombineSetHelp=sprites/sprite/x#set
     set x(v: number) {
         this.left = v - (this.width / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/y#get
     get y(): number {
         return Fx.toFloat(Fx.add(this._y, Fx.div(this._height, Fx.twoFx8)));
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="y"
+    //% blockCombineSetHelp=sprites/sprite/y#set
     set y(v: number) {
         this.top = v - (this.height / 2)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/vx#get
     get vx(): number {
         return Fx.toFloat(this._vx)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vx (velocity x)"
+    //% blockCombineSetHelp=sprites/sprite/vx#set
     set vx(v: number) {
         this._vx = Fx8(v)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/vy#get
     get vy(): number {
         return Fx.toFloat(this._vy)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="vy (velocity y)"
+    //% blockCombineSetHelp=sprites/sprite/vy#set
     set vy(v: number) {
         this._vy = Fx8(v)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/ax#get
     get ax(): number {
         return Fx.toFloat(this._ax)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ax (acceleration x)"
+    //% blockCombineSetHelp=sprites/sprite/ax#set
     set ax(v: number) {
         this._ax = Fx8(v)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/ay#get
     get ay(): number {
         return Fx.toFloat(this._ay)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="ay (acceleration y)"
+    //% blockCombineSetHelp=sprites/sprite/ay#set
     set ay(v: number) {
         this._ay = Fx8(v)
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fx (friction x)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/fx#get
     get fx(): number {
         return Fx.toFloat(this._fx)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fx (friction x)"
+    //% blockCombineSetHelp=sprites/sprite/fx#set
     set fx(v: number) {
         this._fx = Fx8(Math.max(0, v))
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fy (friction y)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/fy#get
     get fy(): number {
         return Fx.toFloat(this._fy)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="fy (friction y)"
+    //% blockCombineSetHelp=sprites/sprite/fy#set
     set fy(v: number) {
         this._fy = Fx8(Math.max(0, v))
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="sx (scale x)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/sx#get
     get sx(): number {
         return Fx.toFloat(this._sx);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="sx (scale x)"
+    //% blockCombineSetHelp=sprites/sprite/sx#set
     set sx(v: number) {
         const y = this.y;
         const x = this.x;
@@ -210,11 +228,13 @@ class Sprite extends sprites.BaseSprite {
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="sy (scale y)" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/sy#get
     get sy(): number {
         return Fx.toFloat(this._sy);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="sy (scale y)"
+    //% blockCombineSetHelp=sprites/sprite/sy#set
     set sy(v: number) {
         const y = this.y;
         const x = this.x;
@@ -226,11 +246,13 @@ class Sprite extends sprites.BaseSprite {
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="scale" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/scale#get
     get scale(): number {
         return Math.max(this.sx, this.sy);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="scale"
+    //% blockCombineGetHelp=sprites/sprite/scale#set
     set scale(v: number) {
         this.sx = this.sy = v;
     }
@@ -297,6 +319,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="lifespan"
+    //% help=sprites/sprite/lifespan
     lifespan: number;
     private _image: Image;
     private _obstacles: sprites.Obstacle[];
@@ -361,6 +384,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Image"
     //% blockId=spriteimage block="%sprite(mySprite) image"
     //% weight=8 help=sprites/sprite/image
+    //% blockCombineGetHelp=sprites/sprite/image
     get image(): Image {
         return this._image;
     }
@@ -421,22 +445,26 @@ class Sprite extends sprites.BaseSprite {
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="width" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/width
     get width() {
         return Fx.toFloat(this._width);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="height" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/height
     get height() {
         return Fx.toFloat(this._height);
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/left#get
     get left() {
         return Fx.toFloat(this._x)
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="left"
+    //% blockCombineSetHelp=sprites/sprite/left#set
     set left(value: number) {
         const physics = game.currentScene().physicsEngine;
         physics.moveSprite(
@@ -451,22 +479,26 @@ class Sprite extends sprites.BaseSprite {
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/righty#get
     get right() {
         return this.left + this.width
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="right"
+    //% blockCombineSetHelp=sprites/sprite/right#set
     set right(value: number) {
         this.left = value - this.width
     }
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/top#get
     get top() {
         return Fx.toFloat(this._y);
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="top"
+    //% blockCombineSetHelp=sprites/sprite/top#set
     set top(value: number) {
         const physics = game.currentScene().physicsEngine;
         physics.moveSprite(
@@ -481,11 +513,13 @@ class Sprite extends sprites.BaseSprite {
 
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom" callInDebugger
+    //% blockCombineGetHelp=sprites/sprite/bottom#get
     get bottom() {
         return this.top + this.height;
     }
     //% group="Physics" blockSetVariable="mySprite"
     //% blockCombine block="bottom"
+    //% blockCombineSetHelp=sprites/sprite/bottom#set
     set bottom(value: number) {
         this.top = value - this.height;
     }
