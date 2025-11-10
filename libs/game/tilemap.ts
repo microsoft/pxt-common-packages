@@ -30,21 +30,21 @@ namespace tiles {
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="column"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get column() {
             return this._col;
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="row"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get row() {
             return this._row;
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="x"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get x(): number {
             const scale = this.tileMap.scale;
             return (this._col << scale) + (1 << (scale - 1));
@@ -52,7 +52,8 @@ namespace tiles {
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="y"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
+
         get y(): number {
             const scale = this.tileMap.scale;
             return (this._row << scale) + (1 << (scale - 1));
@@ -60,28 +61,28 @@ namespace tiles {
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="left"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get left(): number {
             return (this._col << this.tileMap.scale);
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="top"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get top(): number {
             return (this._row << this.tileMap.scale);
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="right"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get right(): number {
             return this.left + (1 << this.tileMap.scale);
         }
 
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="bottom"
-        //% weight=100
+        //% weight=100 blockCombineGetHelp=tiles/location
         get bottom(): number {
             return this.top + (1 << this.tileMap.scale);
         }
