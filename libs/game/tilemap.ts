@@ -53,7 +53,6 @@ namespace tiles {
         //% group="Locations" blockSetVariable="location"
         //% blockCombine block="y"
         //% weight=100 blockCombineGetHelp=tiles/location
-
         get y(): number {
             const scale = this.tileMap.scale;
             return (this._row << scale) + (1 << (scale - 1));
