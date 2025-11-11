@@ -706,6 +706,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
     // Attempt to resolve clipping by moving the sprite slightly up / down / left / right
     protected canResolveClipping(s: Sprite, tm: tiles.TileMap) {
+        if (s.flags & sprites.Flag.GhostThroughWalls) return false;
         if (!s.isStatic()) s.setHitbox();
         const hbox = s._hitbox;
         const sz = 1 << tm.scale;
