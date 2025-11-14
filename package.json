@@ -11,8 +11,8 @@
   ],
   "author": "Microsoft Corporation",
   "repository": {
-    "url": "ssh://git@github.com:Microsoft/pxt-common-packages.git",
-    "type": "git"
+    "type": "git",
+    "url": "git+https://github.com/microsoft/pxt-common-packages.git"
   },
   "homepage": "https://github.com/microsoft/pxt-common-packages",
   "license": "MIT",
