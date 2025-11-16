@@ -646,6 +646,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
     protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
         const alreadyHandled: tiles.Location[] = [];
 
+        let currentTileMap = game.currentScene().tileMap
+
         for (const tile of overlappedTiles) {
             if (alreadyHandled.some(l => l.column === tile.column && l.row === tile.row)) {
                 continue;
@@ -655,11 +657,12 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
                 tileOverlapHandlers
-                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(tiles.getTileImage(tile)))
+                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(currentTileMap.getTileImage(tile.tileSet)))
                     .forEach(h => h.handler(sprite, tile));
             }
         }
     }
+
 
     /**
      * Returns sprites that overlap with the given sprite. If type is non-zero, also filter by type.
