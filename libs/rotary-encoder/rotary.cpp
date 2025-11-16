@@ -78,7 +78,7 @@ namespace RotaryEncoderMethods {
  */
 //% blockNamespace="encoders"
 //% blockId=rotaryencoderonchaned block="on %this changed"
-//% weight=80 blockGap=8
+//% weight=80 blockGap=8 help=encoders/on-changed
 void onChanged(RotaryEncoder encoder, Action body) {
     registerWithDal(encoder->id, ROT_EV_CHANGED, body);
 }
@@ -88,7 +88,7 @@ void onChanged(RotaryEncoder encoder, Action body) {
  */
 //% blockNamespace="encoders"
 //% blockId=rotaryencoderposition block="%this position"
-//% weight=79 blockGap=8
+//% weight=79 blockGap=8 help=encoders/position
 int position(RotaryEncoder encoder) {
     // the position always changes by 4 per tick
     return encoder->position >> 2;
