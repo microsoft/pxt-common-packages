@@ -22,7 +22,7 @@ Show the `rainbow` animation continuously at `500` millisecond intervals.
 
 ```blocks
 forever(function() {
-    light.showAnimation(light.rainbowAnimation, 500)
+    light.showAnimation(LightAnimation.Rainbow, 500)
 })
 ```
 
