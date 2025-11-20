@@ -598,6 +598,8 @@ namespace music {
     //% song.fieldOptions.taggedTemplate="hex;assets.song"
     //% song.fieldOptions.decompileIndirectFixedInstances="true"
     //% song.fieldOptions.decompileArgumentAsString="true"
+    //% song.snippet="hex`00780004080100`"
+    //% song.pySnippet='hex("""00780004080100""")'
     //% toolboxParent=music_playable_play
     //% toolboxParentArgument=toPlay
     //% group="Songs"
