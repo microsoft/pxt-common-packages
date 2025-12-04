@@ -1,10 +1,8 @@
 #include "pxt.h"
 #include "jddisplay.h"
 
-#define VLOG NOLOG
-//#define VLOG DMESG
-
-
+// #define VLOG NOLOG
+#define VLOG DMESG
 
 namespace pxt {
 
@@ -328,7 +326,9 @@ int JDDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned hei
     if (addr.y && addr.y >= screenHeight)
         return 0; // out of range
 
+    DMESG("SII: before wait");
     inProgressLock.wait();
+    DMESG("SII: after wait");
 
     int numcols = JD_SERIAL_PAYLOAD_SIZE / (height / 2);
 
