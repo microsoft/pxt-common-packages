@@ -767,6 +767,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Overlaps"
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
+    //% other.defl=otherSprite
     //% help=sprites/sprite/overlaps-with
     //% weight=90
     overlapsWith(other: Sprite): boolean {

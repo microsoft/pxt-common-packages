@@ -125,6 +125,7 @@ namespace sprites {
     //% blockId=spritescreateprojectilefromsprite block="projectile %img=screen_image_picker from %sprite=variables_get(mySprite) with vx %vx vy %vy"
     //% vx.shadow=spriteSpeedPicker
     //% vy.shadow=spriteSpeedPicker
+    //% sprite.defl=mySprite
     //% weight=99 help=sprites/create-projectile-from-sprite
     //% blockSetVariable=projectile
     //% inlineInputMode=inline
