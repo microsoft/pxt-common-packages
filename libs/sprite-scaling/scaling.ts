@@ -10,6 +10,7 @@ namespace scaling {
     //% block="set $sprite=variables_get(mySprite) scale to $value percent $direction anchor $anchor"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
+    //% sprite.defl=mySprite
     //% value.defl=150
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
@@ -38,6 +39,7 @@ namespace scaling {
     //% block="change $sprite=variables_get(mySprite) scale by $value percent $direction anchor $anchor"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
+    //% sprite.defl=mySprite
     //% value.defl=50
     //% direction.defl=ScaleDirection.Uniformly
     //% anchor.defl=ScaleAnchor.Middle
@@ -66,6 +68,7 @@ namespace scaling {
     //% block="set $sprite=variables_get(mySprite) scale to $value pixels $direction anchor $anchor || proportional $proportional"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
+    //% sprite.defl=mySprite
     //% value.defl=32
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle
@@ -105,6 +108,7 @@ namespace scaling {
     //% block="change $sprite=variables_get(mySprite) scale by $value pixels $direction anchor $anchor || proportional $proportional"
     //% expandableArgumentMode=enabled
     //% inlineInputMode=inline
+    //% sprite.defl=mySprite
     //% value.defl=10
     //% direction.defl=ScaleDirection.Horizontally
     //% anchor.defl=ScaleAnchor.Middle

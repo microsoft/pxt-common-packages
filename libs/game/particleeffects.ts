@@ -134,6 +134,7 @@ namespace effects {
      */
     //% blockId=particlesclearparticles block="clear effects on %anchor=variables_get(mySprite)"
     //% blockNamespace=sprites
+    //% anchor.defl="mySprite"
     //% group="Effects" weight=89
     //% help=effects/clear-particles
     export function clearParticles(anchor: Sprite | particles.ParticleAnchor) {

@@ -744,6 +744,7 @@ namespace tiles {
      * @param loc
      */
     //% blockId=mapplaceontile block="place $sprite=variables_get(mySprite) on top of $loc"
+    //% sprite.defl=mySprite
     //% loc.shadow=mapgettile
     //% blockNamespace="scene" group="Tilemap Operations" blockGap=8
     //% help=tiles/place-on-tile
@@ -759,6 +760,7 @@ namespace tiles {
      * @param tile
      */
     //% blockId=mapplaceonrandomtile block="place $sprite=variables_get(mySprite) on top of random $tile"
+    //% sprite.defl=mySprite
     //% tile.shadow=tileset_tile_picker
     //% tile.decompileIndirectFixedInstances=true
     //% blockNamespace="scene" group="Tilemap Operations"

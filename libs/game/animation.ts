@@ -583,6 +583,7 @@ namespace animation {
      */
     //% blockId=run_image_animation
     //% block="animate $sprite=variables_get(mySprite) frames $frames=animation_editor interval (ms) $frameInterval=timePicker loop $loop=toggleOnOff"
+    //% sprite.defl=mySprite
     //% group="Animate"
     //% weight=100
     //% help=animation/run-image-animation
@@ -599,6 +600,7 @@ namespace animation {
      */
     //% blockId=run_movement_animation
     //% block="animate $sprite=variables_get(mySprite) with $pathString=animation_path for (ms) $duration=timePicker loop $loop=toggleOnOff"
+    //% sprite.defl=mySprite
     //% duration.defl=2000
     //% weight=80
     //% group="Animate"
@@ -625,6 +627,7 @@ namespace animation {
      */
     //% blockId=stop_animations
     //% block="stop %type animations on %sprite=variables_get(mySprite)"
+    //% sprite.defl=mySprite
     //% group="Animate"
     //% weight=60
     //% help=animation/stop-animation
