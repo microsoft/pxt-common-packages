@@ -767,6 +767,7 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Overlaps"
     //% blockId=spriteoverlapswith block="%sprite(mySprite) overlaps with %other=variables_get(otherSprite)"
+    //% other.defl=otherSprite
     //% help=sprites/sprite/overlaps-with
     //% weight=90
     overlapsWith(other: Sprite): boolean {
@@ -1015,6 +1016,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" weight=10
     //% blockId=spriteFollowOtherSprite
     //% block="set %sprite(myEnemy) follow %target=variables_get(mySprite) || with speed %speed"
+    //% target.defl=mySprite
     //% help=sprites/sprite/follow
     follow(target: Sprite, speed = 100, turnRate = 400) {
         if (target === this) return;

@@ -155,6 +155,7 @@ namespace animation {
      */
     //% blockId=attachAnimation
     //% block="attach animation $set=variables_get(anim) to sprite $sprite=variables_get(mySprite)"
+    //% sprite.defl=mySprite
     //% group="Advanced"
     //% weight=30
     //% help=animation/attach-animation
@@ -167,6 +168,7 @@ namespace animation {
      */
     //% blockId=setAction
     //% block="activate animation $action=action_enum_shim on $sprite=variables_get(mySprite)"
+    //% sprite.defl=mySprite
     //% group="Advanced"
     //% weight=20
     //% help=animation/set-action
