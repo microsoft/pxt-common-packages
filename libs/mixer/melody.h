@@ -107,7 +107,9 @@ class WSynthesizer
         ManagedBuffer data(512);
         auto dp = (int16_t *)data.getBytes();
         auto sz = 512 / 2;
+        // target_disable_irq();
         int r = fillSamples(dp, sz);
+        // target_enable_irq();
 #if defined(NRF52_SERIES)
         int mul = out.dac.getSampleRange();
 #endif
