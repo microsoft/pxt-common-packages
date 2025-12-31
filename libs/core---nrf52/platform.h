@@ -20,7 +20,7 @@
 #define DEV_NUM_PINS 32
 #endif
 
-#define DEV_PWM_PINS 0x0000ffffffffULL // all pins are PWM pins it seems
+#define DEV_PWM_PINS 0xffffffffffffffffULL // all pins are PWM pins it seems
 #define DEV_AIN_PINS 0x0000f000001fULL
 
 // Codal doesn't yet distinguish between PWM and AIN
