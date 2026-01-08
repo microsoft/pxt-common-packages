@@ -476,9 +476,13 @@ int redirectSamples(int16_t *dst, int numsamples, int samplerate) {
     auto snd = music::getWSynthesizer();
     snd->upstream = NULL; // disconnect from regular playback mechanism
     snd->sampleRate = samplerate;
-    // target_disable_irq();
+#if defined(NRF52_SERIES)
+    target_disable_irq();
     int r = snd->fillSamples(dst, numsamples);
-    // target_enable_irq();
+    target_enable_irq();
+#else
+    int r = snd->fillSamples(dst, numsamples);
+#endif
     return r;
 }
 
