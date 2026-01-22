@@ -139,6 +139,7 @@ namespace scene {
      */
     //% blockId=camerafollow block="camera follow sprite %sprite=variables_get(mySprite)"
     //% group="Camera"
+    //% sprite.defl=mySprite
     //% help=scene/camera-follow-sprite
     //% weight=100
     export function cameraFollowSprite(sprite: Sprite) {

@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write  # Required for OIDC
 
 jobs:
   filter-vtags:
@@ -36,7 +37,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@main
         with:
-          node-version: 18.x
+          node-version: 20.x
+
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: npm install
         run: |
@@ -66,7 +70,10 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@main
         with:
-          node-version: 18.x
+          node-version: 20.x
+
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: npm install
         run: |
@@ -78,7 +85,7 @@ jobs:
         run: |
           pxt ci --publish
         env:
-          NPM_ACCESS_TOKEN: ${{ secrets.NPM_ACCESS_TOKEN }}
+          NPM_PUBLISH: true
           CHROME_BIN: chromium-browser
           DISPLAY: :99.0
           CI: true

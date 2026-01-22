@@ -10,7 +10,7 @@ namespace light {
      * @param rgb RGB color of the LED
      */
     //% blockId="builtin_neopixel_set_strip_color" block="set all pixels to %rgb=colorNumberPicker"
-    //% help="light/set-all"
+    //% help="light/neopixelstrip/set-all"
     //% weight=79 blockGap=8
     export function setAll(rgb: number) {
         light.pixels.setAll(rgb);
@@ -32,7 +32,7 @@ namespace light {
      */
     //% blockId="builtin_neopixel_clear" block="clear"
     //% parts="neopixel"
-    //% help="light/clear"
+    //% help="light/neopixelstrip/clear"
     //% group="More" weight=9 blockGap=8
     export function clear() {
         light.pixels.clear();
@@ -45,7 +45,7 @@ namespace light {
      * @param high maximum value, 0 to autoscale
      */
     //% blockId=builtin_neopixel_show_bar_graph block="graph %value||up to %high" icon="\uf080"
-    //% help=light/graph blockGap=8
+    //% help=light/neopixelstrip/graph blockGap=8
     //% weight=10
     export function graph(value: number, high?: number): void {
         light.pixels.graph(value, high);
@@ -58,7 +58,7 @@ namespace light {
      * @param color RGB color of the LED
      */
     //% blockId="builtin_neopixel_set_pixel_color" block="set pixel color at %pixeloffset|to %rgb=colorNumberPicker"
-    //% help="light/set-pixel-color"
+    //% help="light/neopixelstrip/set-pixel-color"
     //% group="More" weight=89 blockGap=8
     export function setPixelColor(pixeloffset: number, color: number): void {
         light.pixels.setPixelColor(pixeloffset, color);
@@ -69,7 +69,7 @@ namespace light {
      * @param pixeloffset position of the NeoPixel in the strip
      */
     //% blockId="builtin_neopixel_pixel_color" block="pixel color at %pixeloffset"
-    //% help="light/pixel-color"
+    //% help="light/neopixelstrip/pixel-color"
     //% group="More" weight=88
     export function pixelColor(pixeloffset: number): number {
         return light.pixels.pixelColor(pixeloffset);
@@ -81,7 +81,7 @@ namespace light {
      */
     //% blockId="builtin_neopixel_set_brightness" block="set brightness %brightness"
     //% brightness.min=0 brightness.max=255
-    //% help="light/set-brightness"
+    //% help="light/neopixelstrip/set-brightness"
     //% weight=2 blockGap=8
     export function setBrightness(brightness: number): void {
         light.pixels.setBrightness(brightness);
@@ -92,7 +92,7 @@ namespace light {
      * @param steps number of steps (lights) to move, eg: 1
      */
     //% blockId=builtin_neophoton_fd block="photon forward by %steps"
-    //% help="light/photon-forward"
+    //% help="light/neopixelstrip/photon-forward"
     //% group="Photon" weight=41 blockGap=8
     export function photonForward(steps: number) {
         light.pixels.photonForward(steps);
@@ -101,7 +101,7 @@ namespace light {
          * Switch the direction of the photon pulse.
          */
     //% blockId=builtin_neophoton_flip block="photon flip"
-    //% help="light/photon-flip"
+    //% help="light/neopixelstrip/photon-flip"
     //% parts="neopixel"
     //% group="Photon" weight=40 blockGap=8
     export function photonFlip() {
@@ -114,7 +114,7 @@ namespace light {
      * @param index index of the light, if out of bound, the index is wrapped
      */
     //% blockId=builtin_light_photon_set_position block="photon set position %index"
-    //% help="light/set-photon-position"
+    //% help="light/neopixelstrip/set-photon-position"
     //% parts="neopixel"
     //% group="Photon" weight=39 blockGap=8
     export function setPhotonPosition(index: number) {
@@ -126,7 +126,7 @@ namespace light {
      * @param hue the color hue of the photon
      */
     //% blockId=builtin_neophoton_set_pen_hue block="photon set pen hue %hue=colorWheelHsvPicker"
-    //% help="light/set-photon-pen-hue"
+    //% help="light/neopixelstrip/set-photon-pen-hue"
     //% group="Photon" weight=39 blockGap=8
     export function setPhotonPenHue(hue: number) {
         light.pixels.setPhotonPenHue(hue);
@@ -137,7 +137,7 @@ namespace light {
      * @param mode the desired mode
      */
     //% blockId=builtin_neophoton_set_photon block="photon %mode"
-    //% help="light/set-photon-mode"
+    //% help="light/neopixelstrip/set-photon-mode"
     //% group="Photon" weight=38
     export function setPhotonMode(mode: PhotonMode) {
         light.pixels.setPhotonMode(mode);
@@ -149,7 +149,7 @@ namespace light {
      * @param duration the duration to run in milliseconds, eg: 500
      */
     //% blockId=builtin_neopixel_show_animation block="show animation %animation=light_animation_picker|for %duration=timePicker|ms"
-    //% help="light/show-animation" blockGap=8
+    //% help="light/neopixelstrip/show-animation" blockGap=8
     //% weight=81
     export function showAnimation(animation: NeoPixelAnimation, duration: number) {
         light.pixels.showAnimation(animation, duration);
@@ -160,7 +160,7 @@ namespace light {
       * @param animation the animation to run, eg: light.rainbowAnimation
       */
     //% blockId=builtin_neopixel_show_animation_frame block="show frame of %animation=light_animation_picker|animation"
-    //% help="light/show-animation-frame"
+    //% help="light/neopixelstrip/show-animation-frame"
     //% group="More" weight=24 blockGap=8
     export function showAnimationFrame(animation: NeoPixelAnimation) {
         light.pixels.showAnimationFrame(animation);
@@ -170,7 +170,7 @@ namespace light {
      * Stop the current animation and any other animations ready to show.
      */
     //% blockId=builtin_neopixel_stop_all_animations block="stop all animations"
-    //% help="light/stop-all-animations"
+    //% help="light/neopixelstrip/stop-all-animations"
     //% group="More" weight=23
     export function stopAllAnimations() {
         light.pixels.stopAllAnimations();
