@@ -1103,6 +1103,17 @@ class Sprite extends sprites.BaseSprite {
         }
     }
 
+    /**
+     * Stop this sprite from following any target sprite.
+     */
+    //% group="Physics" weight=9
+    //% blockId=spriteUnfollow
+    //% block="set %sprite(myEnemy) unfollow"
+    //% help=sprites/sprite/unfollow
+    unfollow() {
+        this.follow(null, 0);
+    }
+
     setScaleCore(sx?: number, sy?: number, anchor?: ScaleAnchor, proportional?: boolean): void {
         anchor = anchor || ScaleAnchor.Middle;
 
