@@ -63,4 +63,5 @@ game.onUpdateInterval(1000, function () {
 
 ## See also
 
+[unfollow](/reference/sprites/sprite/unfollow),
 [overlaps with](/reference/sprites/sprite/overlaps-with)
