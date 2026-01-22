@@ -125,6 +125,7 @@ class WDisplay {
         screenBuf = (uint8_t *)app_alloc(sz / 2 + 20);
 
         lastStatus = NULL;
+        // shouldn't this be registerGCPtr?
         registerGC((TValue *)&lastStatus);
         inUpdate = false;
     }
@@ -310,7 +311,8 @@ void updateScreenStatusBar(Image_ img) {
     auto display = getWDisplay();
     if (!display)
         return;
-
+    if (display->inUpdate)
+        return;
     if (!img)
         return;
     display->lastStatus = img;
@@ -359,9 +361,8 @@ void updateScreen(Image_ img) {
         auto barHeight = display->height - display->displayHeight;
         if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
             target_panic(PANIC_SCREEN_ERROR);
-        memcpy(display->screenBuf, img->pix(), img->pixLength());
         display->setAddrStatus();
-        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
+        display->sendIndexedImage(img, img->width(), img->height(), NULL);
         display->waitForSendDone();
         display->setAddrMain();
         display->lastStatus = NULL;
