@@ -55,7 +55,7 @@ namespace SpriteKind {
 }
 ```
 
-During the game, if you need a sprite to change to a different kind, say a ``Planet`` becomes an ``Asteriod``, you just set the new kind with **setKind**.
+During the game, if you need a sprite to change to a different kind, say a ``Planet`` becomes an ``Asteroid``, you just set the new kind with **setKind**.
 
 ## Example #example
 
