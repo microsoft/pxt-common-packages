@@ -1109,6 +1109,7 @@ class Sprite extends sprites.BaseSprite {
     //% group="Physics" weight=9
     //% blockId=spriteUnfollow
     //% block="set $sprite(myEnemy) unfollow"
+    //% sprite.shadow=variables_get
     //% sprite.defl=myEnemy
     //% help=sprites/sprite/unfollow
     unfollow() {
