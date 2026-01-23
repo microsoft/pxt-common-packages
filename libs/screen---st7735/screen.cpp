@@ -122,7 +122,7 @@ class WDisplay {
         setAddrMain();
         DMESG("screen: %d x %d, off=%d,%d", width, height, offX, offY);
         int sz = doubleSize ? (width >> 1) * (height >> 1) : width * height;
-        screenBuf = (uint8_t *)app_alloc(sz / 2 + 20);
+        screenBuf = (uint8_t *)app_alloc(sz >> 1 + 20);
 
         lastStatus = NULL;
         // shouldn't this be registerGCPtr?
@@ -355,7 +355,7 @@ void updateScreen(Image_ img) {
             if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
                 target_panic(PANIC_SCREEN_ERROR);
             // copy the status bar right after the main image
-            memcpy(display->screenBuf + (img->width() * display->displayHeight) / 2, img->pix(),
+            memcpy(display->screenBuf + (img->width() * display->displayHeight) >> 1, img->pix(),
                    img->pixLength());
             display->sendIndexedImage(display->screenBuf, img->width(),
                                       display->displayHeight + barHeight, palette);
