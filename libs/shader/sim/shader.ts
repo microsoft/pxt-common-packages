@@ -2,6 +2,8 @@
 
 namespace pxsim.ShaderMethods {
     export function _mergeImage(dst: RefImage, src: RefImage, xy: number) {
+        ImageMethods.typeCheck(dst);
+        ImageMethods.typeCheck(src);
         mergeImage(dst, src, pxsim.ImageMethods.XX(xy), pxsim.ImageMethods.YY(xy));
     }
 
@@ -19,6 +21,9 @@ namespace pxsim.ShaderMethods {
     }
 
     export function _mapImage(dst: RefImage, src: RefImage, xy: number, buf: RefBuffer) {
+        ImageMethods.typeCheck(dst);
+        ImageMethods.typeCheck(src);
+        BufferMethods.typeCheck(buf);
         mapImage(dst, src, pxsim.ImageMethods.XX(xy), pxsim.ImageMethods.YY(xy), buf);
     }
 
