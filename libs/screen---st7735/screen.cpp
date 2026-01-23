@@ -345,7 +345,7 @@ void updateScreen(Image_ img) {
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
         
-        if (display->doubleSize || !display->lastStatus) {
+        if (display->smart || display->doubleSize || !display->lastStatus) {
             display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
             display->waitForSendDone();
         } else {
