@@ -1108,7 +1108,8 @@ class Sprite extends sprites.BaseSprite {
      */
     //% group="Physics" weight=9
     //% blockId=spriteUnfollow
-    //% block="set %sprite(myEnemy) unfollow"
+    //% block="set $sprite(myEnemy) unfollow"
+    //% sprite.defl=myEnemy
     //% help=sprites/sprite/unfollow
     unfollow() {
         this.follow(null, 0);
