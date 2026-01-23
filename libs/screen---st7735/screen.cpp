@@ -296,6 +296,7 @@ void setupScreenStatusBar(int barHeight) {
         return;
     if (!display->doubleSize) {
         display->displayHeight = display->height - barHeight;
+        display->setAddrMain();
     }
 }
 
@@ -343,24 +344,23 @@ void updateScreen(Image_ img) {
         }
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
-        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
         
-        // if (display->doubleSize || !display->lastStatus)
-        //    ;
-        // else {
-        //     // not double size but have status bar
-        //     // add the display bar at the end
-        //     auto lastStatus = display->lastStatus;
-        //     auto barHeight = display->height - display->displayHeight;
-        //     if (lastStatus->bpp() != 4 || barHeight != lastStatus->height() || lastStatus->width() != display->width)
-        //         target_panic(PANIC_SCREEN_ERROR);
-        //     // copy the status bar right after the main image
-        //     memcpy(display->screenBuf + (lastStatus->width() * display->displayHeight) / 2, 
-        //            lastStatus->pix(),
-        //            lastStatus->pixLength());
-        //     display->sendIndexedImage(display->screenBuf, display->width,
-        //                               display->displayHeight + barHeight, palette);
-        // }
+        if (display->smart || display->doubleSize || !display->lastStatus) {
+           display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+        } else {
+            display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+            // not double size but have status bar
+            // add the display bar at the end
+            // auto lastStatus = display->lastStatus;
+            // auto barHeight = display->height - display->displayHeight;
+            // if (lastStatus->bpp() != 4 || barHeight != lastStatus->height() || lastStatus->width() != display->width)
+            //     target_panic(PANIC_SCREEN_ERROR);
+            // // copy the status bar right after the main image
+            // memcpy(display->screenBuf + (display->width * display->displayHeight) / 2, 
+            //        lastStatus->pix(),
+            //        lastStatus->pixLength());
+            // display->sendIndexedImage(display->screenBuf, display->width,display->height, palette);
+        }
         display->waitForSendDone();
         display->lastStatus = NULL;
     }
