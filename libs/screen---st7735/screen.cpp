@@ -296,7 +296,6 @@ void setupScreenStatusBar(int barHeight) {
         return;
     if (!display->doubleSize) {
         display->displayHeight = display->height - barHeight;
-        display->setAddrMain();
     }
 }
 
@@ -350,14 +349,15 @@ void updateScreen(Image_ img) {
         else {
             // not double size but have status bar
             // add the display bar at the end
-            img = display->lastStatus;
+            auto lastStatus = display->lastStatus;
             auto barHeight = display->height - display->displayHeight;
-            if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
+            if (lastStatus->bpp() != 4 || barHeight != lastStatus->height() || lastStatus->width() != display->width)
                 target_panic(PANIC_SCREEN_ERROR);
             // copy the status bar right after the main image
-            memcpy(display->screenBuf + (img->width() * display->displayHeight) >> 1, img->pix(),
-                   img->pixLength());
-            display->sendIndexedImage(display->screenBuf, img->width(),
+            memcpy(display->screenBuf + (lastStatus->width() * display->displayHeight) >> 1, 
+                   lastStatus->pix(),
+                   lastStatus->pixLength());
+            display->sendIndexedImage(display->screenBuf, display->width,
                                       display->displayHeight + barHeight, palette);
         }
         display->waitForSendDone();
