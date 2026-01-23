@@ -198,6 +198,23 @@ namespace helpers {
         _blitArgs[7] = hSrc | 0;
         _blitArgs[8] = transparent ? 1 : 0;
         _blitArgs[9] = check ? 1 : 0;
+        _blitArgs[10] = 0;
+        return _blit(img, src, _blitArgs);
+    }
+
+    export function iconBlit(img: Image, xDst: number, yDst: number, wDst: number, hDst: number, src: Image, xSrc: number, ySrc: number, wSrc: number, hSrc: number, transparent: boolean, check: boolean, color: number): boolean {
+        _blitArgs = _blitArgs || [];
+        _blitArgs[0] = xDst | 0;
+        _blitArgs[1] = yDst | 0;
+        _blitArgs[2] = wDst | 0;
+        _blitArgs[3] = hDst | 0;
+        _blitArgs[4] = xSrc | 0;
+        _blitArgs[5] = ySrc | 0;
+        _blitArgs[6] = wSrc | 0;
+        _blitArgs[7] = hSrc | 0;
+        _blitArgs[8] = transparent ? 1 : 0;
+        _blitArgs[9] = check ? 1 : 0;
+        _blitArgs[10] = color;
         return _blit(img, src, _blitArgs);
     }
 
