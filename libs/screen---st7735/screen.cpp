@@ -201,12 +201,6 @@ class WDisplay {
         return DISPLAY_TYPE_ST7735;
     }
 
-    void setAddrStatus() {
-        if (lcd)
-            lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
-        else
-            smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
-    }
     void setAddrMain() {
         if (lcd)
             lcd->setAddrWindow(offX, offY, width, displayHeight);
@@ -351,23 +345,24 @@ void updateScreen(Image_ img) {
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
 
-        // DMESG("send");
-        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
-    }
-
-    if (display->lastStatus && !display->doubleSize) {
+        if (display->doubleSize || !display->lastStatus)
+            display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+        else {
+            // not double size but have status bar
+            // add the display bar at the end
+            img = display->lastStatus;
+            auto barHeight = display->height - display->displayHeight;
+            if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
+                target_panic(PANIC_SCREEN_ERROR);
+            // copy the status bar right after the main image
+            memcpy(display->screenBuf + (img->width() * display->displayHeight) / 2, img->pix(),
+                   img->pixLength());
+            display->sendIndexedImage(display->screenBuf, img->width(),
+                                      display->displayHeight + barHeight, palette);
+        }
         display->waitForSendDone();
-        img = display->lastStatus;
-        auto barHeight = display->height - display->displayHeight;
-        if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
-            target_panic(PANIC_SCREEN_ERROR);
-        display->setAddrStatus();
-        display->sendIndexedImage(img, img->width(), img->height(), NULL);
-        display->waitForSendDone();
-        display->setAddrMain();
-        display->lastStatus = NULL;
     }
-
+    display->lastStatus = NULL;
     display->inUpdate = false;
 }
 
