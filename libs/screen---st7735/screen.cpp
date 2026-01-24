@@ -199,7 +199,6 @@ class WDisplay {
 
         return DISPLAY_TYPE_ST7735;
     }
-    
     void setAddrStatus() {
         if (lcd)
             lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
@@ -328,7 +327,7 @@ void updateScreen(Image_ img) {
 
     auto mult = display->doubleSize ? 2 : 1;
 
-  if (img) {
+    if (img) {
         if (img->bpp() != 4 || img->width() * mult != display->width ||
             img->height() * mult != display->displayHeight)
             target_panic(PANIC_SCREEN_ERROR);
