@@ -195,8 +195,7 @@ class WDisplay {
         }
 
         DMESG("config type: %d; cfg0=%x cfg1=%x", configId, *cfg0, *cfg1);
-
-        *cfg2 = 32; // Damn the torpedoes! 32MHz
+        *cfg2 = getConfig(CFG_CLOCK_SPEED, 32);
 
         return DISPLAY_TYPE_ST7735;
     }
@@ -296,7 +295,6 @@ void setupScreenStatusBar(int barHeight) {
         return;
     if (!display->doubleSize) {
         display->displayHeight = display->height - barHeight;
-        display->setAddrMain();
     }
 }
 
@@ -304,8 +302,6 @@ void setupScreenStatusBar(int barHeight) {
 void updateScreenStatusBar(Image_ img) {
     auto display = getWDisplay();
     if (!display)
-        return;
-    if (display->inUpdate)
         return;
     if (!img)
         return;
@@ -346,6 +342,7 @@ void updateScreen(Image_ img) {
         memcpy(display->screenBuf, img->pix(), img->pixLength());
         
         if (display->smart || display->doubleSize || !display->lastStatus) {
+            display->setAddrMain();
             display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
             display->waitForSendDone();
         } else {
@@ -357,6 +354,7 @@ void updateScreen(Image_ img) {
             memcpy(display->screenBuf + (display->width * display->displayHeight) / 2, 
                    lastStatus->pix(),
                    lastStatus->pixLength());
+            display->setAddrMain();
             display->sendIndexedImage(display->screenBuf, display->width,display->height, palette);
             display->waitForSendDone();
             display->lastStatus = NULL;
