@@ -199,18 +199,18 @@ class WDisplay {
 
         return DISPLAY_TYPE_ST7735;
     }
-
-    void setAddrMain() {
-        if (lcd)
-            lcd->setAddrWindow(offX, offY, width, displayHeight);
-        else
-            smart->setAddrWindow(offX, offY, width, displayHeight);
-    }
+    
     void setAddrStatus() {
         if (lcd)
             lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
         else
             smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+    }
+    void setAddrMain() {
+        if (lcd)
+            lcd->setAddrWindow(offX, offY, width, displayHeight);
+        else
+            smart->setAddrWindow(offX, offY, width, displayHeight);
     }
     void waitForSendDone() {
         if (lcd)
