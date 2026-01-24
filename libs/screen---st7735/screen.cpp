@@ -301,6 +301,7 @@ void setupScreenStatusBar(int barHeight) {
         return;
     if (!display->doubleSize) {
         display->displayHeight = display->height - barHeight;
+        display->setAddrMain();
     }
 }
 
