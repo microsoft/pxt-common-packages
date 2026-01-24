@@ -206,6 +206,12 @@ class WDisplay {
         else
             smart->setAddrWindow(offX, offY, width, displayHeight);
     }
+    void setAddrStatus() {
+        if (lcd)
+            lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+        else
+            smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+    }
     void waitForSendDone() {
         if (lcd)
             lcd->waitForSendDone();
@@ -321,7 +327,7 @@ void updateScreen(Image_ img) {
 
     auto mult = display->doubleSize ? 2 : 1;
 
-    if (img) {
+  if (img) {
         if (img->bpp() != 4 || img->width() * mult != display->width ||
             img->height() * mult != display->displayHeight)
             target_panic(PANIC_SCREEN_ERROR);
@@ -340,26 +346,25 @@ void updateScreen(Image_ img) {
         }
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
-        
-        if (display->smart || display->doubleSize || !display->lastStatus) {
-            display->setAddrMain();
-            display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
-            display->waitForSendDone();
-        } else {
-            auto lastStatus = display->lastStatus;
-            auto barHeight = display->height - display->displayHeight;
-            if (lastStatus->bpp() != 4 || barHeight != lastStatus->height() || lastStatus->width() != display->width)
-                target_panic(PANIC_SCREEN_ERROR);
-            // copy the status bar right after the main image
-            memcpy(display->screenBuf + (display->width * display->displayHeight) / 2, 
-                   lastStatus->pix(),
-                   lastStatus->pixLength());
-            display->setAddrMain();
-            display->sendIndexedImage(display->screenBuf, display->width,display->height, palette);
-            display->waitForSendDone();
-            display->lastStatus = NULL;
-        }
+
+        // DMESG("send");
+        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
     }
+
+    if (display->lastStatus && !display->doubleSize && !display->smart) {
+        display->waitForSendDone();
+        img = display->lastStatus;
+        auto barHeight = display->height - display->displayHeight;
+        if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
+            target_panic(PANIC_SCREEN_ERROR);
+        memcpy(display->screenBuf, img->pix(), img->pixLength());
+        display->setAddrStatus();
+        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
+        display->waitForSendDone();
+        display->setAddrMain();
+        display->lastStatus = NULL;
+    }
+
     display->inUpdate = false;
 }
 
