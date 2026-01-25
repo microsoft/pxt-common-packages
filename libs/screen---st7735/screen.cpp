@@ -201,7 +201,7 @@ class WDisplay {
     }
     void setAddrMain() {
         if (lcd)
-            lcd->setAddrWindow(offX, offY, width, doubleSize ? displayHeight : height);
+            lcd->setAddrWindow(offX, offY, width, doubleSize ? displayHeight : displayHeight);
         else
             smart->setAddrWindow(offX, offY, width, displayHeight);
     }
@@ -294,6 +294,7 @@ void setupScreenStatusBar(int barHeight) {
         return;
     if (!display->doubleSize) {
         display->displayHeight = display->height - barHeight;
+        display->setAddrMain();
     }
 }
 
@@ -340,23 +341,22 @@ void updateScreen(Image_ img) {
 
         memcpy(display->screenBuf, img->pix(), img->pixLength());
 
-        display->setAddrMain();
         if (display->doubleSize || display->smart) {
             display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
             display->waitForSendDone();
         } else {
             auto barHeight = display->height - display->displayHeight;
-            if (display->lastStatus) {
-                img = display->lastStatus;
-                if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
-                    target_panic(PANIC_SCREEN_ERROR);
-                memcpy(display->screenBuf + (display->displayHeight * display->width) / 2, 
-                    img->pix(), img->pixLength());
-            } else {
-                memset(display->screenBuf + (display->displayHeight * display->width) / 2, 0,
-                       (barHeight * display->width) / 2);
-            }
-            display->sendIndexedImage(display->screenBuf, display->width, display->height, palette);
+            // if (display->lastStatus) {
+            //     img = display->lastStatus;
+            //     if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
+            //         target_panic(PANIC_SCREEN_ERROR);
+            //     memcpy(display->screenBuf + (display->displayHeight * display->width) / 2, 
+            //         img->pix(), img->pixLength());
+            // } else {
+            //     memset(display->screenBuf + (display->displayHeight * display->width) / 2, 0,
+            //            (barHeight * display->width) / 2);
+            // }
+            display->sendIndexedImage(display->screenBuf, display->width, display->displayHeight, palette);
             display->waitForSendDone();
         }
     }
