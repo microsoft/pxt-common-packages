@@ -201,7 +201,7 @@ class WDisplay {
     }
     void setAddrMain() {
         if (lcd)
-            lcd->setAddrWindow(offX, offY, width, doubleSize ? displayHeight : displayHeight);
+            lcd->setAddrWindow(offX, offY, width, doubleSize ? displayHeight : height);
         else
             smart->setAddrWindow(offX, offY, width, displayHeight);
     }
@@ -339,24 +339,32 @@ void updateScreen(Image_ img) {
                 palette = NULL;
         }
 
-        memcpy(display->screenBuf, img->pix(), img->pixLength());
-
         if (display->doubleSize || display->smart) {
+            memcpy(display->screenBuf, img->pix(), img->pixLength());
             display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
             display->waitForSendDone();
         } else {
+            if (display->lastStatus) {
+                if (display->lastStatus->bpp() != 4 || display->lastStatus->width() != display->width ||
+                    display->lastStatus->height() != (display->height - display->displayHeight))
+                    target_panic(PANIC_SCREEN_ERROR);
+            }
             auto barHeight = display->height - display->displayHeight;
-            // if (display->lastStatus) {
-            //     img = display->lastStatus;
-            //     if (img->bpp() != 4 || barHeight != img->height() || img->width() != display->width)
-            //         target_panic(PANIC_SCREEN_ERROR);
-            //     memcpy(display->screenBuf + (display->displayHeight * display->width) / 2, 
-            //         img->pix(), img->pixLength());
-            // } else {
-            //     memset(display->screenBuf + (display->displayHeight * display->width) / 2, 0,
-            //            (barHeight * display->width) / 2);
-            // }
-            display->sendIndexedImage(display->screenBuf, display->width, display->displayHeight, palette);
+            // we need to interleave the display and status, since we are in column major order
+            auto dst = display->screenBuf;
+            for (int x = 0; x < display->width; ++x) {
+                auto src = img->pix(x, 0);
+                memcpy(dst, src, display->displayHeight / 2);
+                dst += display->displayHeight / 2;
+                if (display->lastStatus) {
+                    src = display->lastStatus->pix(x, 0);
+                    memcpy(dst, src, barHeight / 2);
+                } else {
+                    memset(dst, 0, barHeight / 2);
+                }
+                dst += barHeight / 2;
+            }
+            display->sendIndexedImage(display->screenBuf, display->width, display->height, palette);
             display->waitForSendDone();
         }
     }
