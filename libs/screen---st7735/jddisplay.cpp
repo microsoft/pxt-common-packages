@@ -85,6 +85,8 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     avgFrameTime = 26300; // start with a reasonable default
     lastFrameTimestamp = 0;
 
+    EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &JDDisplay::sendDone);
+
     // Send data when the DC pin is set high:
     flow->getDigitalValue(PullMode::Down);
     EventModel::defaultEventBus->listen(flow->id, DEVICE_PIN_EVENT_ON_EDGE, this,
@@ -92,13 +94,13 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     flow->eventOn(DEVICE_PIN_EVT_RISE);
 }
 
+void JDDisplay::waitForSendDone() {
+    if (inProgressLock.getLocked() < 1)
+        fiber_wait_for_event(DEVICE_ID_DISPLAY, 4242);
+}
 
-/**
-* Deprecated; no longer neccessary. sendIndexedImage handles this.
-*/
-void JDDisplay::waitForSendDone() {}
-
-void JDDisplay::sendDone(JDDisplay* jdd) {
+void JDDisplay::sendDone(Event) {
+    Event(DEVICE_ID_DISPLAY, 4242);
     inProgressLock.notify();
 }
 
@@ -314,7 +316,7 @@ void JDDisplay::step() {
         }
         flushSend();
     } else {
-        sendDone(this);
+        Event(DEVICE_ID_DISPLAY, 4243);
     }
 }
 
