@@ -95,7 +95,7 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
 }
 
 void JDDisplay::waitForSendDone() {
-    if (inProgressLock.getLocked() < 1)
+    if (inProgressLock.getLockedCount() < 1)
         fiber_wait_for_event(DEVICE_ID_DISPLAY, 4242);
 }
 
