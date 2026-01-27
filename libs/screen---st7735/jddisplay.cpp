@@ -72,9 +72,9 @@ static void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned 
     return dst;
 }
 
-JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow), inProgressLock(1) {
-    stepWaiting = false;
+JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow) {
     inProgress = false;
+    stepWaiting = false;
     displayServiceNum = 0;
     controlsStartServiceNum = 0;
     controlsEndServiceNum = 0;
@@ -86,7 +86,8 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     avgFrameTime = 26300; // start with a reasonable default
     lastFrameTimestamp = 0;
 
-    // Send data when the DC pin is set high:
+    EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &JDDisplay::sendDone);
+
     flow->getDigitalValue(PullMode::Down);
     EventModel::defaultEventBus->listen(flow->id, DEVICE_PIN_EVENT_ON_EDGE, this,
                                         &JDDisplay::onFlowHi, MESSAGE_BUS_LISTENER_IMMEDIATE);
@@ -94,14 +95,13 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
 }
 
 void JDDisplay::waitForSendDone() {
-    while(inProgress) {
-        fiber_sleep(2);
-    }   
+    if (inProgress)
+        fiber_wait_for_event(DEVICE_ID_DISPLAY, 4242);
 }
 
-void JDDisplay::sendDone() {
+void JDDisplay::sendDone(Event) {
     inProgress = false;
-    inProgressLock.notify();
+    Event(DEVICE_ID_DISPLAY, 4242);
 }
 
 void *JDDisplay::queuePkt(uint32_t service_num, uint32_t service_cmd, uint32_t size) {
@@ -316,7 +316,9 @@ void JDDisplay::step() {
         }
         flushSend();
     } else {
-        sendDone();
+        // trigger sendDone(), which executes outside of IRQ context, so there
+        // is no race with waitForSendDone
+        Event(DEVICE_ID_DISPLAY, 4243);
     }
 }
 
@@ -326,11 +328,12 @@ int JDDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned hei
         target_panic(PANIC_SCREEN_ERROR);
     if (width != addr.width || height != addr.height)
         target_panic(PANIC_SCREEN_ERROR);
+    if (inProgress)
+        target_panic(PANIC_SCREEN_ERROR);
 
     if (addr.y && addr.y >= screenHeight)
         return 0; // out of range
 
-    inProgressLock.wait();
     inProgress = true;
 
     int numcols = JD_SERIAL_PAYLOAD_SIZE / (height / 2);
