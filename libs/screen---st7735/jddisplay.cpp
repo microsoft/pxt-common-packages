@@ -1,3 +1,5 @@
+#ifdef MICROBIT_CODAL
+
 #include "pxt.h"
 #include "jddisplay.h"
 
@@ -349,3 +351,5 @@ int JDDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned hei
 }
 
 } // namespace pxt
+
+#endif

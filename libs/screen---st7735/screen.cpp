@@ -15,8 +15,11 @@ class WDisplay {
   public:
     ScreenIO *io;
     ST7735 *lcd;
+#ifdef MICROBIT_CODAL
     JDDisplay *smart;
-
+#else
+    void* smart;
+#endif
     uint32_t currPalette[16];
     bool newPalette;
     bool inUpdate;
@@ -79,9 +82,11 @@ class WDisplay {
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
             lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
+#ifdef MICROBIT_CODAL
         } else if (dispTp == DISPLAY_TYPE_SMART) {
             lcd = NULL;
             smart = new JDDisplay(spi, LOOKUP_PIN(DISPLAY_CS), LOOKUP_PIN(DISPLAY_DC));
+#endif
         } else
             target_panic(PANIC_SCREEN_ERROR);
 
@@ -210,26 +215,36 @@ class WDisplay {
     void setAddrStatus() {
         if (lcd)
             lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+#ifdef MICROBIT_CODAL
         else
             smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+#endif
     }
     void setAddrMain() {
         if (lcd)
             lcd->setAddrWindow(offX, offY, width, displayHeight);
+#ifdef MICROBIT_CODAL
         else
             smart->setAddrWindow(offX, offY, width, displayHeight);
+#endif
     }
     void waitForSendDone() {
         if (lcd)
             lcd->waitForSendDone();
+#ifdef MICROBIT_CODAL
         else
             smart->waitForSendDone();
+#endif
     }
     int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette) {
         if (lcd)
             return lcd->sendIndexedImage(src, width, height, palette);
+#ifdef MICROBIT_CODAL
         else
             return smart->sendIndexedImage(src, width, height, palette);
+#else
+        return 0;
+#endif
     }
 };
 
@@ -265,7 +280,9 @@ void setScreenBrightness(int level) {
 
     auto display = getWDisplay();
     if (display && display->smart) {
+#ifdef MICROBIT_CODAL
         display->smart->brightness = level;
+#endif
         return;
     }
 

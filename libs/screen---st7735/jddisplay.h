@@ -1,5 +1,8 @@
+#ifdef MICROBIT_CODAL
+
 #ifndef __JDDISPLAY_H
 #define __JDDISPLAY_H
+
 
 #include "pxt.h"
 #include "jdprotocol.h"
@@ -62,4 +65,5 @@ class JDDisplay {
 
 } // namespace pxt
 
+#endif
 #endif
