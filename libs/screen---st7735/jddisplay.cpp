@@ -74,6 +74,7 @@ static void *jd_push_in_frame(jd_frame_t *frame, unsigned service_num, unsigned 
 
 JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow), inProgressLock(1) {
     stepWaiting = false;
+    inProgress = false;
     displayServiceNum = 0;
     controlsStartServiceNum = 0;
     controlsEndServiceNum = 0;
@@ -85,8 +86,6 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
     avgFrameTime = 26300; // start with a reasonable default
     lastFrameTimestamp = 0;
 
-    EventModel::defaultEventBus->listen(DEVICE_ID_DISPLAY, 4243, this, &JDDisplay::sendDone);
-
     // Send data when the DC pin is set high:
     flow->getDigitalValue(PullMode::Down);
     EventModel::defaultEventBus->listen(flow->id, DEVICE_PIN_EVENT_ON_EDGE, this,
@@ -95,12 +94,13 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
 }
 
 void JDDisplay::waitForSendDone() {
-    if (inProgressLock.getLockedCount() < 1)
-        fiber_wait_for_event(DEVICE_ID_DISPLAY, 4242);
+    while(inProgress) {
+        fiber_sleep(5);
+    }   
 }
 
-void JDDisplay::sendDone(Event) {
-    Event(DEVICE_ID_DISPLAY, 4242);
+void JDDisplay::sendDone() {
+    inProgress = false;
     inProgressLock.notify();
 }
 
@@ -316,7 +316,7 @@ void JDDisplay::step() {
         }
         flushSend();
     } else {
-        Event(DEVICE_ID_DISPLAY, 4243);
+        sendDone();
     }
 }
 
@@ -331,6 +331,7 @@ int JDDisplay::sendIndexedImage(const uint8_t *src, unsigned width, unsigned hei
         return 0; // out of range
 
     inProgressLock.wait();
+    inProgress = true;
 
     int numcols = JD_SERIAL_PAYLOAD_SIZE / (height / 2);
 
