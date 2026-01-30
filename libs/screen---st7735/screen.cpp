@@ -56,13 +56,13 @@ class WDisplay {
 
         SPI *spi = NULL;
         if (conn == 0) {
-#ifdef MICROBIT_CODAL 
+#ifdef MICROBIT_CODAL
             NRF52Pin* mosi = LOOKUP_PIN(DISPLAY_MOSI);
             NRF52Pin* sck = LOOKUP_PIN(DISPLAY_SCK);
             mosi->setHighDrive(true);
             sck->setHighDrive(true);
             spi = new CODAL_SPI(*mosi, *miso, *sck);
-#else 
+#else
             spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *miso, *LOOKUP_PIN(DISPLAY_SCK));
 #endif
             io = new SPIScreenIO(*spi);
