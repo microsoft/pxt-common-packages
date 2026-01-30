@@ -221,12 +221,26 @@ int WSynthesizer::updateQueues() {
     }
 }
 
+bool WSynthesizer::nothingToPlay() {
+    for (unsigned i = 0; i < MAX_SOUNDS; ++i) {
+        if (playingSounds[i].sound != NULL)
+            return false;
+    }
+    return true;
+}
+
 int WSynthesizer::fillSamples(int16_t *dst, int numsamples) {
     if (numsamples <= 0)
         return 1;
 
     int timeLeft = updateQueues();
     int res = waiting != NULL;
+
+    if (nothingToPlay()) {
+        // currSample += numsamples;
+        memset(dst, 511, numsamples * 2);
+        return 1;
+    }
 
     // if there's a pending sound to be started somewhere during numsamples,
     // split the call into two

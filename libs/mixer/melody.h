@@ -81,6 +81,7 @@ class WSynthesizer
 
     int fillSamples(int16_t *dst, int numsamples);
     int updateQueues();
+    bool nothingToPlay();
 
     WSynthesizer();
     virtual ~WSynthesizer() {}
@@ -120,12 +121,15 @@ class WSynthesizer
 #endif
             dp++;
         }
-        target_enable_irq();
+
         if (!r) {
             active = false;
             // return empty - nothing left to play
-            return ManagedBuffer();
+            data.fill(0);
+            target_enable_irq();
+            return data;
         }
+        target_enable_irq();
         pokeUpstream();
         return data;
     }
