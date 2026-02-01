@@ -1,4 +1,4 @@
-#ifdef ARCADE_MBIT_CODAL
+#ifdef MICROBIT_CODAL
 
 #ifndef __JDDISPLAY_H
 #define __JDDISPLAY_H
