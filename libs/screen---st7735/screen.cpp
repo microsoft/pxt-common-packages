@@ -15,7 +15,7 @@ class WDisplay {
   public:
     ScreenIO *io;
     ST7735 *lcd;
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
     JDDisplay *smart;
 #else
     void* smart;
@@ -56,7 +56,7 @@ class WDisplay {
 
         SPI *spi = NULL;
         if (conn == 0) {
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
             NRF52Pin* mosi = LOOKUP_PIN(DISPLAY_MOSI);
             NRF52Pin* sck = LOOKUP_PIN(DISPLAY_SCK);
             mosi->setHighDrive(true);
@@ -82,7 +82,7 @@ class WDisplay {
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
             lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
         } else if (dispTp == DISPLAY_TYPE_SMART) {
             lcd = NULL;
             smart = new JDDisplay(spi, LOOKUP_PIN(DISPLAY_CS), LOOKUP_PIN(DISPLAY_DC));
@@ -215,7 +215,7 @@ class WDisplay {
     void setAddrStatus() {
         if (lcd)
             lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
         else
             smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
 #endif
@@ -223,7 +223,7 @@ class WDisplay {
     void setAddrMain() {
         if (lcd)
             lcd->setAddrWindow(offX, offY, width, displayHeight);
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
         else
             smart->setAddrWindow(offX, offY, width, displayHeight);
 #endif
@@ -231,7 +231,7 @@ class WDisplay {
     void waitForSendDone() {
         if (lcd)
             lcd->waitForSendDone();
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
         else
             smart->waitForSendDone();
 #endif
@@ -239,7 +239,7 @@ class WDisplay {
     int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette) {
         if (lcd)
             return lcd->sendIndexedImage(src, width, height, palette);
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
         else
             return smart->sendIndexedImage(src, width, height, palette);
 #else
@@ -280,7 +280,7 @@ void setScreenBrightness(int level) {
 
     auto display = getWDisplay();
     if (display && display->smart) {
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
         display->smart->brightness = level;
 #endif
         return;

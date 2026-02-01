@@ -1,4 +1,4 @@
-#ifdef MICROBIT_CODAL
+#ifdef ARCADE_MBIT_CODAL
 
 #include "pxt.h"
 #include "jddisplay.h"
