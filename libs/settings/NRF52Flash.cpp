@@ -23,7 +23,7 @@ static void nvmc_event_handler(uint32_t sys_evt, void *)
 
 NRF_SDH_SOC_OBSERVER(nrfflash_soc_observer, 0, nvmc_event_handler, NULL);
 
-#ifndef MICROBIT_CODAL
+#if !(defined(MICROBIT_CODAL) || defined(ARCADE_MBIT_CODAL))
 bool ble_running()
 {
     uint8_t t = 0;

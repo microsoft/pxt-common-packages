@@ -1162,10 +1162,10 @@ bool removeElement(RefCollection *c, TValue x);
 // can be patched with the right vtable.
 //
 
-#ifndef MICROBIT_CODAL
+#if !defined(MICROBIT_CODAL) && !defined(ARCADE_MBIT_CODAL)
 #define FLASH_TOP 0x00000000
 #else
-#if MICROBIT_CODAL
+#if defined(MICROBIT_CODAL) || defined(ARCADE_MBIT_CODAL)
 #if MICROBIT_TOP_OF_FLASH
 #define FLASH_TOP MICROBIT_TOP_OF_FLASH
 #else
