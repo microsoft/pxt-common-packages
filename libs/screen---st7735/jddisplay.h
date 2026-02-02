@@ -59,7 +59,6 @@ class JDDisplay {
         addr.height = h;
     }
     void waitForSendDone();
-
     int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette);
 };
 
