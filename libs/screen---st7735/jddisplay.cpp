@@ -97,7 +97,7 @@ JDDisplay::JDDisplay(SPI *spi, Pin *cs, Pin *flow) : spi(spi), cs(cs), flow(flow
 
 void JDDisplay::waitForSendDone() {
     while(inProgress) {
-        fiber_sleep(2);
+        schedule();
     }
 }
 

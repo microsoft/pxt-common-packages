@@ -23,7 +23,7 @@ class JDDisplay {
     jd_frame_t sendFrame;
     jd_frame_t recvFrame;
     uint8_t bytesPerTransfer;
-    bool inProgress;
+    volatile bool inProgress;
 
     FiberLock inProgressLock;
 
