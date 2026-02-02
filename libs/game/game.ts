@@ -365,7 +365,7 @@ namespace game {
     //% win.defl=true
     //% weight=100
     //% blockGap=8
-    //% help=game/over
+    //% help=game/game-over
     //% group="Game Over"
     export function gameOver(win: boolean) {
         _gameOverImpl(win);

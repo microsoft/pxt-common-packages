@@ -3,7 +3,7 @@
 Game control and text display actions.
 
 ```cards
-game.over()
+game.gameOver(false)
 game.setGameOverEffect(true, effects.confetti)
 game.setGameOverMessage(true, "GAME OVER!")
 game.setGameOverPlayable(true, music.melodyPlayable(music.powerUp), false)
@@ -23,7 +23,7 @@ game.showLongText("", DialogLayout.Bottom)
 
 ## See also #seealso
 
-[over](/reference/game/over),
+[game over](/reference/game/game-over),
 [set game over effect](/reference/game/set-game-over-effect),
 [set game over message](/reference/game/set-game-over-message),
 [set game over playable](/reference/game/set-game-over-playable),

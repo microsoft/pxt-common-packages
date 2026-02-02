@@ -43,7 +43,7 @@ d d . . . d d . . . . d . . d d
 ghost.setFlag(SpriteFlag.Ghost, true)
 ghost.lifespan = 1500
 sprites.onDestroyed(SpriteKind.Ghost, function (sprite) {
-    game.over(true)
+    game.gameOver(true)
 })
 ```
 
