@@ -105,6 +105,7 @@ class WSynthesizer
         if (!upstream)
             return ManagedBuffer();
         ManagedBuffer data(512);
+        target_disable_irq();
         auto dp = (int16_t *)data.getBytes();
         auto sz = 512 / 2;
         int r = fillSamples(dp, sz);
@@ -119,6 +120,7 @@ class WSynthesizer
 #endif
             dp++;
         }
+        target_enable_irq();
         if (!r) {
             active = false;
             // return empty - nothing left to play

@@ -15,8 +15,11 @@ class WDisplay {
   public:
     ScreenIO *io;
     ST7735 *lcd;
+#ifdef ARCADE_MBIT_CODAL
     JDDisplay *smart;
-
+#else
+    void* smart;
+#endif
     uint32_t currPalette[16];
     bool newPalette;
     bool inUpdate;
@@ -53,7 +56,15 @@ class WDisplay {
 
         SPI *spi = NULL;
         if (conn == 0) {
+#ifdef ARCADE_MBIT_CODAL
+            NRF52Pin* mosi = LOOKUP_PIN(DISPLAY_MOSI);
+            NRF52Pin* sck = LOOKUP_PIN(DISPLAY_SCK);
+            mosi->setHighDrive(true);
+            sck->setHighDrive(true);
+            spi = new CODAL_SPI(*mosi, *miso, *sck);
+#else
             spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *miso, *LOOKUP_PIN(DISPLAY_SCK));
+#endif
             io = new SPIScreenIO(*spi);
         } else if (conn == 1) {
 #ifdef CODAL_CREATE_PARALLEL_SCREEN_IO
@@ -71,9 +82,11 @@ class WDisplay {
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
             lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
+#ifdef ARCADE_MBIT_CODAL
         } else if (dispTp == DISPLAY_TYPE_SMART) {
             lcd = NULL;
             smart = new JDDisplay(spi, LOOKUP_PIN(DISPLAY_CS), LOOKUP_PIN(DISPLAY_DC));
+#endif
         } else
             target_panic(PANIC_SCREEN_ERROR);
 
@@ -194,8 +207,7 @@ class WDisplay {
         }
 
         DMESG("config type: %d; cfg0=%x cfg1=%x", configId, *cfg0, *cfg1);
-
-        *cfg2 = 32; // Damn the torpedoes! 32MHz
+        *cfg2 = getConfig(CFG_CLOCK_SPEED, 32);
 
         return DISPLAY_TYPE_ST7735;
     }
@@ -203,26 +215,36 @@ class WDisplay {
     void setAddrStatus() {
         if (lcd)
             lcd->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+#ifdef ARCADE_MBIT_CODAL
         else
             smart->setAddrWindow(offX, offY + displayHeight, width, height - displayHeight);
+#endif
     }
     void setAddrMain() {
         if (lcd)
             lcd->setAddrWindow(offX, offY, width, displayHeight);
+#ifdef ARCADE_MBIT_CODAL
         else
             smart->setAddrWindow(offX, offY, width, displayHeight);
+#endif
     }
     void waitForSendDone() {
         if (lcd)
             lcd->waitForSendDone();
+#ifdef ARCADE_MBIT_CODAL
         else
             smart->waitForSendDone();
+#endif
     }
     int sendIndexedImage(const uint8_t *src, unsigned width, unsigned height, uint32_t *palette) {
         if (lcd)
             return lcd->sendIndexedImage(src, width, height, palette);
+#ifdef ARCADE_MBIT_CODAL
         else
             return smart->sendIndexedImage(src, width, height, palette);
+#else
+        return 0;
+#endif
     }
 };
 
@@ -258,7 +280,9 @@ void setScreenBrightness(int level) {
 
     auto display = getWDisplay();
     if (display && display->smart) {
+#ifdef ARCADE_MBIT_CODAL
         display->smart->brightness = level;
+#endif
         return;
     }
 
@@ -353,7 +377,7 @@ void updateScreen(Image_ img) {
         display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
     }
 
-    if (display->lastStatus && !display->doubleSize) {
+    if (display->lastStatus && !display->doubleSize && !display->smart) {
         display->waitForSendDone();
         img = display->lastStatus;
         auto barHeight = display->height - display->displayHeight;
