@@ -17,7 +17,7 @@ info.startCountdown(30)
 pause(5000)
 info.stopCountdown()
 pause(2000)
-game.over()
+game.gameOver(false)
 ```
 
 ## See also #seealso

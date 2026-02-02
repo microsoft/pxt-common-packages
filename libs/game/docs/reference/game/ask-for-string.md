@@ -26,7 +26,7 @@ Ask the player for a unlock code to continue playing the game.
 ```blocks
 let unlock = "98745"
 if (game.askForString("unlock code:", 5) != unlock) {
-    game.over()
+    game.gameOver(false)
 }
 ```
 

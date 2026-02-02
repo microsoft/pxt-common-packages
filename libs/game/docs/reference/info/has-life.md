@@ -18,7 +18,7 @@ Remove one life from the player every `100` milliseconds. When the player's live
 info.player2.setLife(20)
 game.onUpdate(function () {
     if (info.player2.hasLife() == false) {
-        game.over()
+        game.gameOver(false)
     }
 }) 
 
