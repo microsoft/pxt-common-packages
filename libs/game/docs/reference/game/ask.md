@@ -25,7 +25,7 @@ Ask the player if they're ready to play the next game level. If so, set the scor
 if (game.ask("Ready to play?", "Next: advanced level")) {
     info.setScore(0)
 } else {
-    game.over()
+    game.gameOver(false)
 }
 ```
 
