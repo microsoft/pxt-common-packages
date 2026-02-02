@@ -8,9 +8,11 @@ game.gameOver(false)
 
 When you end the game, all game control stops and the player gets a message that the game is over (finished). The last action is frozen on the screen and both the current and highest scores are displayed. The game program will reset when you press a key or button.
 
+If a game over message set for a win or lose, it is displayed. If a game over effect is set, then it also is shown and a game over sound if one is also set. If no message, effect, or sound is set for either win or lose, then a default is used.
+
 ## Parameters
 
-* **win**: an optional [boolean](/types/boolean) value to say if the player has won the game. If set to `true`, a message is displayed telling the player that they won the game.
+* **win**: an optional [boolean](/types/boolean) value to say if the player has won the game.
 
 ## Example #example
 
@@ -46,4 +48,6 @@ game.onUpdate(function () {
 ## See also #seealso
 
 [start countdown](/reference/info/start-countdown),
-[set game over effect](/reference/game/set-game-over-effect)
+[set game over effect](/reference/game/set-game-over-effect),
+[set game over message](/reference/game/set-game-over-message),
+[set game over playable](/reference/game/set-game-over-playable)
