@@ -586,6 +586,20 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
+     * Place the sprite at a random position on the screen.
+     */
+    //% group="Physics"
+    //% weight=99
+    //% blockId=spritesetrandomposition block="place %sprite(mySprite) at random position"
+    //% help=sprites/sprite/set-random-position
+    setRandomPosition(): void {
+        this.setPosition(
+            Math.randomRange(0, screen.width),
+            Math.randomRange(0, screen.height)
+        );
+    }
+
+    /**
      * Sets the sprite velocity in pixel / sec
      * @param vx
      * @param vy
