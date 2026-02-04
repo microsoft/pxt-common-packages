@@ -593,9 +593,11 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spritesetrandomposition block="place %sprite(mySprite) at random position"
     //% help=sprites/sprite/set-random-position
     setRandomPosition(): void {
+        const halfWidth = this.width >> 1;
+        const halfHeight = this.height >> 1;
         this.setPosition(
-            Math.randomRange(0, screen.width),
-            Math.randomRange(0, screen.height)
+            Math.randomRange(halfWidth, screen.width - halfWidth),
+            Math.randomRange(halfHeight, screen.height - halfHeight)
         );
     }
 

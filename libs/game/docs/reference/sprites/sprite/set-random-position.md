@@ -8,7 +8,7 @@ sprites.create(null).setRandomPosition()
 
 ## Random placement
 
-This method places the sprite at a random position anywhere on the visible screen. The **x** position will be a random value between `0` and the screen width, and the **y** position will be a random value between `0` and the screen height.
+This method places the sprite at a random position on the visible screen. The sprite will always be fully visible - it won't be placed partially off-screen. The position is calculated to ensure that the entire sprite image fits within the screen boundaries.
 
 This is useful for games where you want to spawn sprites at unpredictable locations, such as collectibles, enemies, or obstacles.
 
