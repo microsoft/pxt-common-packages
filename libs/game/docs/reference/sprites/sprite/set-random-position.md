@@ -8,7 +8,11 @@ sprites.create(null).setRandomPosition()
 
 ## Random placement
 
-This method places the sprite at a random position on the visible screen. The sprite will always be fully visible - it won't be placed partially off-screen. The position is calculated to ensure that the entire sprite image fits within the screen boundaries.
+This method places the sprite at a random position on the **currently visible screen**. If the camera has moved, the sprite will be placed randomly within the visible viewport, not the original starting screen.
+
+The sprite will always be fully visible - it won't be placed partially off-screen. The position is calculated to ensure that the entire sprite image fits within the screen boundaries.
+
+When using tilemaps, this method will attempt to avoid placing the sprite on walls. It will try up to 100 times to find a position that is not on a wall. If no non-wall position is found after 100 attempts, it will place the sprite at the last random position.
 
 This is useful for games where you want to spawn sprites at unpredictable locations, such as collectibles, enemies, or obstacles.
 

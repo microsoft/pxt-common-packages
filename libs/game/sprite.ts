@@ -593,12 +593,43 @@ class Sprite extends sprites.BaseSprite {
     //% blockId=spritesetrandomposition block="place %sprite(mySprite) at random position"
     //% help=sprites/sprite/set-random-position
     setRandomPosition(): void {
+        const scene = game.currentScene();
+        const camera = scene.camera;
+        const tm = scene.tileMap;
+        
         const halfWidth = this.width >> 1;
         const halfHeight = this.height >> 1;
-        this.setPosition(
-            Math.randomRange(halfWidth, screen.width - halfWidth),
-            Math.randomRange(halfHeight, screen.height - halfHeight)
-        );
+        
+        // Calculate visible screen bounds in world coordinates
+        const minX = camera.offsetX + halfWidth;
+        const maxX = camera.offsetX + screen.width - halfWidth;
+        const minY = camera.offsetY + halfHeight;
+        const maxY = camera.offsetY + screen.height - halfHeight;
+        
+        // Try to find a non-wall position (max 100 attempts)
+        let attempts = 0;
+        let x: number, y: number;
+        
+        do {
+            x = Math.randomRange(minX, maxX);
+            y = Math.randomRange(minY, maxY);
+            attempts++;
+            
+            // If no tilemap or we've tried enough times, use the position anyway
+            if (!tm || !tm.enabled || attempts >= 100) {
+                break;
+            }
+            
+            // Check if this position would be on a wall
+            const col = x >> tm.scale;
+            const row = y >> tm.scale;
+            
+            if (!tm.isObstacle(col, row)) {
+                break;
+            }
+        } while (true);
+        
+        this.setPosition(x, y);
     }
 
     /**
