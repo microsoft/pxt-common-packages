@@ -607,16 +607,17 @@ class Sprite extends sprites.BaseSprite {
         const maxY = camera.offsetY + screen.height - halfHeight;
         
         // Try to find a non-wall position (max 100 attempts)
-        let attempts = 0;
         let x: number, y: number;
+        let attempts = 0;
+        const maxAttempts = 100;
         
-        do {
+        while (attempts < maxAttempts) {
             x = Math.randomRange(minX, maxX);
             y = Math.randomRange(minY, maxY);
             attempts++;
             
-            // If no tilemap or we've tried enough times, use the position anyway
-            if (!tm || !tm.enabled || attempts >= 100) {
+            // If no tilemap, use this position
+            if (!tm || !tm.enabled) {
                 break;
             }
             
@@ -627,7 +628,7 @@ class Sprite extends sprites.BaseSprite {
             if (!tm.isObstacle(col, row)) {
                 break;
             }
-        } while (true);
+        }
         
         this.setPosition(x, y);
     }
