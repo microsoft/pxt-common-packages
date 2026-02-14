@@ -11,6 +11,14 @@
 #include "Timer.h"
 #include "MultiButton.h"
 
+#if defined(MICROBIT_AVAILABLE)
+#define PXT_USE_MICROBIT 1
+#endif
+
+#ifdef PXT_USE_MICROBIT
+#include "MicroBitIO.h"
+#endif
+
 #define PAGE_SIZE 4096
 #define MIC_DEVICE NRF52PDM
 
@@ -34,7 +42,10 @@
 
 #define IMAGE_BITS 4
 
-typedef uint8_t PinName;
+#ifndef PXT_USE_MICROBIT
+// The /* */ in front is so that this is not copied to pointers.cpp
+/* */ typedef uint8_t PinName;
+#endif
 
 #define DEFAULT_NEOPIXEL_PIN P0_0
 
@@ -62,7 +73,7 @@ typedef uint8_t PinName;
 #define LIGHTSENSOR_LOW_THRESHOLD 128
 #define LIGHTSENSOR_HIGH_THRESHOLD 896
 
-
+#ifndef PXT_USE_MICROBIT
 #define P0_0 0
 #define P0_1 1
 #define P0_2 2
@@ -127,5 +138,6 @@ typedef uint8_t PinName;
 #define P1_29 61
 #define P1_30 62
 #define P1_31 63
+#endif
 
 #endif
