@@ -60,8 +60,8 @@ namespace images {
     //% shim=TD_ID
     //% tile.fieldEditor="tileset"
     //% tile.fieldOptions.decompileIndirectFixedInstances="true"
-    //% weight=10 blockNamespace="scene" group="Tiles"
-    //% blockHidden=1 duplicateShadowOnDrag
+    //% weight=0 blockNamespace="scene" group="Locations"
+    //% duplicateShadowOnDrag
     export function _tile(tile: Image) {
         return tile
     }
