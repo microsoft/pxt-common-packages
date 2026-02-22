@@ -45,6 +45,11 @@ class MovingSprite {
     ) { }
 }
 
+interface TileOverlap {
+    location: tiles.Location;
+    tileImage: Image;
+}
+
 /**
  * A physics engine that does simple AABB bounding box check
  */
@@ -592,7 +597,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (!(s.flags & SPRITE_NO_TILE_OVERLAPS)) {
             // Now that we've moved, check all of the tiles underneath the current position
             // for overlaps
-            const overlappedTiles: tiles.Location[] = [];
+            const overlappedTiles: TileOverlap[] = [];
             for (
                 let x = hbox.left;
                 x < Fx.iadd(tileSize, hbox.right);
@@ -626,7 +631,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     // if the sprite can move through walls, it can overlap the underlying tile.
                     if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
-                        overlappedTiles.push(tm.getTile(x0, y0));
+                        const location = tm.getTile(x0, y0);
+                        overlappedTiles.push({
+                            location,
+                            tileImage: tm.getTileImage(location.tileSet)
+                        });
                     }
                 }
             }
@@ -643,10 +652,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite the sprite
      * @param overlappedTiles the list of tiles the sprite is overlapping
      */
-    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
+    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: TileOverlap[]) {
         const alreadyHandled: tiles.Location[] = [];
 
-        for (const tile of overlappedTiles) {
+        for (const overlap of overlappedTiles) {
+            const tile = overlap.location;
             if (alreadyHandled.some(l => l.column === tile.column && l.row === tile.row)) {
                 continue;
             }
@@ -655,7 +665,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
                 tileOverlapHandlers
-                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(tiles.getTileImage(tile)))
+                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(overlap.tileImage))
                     .forEach(h => h.handler(sprite, tile));
             }
         }

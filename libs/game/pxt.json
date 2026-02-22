@@ -59,6 +59,9 @@
         "keymap.cpp",
         "keymap.ts"
     ],
+    "testFiles": [
+        "test.ts"
+    ],
     "public": true,
     "dependencies": {
         "settings": "file:../settings",
