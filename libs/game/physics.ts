@@ -45,6 +45,13 @@ class MovingSprite {
     ) { }
 }
 
+class TileOverlap {
+    constructor(
+        public location: tiles.Location,
+        public tileImage: Image
+    ) { }
+}
+
 /**
  * A physics engine that does simple AABB bounding box check
  */
@@ -592,7 +599,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (!(s.flags & SPRITE_NO_TILE_OVERLAPS)) {
             // Now that we've moved, check all of the tiles underneath the current position
             // for overlaps
-            const overlappedTiles: tiles.Location[] = [];
+            const overlappedTiles: TileOverlap[] = [];
             for (
                 let x = hbox.left;
                 x < Fx.iadd(tileSize, hbox.right);
@@ -626,7 +633,11 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     // if the sprite can move through walls, it can overlap the underlying tile.
                     if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
-                        overlappedTiles.push(tm.getTile(x0, y0));
+                        const location = tm.getTile(x0, y0);
+                        overlappedTiles.push(new TileOverlap(
+                            location,
+                            tm.getTileImage(location.tileSet)
+                        ));
                     }
                 }
             }
@@ -643,28 +654,21 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite the sprite
      * @param overlappedTiles the list of tiles the sprite is overlapping
      */
-    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
-        const scene = game.currentScene();
-        const tilemap = scene.tileMap;
-        const tileOverlapHandlers = scene.tileOverlapHandlers;
-        if (!tilemap || !tileOverlapHandlers) return;
-
+    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: TileOverlap[]) {
         const alreadyHandled: tiles.Location[] = [];
 
-        for (const tile of overlappedTiles) {
-            if (scene.tileMap !== tilemap) return;
-
+        for (const overlap of overlappedTiles) {
+            const tile = overlap.location;
             if (alreadyHandled.some(l => l.column === tile.column && l.row === tile.row)) {
                 continue;
             }
             alreadyHandled.push(tile);
 
-            const tileImage = tilemap.getTileImage(tile.tileSet);
-            for (const handler of tileOverlapHandlers) {
-                if (scene.tileMap !== tilemap) return;
-                if (handler.spriteKind == sprite.kind() && handler.tileKind.equals(tileImage)) {
-                    handler.handler(sprite, tile);
-                }
+            const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
+            if (tileOverlapHandlers) {
+                tileOverlapHandlers
+                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(overlap.tileImage))
+                    .forEach(h => h.handler(sprite, tile));
             }
         }
     }
