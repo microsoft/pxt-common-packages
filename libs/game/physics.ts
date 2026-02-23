@@ -45,9 +45,11 @@ class MovingSprite {
     ) { }
 }
 
-interface TileOverlap {
-    location: tiles.Location;
-    tileImage: Image;
+class TileOverlap {
+    constructor(
+        public location: tiles.Location,
+        public tileImage: Image
+    ) { }
 }
 
 /**
@@ -632,10 +634,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     // if the sprite can move through walls, it can overlap the underlying tile.
                     if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
                         const location = tm.getTile(x0, y0);
-                        overlappedTiles.push({
+                        overlappedTiles.push(new TileOverlap(
                             location,
-                            tileImage: tm.getTileImage(location.tileSet)
-                        });
+                            tm.getTileImage(location.tileSet)
+                        ));
                     }
                 }
             }
