@@ -135,6 +135,11 @@ namespace music.sequencer {
         play(playbackMode: PlaybackMode) {
             if (control.deviceDalVersion() === "sim") {
                 const seq = new _SimulatorSequencer();
+                seq.onStateChange(state => {
+                    if (state === "stop") {
+                        seq.dispose();
+                    }
+                });
 
                 if (playbackMode === PlaybackMode.UntilDone) {
                     seq.play(this.buf, false);
