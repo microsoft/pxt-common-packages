@@ -45,6 +45,7 @@ class MovingSprite {
     ) { }
 }
 
+
 /**
  * A physics engine that does simple AABB bounding box check
  */
@@ -626,7 +627,8 @@ class ArcadePhysicsEngine extends PhysicsEngine {
 
                     // if the sprite can move through walls, it can overlap the underlying tile.
                     if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
-                        overlappedTiles.push(tm.getTile(x0, y0));
+                        const location = tm.getTile(x0, y0);
+                        overlappedTiles.push(location);
                     }
                 }
             }
@@ -655,7 +657,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
                 tileOverlapHandlers
-                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(tiles.getTileImage(tile)))
+                    .filter(h => h.spriteKind == sprite.kind() && h.tileKind.equals(tile._getOriginalImage()))
                     .forEach(h => h.handler(sprite, tile));
             }
         }
