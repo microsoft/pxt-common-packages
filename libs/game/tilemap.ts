@@ -18,10 +18,12 @@ namespace tiles {
     export class Location {
         protected _row: number;
         protected _col: number;
+        protected _originalMap: TileMap;
 
         constructor(col: number, row: number, map: TileMap) {
             this._col = col;
             this._row = row;
+            this._originalMap = map;
         }
 
         get tileMap() {
@@ -101,6 +103,10 @@ namespace tiles {
 
         public getImage(): Image {
             return this.tileMap.getTileImage(this.tileSet);
+        }
+
+        _getOriginalImage(): Image {
+            return this._originalMap.getTileImage(this._originalMap.getTileIndex(this._col, this._row));
         }
 
         /**
