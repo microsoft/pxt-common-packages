@@ -45,11 +45,6 @@ class MovingSprite {
     ) { }
 }
 
-class TileOverlap {
-    constructor(
-        public location: tiles.Location
-    ) { }
-}
 
 /**
  * A physics engine that does simple AABB bounding box check
@@ -598,7 +593,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
         if (!(s.flags & SPRITE_NO_TILE_OVERLAPS)) {
             // Now that we've moved, check all of the tiles underneath the current position
             // for overlaps
-            const overlappedTiles: TileOverlap[] = [];
+            const overlappedTiles: tiles.Location[] = [];
             for (
                 let x = hbox.left;
                 x < Fx.iadd(tileSize, hbox.right);
@@ -633,7 +628,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     // if the sprite can move through walls, it can overlap the underlying tile.
                     if (!tm.isObstacle(x0, y0) || !!(s.flags & sprites.Flag.GhostThroughWalls)) {
                         const location = tm.getTile(x0, y0);
-                        overlappedTiles.push(new TileOverlap(location));
+                        overlappedTiles.push(location);
                     }
                 }
             }
@@ -650,11 +645,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      * @param sprite the sprite
      * @param overlappedTiles the list of tiles the sprite is overlapping
      */
-    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: TileOverlap[]) {
+    protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
         const alreadyHandled: tiles.Location[] = [];
 
-        for (const overlap of overlappedTiles) {
-            const tile = overlap.location;
+        for (const tile of overlappedTiles) {
             if (alreadyHandled.some(l => l.column === tile.column && l.row === tile.row)) {
                 continue;
             }
