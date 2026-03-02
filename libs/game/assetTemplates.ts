@@ -105,3 +105,8 @@ namespace helpers {
         return _getFactoryInstance("song", name);
     }
 }
+
+//% helper=getSpriteByName
+//% pyConvertToTaggedTemplate
+function array(lits: any, ...args: any[]): any[] { return null }
+
