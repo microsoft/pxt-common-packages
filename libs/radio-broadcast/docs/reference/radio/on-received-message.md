@@ -15,7 +15,7 @@ radio.onReceivedMessage(0, function() {})
 
 ## See also
 
-[Bit Radio](/reference/radio)
+[Radio blocks](/reference/radio)
 [send message](/reference/radio/send-message),
 
 ```package

@@ -14,8 +14,8 @@ radio.sendMessage(0);
 
 ## See also
 
-[Bit Radio](/reference/radio)
-[on received number](/reference/radio/on-received-number)
+[Radio blocks](/reference/radio)
+[on received message](/reference/radio/on-received-message)
 
 ```package
 radio-broadcast
