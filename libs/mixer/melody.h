@@ -108,9 +108,13 @@ class WSynthesizer
         target_disable_irq();
         auto dp = (int16_t *)data.getBytes();
         auto sz = 512 / 2;
-        int r = fillSamples(dp, sz);
 #if defined(NRF52_SERIES)
+        target_disable_irq();
+        int r = fillSamples(dp, sz);
+        target_enable_irq();
         int mul = out.dac.getSampleRange();
+#else
+        int r = fillSamples(dp, sz);
 #endif
         while (sz--) {
 #if defined(NRF52_SERIES)
