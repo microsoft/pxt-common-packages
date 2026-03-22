@@ -64,14 +64,20 @@ namespace control {
     //% shim=pxtrt::panic
     export function panic(code: number) { }
 
+    //% shim=U::userError
+    function _throwValue(msg: string) { }
+
     /**
-     * Display an error code and stop the program when the assertion is `false`.
+     * Display a message, an error code, and stop the program when the assertion is `false`.
      */
     //% help=control/assert weight=30
     //% blockId="control_assert" block="assert %cond|with value %code"
     export function assert(cond: boolean, code: number) {
         if (!cond) {
-            fail("Assertion failed, code=" + code)
+            console.log("Assertion failed")
+            console.log(code)
+            dmesg("Assertion failed: " + code)
+            _throwValue("Assertion failed: " + code)
         }
     }
 
