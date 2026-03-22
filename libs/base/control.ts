@@ -171,7 +171,7 @@ namespace control {
     export declare function programName(): string;
 
     //% shim=control::_ramSize
-   declare function _ramSize(): number
+   declare function _ramSize(): number;
     
     /** Returns estimated size of memory in bytes. */
     export function ramSize() {
