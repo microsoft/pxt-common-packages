@@ -69,7 +69,8 @@ namespace control {
     function _throwValue(msg: string) { }
 
     /**
-     * Display a message, an error code, and stop the program when the assertion is `false`.
+     * Display an error message, an error code, and stop the program when the assertion is `false`.
+      @code (optional) an error number to display. eg: 5
      */
     //% help=control/assert weight=30
     //% blockId="control_assert" block="assert %cond|with value %code"
@@ -82,6 +83,7 @@ namespace control {
         console.log("Assertion failed")
         if (code !== undefined) console.log(code)
         dmesg(msg)
+        debugger
         _throwValue(msg)
     }
    }
@@ -169,10 +171,8 @@ namespace control {
     export declare function programName(): string;
 
     //% shim=control::_ramSize
-    function _ramSize() {
-        return 32 * 1024 * 1024;
-    }
-
+   declare function _ramSize(): number
+    
     /** Returns estimated size of memory in bytes. */
     export function ramSize() {
         return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
