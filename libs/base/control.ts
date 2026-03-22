@@ -80,9 +80,7 @@ namespace control {
         const msg = code !== undefined
             ? `Assertion failed, code: ${code})`
             : `Assertion failed`
-
         console.log(msg)
-        if (code !== undefined) console.log(code)
         dmesg(msg)
         _throwValue(msg)
     }
