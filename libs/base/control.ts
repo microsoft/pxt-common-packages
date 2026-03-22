@@ -55,6 +55,7 @@ namespace control {
 
         UNHANDLED_EXCEPTION = 999,
     }
+    
     /**
      * Display an error code and stop the program.
      * @param code an error number to display. eg: 5
@@ -84,7 +85,6 @@ namespace control {
         _throwValue(msg)
     }
    }
-
 
     export function fail(message: string) {
         console.log("Fatal failure: ")
