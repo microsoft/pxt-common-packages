@@ -81,7 +81,7 @@ namespace control {
             ? `Assertion failed, code: ${code})`
             : `Assertion failed`
 
-        console.log("Assertion failed")
+        console.log(msg)
         if (code !== undefined) console.log(code)
         dmesg(msg)
         _throwValue(msg)
