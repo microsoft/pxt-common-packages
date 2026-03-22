@@ -83,7 +83,6 @@ namespace control {
         console.log("Assertion failed")
         if (code !== undefined) console.log(code)
         dmesg(msg)
-        debugger
         _throwValue(msg)
     }
    }
