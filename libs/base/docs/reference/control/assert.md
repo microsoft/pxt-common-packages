@@ -1,6 +1,6 @@
 # assert
 
-Display an error number and stop the program if the assertion condition is false.
+Display a message, error number, and stop the program if the assertion condition is false.
 
 ```sig
 control.assert(false, 0)
