@@ -176,7 +176,7 @@ namespace control {
     /** Returns estimated size of memory in bytes. */
     export function ramSize() {
         return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
-    }
+     }
 
     /** Runs the function and returns run time in microseconds. */
     export function benchmark(f: () => void) {
