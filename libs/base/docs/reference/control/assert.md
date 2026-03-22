@@ -11,7 +11,7 @@ You can insist that your program will stop at an assert block if a certain condi
 ## Parameters
 
 * **cond**: a [boolean](/types/boolean) where true means everything is ok or false which means, stop the program!
-* **code**: an error [number](/types/number) you match to an error situation in your program.
+* **code**: an optional parameter for displaying an error [number](/types/number) you match to an error situation in your program.
 
 ## Example #example
 
