@@ -78,7 +78,7 @@ namespace control {
        // adapted this idea from how real browsers work and optionally kept the code parameter for convenience
     if (!cond) {
         const msg = code !== undefined
-            ? `Assertion failed, code: ${code})`
+            ? `Assertion failed, code: ${code}`
             : `Assertion failed`
         console.log(msg)
         dmesg(msg)
