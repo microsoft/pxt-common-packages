@@ -74,10 +74,10 @@ namespace control {
     //% blockId="control_assert" block="assert %cond|with value %code"
     export function assert(cond: boolean, code: number) {
         if (!cond) {
-            console.log("Assertion failed")
+            console.log("Assertion failed. CODE:")
             console.log(code)
-            dmesg("Assertion failed: " + code)
-            _throwValue("Assertion failed: " + code)
+            dmesg("Assertion failed. CODE: " + code)
+            _throwValue("Assertion failed. CODE: " + code)
         }
     }
 
