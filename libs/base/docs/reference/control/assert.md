@@ -1,13 +1,13 @@
 # assert
 
-Display a message, an error number, and stop the program if the assertion condition is false.
+Display an error message, an error number, and stop the program if the assertion condition is false.
 
 ```sig
 control.assert(false, 0)
 ```
 
 You can insist that your program will stop at an assert block if a certain condition you check is false. 
-An 'Assertion failed' message is shown. The error number in the assert is written to the serial port with a failure message.
+An 'Assertion failed' message is shown. The error number in the assert is written to the serial port and the problems panel with a failure message.
 
 ## Parameters
 
