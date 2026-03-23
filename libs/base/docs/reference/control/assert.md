@@ -7,7 +7,8 @@ control.assert(false, 0)
 ```
 
 You can insist that your program will stop at an assert block if a certain condition you check is false. 
-An 'Assertion failed' message is shown. The error number in the assert is written to the serial port and the problems panel with a failure message.
+An 'Assertion failed' message is shown in the problems panel and in the serial port. 
+The error number is also shown the serial port and the problems panel with a failure message.
 
 ## Parameters
 
