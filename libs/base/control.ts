@@ -75,16 +75,17 @@ namespace control {
     //% help=control/assert weight=30
     //% blockId="control_assert" block="assert %cond|with value %code"
     export function assert(cond: boolean, code?: number) {
-       // adapted this idea from how real browsers work and optionally kept the code parameter for convenience
-    if (!cond) {
-        const msg = code !== undefined
+         if (!cond) {
+         // adapted this idea from how real browsers work and optionally kept the code parameter for clearer diagnostics
+         const msg = code !== undefined
             ? `Assertion failed, code: ${code}`
             : `Assertion failed`
-        console.log(msg)
-        dmesg(msg)
-        _throwValue(msg)
+       
+         console.log(msg)
+         dmesg(msg)
+         _throwValue(msg)
+         }
     }
-   }
 
     export function fail(message: string) {
         console.log("Fatal failure: ")
