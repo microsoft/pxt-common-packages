@@ -77,6 +77,8 @@ namespace control {
     export function assert(cond: boolean, code?: number) {
          if (!cond) {
          // adapted this idea from how real browsers work and optionally kept the code parameter for clearer diagnostics
+         // added the message also because the original one for receiving the message is only logged
+         // in the console, not together in the panel
          const msg = code !== undefined
             ? `Assertion failed, code: ${code}`
             : `Assertion failed`
