@@ -604,7 +604,7 @@ namespace game {
                 this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
                 } else {
                  let currY = image.font5.charHeight + 14;
-                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (goc.getImage(true).width >> 1), currY);
                 }
             } else {
                 if (!goc.imageSetByUser) {
@@ -613,7 +613,7 @@ namespace game {
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
                 } else {
                  let currY = image.font5.charHeight + 14;
-                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (goc.getImage(true).width >> 1), currY);
                 }
             }
         }
