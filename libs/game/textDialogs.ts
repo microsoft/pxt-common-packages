@@ -504,6 +504,11 @@ namespace game {
             }
         }
 
+        drawImage(img: Image) {
+           const currY = image.font5.charHeight + 16;
+           this.image.drawTransparentImage(img, (this.image.width >> 1) - (img.width >> 1), currY);
+        }
+
         drawMessage() {
             const currY = 5;
             this.image.printCenter(
@@ -631,6 +636,7 @@ namespace game {
             this.drawMessage();
             this.drawScores();
             this.drawBestScore();
+            this.drawImage(image.create(16, 16));
         }
     }
 
@@ -851,6 +857,11 @@ namespace game {
     // this function is deprecated
     //% deprecated blockHidden
     export function setDialogFont(font: image.Font) {
+    }
+
+    export function setGameOverImage(win: boolean, img: Image) {
+        game.init();
+        const goc = game.gameOverConfig();
     }
 
     /**
