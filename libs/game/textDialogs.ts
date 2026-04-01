@@ -522,7 +522,7 @@ namespace game {
 
         drawScores() {       
             const goc = game.gameOverConfig();
-            const overImg = goc.getImage(true);
+            const overImg = goc.getImage(this.isWinCondition);
             if (this.hasScores) {
                 const scores = this.scores.filter(score => score.value != null);
                 let currY = image.font5.charHeight + 16;
