@@ -505,11 +505,9 @@ namespace game {
         }
 
         drawImage(img: Image) {
-            if(!img) return;
-
-           const x = (this.image.width >> 1) - (img.width >> 1)
-           const y = image.font5.charHeight + 16;
-           this.image.drawTransparentImage(img, x, y);
+           const currX = (this.image.width >> 1) - (img.width >> 1)
+           const currY = image.font5.charHeight + 16;
+           this.image.drawTransparentImage(img, currX, currY);
         }
 
         drawMessage() {
