@@ -433,7 +433,6 @@ namespace game {
             }
 
             const preferMultiplayer = !!winnerOverride || (judged && info.multiplayerScoring());
-            const image = goc.getImage(win);
             const message = goc.getMessage(win, preferMultiplayer);
             const effect = goc.getEffect(win);
             const sound = goc.getSound(win);
