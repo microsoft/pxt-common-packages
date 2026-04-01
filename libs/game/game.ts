@@ -47,14 +47,18 @@ namespace game {
         loseEffect: effects.BackgroundEffect;
         loseSound: music.Playable;
         winSound: music.Playable;
+        winImage: Image;
         loseSoundLooping: boolean;
         winSoundLooping: boolean;
         winMessage: string;
         winMessageMultiplayer: string;
         loseMessage: string;
+        loseImage: Image;
+        image: Image;
         effectSetByUser: boolean;
         soundSetByUser: boolean;
         messageSetByUser: boolean;
+        imageSetByUser: boolean;
         scoringTypeSetByUser: boolean;
 
         constructor() {
@@ -69,11 +73,14 @@ namespace game {
             this.loseSound = music.melodyPlayable(music.wawawawaa);
             this.winSoundLooping = false;
             this.loseSoundLooping  = false;
+            this.winImage = image.create(16, 16);
             this.winMessage = "YOU WIN!";
             this.winMessageMultiplayer = "${WINNER} WINS!";
+            this.loseImage = image.create(16, 16);
             this.loseMessage = "GAME OVER";
             this.effectSetByUser = false;
             this.soundSetByUser = false;
+            this.imageSetByUser = false;
             this.messageSetByUser = false;
             this.scoringTypeSetByUser = false;
         }
@@ -93,7 +100,7 @@ namespace game {
         getEffect(win: boolean) {
             return win ? this.winEffect : this.loseEffect;
         }
-
+        
         setSound(win: boolean, sound: music.Playable, looping: boolean, explicit: boolean) {
             if (!explicit && this.soundSetByUser) return;
             if (win) {
@@ -110,6 +117,16 @@ namespace game {
         }
         getSoundLooping(win: boolean) {
             return win ? this.winSoundLooping : this.loseSoundLooping;
+        }
+
+        setImage(win: boolean, image: Image, explicit: boolean) {
+            if (!explicit && this.imageSetByUser) return;
+            if (win) this.winImage = image;
+            else this.loseImage = image;
+            if (explicit) this.imageSetByUser = true;
+        }
+        getImage(win: boolean) {
+            return win ? this.winImage : this.loseImage;
         }
 
         setMessage(win: boolean, message: string, explicit: boolean) {
@@ -298,6 +315,12 @@ namespace game {
         init();
         const goc = game.gameOverConfig();
         goc.setSound(win, music.melodyPlayable(sound), false, true);
+    }
+
+    export function setGameOverImage(win: boolean, image: Image) {
+        init();
+        const goc = game.gameOverConfig();
+        goc.setImage(win, image, true);
     }
 
     /**
