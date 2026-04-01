@@ -860,11 +860,6 @@ namespace game {
     export function setDialogFont(font: image.Font) {
     }
 
-    export function setGameOverImage(win: boolean, img: Image) {
-        game.init();
-        const goc = game.gameOverConfig();
-    }
-
     /**
      * Show a title and an optional subtitle menu
      * @param title
