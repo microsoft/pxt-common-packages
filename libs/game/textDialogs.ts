@@ -506,7 +506,7 @@ namespace game {
 
         drawImage(img: Image) {
            const currX = (this.image.width >> 1) - (img.width >> 1)
-           const currY = image.font5.charHeight + 16;
+            let currY = image.font5.charHeight + 14;
            this.image.drawTransparentImage(img, currX, currY);
         }
 
@@ -520,7 +520,7 @@ namespace game {
             );
         }
 
-        drawScores() {
+        drawScores() {            
             if (this.hasScores) {
                 const scores = this.scores.filter(score => score.value != null);
                 let currY = image.font5.charHeight + 16;
@@ -535,10 +535,14 @@ namespace game {
                             screenColor(1),
                             image.font5
                         );
-                        if (score.winner) {
+
+                        const goc = game.gameOverConfig();
+                        if (score.winner && !goc.imageSetByUser) {
                             // In multiplayer, the winning score gets a trophy
                             const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
                             this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
+                        } else {
+                            this.drawImage(goc.getImage(true));
                         }
                     } else {
                         // Multiplayer general case: Multiple players scored
@@ -595,12 +599,22 @@ namespace game {
                 }
             } else if (this.isWinCondition) {
                 // No score, but there is a win condition. Show a trophy.
+                if(!goc.imageSetByUser) {
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+                } else {
+                 let currY = image.font5.charHeight + 14;
+                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+                }
             } else {
+                if (!goc.imageSetByUser) {
                 // No score, no win, show a generic game over icon (sleepy sim)
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
+                } else {
+                 let currY = image.font5.charHeight + 14;
+                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
+                }
             }
         }
 
