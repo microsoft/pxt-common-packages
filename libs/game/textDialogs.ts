@@ -522,6 +522,7 @@ namespace game {
 
         drawScores() {       
             const goc = game.gameOverConfig();
+            const overImg = goc.getImage();
             if (this.hasScores) {
                 const scores = this.scores.filter(score => score.value != null);
                 let currY = image.font5.charHeight + 16;
@@ -599,7 +600,7 @@ namespace game {
                 }
             } else if (this.isWinCondition) {
                 // No score, but there is a win condition. Show a trophy.
-                if(!goc.imageSetByUser) {
+                if(!overImg) {
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
                 } else {
@@ -607,7 +608,7 @@ namespace game {
                  this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (goc.getImage(true).width >> 1), currY);
                 }
             } else {
-                if (!goc.imageSetByUser) {
+                if (!overImg) {
                 // No score, no win, show a generic game over icon (sleepy sim)
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
