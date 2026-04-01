@@ -542,8 +542,9 @@ namespace game {
                             // In multiplayer, the winning score gets a trophy
                             const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
                             this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
-                        } else {
-                            this.drawImage(overImg);
+                        } else if (score.winner && overImg) {
+                            const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
+                            this.image.drawTransparentImage(overImg, x - overImg.width - 3, currY - 2);
                         }
                     } else {
                         // Multiplayer general case: Multiple players scored
@@ -612,7 +613,7 @@ namespace game {
                 // No score, no win, show a generic game over icon (sleepy sim)
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
-                } else {
+                } else if (overImg) {
                  let currY = image.font5.charHeight + 14;
                  this.image.drawTransparentImage(overImg, (this.image.width >> 1) - (overImg.width >> 1), currY);
                 }
