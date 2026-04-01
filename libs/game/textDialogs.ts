@@ -636,7 +636,7 @@ namespace game {
             this.drawMessage();
             this.drawScores();
             this.drawBestScore();
-            this.drawImage(image.create(16, 16));
+            this.drawImage(image.create(8, 8));
         }
     }
 
