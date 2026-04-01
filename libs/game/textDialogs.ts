@@ -520,7 +520,8 @@ namespace game {
             );
         }
 
-        drawScores() {            
+        drawScores() {       
+            const goc = game.gameOverConfig();
             if (this.hasScores) {
                 const scores = this.scores.filter(score => score.value != null);
                 let currY = image.font5.charHeight + 16;
@@ -536,7 +537,6 @@ namespace game {
                             image.font5
                         );
 
-                        const goc = game.gameOverConfig();
                         if (score.winner && !goc.imageSetByUser) {
                             // In multiplayer, the winning score gets a trophy
                             const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
