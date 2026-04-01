@@ -72,7 +72,7 @@ namespace game {
             this.winSound = music.melodyPlayable(music.powerUp);
             this.loseSound = music.melodyPlayable(music.wawawawaa);
             this.winSoundLooping = false;
-            this.loseSoundLooping  = false;
+            this.loseSoundLooping = false;
             this.winImage = image.create(screen.width, screen.height);
             this.winMessage = "YOU WIN!";
             this.winMessageMultiplayer = "${WINNER} WINS!";
@@ -100,7 +100,7 @@ namespace game {
         getEffect(win: boolean) {
             return win ? this.winEffect : this.loseEffect;
         }
-        
+
         setSound(win: boolean, sound: music.Playable, looping: boolean, explicit: boolean) {
             if (!explicit && this.soundSetByUser) return;
             if (win) {
@@ -180,7 +180,7 @@ namespace game {
         return _scene.eventContext;
     }
 
-    function init(forceNewScene ?: boolean) {
+    function init(forceNewScene?: boolean) {
         if (!_scene || forceNewScene) {
             _scene = new scene.Scene(control.pushEventContext(), _scene);
         }
