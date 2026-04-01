@@ -522,7 +522,7 @@ namespace game {
 
         drawScores() {       
             const goc = game.gameOverConfig();
-            const overImg = goc.getImage();
+            const overImg = goc.getImage(true);
             if (this.hasScores) {
                 const scores = this.scores.filter(score => score.value != null);
                 let currY = image.font5.charHeight + 16;
@@ -538,12 +538,12 @@ namespace game {
                             image.font5
                         );
 
-                        if (score.winner && !goc.imageSetByUser) {
+                        if (score.winner && !overImg) {
                             // In multiplayer, the winning score gets a trophy
                             const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
                             this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
                         } else {
-                            this.drawImage(goc.getImage(true));
+                            this.drawImage(overImg);
                         }
                     } else {
                         // Multiplayer general case: Multiple players scored
@@ -605,7 +605,7 @@ namespace game {
                 this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
                 } else {
                  let currY = image.font5.charHeight + 14;
-                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (goc.getImage(true).width >> 1), currY);
+                 this.image.drawTransparentImage(overImg, (this.image.width >> 1) - (overImg.width >> 1), currY);
                 }
             } else {
                 if (!overImg) {
@@ -614,7 +614,7 @@ namespace game {
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
                 } else {
                  let currY = image.font5.charHeight + 14;
-                 this.image.drawTransparentImage(goc.getImage(true), (this.image.width >> 1) - (goc.getImage(true).width >> 1), currY);
+                 this.image.drawTransparentImage(overImg, (this.image.width >> 1) - (overImg.width >> 1), currY);
                 }
             }
         }
