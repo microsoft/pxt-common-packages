@@ -538,11 +538,11 @@ namespace game {
                             image.font5
                         );
 
-                        if (score.winner && !overImg) {
+                        if (score.winner && !game.gameOverConfig().imageSetByUser) {
                             // In multiplayer, the winning score gets a trophy
                             const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
                             this.image.drawTransparentImage(img_trophy_sm, x - img_trophy_sm.width - 3, currY - 2);
-                        } else if (score.winner && overImg) {
+                        } else {
                             const x = (this.image.width >> 1) - ((score.str.length * image.font5.charWidth) >> 1);
                             this.image.drawTransparentImage(overImg, x - overImg.width - 3, currY - 2);
                         }
@@ -601,7 +601,7 @@ namespace game {
                 }
             } else if (this.isWinCondition) {
                 // No score, but there is a win condition. Show a trophy.
-                if(!overImg) {
+                if(!game.gameOverConfig().imageSetByUser) {
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_trophy_lg, (this.image.width >> 1) - (img_trophy_lg.width >> 1), currY);
                 } else {
@@ -609,11 +609,11 @@ namespace game {
                  this.image.drawTransparentImage(overImg, (this.image.width >> 1) - (overImg.width >> 1), currY);
                 }
             } else {
-                if (!overImg) {
+                if (!game.gameOverConfig().imageSetByUser) {
                 // No score, no win, show a generic game over icon (sleepy sim)
                 let currY = image.font5.charHeight + 14;
                 this.image.drawTransparentImage(img_sleepy_sim, (this.image.width >> 1) - (img_sleepy_sim.width >> 1), currY);
-                } else if (overImg) {
+                } else {
                  let currY = image.font5.charHeight + 14;
                  this.image.drawTransparentImage(overImg, (this.image.width >> 1) - (overImg.width >> 1), currY);
                 }
