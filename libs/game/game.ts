@@ -316,7 +316,12 @@ namespace game {
         const goc = game.gameOverConfig();
         goc.setSound(win, music.melodyPlayable(sound), false, true);
     }
-
+    
+     /**
+      * Set the image that displays when the game is over
+      * @param win whether the image should show on a win (true) or lose (false)
+      * @param image
+      */
     export function setGameOverImage(win: boolean, image: Image) {
         init();
         const goc = game.gameOverConfig();
