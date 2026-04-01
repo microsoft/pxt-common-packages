@@ -73,7 +73,7 @@ namespace game {
             this.loseSound = music.melodyPlayable(music.wawawawaa);
             this.winSoundLooping = false;
             this.loseSoundLooping  = false;
-            this.winImage = image.create(16, 16);
+            this.winImage = image.create(screen.width, screen.height);
             this.winMessage = "YOU WIN!";
             this.winMessageMultiplayer = "${WINNER} WINS!";
             this.loseImage = image.create(screen.width, screen.height);
@@ -433,6 +433,7 @@ namespace game {
             }
 
             const preferMultiplayer = !!winnerOverride || (judged && info.multiplayerScoring());
+            const image = goc.getImage(win);
             const message = goc.getMessage(win, preferMultiplayer);
             const effect = goc.getEffect(win);
             const sound = goc.getSound(win);
