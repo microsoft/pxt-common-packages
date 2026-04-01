@@ -76,7 +76,7 @@ namespace game {
             this.winImage = image.create(16, 16);
             this.winMessage = "YOU WIN!";
             this.winMessageMultiplayer = "${WINNER} WINS!";
-            this.loseImage = image.create(16, 16);
+            this.loseImage = image.create(screen.width, screen.height);
             this.loseMessage = "GAME OVER";
             this.effectSetByUser = false;
             this.soundSetByUser = false;
