@@ -322,6 +322,14 @@ namespace game {
       * @param win whether the image should show on a win (true) or lose (false)
       * @param image
       */
+       //% blockId=game_setgameoverimage
+       //% block="use image $image for $win"
+       //% win.shadow=toggleWinLose
+       //% win.defl=true
+       //% group="Game Over"
+       //% weight=71
+       //% blockGap=8
+       //% help=game/set-game-over-image
     export function setGameOverImage(win: boolean, image: Image) {
         init();
         const goc = game.gameOverConfig();
