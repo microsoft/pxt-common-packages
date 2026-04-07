@@ -506,8 +506,11 @@ namespace game {
 
         drawImage(img: Image) {
            const currX = (this.image.width >> 1) - (img.width >> 1)
-            let currY = image.font5.charHeight + 14;
+           const currY = image.font5.charHeight + 14;
            this.image.drawTransparentImage(img, currX, currY);
+           if (this.image.width >= 16 || this.image.height >= 16) {
+               throw "Size Too Big"
+           }
         }
 
         drawMessage() {
