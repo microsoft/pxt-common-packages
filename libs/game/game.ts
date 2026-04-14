@@ -326,6 +326,7 @@ namespace game {
        //% block="use image $image for $win"
        //% win.shadow=toggleWinLose
        //% win.defl=true
+       //% image.shadow=screen_image_picker
        //% group="Game Over"
        //% weight=71
        //% blockGap=8
