@@ -1,9 +1,11 @@
 namespace pxsim.music {
     export function playInstructions(b: RefBuffer) {
+        setupOnStopAll();
         return AudioContextManager.playInstructionsAsync(b.data)
     }
 
     export function queuePlayInstructions(when: number, b: RefBuffer) {
+        setupOnStopAll();
         AudioContextManager.queuePlayInstructions(when, b)
     }
 
@@ -30,19 +32,27 @@ namespace pxsim.music {
         sequencer: Sequencer;
     }
 
-    let sequencers: SequencerWithId[];
-    let nextSequencerId = 0;
+    let onStopAllSetup = false;
+
+    function setupOnStopAll() {
+        if (!onStopAllSetup) {
+            onStopAllSetup = true;
+            pxsim.AudioContextManager.onStopAll(() => {
+                AudioContextManager.muteAllChannels();
+                if (sequencers) {
+                    for (const seq of sequencers) {
+                        seq.sequencer.stop();
+                        seq.sequencer.dispose();
+                    }
+                    sequencers = [];
+                }
+            })
+        }
+    }
 
     export async function _createSequencer(): Promise<number> {
+        setupOnStopAll();
         if (!sequencers) {
-            pxsim.AudioContextManager.onStopAll(() => {
-                for (const seq of sequencers) {
-                    seq.sequencer.stop();
-                    seq.sequencer.dispose();
-                }
-                sequencers = [];
-            })
-
             sequencers = [];
         }
         const res = {
