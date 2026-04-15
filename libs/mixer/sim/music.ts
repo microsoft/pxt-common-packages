@@ -32,6 +32,8 @@ namespace pxsim.music {
         sequencer: Sequencer;
     }
 
+    let sequencers: SequencerWithId[];
+    let nextSequencerId = 0;
     let onStopAllSetup = false;
 
     function setupOnStopAll() {
