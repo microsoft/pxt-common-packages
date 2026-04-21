@@ -14,6 +14,7 @@ namespace control {
          * Gets the elapsed time in millis since the last reset
          */
         //% blockId=timerMillis block="%timer|millis"
+        //% help=control/millis
         millis(): number {
             return control.millis() - this.start;
         }
@@ -22,6 +23,7 @@ namespace control {
          * Gets the elapsed time in seconds since the last reset
          */
         //% blockId=timerSeconds block="%timer|seconds"
+        //% help=control/seconds
         seconds(): number {
             return this.millis() / 1000;
         }
@@ -30,6 +32,7 @@ namespace control {
          * Resets the timer
          */
         //% blockId=timerRest block="%timer|reset"
+        //% help=control/reset
         reset() {
             this.start = control.millis();
         }
@@ -39,6 +42,7 @@ namespace control {
          * @param ms how long to pause for, eg: 5, 100, 200, 500, 1000, 2000
          */
         //% blockId=timerPauseUntil block="%timer|pause until (ms) %ms"
+        //% help=control/pause-until
         pauseUntil(ms: number) {
             const remaining = this.millis() - ms;
             pause(Math.max(0, remaining));
