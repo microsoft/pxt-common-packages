@@ -471,7 +471,7 @@ namespace mp {
     //% group=Player
     //% weight=90
     //% blockGap=8
-    //% help=multiplayer/get-all-players
+    //% help=multiplayer/all-players
     //% parts="multiplayer"
     export function allPlayers(): Player[] {
         return _mpstate().players.slice();

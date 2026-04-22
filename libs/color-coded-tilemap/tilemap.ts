@@ -110,7 +110,7 @@ namespace scene {
      */
     //% blockId=legacyplaceontile block="on top of %tile=variables_get(myTile) place %sprite=variables_get(mySprite)"
     //% group="Color-coded Tilemap"
-    //% help=tiles/place
+    //% help=color-coded-tilemap/place
     export function place(tile: tiles.Tile, mySprite: Sprite): void {
         if (!tile) return;
         tile.place(mySprite);
@@ -148,7 +148,7 @@ namespace scene {
      */
     //% blockId=legacyspriteobstacle block="%sprite=variables_get(mySprite) wall hit on %direction"
     //% group="Color-coded Tilemap"
-    //% help=sprites/sprite/tile-hit-from
+    //% help=color-coded-tilemap/tile-hit-from
     export function tileHitFrom(sprite: Sprite, direction: CollisionDirection): number {
         if (!sprite) return 0;
         return sprite.tileHitFrom(direction);
