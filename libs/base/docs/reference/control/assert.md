@@ -11,6 +11,8 @@ An 'Assertion failed' message containing the error code number is generated. Thi
 
 ``Fatal failure: Assertion failed, code=49``
 
+And also in the problems panel, there will be a message displaying "Assertion failed", similar to how the serial output logs the message.
+
 ## Parameters
 
 * **cond**: a [boolean](/types/boolean) where `true` means everything is ok or `false` which means, stop the program!
