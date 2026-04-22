@@ -26,3 +26,11 @@ forever(function () {
     pause(1000)
 })
 ```
+
+## See also 
+
+[panic](/reference/control/panic)
+
+```package
+base
+```
