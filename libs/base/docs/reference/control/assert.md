@@ -16,7 +16,7 @@ An 'Assertion failed' message containing the error code number is generated. Thi
 * **cond**: a [boolean](/types/boolean) where `true` means everything is ok or `false` which means, stop the program!
 * **code**: an error [number](/types/number) you match to an error situation in your program.
 
-## Example 
+## Example #example
 
 Stop the program if a sensor connected to pin `A0` sends a low (`0`) signal.
 
