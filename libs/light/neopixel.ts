@@ -163,6 +163,7 @@ namespace light {
         //% blockId=lightsetgradient block="set %strip gradient from %startColor=colorNumberPicker to %endColor=colorNumberPicker"
         //% weight=79 blockGap=8
         //% group="More" advanced=true
+        //% help=light/neopixelstrip/set-gradient
         setGradient(startColor: number, endColor: number) {
             const sr = color.unpackR(startColor);
             const sg = color.unpackG(startColor);
@@ -857,6 +858,7 @@ namespace light {
         //% weight=1 blockGap=8
         //% length.shadow=lightLengthPicker
         //% group="Configuration" advanced=true
+        //% help=light/neopixelstrip/set-length
         setLength(numleds: number): void {
             const n = Math.max(0, numleds | 0);
             // lazy update

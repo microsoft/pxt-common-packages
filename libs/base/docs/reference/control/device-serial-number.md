@@ -22,4 +22,5 @@ serial.writeValue("serialnumber", control.deviceSerialNumber());
 
 ## See also #seealso
 
+[device long serial number](/reference/control/device-long-serial-number),
 [device dal version](/reference/control/device-dal-version)
