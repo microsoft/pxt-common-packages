@@ -10,9 +10,6 @@ You can insist that your program will stop at an **assert** block if a certain c
 An 'Assertion failed' message containing the error code number is generated. This message is shown in the problems panel and also output to the the serial port. The format of the message looks like this:
 
 ``Fatal failure: Assertion failed, code=49``
-
-And also in the problems panel, there will be a message displaying "Assertion failed", similar to how the serial output logs the message.
-
 ## Parameters
 
 * **cond**: a [boolean](/types/boolean) where `true` means everything is ok or `false` which means, stop the program!
