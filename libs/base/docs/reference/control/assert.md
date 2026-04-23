@@ -29,7 +29,7 @@ forever(function () {
 })
 ```
 
-## See also # see also
+## See also #see also
 
 [panic](/reference/control/panic)
 
