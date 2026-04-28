@@ -6,6 +6,7 @@ namespace light {
      */
     //% blockId="lightstrip_range" block="range from %start|with %length|pixels"
     //% weight=1
+    //% help=light/range
     export function range(start: number, length: number): NeoPixelStrip {
         return pixels.range(start, length);
     }
@@ -17,6 +18,7 @@ namespace light {
     //% numleds.defl=30
     //% numleds.shadow=lightLengthPicker
     //% weight=0
+    //% help=light/set-length
     export function setLength(numleds: number) {
         light.pixels.setLength(numleds);
     }
@@ -26,6 +28,7 @@ namespace light {
      */
     //% blockId=lightds_setmode block="set default strip mode to %mode"
     //% weight=0
+    //% help=light/set-mode
     export function setMode(mode: NeoPixelMode) {
         light.pixels.setMode(mode);
     }

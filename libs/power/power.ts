@@ -13,7 +13,7 @@ namespace power {
      */
     //% blockId=powersetdeepsleeptimout block="power set deep sleep timeout to %seconds s"
     //% seconds.defl=60
-    //% help=/power/set-deep-sleep-timeout
+    //% help=power/set-deep-sleep-timeout
     export function setDeepSleepTimeout(seconds: number) {
         init();
         _timeout = seconds * 1000;
@@ -23,7 +23,7 @@ namespace power {
      * Poke the activity watcher to keep the device awake.
      */
     //% blockId=powerpke block="power poke"
-    //% help=/power/poke
+    //% help=power/poke
     export function poke() {
         init();
         _poked = control.millis();
@@ -33,7 +33,7 @@ namespace power {
      * Check if the device has had any "pokes" and needs to go into deep sleep mode.
      */
     //% blockId=powercheckdeepsleep block="power check deep sleep"
-    //% help=/power/check-deep-sleep
+    //% help=power/check-deep-sleep
     export function checkDeepSleep() {
         init();
         const p = _poked || 0;
@@ -51,7 +51,7 @@ namespace power {
      */
     //% blockId=powerdeepsleep block="power deep sleep"
     //% shim=pxt::deepSleep
-    //% help=/power/deep-sleep
+    //% help=power/deep-sleep
     export function deepSleep() {
     }
 
