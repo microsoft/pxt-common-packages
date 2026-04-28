@@ -114,7 +114,7 @@ class WSynthesizer
 #endif
         while (sz--) {
 #if defined(NRF52_SERIES)
-            *dp = ((*dp + (1 << (OUTPUT_BITS - 1))) * mul) >> OUTPUT_BITS;
+            *dp = ((-*dp + (1 << (OUTPUT_BITS - 1))) * mul) >> OUTPUT_BITS;
 #else
             *dp += 1 << (OUTPUT_BITS - 1);
 #endif
