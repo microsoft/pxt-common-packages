@@ -43,6 +43,7 @@ void onSwitchMoved(SwitchDirection direction, Action handler) {
 //% blockId=device_switch_direction block="switch right"
 //% parts="switch"
 //% group="Switch" weight=10 blockGap=8
+//% help=input/switch-right
 bool switchRight() {
     auto slide = getWSwitch();
     return slide->slideSwitch.isPressed();
