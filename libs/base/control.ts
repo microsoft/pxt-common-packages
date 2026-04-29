@@ -55,6 +55,7 @@ namespace control {
 
         UNHANDLED_EXCEPTION = 999,
     }
+    
     /**
      * Display an error code and stop the program.
      * @param code an error number to display. eg: 5
@@ -64,15 +65,28 @@ namespace control {
     //% shim=pxtrt::panic
     export function panic(code: number) { }
 
+    //% shim=U::userError
+    function _throwValue(msg: string) { }
+
     /**
-     * Display an error code and stop the program when the assertion is `false`.
+     * Display an error message, an error code, and stop the program when the assertion is `false`.
+      @code (optional) an error number to display. eg: 5
      */
     //% help=control/assert weight=30
     //% blockId="control_assert" block="assert %cond|with value %code"
-    export function assert(cond: boolean, code: number) {
-        if (!cond) {
-            fail("Assertion failed, code=" + code)
-        }
+    export function assert(cond: boolean, code?: number) {
+         if (!cond) {
+         // adapted this idea from how real browsers work and optionally kept the code parameter for clearer diagnostics
+         // added the message also because the original one for receiving the message is only logged
+         // in the console, not together in the panel
+         const msg = code !== undefined
+            ? `Assertion failed, code: ${code}`
+            : `Assertion failed`
+       
+         console.log(msg)
+         dmesg(msg)
+         _throwValue(msg)
+         }
     }
 
     export function fail(message: string) {
@@ -158,14 +172,12 @@ namespace control {
     export declare function programName(): string;
 
     //% shim=control::_ramSize
-    function _ramSize() {
-        return 32 * 1024 * 1024;
-    }
-
+   declare function _ramSize(): number;
+    
     /** Returns estimated size of memory in bytes. */
     export function ramSize() {
         return getConfigValue(DAL.CFG_RAM_BYTES, 0) || _ramSize();
-    }
+     }
 
     /** Runs the function and returns run time in microseconds. */
     export function benchmark(f: () => void) {
