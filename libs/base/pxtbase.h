@@ -46,6 +46,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stddef.h> // offsetof
 #include <math.h>
 
 #ifdef POKY
@@ -552,7 +553,22 @@ class Segment {
     TValue get(unsigned i) { return i < length ? data[i] : NULL; }
     void set(unsigned i, TValue value);
 
-    unsigned getLength() { return length; };
+    unsigned getLength() {
+        // Layout pinned for the PXT compiler's Array.length fast path
+        // (_pxt_array_length_tagged in pxt/pxtcompiler/emitter/backthumb.ts).
+        // That fast path reads the element count directly out of the array
+        // object at a fixed byte offset instead of calling Array_::length:
+        //   array object[0]             = RefObject.vtable
+        //   array object[sizeof(void*)] = RefCollection.head (this Segment)
+        //   head[sizeof(TValue*)]       = Segment.length
+        // so the length lives at object offset 2*sizeof(void*) == 8 on the
+        // 32-bit thumb target, read there as `ldrh r0, [r0, #8]`. If these
+        // structs are reordered, the offset in backthumb.ts must change too;
+        // these asserts fail the native build if that ever drifts.
+        STATIC_ASSERT(sizeof(RefObject) == sizeof(void *));
+        STATIC_ASSERT(offsetof(Segment, length) == sizeof(TValue *));
+        return length;
+    };
     void setLength(unsigned newLength);
 
     void push(TValue value) { set(length, value); }
