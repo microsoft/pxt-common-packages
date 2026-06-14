@@ -49,6 +49,7 @@ namespace pxsim {
     }
 
     export function sendBufferAsm(buffer: RefBuffer, pin: number) {
+        BufferMethods.typeCheck(buffer);
         const b = board();
         if (!b) return;
         const p = b.edgeConnectorState.getPin(pin);
@@ -63,6 +64,7 @@ namespace pxsim {
 namespace pxsim.light {
     // Currently only modifies the builtin pixels
     export function sendBuffer(pin: { id: number }, clk: { id: number }, mode: number, b: RefBuffer) {
+        BufferMethods.typeCheck(b);
         const state = neopixelState(pin.id);
         if (!state) return;
         state.mode = mode & 0xff;
