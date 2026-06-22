@@ -34,6 +34,7 @@ namespace Math {
      */
     //% help=math/map weight=10 blockGap=8
     //% blockId=math_map block="map %value|from low %fromLow|high %fromHigh|to low %toLow|high %toHigh"
+    //% value.label="value" fromLow.label="from low" fromHigh.label="from high" toLow.label="to low" toHigh.label="to high"
     //% inlineInputMode=inline
     export function map(value: number, fromLow: number, fromHigh: number, toLow: number, toHigh: number): number {
         return ((value - fromLow) * (toHigh - toLow)) / (fromHigh - fromLow) + toLow;
@@ -47,6 +48,7 @@ namespace Math {
      */
     //% help=math/constrain weight=11 blockGap=8
     //% blockId="math_constrain_value" block="constrain %value|between %low|and %high"
+    //% value.label="value" low.label="minimum" high.label="maximum"
     export function constrain(value: number, low: number, high: number): number {
         return value < low ? low : value > high ? high : value;
     }

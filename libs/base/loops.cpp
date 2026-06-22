@@ -18,6 +18,7 @@ void forever(Action a) {
  */
 //% help=loops/pause weight=99 deprecated=true
 //% async block="pause %pause=timePicker|ms"
+//% ms.label="value"
 //% blockId=device_pause_deprecated
 void pause(int ms) {
     if (ms < 0) return;

@@ -146,6 +146,7 @@ namespace radio {
     //% help=radio/received-packet
     //% blockGap=8
     //% blockId=radio_received_packet block="received packet %type=radio_packet_property" blockGap=16
+    //% type.label="property"
     //% group="Receive"
     //% weight=16
     export function receivedPacket(type: number) {
@@ -280,6 +281,7 @@ namespace radio {
     //% help=radio/send-number
     //% weight=60
     //% blockId=radio_datagram_send block="radio send number %value" blockGap=8
+    //% value.label="value"
     //% group="Send"
     export function sendNumber(value: number) {
         let packet: RadioPacket;
@@ -305,6 +307,7 @@ namespace radio {
     //% help=radio/send-value
     //% weight=59
     //% blockId=radio_datagram_send_value block="radio send|value %name|= %value" blockGap=8
+    //% name.label="name" value.label="value"
     //% group="Send"
     export function sendValue(name: string, value: number) {
         let packet: RadioPacket;
@@ -328,6 +331,7 @@ namespace radio {
     //% help=radio/send-string
     //% weight=58
     //% blockId=radio_datagram_send_string block="radio send string %msg"
+    //% value.label="value"
     //% msg.shadowOptions.toString=true
     //% group="Send"
     export function sendString(value: string) {
@@ -356,6 +360,7 @@ namespace radio {
     //% help=radio/set-transmit-serial-number
     //% weight=8 blockGap=8
     //% blockId=radio_set_transmit_serial_number block="radio set transmit serial number %transmit"
+    //% transmit.label="value"
     //% advanced=true
     export function setTransmitSerialNumber(transmit: boolean) {
         transmittingSerial = transmit;

@@ -55,6 +55,7 @@ namespace console {
     //% weight=90
     //% help=console/log blockGap=8
     //% blockId=console_log block="console log $value"
+    //% value.label="value"
     //% value.shadow=text
     export function log(value: any): void {
         add(ConsolePriority.Log, value);
@@ -68,6 +69,7 @@ namespace console {
     //% weight=88 blockGap=8
     //% help=console/log-value
     //% blockId=console_log_value block="console|log value %name|= %value"
+    //% name.label="name" value.label="value"
     //% name.shadow=text
     //% value.shadow=math_number
     export function logValue(name: any, value: any): void {
