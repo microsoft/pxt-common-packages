@@ -619,6 +619,18 @@ namespace music.sequencer {
                 timePoints.push(nextALTime);
                 nextALTime += ampLFOInterval;
             }
+            // This can happen if our attack + decay time is greater than gate length. Make sure we start
+            // the release stage on time
+            else if (time < gateLength) {
+                time = gateLength;
+                timePoints.push(gateLength);
+            }
+            // If we reach this point, the only thing left is the end of the release stage
+            else {
+                time = totalDuration;
+                timePoints.push(totalDuration);
+            }
+
 
 
             if (time >= totalDuration) {
@@ -669,18 +681,18 @@ namespace music.sequencer {
 
         let nextAmp: number;
         let nextPitch: number;
+        let ptr = 0;
         const out = control.createBuffer(BUFFER_SIZE * timePoints.length);
         for (let i = 1; i < timePoints.length; i++) {
             if (timePoints[i] - prevTime < 5) {
-                prevTime = timePoints[i];
                 continue;
             }
 
             nextAmp = instrumentVolumeAtTime(instrument, gateLength, timePoints[i], volume) | 0;
             nextPitch = instrumentPitchAtTime(instrument, noteFrequency, gateLength, timePoints[i]) | 0
-            addNote(
+            ptr = addNote(
                 out,
-                (i - 1) * 12,
+                ptr,
                 (timePoints[i] - prevTime) | 0,
                 prevAmp,
                 nextAmp,
@@ -697,17 +709,19 @@ namespace music.sequencer {
 
         // Finally, add one extra step to move the amplitude to 0 without
         // clipping just in case the amp LFO caused it to be nonzero
-        addNote(
-            out,
-            (timePoints.length - 1) * 12,
-            10,
-            prevAmp,
-            0,
-            instrument.waveform,
-            prevPitch,
-            255,
-            prevPitch
-        )
+        if (prevAmp > 0) {
+            ptr = addNote(
+                out,
+                ptr,
+                10,
+                prevAmp,
+                0,
+                instrument.waveform,
+                prevPitch,
+                255,
+                prevPitch
+            )
+        }
         return out;
     }
 
@@ -783,7 +797,7 @@ namespace music.sequencer {
      *      of the sound instructions will be longer than this if the amplitude envelope of the
      *      instrument has a nonzero release time
      */
-    function envelopeValueAtTime(envelope: Envelope, time: number, gateLength: number) {
+    function envelopeValueAtTime(envelope: Envelope, time: number, gateLength: number): number {
         // ADSR envelopes consist of 4 stages. They are (in order):
         //     1. The attack stage, where the value starts at 0 and rises to the maximum value
         //     2. The decay stage, where the value falls from the maximum value to the sustain value
@@ -796,19 +810,9 @@ namespace music.sequencer {
         // First check to see if we are already in the release stage
         if (time > gateLength) {
             if (time - gateLength > envelope.release) return 0;
-
-            // Did the gate length end before the attack stage finished?
-            else if (time < envelope.attack) {
-                const height = (envelope.amplitude / envelope.attack) * gateLength;
-                return height - ((height / envelope.release) * (time - gateLength))
-            }
-            // Did the gate length end before the decay stage finished?
-            else if (time < envelope.attack + envelope.decay) {
-                const height2 = envelope.amplitude - ((envelope.amplitude - adjustedSustain) / envelope.decay) * (gateLength - envelope.attack);
-                return height2 - ((height2 / envelope.release) * (time - gateLength))
-            }
             else {
-                return adjustedSustain - (adjustedSustain / envelope.release) * (time - gateLength)
+                const releaseStartLevel = envelopeValueAtTime(envelope, gateLength, gateLength);
+                return releaseStartLevel - (releaseStartLevel / envelope.release) * (time - gateLength)
             }
         }
         else if (time < envelope.attack) {
