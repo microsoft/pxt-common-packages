@@ -29,6 +29,7 @@ namespace servos {
          */
         //% weight=100 help=servos/set-angle
         //% blockId=servoservosetangle block="set %servo angle to %degrees=protractorPicker °"
+        //% degrees.label="angle"
         //% degrees.defl=90
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
@@ -60,6 +61,7 @@ namespace servos {
          */
         //% weight=99 help=servos/run
         //% blockId=servoservorun block="continuous %servo run at %speed=speedPicker \\%"
+        //% speed.label="speed"
         //% servo.fieldEditor="gridpicker"
         //% servo.fieldOptions.width=220
         //% servo.fieldOptions.columns=2
@@ -83,6 +85,7 @@ namespace servos {
 
         //% weight=10 help=servos/set-pulse
         //% blockId=servoservosetpulse block="set %servo pulse to %micros μs"
+        //% micros.label="microseconds"
         //% micros.min=500 micros.max=2500
         //% micros.defl=1500
         //% servo.fieldEditor="gridpicker"
@@ -140,6 +143,7 @@ namespace servos {
          */
         //% help=servos/set-range
         //% blockId=servosetrange block="set %servo range from %minAngle to %maxAngle"
+        //% minAngle.label="minimum angle" maxAngle.label="maximum angle"
         //% minAngle.min=0 minAngle.max=90
         //% maxAngle.min=90 maxAngle.max=180 maxAngle.defl=180
         //% servo.fieldEditor="gridpicker"
@@ -159,6 +163,7 @@ namespace servos {
          */
         //% help=servos/set-stop-on-neutral
         //% blockId=servostoponneutral block="set %servo stop on neutral %enabled"
+        //% enabled.label="on"
         //% enabled.shadow=toggleOnOff
         //% group="Configuration"
         //% blockGap=8

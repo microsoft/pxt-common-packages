@@ -17,6 +17,7 @@ namespace radio {
      * @param msg 
      */
     //% blockId=radioBroadcastMessage block="radio send $msg"
+    //% msg.label="message"
     //% msg.shadow=radioMessageCode draggableParameters
     //% weight=200
     //% blockGap=8
@@ -33,6 +34,7 @@ namespace radio {
      * @param handler 
      */
     //% blockId=radioOnMessageReceived block="on radio $msg received"
+    //% msg.label="message"
     //% msg.shadow=radioMessageCode draggableParameters
     //% weight=199
     //% help=radio/on-received-message

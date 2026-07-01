@@ -5,6 +5,7 @@ namespace control {
      * @param value the event value to match
      */
     //% weight=20 blockGap=8 blockId="control_on_event" block="on event|from %src|with value %value"
+    //% src.label="source" value.label="value"
     //% blockExternalInputs=1
     //% help="control/on-event"
     export function onEvent(src: number, value: number, handler: () => void, flags = 16) { // EVENT_LISTENER_DEFAULT_FLAGS

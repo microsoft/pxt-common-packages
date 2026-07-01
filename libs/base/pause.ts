@@ -4,6 +4,7 @@
  */
 //% help=loops/pause weight=99
 //% async block="pause %pause=timePicker|ms"
+//% ms.label="value"
 //% blockId=device_pause blockNamespace="loops"
 function pause(ms: number): void {
     loops.pause(ms);

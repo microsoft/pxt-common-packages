@@ -61,6 +61,7 @@ namespace control {
      */
     //% help=control/panic weight=29
     //% blockId="control_panic" block="panic %code"
+    //% code.label="code"
     //% shim=pxtrt::panic
     export function panic(code: number) { }
 
@@ -69,6 +70,7 @@ namespace control {
      */
     //% help=control/assert weight=30
     //% blockId="control_assert" block="assert %cond|with value %code"
+    //% cond.label="condition" code.label="code"
     export function assert(cond: boolean, code: number) {
         if (!cond) {
             fail("Assertion failed, code=" + code)
@@ -184,6 +186,7 @@ namespace control {
  */
 //% help=text/convert-to-text weight=1
 //% block="convert $value=math_number to text"
+//% value.label="value"
 //% blockId=variable_to_text blockNamespace="text"
 function convertToText(value: any): string {
     return "" + value;
