@@ -33,6 +33,18 @@ class WDisplay {
     bool doubleSize;
     uint32_t palXOR;
 
+    // RGB444 streaming path for ST7735 panels lacking the RGBSET LUT (see #6861)
+    SPI *spi_;
+    Pin *dcPin_;
+    Pin *csPin_;
+    uint8_t pal4R_[16], pal4G_[16], pal4B_[16];
+
+    inline void wrCmd1(uint8_t cmd, uint8_t a0) {
+        dcPin_->setDigitalValue(0); csPin_->setDigitalValue(0); spi_->write(cmd);
+        dcPin_->setDigitalValue(1); spi_->write(a0);
+        csPin_->setDigitalValue(1);
+    }
+
     WDisplay() {
         uint32_t cfg2 = getConfig(CFG_DISPLAY_CFG2, 0x0);
         int conn = cfg2 >> 24;
@@ -66,6 +78,9 @@ class WDisplay {
             spi = new CODAL_SPI(*LOOKUP_PIN(DISPLAY_MOSI), *miso, *LOOKUP_PIN(DISPLAY_SCK));
 #endif
             io = new SPIScreenIO(*spi);
+            spi_ = spi;
+            dcPin_ = LOOKUP_PIN(DISPLAY_DC);
+            csPin_ = LOOKUP_PIN(DISPLAY_CS);
         } else if (conn == 1) {
 #ifdef CODAL_CREATE_PARALLEL_SCREEN_IO
             io = CODAL_CREATE_PARALLEL_SCREEN_IO(cfg2 & 0xffffff, PIN(DISPLAY_MOSI),
@@ -127,6 +142,12 @@ class WDisplay {
 
             lcd->init();
             lcd->configure(madctl, frmctr1);
+
+            if (!doubleSize) {
+                // 12bpp RGB444 mode: lets us stream color without the RGBSET LUT
+                wrCmd1(0x3A, 0x03); // COLMOD
+                wrCmd1(0x20, 0x00); // INVOFF
+            }
         }
 
         width = getConfig(CFG_DISPLAY_WIDTH, 160);
@@ -246,6 +267,29 @@ class WDisplay {
         return 0;
 #endif
     }
+
+    // Stream a 4bpp indexed image as RGB444 over SPI (replaces the RGBSET LUT path).
+    void sendIndexedImage444(const uint8_t *src, int W, int H) {
+        static uint8_t line444[(3 * 160) / 2]; // 160 = max ST7735 width
+        const int bytesPerRow = (W + 1) >> 1;
+        dcPin_->setDigitalValue(0);
+        csPin_->setDigitalValue(0);
+        spi_->write(0x2C); // RAMWR
+        dcPin_->setDigitalValue(1);
+        for (int y = 0; y < H; y++) {
+            const uint8_t *row = src + y * bytesPerRow;
+            int out = 0;
+            for (int x = 0; x < W; x += 2) {
+                uint8_t b = *row++;
+                uint8_t i0 = b & 0x0F, i1 = (b >> 4) & 0x0F;
+                line444[out++] = (pal4R_[i0] << 4) | pal4G_[i0];
+                line444[out++] = (pal4B_[i0] << 4) | pal4R_[i1];
+                line444[out++] = (pal4G_[i1] << 4) | pal4B_[i1];
+            }
+            spi_->transfer((uint8_t *)line444, out, NULL, 0);
+        }
+        csPin_->setDigitalValue(1);
+    }
 };
 
 SINGLETON_IF_PIN(WDisplay, DISPLAY_MOSI);
@@ -314,6 +358,9 @@ void setPalette(Buffer buf) {
         display->currPalette[i] =
             (buf->data[i * 3] << 16) | (buf->data[i * 3 + 1] << 8) | (buf->data[i * 3 + 2] << 0);
         display->currPalette[i] ^= display->palXOR;
+        display->pal4R_[i] = (display->currPalette[i] >> 20) & 0xF;
+        display->pal4G_[i] = (display->currPalette[i] >> 12) & 0xF;
+        display->pal4B_[i] = (display->currPalette[i] >> 4) & 0xF;
     }
     display->newPalette = true;
 }
@@ -358,23 +405,20 @@ void updateScreen(Image_ img) {
             img->height() * mult != display->displayHeight)
             target_panic(PANIC_SCREEN_ERROR);
 
-        // DMESG("wait for done");
         display->waitForSendDone();
-
-        auto palette = display->currPalette;
-
-        if (display->newPalette) {
-            display->newPalette = false;
-        } else {
-            // smart mode always sends palette
-            if (!display->smart)
-                palette = NULL;
-        }
-
         memcpy(display->screenBuf, img->pix(), img->pixLength());
 
-        // DMESG("send");
-        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+        if (display->lcd && !display->doubleSize) {
+            display->setAddrMain();
+            display->sendIndexedImage444(display->screenBuf, display->width, display->displayHeight);
+        } else {
+            auto palette = display->currPalette;
+            if (display->newPalette)
+                display->newPalette = false;
+            else if (!display->smart)
+                palette = NULL;
+            display->sendIndexedImage(display->screenBuf, img->width(), img->height(), palette);
+        }
     }
 
     if (display->lastStatus && !display->doubleSize && !display->smart) {
@@ -385,8 +429,7 @@ void updateScreen(Image_ img) {
             target_panic(PANIC_SCREEN_ERROR);
         memcpy(display->screenBuf, img->pix(), img->pixLength());
         display->setAddrStatus();
-        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
-        display->waitForSendDone();
+        display->sendIndexedImage444(display->screenBuf, display->width, barHeight);
         display->setAddrMain();
         display->lastStatus = NULL;
     }
