@@ -42,6 +42,7 @@ namespace control {
     */
     //% help=control/wait-micros weight=29 async
     //% blockId="control_wait_us" block="wait (µs)%micros"
+    //% micros.label="microseconds"
     void waitMicros(int micros) {
         sleep_us(micros);
     }
@@ -60,6 +61,7 @@ namespace control {
     */
     //% help=control/wait-for-event async
     //% blockId=control_wait_for_event block="wait for event|from %src|with value %value"
+    //% src.label="source" value.label="value"
     void waitForEvent(int src, int value) {
         pxt::waitForEvent(src, value);
     }

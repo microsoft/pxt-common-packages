@@ -43,6 +43,7 @@ int soundLevel() {
 */
 //% help=input/set-loud-sound-threshold
 //% blockId=input_set_loud_sound_threshold block="set loud sound threshold %value"
+//% value.label="value"
 //% parts="microphone"
 //% value.min=1 value.max=255
 //% group="More" weight=14 blockGap=8
