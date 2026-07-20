@@ -35,9 +35,10 @@ class WDisplay {
 
 #ifdef USE_RGB444
     // RGB444 streaming path for ST7735 panels lacking the RGBSET LUT (see #6861)
-    SPI *spi_;
-    Pin *dcPin_;
-    Pin *csPin_;
+    SPI *spi_ = NULL;
+    Pin *dcPin_ = NULL;
+    Pin *csPin_ = NULL;
+    bool rgb444_ = false;
     uint8_t pal4R_[16], pal4G_[16], pal4B_[16];
 
     inline void wrCmd1(uint8_t cmd, uint8_t a0) {
@@ -96,6 +97,21 @@ class WDisplay {
             target_panic(PANIC_SCREEN_ERROR);
         }
 
+#ifdef USE_RGB444
+        // Runtime scope: RGB444 only on known Adafruit boards. Current Adafruit
+        // bootloaders publish VID:PID (VID 0x239A) as the board-id; older ones
+        // (which new boards still ship with) published fixed per-model ids, listed
+        // below. Unknown or absent ids keep the stock RGBSET path (e.g. Kitronik).
+        uint32_t boardId = (uint32_t)getConfig(CFG_BOOTLOADER_BOARD_ID, 0);
+        rgb444_ = spi_ && ((boardId >> 16) == 0x239A || // current Adafruit (VID:PID)
+                           boardId == 0x18591ab9 ||     // PyBadge/LC/PyGamer (2019)
+                           boardId == 0x75fdeb5f ||     // PyBadge
+                           boardId == 0x3f05ba69 ||     // PyBadge LC
+                           boardId == 0x2dd7a88c ||     // PyGamer
+                           boardId == 0x2b9e3d05 ||     // Feather M4 Arcade
+                           boardId == 0x7a236324);      // ItsyBitsy M4 Arcade
+#endif
+
         if (dispTp == DISPLAY_TYPE_ST7735)
             lcd = new ST7735(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
@@ -148,7 +164,7 @@ class WDisplay {
             lcd->configure(madctl, frmctr1);
 
 #ifdef USE_RGB444
-            if (!doubleSize) {
+            if (rgb444_ && !doubleSize) {
                 // 12bpp RGB444 mode: lets us stream color without the RGBSET LUT
                 wrCmd1(0x3A, 0x03); // COLMOD
                 wrCmd1(0x20, 0x00); // INVOFF
@@ -423,7 +439,7 @@ void updateScreen(Image_ img) {
         display->waitForSendDone();
 
 #ifdef USE_RGB444
-        if (display->lcd && !display->doubleSize) {
+        if (display->rgb444_ && display->lcd && !display->doubleSize) {
             memcpy(display->screenBuf, img->pix(), img->pixLength());
             display->setAddrMain();
             display->sendIndexedImage444(display->screenBuf, display->width, display->displayHeight);
@@ -456,11 +472,14 @@ void updateScreen(Image_ img) {
         memcpy(display->screenBuf, img->pix(), img->pixLength());
         display->setAddrStatus();
 #ifdef USE_RGB444
-        display->sendIndexedImage444(display->screenBuf, display->width, barHeight);
-#else
-        display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
-        display->waitForSendDone();
+        if (display->rgb444_) {
+            display->sendIndexedImage444(display->screenBuf, display->width, barHeight);
+        } else
 #endif
+        {
+            display->sendIndexedImage(display->screenBuf, img->width(), img->height(), NULL);
+            display->waitForSendDone();
+        }
         display->setAddrMain();
         display->lastStatus = NULL;
     }
