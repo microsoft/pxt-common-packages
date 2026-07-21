@@ -22,4 +22,21 @@ namespace multiplayer {
         return NULL;
     }
 
+    //%
+    void postBuffer(Buffer buffer) {
+    }
+
+    //%
+    Buffer dequeueBuffer() {
+        return NULL;
+    }
+
+    //%
+    void postText(String text) {
+    }
+
+    //%
+    String dequeueText() {
+        return NULL;
+    }
 }

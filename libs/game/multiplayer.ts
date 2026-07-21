@@ -11,6 +11,18 @@ namespace multiplayer {
     //% shim=multiplayer::getOrigin
     declare function getOrigin(): string;
 
+    //% shim=multiplayer::postBuffer
+    export declare function postBuffer(buffer: Buffer): void;
+
+    //% shim=multiplayer::dequeueBuffer
+    declare function dequeueBuffer(): Buffer;
+
+    //% shim=multiplayer::postText
+    export declare function postText(text: string): void;
+
+    //% shim=multiplayer::dequeueText
+    declare function dequeueText(): string;
+
     export function init() {
         game.addScenePushHandler(() => {
             game.eventContext().registerFrameHandler(scene.MULTIPLAYER_SCREEN_PRIORITY, () => {
@@ -27,6 +39,9 @@ namespace multiplayer {
 
     const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
     const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
+    const MULTIPLAYER_BUFFER_MESSAGE_ID = 3250;
+    const MULTIPLAYER_TEXT_MESSAGE_ID = 3251;
+
     export function initServer() {
         if (getOrigin() === "server") {
             game.eventContext().registerFrameHandler(scene.MULTIPLAYER_POST_SCREEN_PRIORITY, () => {
@@ -74,6 +89,34 @@ namespace multiplayer {
         }
         if (c)
             c.connected = connected;
+    }
+
+    export function _onBufferMessage(handler: (buffer: Buffer) => void) {
+        control.onEvent(
+            MULTIPLAYER_BUFFER_MESSAGE_ID,
+            0,
+            () => {
+                let current: Buffer;
+
+                while (current = dequeueBuffer()) {
+                    handler(current);
+                }
+            }
+        );
+    }
+
+    export function _onTextMessage(handler: (text: string) => void) {
+        control.onEvent(
+            MULTIPLAYER_TEXT_MESSAGE_ID,
+            0,
+            () => {
+                let current: string;
+
+                while ((current = dequeueText()) !== undefined) {
+                    handler(current);
+                }
+            }
+        );
     }
 }
 

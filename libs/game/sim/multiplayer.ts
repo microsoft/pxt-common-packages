@@ -1,3 +1,4 @@
+/// <reference path="../../../node_modules/pxt-core/built/pxtsim.d.ts" />
 namespace pxsim.multiplayer {
     const throttledImgPost = pxsim.U.throttle((msg: MultiplayerImageMessage) =>{
         getMultiplayerState().send(msg);
@@ -36,14 +37,41 @@ namespace pxsim.multiplayer {
         } as pxsim.MultiplayerIconMessage);
     }
 
+    export function postBuffer(buffer: pxsim.RefBuffer) {
+        getMultiplayerState().send({
+            content: "Buffer",
+            data: buffer.data,
+        } as pxsim.MultiplayerBufferMessage);
+    }
+
+    export function dequeueBuffer(): pxsim.RefBuffer | undefined {
+        const state = getMultiplayerState();
+        const data = state.bufferQueue.shift();
+        if (data) {
+            const buffer = new pxsim.RefBuffer(data);
+            return buffer;
+        }
+        return undefined;
+    }
+
+    export function postText(text: string) {
+        getMultiplayerState().send({
+            content: "Text",
+            text: text,
+        } as pxsim.MultiplayerTextEvent);
+    }
+
+    export function dequeueText(): string | undefined {
+        const state = getMultiplayerState();
+        return state.textQueue.shift();
+    }
 
     export function getCurrentImage(): pxsim.RefImage {
         return getMultiplayerState().backgroundImage;
     }
 
-    export function setOrigin(origin: "client" | "server" | undefined) {
+    export function setOrigin(origin: "client" | "server" | "peer" | undefined) {
         getMultiplayerState().origin = origin;
-
     }
 
     export function getOrigin(): string {
@@ -64,7 +92,7 @@ namespace pxsim {
         broadcast: true
         type: "multiplayer";
         content: string;
-        origin?: "server" | "client";
+        origin?: "server" | "client" | "peer";
         clientNumber?: number;
         id?: number;
     }
@@ -107,13 +135,28 @@ namespace pxsim {
         connected: boolean;
     }
 
+    export interface MultiplayerBufferMessage extends SimulatorMultiplayerMessage {
+        content: "Buffer";
+        data: Uint8Array;
+    }
+
+    export interface MultiplayerTextEvent extends SimulatorMultiplayerMessage {
+        content: "Text";
+        text: string;
+    }
+
     const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
     const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
+    const MULTIPLAYER_BUFFER_MESSAGE_ID = 3250;
+    const MULTIPLAYER_TEXT_MESSAGE_ID = 3251;
 
     export class MultiplayerState {
         lastMessageId: number;
         origin: string;
         backgroundImage: RefImage;
+
+        bufferQueue: Uint8Array[] = [];
+        textQueue: string[] = [];
 
         constructor() {
             this.lastMessageId = 0;
@@ -196,6 +239,12 @@ namespace pxsim {
                 }
             } else if (isConnectionMessage(msg)) {
                 this.registerConnectionState(msg.slot, msg.connected);
+            } else if (isBufferMessage(msg)) {
+                this.bufferQueue.push(msg.data);
+                board().bus.queue(MULTIPLAYER_BUFFER_MESSAGE_ID, msg.source === "client" ? 1 : 2);
+            } else if (isTextMessage(msg)) {
+                this.textQueue.push(msg.text);
+                board().bus.queue(MULTIPLAYER_TEXT_MESSAGE_ID, msg.source === "client" ? 1 : 2);
             }
         }
     }
@@ -218,5 +267,13 @@ namespace pxsim {
 
     function isConnectionMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerConnectionEvent {
         return msg && msg.content === "Connection";
+    }
+
+    function isBufferMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerBufferMessage {
+        return msg && msg.content === "Buffer";
+    }
+
+    function isTextMessage(msg: SimulatorMultiplayerMessage): msg is MultiplayerTextEvent {
+        return msg && msg.content === "Text";
     }
 }
