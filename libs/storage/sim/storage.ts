@@ -5,6 +5,7 @@ namespace pxsim.storage {
     }
 
     export function appendBuffer(filename: string, data: RefBuffer): void {
+        BufferMethods.typeCheck(data);
         const state = storageState();
         let buf = state.files[filename];
         if (!buf) buf = state.files[filename] = [];
@@ -13,6 +14,7 @@ namespace pxsim.storage {
     }
 
     export function overwriteWithBuffer(filename: string, data: RefBuffer): void {
+        BufferMethods.typeCheck(data);
         const state = storageState();
         const buf = [];
         for (let i = 0; i < data.data.length; ++i)

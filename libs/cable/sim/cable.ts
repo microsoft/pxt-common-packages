@@ -1,5 +1,6 @@
 namespace pxsim.network {
     export function cableSendPacket(buf: RefBuffer): void {
+        BufferMethods.typeCheck(buf);
         const state = getCableState();
         state.send(buf);
     }
@@ -12,7 +13,7 @@ namespace pxsim.network {
     export function onCablePacket(body: RefAction): void {
         const state = getCableState();
         state.listen(body);
-    }    
+    }
 
     export function onCableError(body: RefAction): void {
         const state = getCableState();
