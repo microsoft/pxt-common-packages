@@ -419,8 +419,20 @@ namespace Buffer {
 
     // Python-like packing, see https://docs.python.org/3/library/struct.html
 
-    export function packedSize(format: string) {
-        return __packUnpackCore(format, null, null, true)
+    export function packedSize(format: string): number {
+        let size = 0
+        for (let i = 0; i < format.length; ++i) {
+            const i0 = i
+            while (isDigit(format[i])) i++
+            let reps = 1
+            if (i0 != i)
+                reps = parseInt(format.slice(i0, i))
+            if (format[i] == 'x')
+                size += reps
+            else
+                size += sizeOfNumberFormat(getFormat(format[i], false)) * reps
+        }
+        return size
     }
 
     export function pack(format: string, nums: number[]) {
@@ -460,6 +472,10 @@ namespace Buffer {
     }
 
     export function __packUnpackCore(format: string, nums: number[], buf: Buffer, isPack: boolean, off = 0) {
+        let formatSize = packedSize(format)
+        let bufSize = buf.length
+        if (formatSize > bufSize - off)
+            control.fail(`Insufficient buffer (${bufSize - off} bytes) for format size (${formatSize} bytes)`)
         let isBig = false
         let idx = 0
         for (let i = 0; i < format.length; ++i) {
@@ -487,12 +503,10 @@ namespace Buffer {
                             if (fmt === null) {
                                 control.fail("Unsupported format character: " + format[i])
                             } else {
-                                if (buf) {
-                                    if (isPack)
-                                        buf.setNumber(fmt, off, nums[idx++])
-                                    else
-                                        nums.push(buf.getNumber(fmt, off))
-                                }
+                                if (isPack)
+                                    buf.setNumber(fmt, off, nums[idx++])
+                                else
+                                    nums.push(buf.getNumber(fmt, off))
 
                                 off += sizeOfNumberFormat(fmt)
                             }
