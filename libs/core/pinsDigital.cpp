@@ -36,9 +36,11 @@ namespace DigitalInOutPinMethods {
 //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
 //% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
+//% parts="slideswitch"
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% trackArgs=0
 bool digitalRead(DigitalInOutPin name) {
     return PINOP(getDigitalValue()) != 0;
 }
@@ -52,9 +54,11 @@ bool digitalRead(DigitalInOutPin name) {
 //% blockId=device_set_digital_pin block="digital write|pin %name|to %value=toggleHighLow"
 //% parts="led" trackArgs=0
 //% blockNamespace=pins
+//% parts="led"
 //% name.fieldEditor="gridpicker"
 //% name.fieldOptions.width=220
 //% name.fieldOptions.columns=4
+//% trackArgs=0
 void digitalWrite(DigitalInOutPin name, bool value) {
     PINOP(setDigitalValue(value));
 }
@@ -83,9 +87,11 @@ void onPulsed(DigitalInOutPin pin, PulseValue pulse, Action body) {
 //% blockId=pinsonevent block="on|pin %pin|%event"
 //% parts="slideswitch" trackArgs=0
 //% blockNamespace=pins
+//% parts="slideswitch"
 //% pin.fieldEditor="gridpicker"
 //% pin.fieldOptions.width=220
 //% pin.fieldOptions.columns=4
+//% trackArgs=0
 void onEvent(DigitalInOutPin pin, PinEvent event, Action body) {
     switch(event) {
         case PinEvent::PulseHigh:
