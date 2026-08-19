@@ -40,7 +40,6 @@ namespace pxsim.music {
         if (!onStopAllSetup) {
             onStopAllSetup = true;
             pxsim.AudioContextManager.onStopAll(() => {
-                AudioContextManager.muteAllChannels();
                 if (sequencers) {
                     for (const seq of sequencers) {
                         seq.sequencer.stop();
