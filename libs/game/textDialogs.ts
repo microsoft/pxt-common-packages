@@ -940,7 +940,7 @@ namespace game {
             }
 
             if (index - lastBreak === lineLength) {
-                if (lastBreakLocation === index || lastBreakLocation < lastBreak) {
+                if (lastBreakLocation === index || lastBreakLocation <= lastBreak) {
                     currentPage.push(formatLine(text.substr(lastBreak, lineLength)));
                     lastBreak = index;
                     nextLine();
