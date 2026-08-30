@@ -895,6 +895,7 @@ namespace pxsim.ImageMethods {
         const hSrc = args.getAt(7) as number;
         const transparent = args.getAt(8) as number;
         const check = args.getAt(9) as number;
+        const color = args.getAt(10) as number;
 
         const xSrcStep = ((wSrc << 16) / wDst) | 0;
         const ySrcStep = ((hSrc << 16) / hDst) | 0;
@@ -927,7 +928,12 @@ namespace pxsim.ImageMethods {
                     continue;
                 }
                 if (!transparent || cSrc) {
-                    setPixel(dst, xDstCur, yDstCur, cSrc);
+                    if (color) {
+                        setPixel(dst, xDstCur, yDstCur, color);
+                    }
+                    else {
+                        setPixel(dst, xDstCur, yDstCur, cSrc);
+                    }
                 }
             }
         }

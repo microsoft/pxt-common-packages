@@ -1087,6 +1087,7 @@ bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
     int hSrc = pxt::toInt(args->getAt(7));
     bool transparent = pxt::toBoolQuick(args->getAt(8));
     bool check = pxt::toBoolQuick(args->getAt(9));
+    int color = pxt::toInt(args->getAt(10));
 
     int xSrcStep = (wSrc << 16) / wDst;
     int ySrcStep = (hSrc << 16) / hDst;
@@ -1119,7 +1120,12 @@ bool blit(Image_ dst, Image_ src, pxt::RefCollection *args) {
                 continue;
             }
             if (!transparent || cSrc) {
-                setCore(dst, xDstCur, yDstCur, cSrc);
+                if (color) {
+                    setCore(dst, xDstCur, yDstCur, color);
+                }
+                else {
+                    setCore(dst, xDstCur, yDstCur, cSrc);
+                }
             }
         }
     }
