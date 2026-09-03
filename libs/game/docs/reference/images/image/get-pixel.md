@@ -8,7 +8,7 @@ image.create(0, 0).getPixel(0, 0)
 
 # Parameters
 
-* **x**: a [number](/types/number) that's the horziontal position of the pixel.
+* **x**: a [number](/types/number) that's the horizontal position of the pixel.
 * **y**: a [number](/types/number) that's the vertical position of the pixel.
 
 ## Returns

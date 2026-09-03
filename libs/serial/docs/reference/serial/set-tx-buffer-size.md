@@ -10,7 +10,7 @@ You can set the size of the transmit buffer for the serial connection. If your p
 
 If you are frequently writing a small amount of data, you can set the buffer to a small size to conserve memory on your board.
 
-## Paramters
+## Parameters
 
 * **size**: a [number](/types/number) of bytes (8 bits of data) to set for the transmit buffer.
 

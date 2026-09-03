@@ -78,7 +78,7 @@ mySprite.setFlag(SpriteFlag.Ghost, true)
 
 A ``ghost`` sprite will pass through wall tiles and causes no overlap events with tiles or other sprites.
 
-The example here shows a ghost sprite moving past another sprite without an overlap event occuring. It also passes over a non-wall tile and through a wall tile without stopping or triggering tile events.
+The example here shows a ghost sprite moving past another sprite without an overlap event occurring. It also passes over a non-wall tile and through a wall tile without stopping or triggering tile events.
 
 ```blocks
 scene.onHitWall(SpriteKind.Player, function (sprite, location) {

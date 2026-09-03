@@ -6,7 +6,7 @@ Create a new sprite with a pixel image.
 sprites.create(null)
 ```
 
-Sprites provide all the operations to move and animate images. Your sprites can detect collisions and overlaps with other objects. Initially, sprites have a position in the middle of screen and have no motion. You set the location and movement of a sprite in your code. Sprites are associated with a **kind** so that they can be identifed as part of group or type, such as ``Player`` and ``Enemy``.
+Sprites provide all the operations to move and animate images. Your sprites can detect collisions and overlaps with other objects. Initially, sprites have a position in the middle of screen and have no motion. You set the location and movement of a sprite in your code. Sprites are associated with a **kind** so that they can be identified as part of group or type, such as ``Player`` and ``Enemy``.
 
 ## Parameters
 

@@ -141,7 +141,7 @@ animation.setAction(mySprite, ActionKind.Walking)
 
 ## More actions
 
-You can choose a different action or create a new one and add it to the ``ActionKind`` enumeration. Also, a new action is added by chosing ``Add a new action...`` in the action drop down list for ``||animation:create animation||``.
+You can choose a different action or create a new one and add it to the ``ActionKind`` enumeration. Also, a new action is added by choosing ``Add a new action...`` in the action drop down list for ``||animation:create animation||``.
 
 ```typescript
 enum ActionKind {

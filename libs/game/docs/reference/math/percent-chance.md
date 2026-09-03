@@ -8,7 +8,7 @@ Math.percentChance(0)
 
 ## Parameters
 
-* **percentage**: a [number](/types/number) which is the percentage chance that the returned value will be `true`. The percentage is a value beteen `0` and `100`.
+* **percentage**: a [number](/types/number) which is the percentage chance that the returned value will be `true`. The percentage is a value between `0` and `100`.
 
 ## Returns
 

@@ -8,7 +8,7 @@ animation.createAnimation(0, 0)
 
 An animation object contains image frames that are displayed in a sequence. The animation is empty when it's first created. Frames are added to the animation show a complete action. The animation is associated, or tagged, to its action. An action is some activity that is given a value, such as ``Walking``, ``Flying``, ``Running``, or ``Jumping``. 
 
-Actions are set in an enumeration called ``ActionKind`` and are chosen for the animation when it's created. New actions can be added by putting in a new value for ``ActionKind`` in JavaScript or by chosing ``Add a new action...`` in the action drop down list for ``||animation:create animation||``.
+Actions are set in an enumeration called ``ActionKind`` and are chosen for the animation when it's created. New actions can be added by putting in a new value for ``ActionKind`` in JavaScript or by choosing ``Add a new action...`` in the action drop down list for ``||animation:create animation||``.
 
 ```typescript-ignore
 enum ActionKind {

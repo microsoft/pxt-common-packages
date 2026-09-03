@@ -6,7 +6,7 @@ Get the value of a Player property.
 mp.getPlayerProperty(mp.playerSelector(mp.PlayerNumber.One), PlayerProperty.Index)
 ```
 
-Player properties contain identity information. These are set for a [Player](/types/player) object when it's created to uniquely identfy it. Currently, there are two properties: ``||mp:index||`` and ``||mp:number||``.
+Player properties contain identity information. These are set for a [Player](/types/player) object when it's created to uniquely identify it. Currently, there are two properties: ``||mp:index||`` and ``||mp:number||``.
 
 ## Parameters
 

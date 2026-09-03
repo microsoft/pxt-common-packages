@@ -29,11 +29,11 @@ let enemyKind = SpriteKind.Enemy
 
 ## Returns
 
-* a sprite [kind](/reference/sprites/sprite/kind) object for a sprite kind identifer.
+* a sprite [kind](/reference/sprites/sprite/kind) object for a sprite kind identifier.
 
 ## Example #example
 
-Create several `Food` sprites at random locations on the screen. Use a sprite kind object for the `Food` identifier to destroy all `Food` srprites.
+Create several `Food` sprites at random locations on the screen. Use a sprite kind object for the `Food` identifier to destroy all `Food` sprites.
 
 ```blocks
 let mySprite: Sprite = null

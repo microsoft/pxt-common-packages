@@ -15,7 +15,7 @@ You can make a sprite locate itself right on top of a random tile in the tilemap
 
 ## Example #example
 
-Make a tilemap with several different tiles. Create a round shaped sprite. Ramdomly place the sprite on a blue tile.
+Make a tilemap with several different tiles. Create a round shaped sprite. Randomly place the sprite on a blue tile.
 
 ```blocks
 tiles.setTilemap(tilemap`level1`)

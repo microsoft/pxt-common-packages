@@ -12,7 +12,7 @@ If you set a game life count (using [setLife](/reference/info/set-life)) and it 
 
 ## ~ hint
 
-Indiviual sprites have their own [lifespan](/reference/sprites/sprite/lifespan). They are destroyed if their lifespan was set and then reaches `0`. This is different from the [life](/reference/info/life) count for the game. Game lives are awarded and removed based on your own rules for gameplay.
+Individual sprites have their own [lifespan](/reference/sprites/sprite/lifespan). They are destroyed if their lifespan was set and then reaches `0`. This is different from the [life](/reference/info/life) count for the game. Game lives are awarded and removed based on your own rules for gameplay.
 
 ## ~
 

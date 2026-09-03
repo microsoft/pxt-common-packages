@@ -9,7 +9,7 @@ An analog output at a pin will have an amount of voltage related to the output v
 you give to ``||pins:analog write||``. You are setting the amount of _signal_ at the pin.
 You use values between `0` (for no signal) and `1023` (for full signal). The actual voltage
 on the pin will follow the value you give for the output. So, `0` is no voltage and `1023`
-is maximun voltage. The voltage that matches your signal value depends on the
+is maximum voltage. The voltage that matches your signal value depends on the
 voltage range used by your board.
 
 ## Parameters

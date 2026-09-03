@@ -24,7 +24,7 @@ The library has various asserts that will register fault. Note that since except
 tests.assert("speed positive", motors.largeB.speed() > 0)
 ```
 
-* **assert close** checks that a numberical value is within a particular range
+* **assert close** checks that a numerical value is within a particular range
 
 ```blocks
 tests.assertClose("speed", motors.largeB.speed(), 10, 2)

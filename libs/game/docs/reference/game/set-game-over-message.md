@@ -44,4 +44,4 @@ game.onUpdateInterval(500, function () {
 ## See also #seealso
 
 [set game over effect](/reference/game/set-game-over-effect),
-[set game over playabe](/reference/game/set-game-over-playable)
+[set game over playable](/reference/game/set-game-over-playable)

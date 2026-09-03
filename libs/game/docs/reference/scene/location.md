@@ -1,6 +1,6 @@
 # Location
 
-The Location object contains the postition information of a game element on the tilemap.
+The Location object contains the position information of a game element on the tilemap.
 
 ## column (property)
 
