@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ES5",
+        "noImplicitAny": true,
+        "outDir": "built",
+        "rootDir": ".",
+        "ignoreDeprecations": "6.0",
+        "strictPropertyInitialization": false,
+        "strictNullChecks": false
+    },
+    "include": [
+        "**/*.ts"
+    ],
+    "exclude": [
+        "built/**",
+        "pxt_modules/**/*test.ts"
+    ]
+}

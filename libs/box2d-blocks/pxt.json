@@ -1,0 +1,20 @@
+{
+    "name": "box2d-blocks",
+    "description": "Blocks for the Box2D physics package.",
+    "version": "0.0.0",
+    "files": [
+        "blocks.ts",
+        "README.md"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "supportedTargets": [
+        "arcade"
+    ],
+    "dependencies": {
+        "box2d": "file:../box2d",
+        "game": "file:../game"
+    }
+}
