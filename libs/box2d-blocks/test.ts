@@ -12,6 +12,16 @@ body.x = 80
 body.y = 20
 control.assert(box2dBlocks.bodyAt(80, 20) == body, 0x208)
 
+const polygonBody = box2dBlocks.createBody(
+    box2d.BodyType.Dynamic,
+    PhysicsBodyKind.Body,
+    box2dBlocks.polygonShape([
+        box2dBlocks.point(-8, 6),
+        box2dBlocks.point(0, -8),
+        box2dBlocks.point(8, 6)
+    ])
+)
+
 box2dBlocks.onCollision(PhysicsBodyKind.Body, PhysicsBodyKind.Wall, function (fallingBody, wall) {
     box2dBlocks.applyLinearImpulseToCenter(fallingBody, 0, -2)
 })

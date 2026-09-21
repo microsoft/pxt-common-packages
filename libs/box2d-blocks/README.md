@@ -7,9 +7,11 @@ gravity, and custom joint offsets use pixels; angles use radians.
 
 Attaching a shape consumes its template. The body owns the resulting fixture,
 and destroying the body also destroys its fixtures and connected joints.
-Shape blocks are toolbox children of the create-body block and create its first
-fixture with default material settings. The attach-shape block can add more
-fixtures or customize their material and drawing options.
+Shape blocks create shape variables. Passing one to create-body creates its
+first fixture with default material settings. The attach-shape block can add
+more fixtures or customize their material and drawing options.
+Polygon shapes accept a list of body-local pixel point blocks. Points must
+describe a convex polygon in boundary order.
 New bodies start at the center of the screen with an angle of zero. Use the
 combined body property blocks to change their `x`, `y`, or angle afterward.
 Edge shapes are centered on the body and use a pixel length and radian angle.

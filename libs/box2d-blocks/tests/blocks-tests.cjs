@@ -221,6 +221,24 @@ assert.ok(Math.abs(verticalEdge.values[2]) < 0.001, "A vertical edge ends at the
 assert.ok(Math.abs(verticalEdge.values[3] - 1) < 0.001, "The second endpoint is half the length below center");
 verticalEdge.destroy();
 
+const polygon = api.polygonShape([
+    api.point(-10, 5),
+    api.point(0, -10),
+    api.point(10, 5)
+]);
+assert.deepEqual(Array.from(polygon.values), [-1, 0.5, 0, -1, 1, 0.5], "Polygon vertices convert from pixel points to meters");
+polygon.destroy();
+assert.throws(
+    () => api.polygonShape([api.point(0, 0), api.point(10, 0)]),
+    /at least three vertices/,
+    "Polygon shapes require at least three point blocks"
+);
+assert.throws(
+    () => api.polygonShape([api.point(0, 0), null, api.point(10, 10)]),
+    /vertices cannot be empty/,
+    "Polygon shapes reject empty point entries"
+);
+
 const boundsBody = api.createBody(2, kinds.Body, api.boxShape(10, 5));
 assert.ok(Math.abs(boundsBody.left - 70) < 0.001, "Body left uses attached shape bounds");
 assert.ok(Math.abs(boundsBody.top - 55) < 0.001, "Body top uses attached shape bounds");

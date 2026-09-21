@@ -21,7 +21,7 @@ namespace PhysicsBodyKind {
  */
 //% color=#426b9a weight=80 icon="\uf1b2" block="Box2D"
 //% groups='["Create", "Physics", "Motion", "Joints", "Collisions", "Lifecycle"]'
-namespace box2dBlocks {
+namespace box2dblocks {
     const PIXELS_PER_METER = 10;
     const STEP = 1 / 60;
     const MAX_STEPS = 4;
@@ -849,8 +849,7 @@ namespace box2dBlocks {
     //% block="circle shape radius $radius||center x $centerX y $centerY"
     //% radius.min=1 radius.defl=5
     //% expandableArgumentMode=toggle
-    //% toolboxParent=box2d_blocks_create_body
-    //% toolboxParentArgument=shape
+    //% blockSetVariable=shape
     //% group="Create" weight=95
     export function circleShape(radius: number, centerX: number = 0, centerY: number = 0): PhysicsShape {
         const owner = state();
@@ -867,8 +866,7 @@ namespace box2dBlocks {
     //% block="box shape half width $halfWidth half height $halfHeight||center x $centerX y $centerY angle $angle"
     //% halfWidth.min=1 halfWidth.defl=5 halfHeight.min=1 halfHeight.defl=5
     //% expandableArgumentMode=toggle
-    //% toolboxParent=box2d_blocks_create_body
-    //% toolboxParentArgument=shape
+    //% blockSetVariable=shape
     //% group="Create" weight=90
     export function boxShape(halfWidth: number, halfHeight: number, centerX: number = 0, centerY: number = 0, angle: number = 0): PhysicsShape {
         const owner = state();
@@ -888,24 +886,30 @@ namespace box2dBlocks {
     }
 
     //% blockId=box2d_blocks_polygon_shape
-    //% block="polygon shape pixel vertices $vertices"
+    //% block="polygon shape with vertices $vertices"
     //% vertices.shadow=lists_create_with
-    //% toolboxParent=box2d_blocks_create_body
-    //% toolboxParentArgument=shape
-    //% group="Create" weight=85 advanced=true
-    export function polygonShape(vertices: number[]): PhysicsShape {
+    //% vertices.defl=box2d_blocks_xy_point
+    //% blockSetVariable=shape
+    //% group="Create" weight=85
+    export function polygonShape(vertices: PhysicsPoint[]): PhysicsShape {
+        if (!vertices || vertices.length < 3)
+            control.fail("Polygon shapes need at least three vertices.");
+
         const owner = state();
         const meters: number[] = [];
-        for (let i = 0; i < vertices.length; ++i)
-            meters.push(vertices[i] / PIXELS_PER_METER);
+        for (let i = 0; i < vertices.length; ++i) {
+            if (!vertices[i])
+                control.fail("Polygon vertices cannot be empty.");
+            meters.push(vertices[i].x / PIXELS_PER_METER);
+            meters.push(vertices[i].y / PIXELS_PER_METER);
+        }
         return owner.addShape(new PhysicsShape(box2d.Shape.polygon(meters), ShapeType.Polygon, meters, false, owner));
     }
 
     //% blockId=box2d_blocks_edge_shape
     //% block="edge shape length $length angle $angle"
     //% length.min=1 length.defl=10 angle.defl=0
-    //% toolboxParent=box2d_blocks_create_body
-    //% toolboxParentArgument=shape
+    //% blockSetVariable=shape
     //% group="Create" weight=80
     export function edgeShape(length: number, angle: number): PhysicsShape {
         const owner = state();
@@ -930,8 +934,7 @@ namespace box2dBlocks {
     //% vertices.shadow=lists_create_with
     //% loop.shadow=toggleOnOff
     //% expandableArgumentMode=toggle
-    //% toolboxParent=box2d_blocks_create_body
-    //% toolboxParentArgument=shape
+    //% blockSetVariable=shape
     //% group="Create" weight=75 advanced=true
     export function chainShape(vertices: number[], loop: boolean = false): PhysicsShape {
         const owner = state();
