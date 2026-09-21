@@ -167,7 +167,7 @@ that the anchor follows. Maximum force, stiffness, and damping must be
 nonnegative.
 
 For reusable access to a body's pose, use `body.readTransform(output)` (or the low-level
-`box2d.readBodyTransform(handle, output)`) instead:
+`box2dNative.readBodyTransform(handle, output)`) instead:
 
 ```typescript
 const transform = [0, 0, 0] // Allocate once, outside the update/drawing callback.
@@ -190,7 +190,7 @@ not an allocation-free path or a guarantee that 48 bodies fit on hardware.
 
 For rectangle rendering, `body.readBoxVertices(box, view, output)` goes further:
 it performs the rotation, projection, and pixel rounding in C++. The equivalent
-low-level call is `box2d.readBodyBoxVertices(handle, box, view, output)`.
+low-level call is `box2dNative.readBodyBoxVertices(handle, box, view, output)`.
 
 ```typescript
 // Allocate these once, not inside the drawing callback.
@@ -236,10 +236,10 @@ Compare `.handle` values rather than `===` to identify the same native object.
 This also works for objects originally created through the low-level API:
 
 ```typescript
-const handle = box2d.createBody(world.handle, box2d.BodyType.Dynamic, 2, 3)
+const handle = box2dNative.createBody(world.handle, box2d.BodyType.Dynamic, 2, 3)
 const body = new box2d.Body(handle)
 body.applyLinearImpulseToCenter(1, 0)
-box2d.destroyBody(handle)
+box2dNative.destroyBody(handle)
 // body.valid is now false
 ```
 

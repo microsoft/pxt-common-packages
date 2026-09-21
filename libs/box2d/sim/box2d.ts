@@ -1,4 +1,4 @@
-namespace pxsim.box2d {
+namespace pxsim.box2dNative {
     type WasmFunction = (...args: number[]) => number;
 
     interface Box2DExports {

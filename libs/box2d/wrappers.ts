@@ -37,40 +37,40 @@ namespace box2d {
 
         /** Consults native state, including destruction through the low-level API. */
         get valid(): boolean {
-            return box2d.isValid(this._handle);
+            return box2dNative.isValid(this._handle);
         }
     }
 
     /** An explicitly owned native physics world. */
     export class World extends NativeObject {
         constructor(gravityX: number = 0, gravityY: number = 9.8) {
-            super(box2d.createWorld(gravityX, gravityY));
+            super(box2dNative.createWorld(gravityX, gravityY));
         }
 
         /** Also invalidates all bodies, fixtures, and joints in this world. */
         destroy(): void {
-            box2d.destroyWorld(this.handle);
+            box2dNative.destroyWorld(this.handle);
         }
 
         step(seconds: number = 0.016666666666666666, velocityIterations: number = 8, positionIterations: number = 3): void {
-            box2d.step(this.handle, seconds, velocityIterations, positionIterations);
+            box2dNative.step(this.handle, seconds, velocityIterations, positionIterations);
         }
 
         setGravity(x: number, y: number): void {
-            box2d.setGravity(this.handle, x, y);
+            box2dNative.setGravity(this.handle, x, y);
         }
 
         setSleepingAllowed(allowed: boolean): void {
-            box2d.setWorldSleepingAllowed(this.handle, allowed);
+            box2dNative.setWorldSleepingAllowed(this.handle, allowed);
         }
 
         createBody(type: BodyType, x: number = 0, y: number = 0, angle: number = 0): Body {
-            return new Body(box2d.createBody(this.handle, type, x, y, angle));
+            return new Body(box2dNative.createBody(this.handle, type, x, y, angle));
         }
 
         /** Touching fixture pairs, including sensors; not begin/end events. */
         getContacts(): Contact[] {
-            const pairs = box2d.getContacts(this.handle);
+            const pairs = box2dNative.getContacts(this.handle);
             const result: Contact[] = [];
             for (let i = 0; i < pairs.length; i += 2) {
                 result.push(new Contact(new Fixture(pairs[i]), new Fixture(pairs[i + 1])));
@@ -80,7 +80,7 @@ namespace box2d {
 
         /** Broad-phase candidates, not exact shape overlap tests. */
         queryAABB(minX: number, minY: number, maxX: number, maxY: number): Fixture[] {
-            const handles = box2d.queryAABB(this.handle, minX, minY, maxX, maxY);
+            const handles = box2dNative.queryAABB(this.handle, minX, minY, maxX, maxY);
             const result: Fixture[] = [];
             for (let i = 0; i < handles.length; ++i) {
                 result.push(new Fixture(handles[i]));
@@ -90,7 +90,7 @@ namespace box2d {
 
         /** The closest hit, or null if the ray misses. */
         rayCast(x1: number, y1: number, x2: number, y2: number): RayCastHit {
-            const hit = box2d.rayCast(this.handle, x1, y1, x2, y2);
+            const hit = box2dNative.rayCast(this.handle, x1, y1, x2, y2);
             if (hit.length == 0) return null;
             return new RayCastHit(
                 new Fixture(hit[box2d.RayHit.Fixture]),
@@ -109,16 +109,16 @@ namespace box2d {
 
         /** Also invalidates attached fixtures and joints. */
         destroy(): void {
-            box2d.destroyBody(this.handle);
+            box2dNative.destroyBody(this.handle);
         }
 
         getState(): BodySnapshot {
-            return new BodySnapshot(box2d.getBodyState(this.handle));
+            return new BodySnapshot(box2dNative.getBodyState(this.handle));
         }
 
         /** Overwrite the first three entries of a reusable array with [x, y, angle]. */
         readTransform(output: number[]): void {
-            box2d.readBodyTransform(this.handle, output);
+            box2dNative.readBodyTransform(this.handle, output);
         }
 
         /**
@@ -127,7 +127,7 @@ namespace box2d {
          * View: [pixelsPerMeter, originX, originY]. Reuse all three arrays when rendering.
          */
         readBoxVertices(box: number[], view: number[], output: number[]): void {
-            box2d.readBodyBoxVertices(this.handle, box, view, output);
+            box2dNative.readBodyBoxVertices(this.handle, box, view, output);
         }
 
         /** A detached snapshot. Use setPosition to move the native body. */
@@ -142,7 +142,7 @@ namespace box2d {
 
         set angle(value: number) {
             const state = this.getState();
-            box2d.setTransform(this.handle, state.x, state.y, value);
+            box2dNative.setTransform(this.handle, state.x, state.y, value);
         }
 
         get linearVelocity(): Vec2 {
@@ -155,7 +155,7 @@ namespace box2d {
         }
 
         set angularVelocity(value: number) {
-            box2d.setAngularVelocity(this.handle, value);
+            box2dNative.setAngularVelocity(this.handle, value);
         }
 
         get mass(): number {
@@ -167,98 +167,98 @@ namespace box2d {
         }
 
         setPosition(x: number, y: number): void {
-            box2d.setTransform(this.handle, x, y, this.angle);
+            box2dNative.setTransform(this.handle, x, y, this.angle);
         }
 
         setTransform(x: number, y: number, angle: number): void {
-            box2d.setTransform(this.handle, x, y, angle);
+            box2dNative.setTransform(this.handle, x, y, angle);
         }
 
         setLinearVelocity(x: number, y: number): void {
-            box2d.setLinearVelocity(this.handle, x, y);
+            box2dNative.setLinearVelocity(this.handle, x, y);
         }
 
         setType(type: BodyType): void {
-            box2d.setBodyType(this.handle, type);
+            box2dNative.setBodyType(this.handle, type);
         }
 
         setDamping(linear: number, angular: number): void {
-            box2d.setDamping(this.handle, linear, angular);
+            box2dNative.setDamping(this.handle, linear, angular);
         }
 
         setGravityScale(scale: number): void {
-            box2d.setGravityScale(this.handle, scale);
+            box2dNative.setGravityScale(this.handle, scale);
         }
 
         setFlag(flag: BodyFlag, enabled: boolean): void {
-            box2d.setBodyFlag(this.handle, flag, enabled);
+            box2dNative.setBodyFlag(this.handle, flag, enabled);
         }
 
         getFlag(flag: BodyFlag): boolean {
-            return box2d.getBodyFlag(this.handle, flag);
+            return box2dNative.getBodyFlag(this.handle, flag);
         }
 
         /** The fixture owns a copy of the shape; the template remains independently owned. */
         createFixture(shape: Shape, density: number = 1, friction: number = 0.2, restitution: number = 0, sensor: boolean = false): Fixture {
-            return new Fixture(box2d.createFixture(this.handle, shape.handle, density, friction, restitution, sensor));
+            return new Fixture(box2dNative.createFixture(this.handle, shape.handle, density, friction, restitution, sensor));
         }
 
         applyForce(x: number, y: number, pointX: number, pointY: number, wake: boolean = true): void {
-            box2d.applyForce(this.handle, x, y, pointX, pointY, wake);
+            box2dNative.applyForce(this.handle, x, y, pointX, pointY, wake);
         }
 
         applyForceToCenter(x: number, y: number, wake: boolean = true): void {
-            box2d.applyForceToCenter(this.handle, x, y, wake);
+            box2dNative.applyForceToCenter(this.handle, x, y, wake);
         }
 
         applyLinearImpulse(x: number, y: number, pointX: number, pointY: number, wake: boolean = true): void {
-            box2d.applyLinearImpulse(this.handle, x, y, pointX, pointY, wake);
+            box2dNative.applyLinearImpulse(this.handle, x, y, pointX, pointY, wake);
         }
 
         applyLinearImpulseToCenter(x: number, y: number, wake: boolean = true): void {
-            box2d.applyLinearImpulseToCenter(this.handle, x, y, wake);
+            box2dNative.applyLinearImpulseToCenter(this.handle, x, y, wake);
         }
 
         applyTorque(torque: number, wake: boolean = true): void {
-            box2d.applyTorque(this.handle, torque, wake);
+            box2dNative.applyTorque(this.handle, torque, wake);
         }
 
         applyAngularImpulse(impulse: number, wake: boolean = true): void {
-            box2d.applyAngularImpulse(this.handle, impulse, wake);
+            box2dNative.applyAngularImpulse(this.handle, impulse, wake);
         }
 
         getWorldPoint(x: number, y: number): Vec2 {
-            const point = box2d.getWorldPoint(this.handle, x, y);
+            const point = box2dNative.getWorldPoint(this.handle, x, y);
             return new Vec2(point[0], point[1]);
         }
 
         getLocalPoint(x: number, y: number): Vec2 {
-            const point = box2d.getLocalPoint(this.handle, x, y);
+            const point = box2dNative.getLocalPoint(this.handle, x, y);
             return new Vec2(point[0], point[1]);
         }
 
         /** Anchors are world-space points; both bodies must belong to the same world. */
         createDistanceJoint(other: Body, anchorX: number, anchorY: number, otherAnchorX: number, otherAnchorY: number, collideConnected: boolean = false): DistanceJoint {
-            return new DistanceJoint(box2d.createDistanceJoint(
+            return new DistanceJoint(box2dNative.createDistanceJoint(
                 this.handle, other.handle, anchorX, anchorY, otherAnchorX, otherAnchorY, collideConnected
             ));
         }
 
         /** Create a hinge at a world-space anchor, with another body in the same world. */
         createRevoluteJoint(other: Body, anchorX: number, anchorY: number, collideConnected: boolean = false): RevoluteJoint {
-            return new RevoluteJoint(box2d.createRevoluteJoint(this.handle, other.handle, anchorX, anchorY, collideConnected));
+            return new RevoluteJoint(box2dNative.createRevoluteJoint(this.handle, other.handle, anchorX, anchorY, collideConnected));
         }
 
         /** World-space anchor and finite nonzero axis; the normalized axis stays fixed in this body. */
         createWheelJoint(other: Body, anchorX: number, anchorY: number, axisX: number, axisY: number, collideConnected: boolean = false): WheelJoint {
-            return new WheelJoint(box2d.createWheelJoint(
+            return new WheelJoint(box2dNative.createWheelJoint(
                 this.handle, other.handle, anchorX, anchorY, axisX, axisY, collideConnected
             ));
         }
 
         /** Create a mouse joint whose local anchor on the dynamic other body starts at the world-space anchor. */
         createMouseJoint(other: Body, anchorX: number, anchorY: number, maxForce: number, stiffness: number, damping: number): MouseJoint {
-            return new MouseJoint(box2d.createMouseJoint(
+            return new MouseJoint(box2dNative.createMouseJoint(
                 this.handle, other.handle, anchorX, anchorY, maxForce, stiffness, damping
             ));
         }
@@ -272,30 +272,30 @@ namespace box2d {
         }
 
         static circle(radius: number, centerX: number = 0, centerY: number = 0): Shape {
-            return new Shape(box2d.createCircleShape(radius, centerX, centerY));
+            return new Shape(box2dNative.createCircleShape(radius, centerX, centerY));
         }
 
         /** Dimensions are half extents in meters. */
         static box(halfWidth: number, halfHeight: number, centerX: number = 0, centerY: number = 0, angle: number = 0): Shape {
-            return new Shape(box2d.createBoxShape(halfWidth, halfHeight, centerX, centerY, angle));
+            return new Shape(box2dNative.createBoxShape(halfWidth, halfHeight, centerX, centerY, angle));
         }
 
         /** 3-8 strictly convex local vertices: [x0, y0, x1, y1, ...]. */
         static polygon(vertices: number[]): Shape {
-            return new Shape(box2d.createPolygonShape(vertices));
+            return new Shape(box2dNative.createPolygonShape(vertices));
         }
 
         static edge(x1: number, y1: number, x2: number, y2: number): Shape {
-            return new Shape(box2d.createEdgeShape(x1, y1, x2, y2));
+            return new Shape(box2dNative.createEdgeShape(x1, y1, x2, y2));
         }
 
         static chain(vertices: number[], loop: boolean = false): Shape {
-            return new Shape(box2d.createChainShape(vertices, loop));
+            return new Shape(box2dNative.createChainShape(vertices, loop));
         }
 
         /** Existing fixtures keep their copies. */
         destroy(): void {
-            box2d.destroyShape(this.handle);
+            box2dNative.destroyShape(this.handle);
         }
     }
 
@@ -307,27 +307,27 @@ namespace box2d {
 
         /** A fresh wrapper of the owning body; compare handles rather than object identity. */
         get body(): Body {
-            return new Body(box2d.getFixtureBody(this.handle));
+            return new Body(box2dNative.getFixtureBody(this.handle));
         }
 
         destroy(): void {
-            box2d.destroyFixture(this.handle);
+            box2dNative.destroyFixture(this.handle);
         }
 
         setMaterial(density: number, friction: number, restitution: number): void {
-            box2d.setFixtureMaterial(this.handle, density, friction, restitution);
+            box2dNative.setFixtureMaterial(this.handle, density, friction, restitution);
         }
 
         setSensor(sensor: boolean): void {
-            box2d.setFixtureSensor(this.handle, sensor);
+            box2dNative.setFixtureSensor(this.handle, sensor);
         }
 
         setFilter(categoryBits: number = 1, maskBits: number = 65535, groupIndex: number = 0): void {
-            box2d.setFixtureFilter(this.handle, categoryBits, maskBits, groupIndex);
+            box2dNative.setFixtureFilter(this.handle, categoryBits, maskBits, groupIndex);
         }
 
         testPoint(x: number, y: number): boolean {
-            return box2d.testPoint(this.handle, x, y);
+            return box2dNative.testPoint(this.handle, x, y);
         }
     }
 
@@ -338,7 +338,7 @@ namespace box2d {
         }
 
         destroy(): void {
-            box2d.destroyJoint(this.handle);
+            box2dNative.destroyJoint(this.handle);
         }
     }
 
@@ -350,7 +350,7 @@ namespace box2d {
 
         /** Length and range are meters, stiffness N/m, and damping N*s/m. */
         configure(length: number, minLength: number, maxLength: number, stiffness: number = 0, damping: number = 0): void {
-            box2d.setDistanceJoint(this.handle, length, minLength, maxLength, stiffness, damping);
+            box2dNative.setDistanceJoint(this.handle, length, minLength, maxLength, stiffness, damping);
         }
     }
 
@@ -361,11 +361,11 @@ namespace box2d {
         }
 
         setMotor(enabled: boolean, speed: number, maxTorque: number): void {
-            box2d.setRevoluteJointMotor(this.handle, enabled, speed, maxTorque);
+            box2dNative.setRevoluteJointMotor(this.handle, enabled, speed, maxTorque);
         }
 
         setLimits(enabled: boolean, lower: number, upper: number): void {
-            box2d.setRevoluteJointLimits(this.handle, enabled, lower, upper);
+            box2dNative.setRevoluteJointLimits(this.handle, enabled, lower, upper);
         }
     }
 
@@ -377,17 +377,17 @@ namespace box2d {
 
         /** Speed is radians/second; torque is nonnegative N*m. Enabled zero speed brakes. */
         setMotor(enabled: boolean, speed: number, maxTorque: number): void {
-            box2d.setWheelJointMotor(this.handle, enabled, speed, maxTorque);
+            box2dNative.setWheelJointMotor(this.handle, enabled, speed, maxTorque);
         }
 
         /** Translation limits in meters along the suspension axis, relative to creation. */
         setLimits(enabled: boolean, lower: number, upper: number): void {
-            box2d.setWheelJointLimits(this.handle, enabled, lower, upper);
+            box2dNative.setWheelJointLimits(this.handle, enabled, lower, upper);
         }
 
         /** Nonnegative stiffness in N/m and damping in N*s/m, not frequency/damping ratio. */
         setSuspension(stiffness: number, damping: number): void {
-            box2d.setWheelJointSuspension(this.handle, stiffness, damping);
+            box2dNative.setWheelJointSuspension(this.handle, stiffness, damping);
         }
     }
 
@@ -397,7 +397,7 @@ namespace box2d {
         }
 
         setTarget(x: number, y: number): void {
-            box2d.setMouseJointTarget(this.handle, x, y);
+            box2dNative.setMouseJointTarget(this.handle, x, y);
         }
     }
 

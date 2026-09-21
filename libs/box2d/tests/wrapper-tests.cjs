@@ -13,11 +13,12 @@ function load(file) {
 
 load("main.ts");
 const api = context.box2d;
-const nativeNames = Object.keys(api).filter(name => typeof api[name] === "function");
+const nativeApi = context.box2dNative;
+const nativeNames = Object.keys(nativeApi).filter(name => typeof nativeApi[name] === "function");
 const covered = new Set();
 let expected = [];
 for (const name of nativeNames) {
-    api[name] = (...args) => {
+    nativeApi[name] = (...args) => {
         const call = expected.shift();
         assert.ok(call, `Unexpected native call: ${name}`);
         assert.equal(name, call.name);

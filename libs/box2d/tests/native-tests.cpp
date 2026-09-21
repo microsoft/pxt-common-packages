@@ -391,45 +391,45 @@ static void invalidInputs() {
 }
 
 static void packedBindings() {
-    double w = box2d::createWorld(0, 0);
+    double w = box2dNative::createWorld(0, 0);
     RefCollection bodyArgs{{w, 2, 1.25, 2.5, 0}};
-    double b = box2d::createBody(&bodyArgs);
+    double b = box2dNative::createBody(&bodyArgs);
     RefCollection boxArgs{{0.5, 0.25, 0, 0, 0}};
-    double shape = box2d::createBoxShape(&boxArgs);
+    double shape = box2dNative::createBoxShape(&boxArgs);
     RefCollection fixtureArgs{{b, shape, 2, 0.2, 0.4, 1}};
-    double f = box2d::createFixture(&fixtureArgs);
-    auto state = take(box2d::getBodyState(b));
+    double f = box2dNative::createFixture(&fixtureArgs);
+    auto state = take(box2dNative::getBodyState(b));
     close(state[0], 1.25);
     close(state[1], 2.5);
     close(state[6], 1);
     assert(fixture(f)->IsSensor());
     RefCollection impulseArgs{{b, 0.5, 0, 1.25, 2.5, 1}};
-    box2d::applyLinearImpulse(&impulseArgs);
-    close(take(box2d::getBodyState(b))[3], 0.5);
+    box2dNative::applyLinearImpulse(&impulseArgs);
+    close(take(box2dNative::getBodyState(b))[3], 0.5);
     RefCollection queryArgs{{w, -10, -10, 10, 10}};
-    assert(take(box2d::queryAABB(&queryArgs)) == std::vector<double>{f});
+    assert(take(box2dNative::queryAABB(&queryArgs)) == std::vector<double>{f});
     RefCollection rayArgs{{w, 1.25, 0, 1.25, 5}};
-    auto hit = take(box2d::rayCast(&rayArgs));
+    auto hit = take(box2dNative::rayCast(&rayArgs));
     assert(hit.size() == 6 && hit[0] == f);
     close(hit[5], 0.45);
     RefCollection shortArgs{{w, 2}};
-    rejects([&] { box2d::createBody(&shortArgs); });
-    rejects([&] { box2d::createFixture(nullptr); });
+    rejects([&] { box2dNative::createBody(&shortArgs); });
+    rejects([&] { box2dNative::createFixture(nullptr); });
     fixtureArgs.values[5] = 2;
-    rejects([&] { box2d::createFixture(&fixtureArgs); });
+    rejects([&] { box2dNative::createFixture(&fixtureArgs); });
     RefCollection otherArgs{{w, 2, -1, 2.5, 0}};
-    double other = box2d::createBody(&otherArgs);
+    double other = box2dNative::createBody(&otherArgs);
     RefCollection wheelArgs{{b, other, -1, 2.5, 0, 4, 1}};
-    double wheelHandle = box2d::createWheelJoint(&wheelArgs);
+    double wheelHandle = box2dNative::createWheelJoint(&wheelArgs);
     auto wheel = static_cast<b2WheelJoint *>(joint(wheelHandle, e_wheelJoint));
     assert(wheel->GetBodyA() == body(b) && wheel->GetBodyB() == body(other));
     assert(wheel->GetCollideConnected());
     close(wheel->GetAnchorA().x, -1);
     close(wheel->GetAnchorA().y, 2.5);
     close(wheel->GetLocalAxisA().y, 1);
-    box2d::setWheelJointMotor(wheelHandle, true, -50, 20);
-    box2d::setWheelJointLimits(wheelHandle, true, -0.25, 0.25);
-    box2d::setWheelJointSuspension(wheelHandle, 300, 17);
+    box2dNative::setWheelJointMotor(wheelHandle, true, -50, 20);
+    box2dNative::setWheelJointLimits(wheelHandle, true, -0.25, 0.25);
+    box2dNative::setWheelJointSuspension(wheelHandle, 300, 17);
     close(wheel->GetMotorSpeed(), -50);
     close(wheel->GetMaxMotorTorque(), 20);
     close(wheel->GetLowerLimit(), -0.25);
@@ -437,25 +437,25 @@ static void packedBindings() {
     close(wheel->GetStiffness(), 300);
     close(wheel->GetDamping(), 17);
     RefCollection mouseArgs{{b, other, -1, 2.5, 100, 10, 1}};
-    double mouseHandle = box2d::createMouseJoint(&mouseArgs);
-    box2d::setMouseJointTarget(mouseHandle, 2, 3);
+    double mouseHandle = box2dNative::createMouseJoint(&mouseArgs);
+    box2dNative::setMouseJointTarget(mouseHandle, 2, 3);
     auto mouse = static_cast<b2MouseJoint *>(joint(mouseHandle, e_mouseJoint));
     close(mouse->GetTarget().x, 2);
     close(mouse->GetTarget().y, 3);
-    box2d::destroyJoint(mouseHandle);
-    rejects([&] { box2d::createMouseJoint(nullptr); });
+    box2dNative::destroyJoint(mouseHandle);
+    rejects([&] { box2dNative::createMouseJoint(nullptr); });
     mouseArgs.values.pop_back();
-    rejects([&] { box2d::createMouseJoint(&mouseArgs); });
-    rejects([&] { box2d::createWheelJoint(nullptr); });
-    rejects([&] { box2d::createWheelJoint(&shortArgs); });
+    rejects([&] { box2dNative::createMouseJoint(&mouseArgs); });
+    rejects([&] { box2dNative::createWheelJoint(nullptr); });
+    rejects([&] { box2dNative::createWheelJoint(&shortArgs); });
     wheelArgs.values[6] = 2;
-    rejects([&] { box2d::createWheelJoint(&wheelArgs); });
+    rejects([&] { box2dNative::createWheelJoint(&wheelArgs); });
     wheelArgs.values[6] = 0;
     wheelArgs.values.push_back(0);
-    rejects([&] { box2d::createWheelJoint(&wheelArgs); });
-    box2d::destroyShape(shape);
-    box2d::destroyWorld(w);
-    assert(!box2d::isValid(b));
+    rejects([&] { box2dNative::createWheelJoint(&wheelArgs); });
+    box2dNative::destroyShape(shape);
+    box2dNative::destroyWorld(w);
+    assert(!box2dNative::isValid(b));
 }
 
 static void mouseJointAndLifetime() {
@@ -488,7 +488,7 @@ static void reusableTransforms() {
     int rootsBefore = pxt::rootCount;
     for (int i = 0; i < 100; ++i) {
         setTransform(b, 1.25 + i, -2.5, 0.75);
-        box2d::readBodyTransform(b, &output);
+        box2dNative::readBodyTransform(b, &output);
         close(output.values[0], 1.25 + i);
         close(output.values[1], -2.5);
         close(output.values[2], 0.75);
@@ -527,7 +527,7 @@ static void integerBoxVertices() {
     int numbersBefore = pxt::numberConversions;
     int integersBefore = pxt::integerConversions;
     int rootsBefore = pxt::rootCount;
-    box2d::readBodyBoxVertices(b, &box, &view, &output);
+    box2dNative::readBodyBoxVertices(b, &box, &view, &output);
     assert(output.values == std::vector<double>({72, 56, 88, 56, 88, 64, 72, 64, 12345}));
 
     box.values = {0.5, 0.5, 0, 0};

@@ -3,7 +3,7 @@
 
 using namespace pxt;
 
-namespace box2d {
+namespace box2dNative {
 
 static double argument(RefCollection *args, int index) {
     return toDouble(Array_::getAt(args, index));
@@ -302,4 +302,4 @@ RefCollection* rayCast(RefCollection *args) {
     return box2d_native::rayCast(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
 }
 
-} // namespace box2d
+} // namespace box2dNative

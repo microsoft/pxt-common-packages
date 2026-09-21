@@ -116,13 +116,13 @@ const context = vm.createContext({
     }
 });
 vm.runInContext(simulatorJavaScript, context);
-const sim = context.pxsim.box2d;
+const sim = context.pxsim.box2dNative;
 for (const name of [
     "createBody", "applyForce", "applyLinearImpulse", "createBoxShape",
     "createFixture", "createDistanceJoint", "setDistanceJoint",
     "createRevoluteJoint", "createWheelJoint", "createMouseJoint", "queryAABB", "rayCast"
 ]) {
-    assert.equal(typeof sim[name], "function", `${name} must be registered in pxsim.box2d`);
+    assert.equal(typeof sim[name], "function", `${name} must be registered in pxsim.box2dNative`);
 }
 
 const simWorld = sim.createWorld(0, 9.8);
