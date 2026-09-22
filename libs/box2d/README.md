@@ -1,14 +1,11 @@
 # Box2D for MakeCode Arcade
 
 Box2D **2.4.1**, bundled as C++, with `box2d` Static TypeScript classes and a
-low-level handle API. Classes live entirely in TypeScript: every argument and
-return value crossing the native or simulator boundary is still a **number,
-boolean, or number array**. No C++ objects or pointers cross that boundary.
-Enums are numeric constants.
-`bindings.cpp` converts PXT's boxed `TNumber` values to C++ numbers internally;
-it does not rely on unsupported native `double` shim arguments.
-Functions with more than four public arguments pack them into a numeric array
-before crossing PXT's four-argument native-call boundary.
+low-level `box2dNative` API. Native worlds, bodies, shapes, fixtures, and joints
+are represented by opaque PXT `RefObject` handles, so unreachable objects are
+released by the MakeCode garbage collector. Enums and physics values remain
+numeric. Functions with more than four public arguments pack values and object
+references into an array before crossing PXT's four-argument native-call boundary.
 
 The browser simulator runs the same C++ implementation compiled to an embedded
 WebAssembly module with Emscripten. This package does not replace Arcade's
@@ -137,13 +134,15 @@ functions in `main.ts`; no extra C++ bindings are needed.
 | `WheelJoint` | `body.createWheelJoint(other, anchorX, anchorY, axisX, axisY, collideConnected?)`, `setMotor`, `setLimits`, `setSuspension`, `destroy` |
 | `MouseJoint` | `body.createMouseJoint(other, anchorX, anchorY, maxForce, stiffness, damping)`, `setTarget`, `destroy` |
 
-All joint classes extend `Joint`. All native-object wrappers expose a
-read-only numeric `.handle` and a live `.valid` property. Call `.destroy()`
-explicitly; letting a TypeScript wrapper be garbage-collected does **not**
-destroy its native object. Destroying a world/body invalidates wrappers of its
-native children, just as it invalidates raw handles. Destruction is not
-idempotent: destroying through one wrapper invalidates all views of that handle.
-Shape templates must still be destroyed independently of bodies/worlds.
+All joint classes extend `Joint`. All native-object wrappers expose a read-only opaque `.handle` and a live
+`.valid` property. Calling `.destroy()` releases an object immediately; otherwise
+the MakeCode garbage collector releases it after the last reference disappears.
+Fixtures retain their body, joints retain both bodies, bodies retain their
+connected joints, and every world-owned object retains its world. A joint
+therefore remains alive while either connected body is alive unless it is
+destroyed explicitly. Destroying a world/body invalidates wrappers of its native
+children. Destruction through the public API is not idempotent: destroying
+through one wrapper invalidates all views of that handle.
 
 Wheel-joint anchors and suspension axes are specified in world space. The axis
 must be nonzero and is normalized natively. `setLimits(enabled, lower, upper)`
@@ -232,7 +231,7 @@ Class queries return typed results:
   `.normal`, and `.fraction`, or **null** if there is no hit.
 
 Query results and `fixture.body` create fresh wrappers, not cached identities.
-Compare `.handle` values rather than `===` to identify the same native object.
+Compare `.handle` values rather than wrapper identity to identify the same native object.
 This also works for objects originally created through the low-level API:
 
 ```typescript
@@ -244,29 +243,33 @@ box2dNative.destroyBody(handle)
 ```
 
 `Body`, `Shape`, `Fixture`, `Joint`, `DistanceJoint`, and `RevoluteJoint`
-constructors wrap existing handles; they do not allocate native objects.
+constructors wrap existing native references; they do not allocate native objects.
 Supply a live handle of the matching kind. Native operations validate it;
 `.valid` alone only checks whether the handle is live, not its kind.
 Joint creation validates that the two bodies are different and in the same world.
 
 ## Ownership and handles
 
-- Creation functions return positive integer handles. Keep these as `number`
-  variables. Handles are never recycled; stale handles cannot identify a new object.
+- Creation functions return opaque `box2dNative.Handle` references managed by
+  the MakeCode garbage collector.
+- A body keeps its world and connected joints alive. A fixture keeps its body
+  alive, and a joint keeps both bodies alive. Dropping the last reachable
+  reference releases the native object graph.
 - `destroyWorld` destroys its bodies, fixtures, and joints.
 - `destroyBody` destroys its fixtures and joints attached to **either** end.
 - Shapes are independent, reusable templates. `createFixture` copies a shape,
   so the template may be destroyed immediately or reused on another body/world.
   Destroying a body/world does **not** destroy shape templates.
 - `destroyFixture`, `destroyJoint`, and `destroyShape` release individual objects.
-  Destruction is explicit, not tied to TypeScript garbage collection.
-- `isValid` checks whether any object still owns a handle. Other operations
-  require the correct object kind and reject stale, fractional, or wrong-kind
+  Explicit destruction is useful for deterministic memory release but is not
+  required for garbage-collected objects.
+- `isValid` checks whether the referenced native object is still live. Other
+  operations require the correct object kind and reject stale or wrong-kind
   handles. Calling a destroy function twice is an error.
 
 ## Low-level API
 
-All low-level functions remain available in `box2d`; `main.ts` has the complete signatures and defaults.
+All low-level functions are available in `box2dNative`; `main.ts` has the complete signatures and defaults.
 Optional parameters are supplied by TypeScript, not native definition objects.
 
 | Area | Functions |
@@ -329,7 +332,7 @@ Arrays are snapshots, not native storage. Mutating them cannot change physics.
 | `getBodyState` | `[x, y, angle, velocityX, velocityY, angularVelocity, mass, inertia]`; use `BodyState` indices |
 | `getWorldPoint`, `getLocalPoint` | `[x, y]` |
 | `getContacts` | `[fixtureA, fixtureB, fixtureA, fixtureB, ...]` |
-| `queryAABB` | Unique fixture handles |
+| `queryAABB` | Unique fixture references |
 | `rayCast` | `[fixture, x, y, normalX, normalY, fraction]`; use `RayHit` indices; `[]` for no hit |
 
 Contacts report touching, enabled contacts from the last step, including sensors.
@@ -451,7 +454,7 @@ These files are included only when building this package itself, not when
 importing it as an extension.
 Wrapper host tests use mocked primitive functions, not a simulator physics engine.
 The C++ host tests compile the actual
-Box2D sources and binding code, using a small test-only numeric PXT ABI model.
+Box2D sources and binding code, using a small test-only PXT ABI model.
 They also exercise a 48-box tumbler stress scene, including reversal and
 containment, and wheel-joint suspension/driving behavior. Demo JavaScript tests
 use a mocked world to check sample selection, scene wiring and

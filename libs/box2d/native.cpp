@@ -1,10 +1,13 @@
 #include "pxt.h"
 #include "native-api.h"
 #include "vendor/box2d-2.4.1/include/box2d/box2d.h"
-#include <limits.h>
 #include <math.h>
 
 using namespace pxt;
+
+namespace pxt {
+void gcScan(TValue value);
+}
 
 namespace box2d_native {
 
@@ -16,18 +19,64 @@ struct Kind {
     static const int Joint = 4;
 };
 
-struct Entry {
-    int id;
+class RefBox2D : public RefObject {
+  public:
     int kind;
     void *pointer;
-    int world;
-    int bodyA;
-    int bodyB;
-    Entry *next;
+    RefBox2D *world;
+    RefBox2D *bodyA;
+    RefBox2D *bodyB;
+    RefCollection *joints;
+
+    RefBox2D(int kind, void *pointer, RefBox2D *world = nullptr,
+             RefBox2D *bodyA = nullptr, RefBox2D *bodyB = nullptr);
+    void dispose();
+
+    static void destroy(RefBox2D *object);
+    static void print(RefBox2D *object);
+    static void scan(RefBox2D *object);
+    static unsigned gcsize(RefBox2D *object);
 };
 
-static Entry *entries;
-static int nextId = 1;
+#ifdef PXT_VM
+const VTable RefBox2D_vtable = {
+    sizeof(RefBox2D), ValType::Object, VTABLE_MAGIC, 0,
+    BuiltInType::User0, BuiltInType::User0, 0, 0,
+    {(void *)&RefBox2D::destroy, (void *)&RefBox2D::print,
+     (void *)&RefBox2D::scan, (void *)&RefBox2D::gcsize}
+};
+#else
+const VTable RefBox2D_vtable = {
+    sizeof(RefBox2D), ValType::Object, VTABLE_MAGIC, 0,
+    BuiltInType::User0, 0, 0,
+    {(void *)&RefBox2D::destroy, (void *)&RefBox2D::print,
+     (void *)&RefBox2D::scan, (void *)&RefBox2D::gcsize}
+};
+#endif
+
+RefBox2D::RefBox2D(int kind, void *pointer, RefBox2D *world,
+                   RefBox2D *bodyA, RefBox2D *bodyB)
+    : PXT_VTABLE_INIT(RefBox2D), kind(kind), pointer(pointer),
+      world(world), bodyA(bodyA), bodyB(bodyB), joints(nullptr) {}
+
+void RefBox2D::destroy(RefBox2D *object) {
+    object->dispose();
+}
+
+void RefBox2D::print(RefBox2D *object) {
+    DMESG("RefBox2D %p kind=%d value=%p", object, object->kind, object->pointer);
+}
+
+void RefBox2D::scan(RefBox2D *object) {
+    gcScan((TValue)object->world);
+    gcScan((TValue)object->bodyA);
+    gcScan((TValue)object->bodyB);
+    gcScan((TValue)object->joints);
+}
+
+unsigned RefBox2D::gcsize(RefBox2D *object) {
+    return TOWORDS(sizeof(*object));
+}
 
 static void require(bool condition) {
     if (!condition)
@@ -63,57 +112,148 @@ static b2Vec2 vector(double x, double y) {
     return b2Vec2(scalar(x), scalar(y));
 }
 
-static Entry *find(int id) {
-    for (Entry *entry = entries; entry; entry = entry->next)
-        if (entry->id == id)
-            return entry;
-    return nullptr;
+static RefBox2D *lookup(RefBox2D *handle, int kind) {
+    require(handle && handle->vtable == &RefBox2D_vtable &&
+            handle->kind == kind && handle->pointer);
+    return handle;
 }
 
-static Entry *lookup(double handle, int kind) {
-    Entry *entry = find(integer(handle, 1, INT_MAX));
-    require(entry && entry->kind == kind);
-    return entry;
+static RefBox2D *allocate(int kind, void *pointer, RefBox2D *world = nullptr,
+                          RefBox2D *bodyA = nullptr, RefBox2D *bodyB = nullptr) {
+    require(pointer);
+    return NEW_GC(RefBox2D, kind, pointer, world, bodyA, bodyB);
 }
 
-static int track(int kind, void *pointer, int world = 0, int bodyA = 0, int bodyB = 0) {
-    require(pointer && nextId < 0x1000000);
-    Entry *entry = new Entry{nextId++, kind, pointer, world, bodyA, bodyB, entries};
-    entries = entry;
-    return entry->id;
+static RefBox2D *bodyObject(b2Body *value) {
+    return reinterpret_cast<RefBox2D *>(value->GetUserData().pointer);
 }
 
-static void forget(int id) {
-    Entry **link = &entries;
-    while (*link) {
-        Entry *entry = *link;
-        if (entry->id == id) {
-            *link = entry->next;
-            delete entry;
+static RefBox2D *fixtureObject(b2Fixture *value) {
+    return reinterpret_cast<RefBox2D *>(value->GetUserData().pointer);
+}
+
+static RefBox2D *jointObject(b2Joint *value) {
+    return reinterpret_cast<RefBox2D *>(value->GetUserData().pointer);
+}
+
+static void retainJoint(RefBox2D *body, RefBox2D *joint) {
+    if (!body->joints)
+        body->joints = Array_::mk();
+    TValue reference = (TValue)(uintptr_t)joint;
+    registerGC(&reference);
+    Array_::push(body->joints, reference);
+    unregisterGC(&reference);
+}
+
+static void releaseJoint(RefBox2D *body, RefBox2D *joint) {
+    if (!body || !body->joints)
+        return;
+    for (int i = Array_::length(body->joints) - 1; i >= 0; --i) {
+        if ((RefBox2D *)(uintptr_t)Array_::getAt(body->joints, i) == joint) {
+            Array_::removeAt(body->joints, i);
             return;
         }
-        link = &entry->next;
     }
 }
 
-static b2World *world(double handle) {
+static void detachJoint(RefBox2D *object) {
+    releaseJoint(object->bodyA, object);
+    releaseJoint(object->bodyB, object);
+    object->world = nullptr;
+    object->bodyA = nullptr;
+    object->bodyB = nullptr;
+}
+
+static void invalidateFixture(b2Fixture *value) {
+    RefBox2D *object = fixtureObject(value);
+    if (object) {
+        object->pointer = nullptr;
+        object->world = nullptr;
+        object->bodyA = nullptr;
+    }
+}
+
+static void invalidateJoint(b2Joint *value) {
+    RefBox2D *object = jointObject(value);
+    if (object) {
+        object->pointer = nullptr;
+        detachJoint(object);
+    }
+}
+
+static b2World *world(RefBox2D *handle) {
     b2World *result = static_cast<b2World *>(lookup(handle, Kind::World)->pointer);
     require(!result->IsLocked());
     return result;
 }
 
-static b2Body *body(double handle) {
+static b2Body *body(RefBox2D *handle) {
     return static_cast<b2Body *>(lookup(handle, Kind::Body)->pointer);
 }
 
-static b2Fixture *fixture(double handle) {
+static b2Fixture *fixture(RefBox2D *handle) {
     return static_cast<b2Fixture *>(lookup(handle, Kind::Fixture)->pointer);
 }
 
-static b2Joint *joint(double handle, b2JointType type) {
+static b2Joint *joint(RefBox2D *handle, b2JointType type) {
     b2Joint *result = static_cast<b2Joint *>(lookup(handle, Kind::Joint)->pointer);
     require(result->GetType() == type);
     return result;
+}
+
+void RefBox2D::dispose() {
+    if (!pointer)
+        return;
+
+    if (kind == Kind::World) {
+        b2World *value = static_cast<b2World *>(pointer);
+        pointer = nullptr;
+        for (b2Joint *joint = value->GetJointList(); joint; joint = joint->GetNext())
+            invalidateJoint(joint);
+        for (b2Body *body = value->GetBodyList(); body; body = body->GetNext()) {
+            for (b2Fixture *fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext())
+                invalidateFixture(fixture);
+            RefBox2D *object = bodyObject(body);
+            if (object) {
+                object->pointer = nullptr;
+                object->world = nullptr;
+            }
+        }
+        delete value;
+    }
+    else if (kind == Kind::Body) {
+        b2Body *value = static_cast<b2Body *>(pointer);
+        RefBox2D *owner = world;
+        pointer = nullptr;
+        for (b2JointEdge *edge = value->GetJointList(); edge; edge = edge->next)
+            invalidateJoint(edge->joint);
+        for (b2Fixture *fixture = value->GetFixtureList(); fixture; fixture = fixture->GetNext())
+            invalidateFixture(fixture);
+        if (owner && owner->pointer)
+            static_cast<b2World *>(owner->pointer)->DestroyBody(value);
+        world = nullptr;
+    }
+    else if (kind == Kind::Shape) {
+        delete static_cast<b2Shape *>(pointer);
+        pointer = nullptr;
+    }
+    else if (kind == Kind::Fixture) {
+        b2Fixture *value = static_cast<b2Fixture *>(pointer);
+        RefBox2D *owner = bodyA;
+        pointer = nullptr;
+        if (owner && owner->pointer)
+            static_cast<b2Body *>(owner->pointer)->DestroyFixture(value);
+        world = nullptr;
+        bodyA = nullptr;
+    }
+    else {
+        b2Joint *value = static_cast<b2Joint *>(pointer);
+        RefBox2D *owner = world;
+        pointer = nullptr;
+        if (owner && owner->pointer)
+            static_cast<b2World *>(owner->pointer)->DestroyJoint(value);
+        detachJoint(this);
+    }
 }
 
 static void push(RefCollection *array, double value) {
@@ -152,38 +292,32 @@ static void separated(const b2Vec2 &a, const b2Vec2 &b) {
     require(b2DistanceSquared(a, b) > b2_linearSlop * b2_linearSlop);
 }
 
-static int fixtureId(b2Fixture *value) {
-    return (int)value->GetUserData().pointer;
+static void pushObject(RefCollection *array, RefBox2D *value) {
+    TValue reference = (TValue)(uintptr_t)value;
+    registerGC(&reference);
+    Array_::push(array, reference);
+    unregisterGC(&reference);
 }
 
-double createWorld(double gravityX, double gravityY) {
-    return track(Kind::World, new b2World(vector(gravityX, gravityY)));
+RefBox2D *createWorld(double gravityX, double gravityY) {
+    return allocate(Kind::World, new b2World(vector(gravityX, gravityY)));
 }
 
-void destroyWorld(double handle) {
-    Entry *entry = lookup(handle, Kind::World);
-    int id = entry->id;
-    delete world(handle);
-    Entry *current = entries;
-    while (current) {
-        Entry *next = current->next;
-        if (current->world == id || current->id == id)
-            forget(current->id);
-        current = next;
-    }
+void destroyWorld(RefBox2D *handle) {
+    lookup(handle, Kind::World);
+    world(handle);
+    handle->dispose();
 }
 
-bool isValid(double handle) {
-    if (!(handle >= 1 && handle < INT_MAX) || handle != (int)handle)
-        return false;
-    return find((int)handle) != nullptr;
+bool isValid(RefBox2D *handle) {
+    return handle && handle->vtable == &RefBox2D_vtable && handle->pointer;
 }
 
-void setGravity(double handle, double x, double y) {
+void setGravity(RefBox2D *handle, double x, double y) {
     world(handle)->SetGravity(vector(x, y));
 }
 
-void step(double handle, double seconds, double velocityIterations, double positionIterations) {
+void step(RefBox2D *handle, double seconds, double velocityIterations, double positionIterations) {
     float dt = scalar(seconds);
     require(dt > 0 && dt <= 1);
     int velocity = integer(velocityIterations, 1, 100);
@@ -191,36 +325,27 @@ void step(double handle, double seconds, double velocityIterations, double posit
     world(handle)->Step(dt, velocity, position);
 }
 
-void setWorldSleepingAllowed(double handle, bool allowed) {
+void setWorldSleepingAllowed(RefBox2D *handle, bool allowed) {
     world(handle)->SetAllowSleeping(allowed);
 }
 
-double createBody(double worldHandle, double type, double x, double y, double angle) {
+RefBox2D *createBody(RefBox2D *worldHandle, double type, double x, double y, double angle) {
     b2World *owner = world(worldHandle);
     b2BodyDef def;
     def.type = (b2BodyType)integer(type, 0, 2);
     def.position = vector(x, y);
     def.angle = scalar(angle);
     b2Body *value = owner->CreateBody(&def);
-    int id = track(Kind::Body, value, (int)worldHandle);
-    value->GetUserData().pointer = id;
-    return id;
+    RefBox2D *result = allocate(Kind::Body, value, worldHandle);
+    value->GetUserData().pointer = reinterpret_cast<uintptr_t>(result);
+    return result;
 }
 
-void destroyBody(double handle) {
-    Entry *entry = lookup(handle, Kind::Body);
-    int id = entry->id;
-    world(entry->world)->DestroyBody(static_cast<b2Body *>(entry->pointer));
-    Entry *current = entries;
-    while (current) {
-        Entry *next = current->next;
-        if (current->id == id || current->bodyA == id || current->bodyB == id)
-            forget(current->id);
-        current = next;
-    }
+void destroyBody(RefBox2D *handle) {
+    lookup(handle, Kind::Body)->dispose();
 }
 
-RefCollection *getBodyState(double handle) {
+RefCollection *getBodyState(RefBox2D *handle) {
     b2Body *value = body(handle);
     RefCollection *result = newArray();
     push(result, value->GetPosition().x);
@@ -234,7 +359,7 @@ RefCollection *getBodyState(double handle) {
     return finishArray(result);
 }
 
-void readBodyTransform(double handle, RefCollection *output) {
+void readBodyTransform(RefBox2D *handle, RefCollection *output) {
     b2Body *value = body(handle);
     require(output && Array_::length(output) >= 3);
     registerGCObj(output);
@@ -258,7 +383,7 @@ static int pixel(double value) {
     return (int)rounded;
 }
 
-void readBodyBoxVertices(double handle, RefCollection *box, RefCollection *view, RefCollection *output) {
+void readBodyBoxVertices(RefBox2D *handle, RefCollection *box, RefCollection *view, RefCollection *output) {
     b2Body *value = body(handle);
     require(box && Array_::length(box) == 4);
     require(view && Array_::length(view) == 3);
@@ -295,25 +420,25 @@ void readBodyBoxVertices(double handle, RefCollection *box, RefCollection *view,
     unregisterGCObj(output);
 }
 
-void setTransform(double handle, double x, double y, double angle) {
+void setTransform(RefBox2D *handle, double x, double y, double angle) {
     b2Vec2 position = vector(x, y);
     float rotation = scalar(angle);
     body(handle)->SetTransform(position, rotation);
 }
 
-void setLinearVelocity(double handle, double x, double y) {
+void setLinearVelocity(RefBox2D *handle, double x, double y) {
     body(handle)->SetLinearVelocity(vector(x, y));
 }
 
-void setAngularVelocity(double handle, double velocity) {
+void setAngularVelocity(RefBox2D *handle, double velocity) {
     body(handle)->SetAngularVelocity(scalar(velocity));
 }
 
-void setBodyType(double handle, double type) {
+void setBodyType(RefBox2D *handle, double type) {
     body(handle)->SetType((b2BodyType)integer(type, 0, 2));
 }
 
-void setDamping(double handle, double linear, double angular) {
+void setDamping(RefBox2D *handle, double linear, double angular) {
     float l = nonnegative(linear);
     float a = nonnegative(angular);
     b2Body *value = body(handle);
@@ -321,11 +446,11 @@ void setDamping(double handle, double linear, double angular) {
     value->SetAngularDamping(a);
 }
 
-void setGravityScale(double handle, double scale) {
+void setGravityScale(RefBox2D *handle, double scale) {
     body(handle)->SetGravityScale(scalar(scale));
 }
 
-void setBodyFlag(double handle, double flag, bool enabled) {
+void setBodyFlag(RefBox2D *handle, double flag, bool enabled) {
     int index = integer(flag, 0, 4);
     b2Body *value = body(handle);
     switch (index) {
@@ -337,7 +462,7 @@ void setBodyFlag(double handle, double flag, bool enabled) {
     }
 }
 
-bool getBodyFlag(double handle, double flag) {
+bool getBodyFlag(RefBox2D *handle, double flag) {
     int index = integer(flag, 0, 4);
     b2Body *value = body(handle);
     switch (index) {
@@ -349,35 +474,35 @@ bool getBodyFlag(double handle, double flag) {
     }
 }
 
-void applyForce(double handle, double x, double y, double pointX, double pointY, bool wake) {
+void applyForce(RefBox2D *handle, double x, double y, double pointX, double pointY, bool wake) {
     b2Vec2 force = vector(x, y);
     b2Vec2 point = vector(pointX, pointY);
     body(handle)->ApplyForce(force, point, wake);
 }
 
-void applyForceToCenter(double handle, double x, double y, bool wake) {
+void applyForceToCenter(RefBox2D *handle, double x, double y, bool wake) {
     body(handle)->ApplyForceToCenter(vector(x, y), wake);
 }
 
-void applyLinearImpulse(double handle, double x, double y, double pointX, double pointY, bool wake) {
+void applyLinearImpulse(RefBox2D *handle, double x, double y, double pointX, double pointY, bool wake) {
     b2Vec2 impulse = vector(x, y);
     b2Vec2 point = vector(pointX, pointY);
     body(handle)->ApplyLinearImpulse(impulse, point, wake);
 }
 
-void applyLinearImpulseToCenter(double handle, double x, double y, bool wake) {
+void applyLinearImpulseToCenter(RefBox2D *handle, double x, double y, bool wake) {
     body(handle)->ApplyLinearImpulseToCenter(vector(x, y), wake);
 }
 
-void applyTorque(double handle, double torque, bool wake) {
+void applyTorque(RefBox2D *handle, double torque, bool wake) {
     body(handle)->ApplyTorque(scalar(torque), wake);
 }
 
-void applyAngularImpulse(double handle, double impulse, bool wake) {
+void applyAngularImpulse(RefBox2D *handle, double impulse, bool wake) {
     body(handle)->ApplyAngularImpulse(scalar(impulse), wake);
 }
 
-RefCollection *getWorldPoint(double handle, double x, double y) {
+RefCollection *getWorldPoint(RefBox2D *handle, double x, double y) {
     b2Vec2 point = body(handle)->GetWorldPoint(vector(x, y));
     RefCollection *result = newArray();
     push(result, point.x);
@@ -385,7 +510,7 @@ RefCollection *getWorldPoint(double handle, double x, double y) {
     return finishArray(result);
 }
 
-RefCollection *getLocalPoint(double handle, double x, double y) {
+RefCollection *getLocalPoint(RefBox2D *handle, double x, double y) {
     b2Vec2 point = body(handle)->GetLocalPoint(vector(x, y));
     RefCollection *result = newArray();
     push(result, point.x);
@@ -393,26 +518,26 @@ RefCollection *getLocalPoint(double handle, double x, double y) {
     return finishArray(result);
 }
 
-double createCircleShape(double radius, double centerX, double centerY) {
+RefBox2D *createCircleShape(double radius, double centerX, double centerY) {
     float r = positive(radius);
     b2Vec2 center = vector(centerX, centerY);
     b2CircleShape *value = new b2CircleShape();
     value->m_radius = r;
     value->m_p = center;
-    return track(Kind::Shape, value);
+    return allocate(Kind::Shape, value);
 }
 
-double createBoxShape(double halfWidth, double halfHeight, double centerX, double centerY, double angle) {
+RefBox2D *createBoxShape(double halfWidth, double halfHeight, double centerX, double centerY, double angle) {
     float width = positive(halfWidth);
     float height = positive(halfHeight);
     b2Vec2 center = vector(centerX, centerY);
     float rotation = scalar(angle);
     b2PolygonShape *value = new b2PolygonShape();
     value->SetAsBox(width, height, center, rotation);
-    return track(Kind::Shape, value);
+    return allocate(Kind::Shape, value);
 }
 
-double createPolygonShape(RefCollection *points) {
+RefBox2D *createPolygonShape(RefCollection *points) {
     b2Vec2 polygon[b2_maxPolygonVertices];
     int count = vertices(points, polygon, 3, b2_maxPolygonVertices);
     // Require a strictly convex ordered boundary, rather than letting Box2D
@@ -432,19 +557,19 @@ double createPolygonShape(RefCollection *points) {
     }
     b2PolygonShape *value = new b2PolygonShape();
     value->Set(polygon, count);
-    return track(Kind::Shape, value);
+    return allocate(Kind::Shape, value);
 }
 
-double createEdgeShape(double x1, double y1, double x2, double y2) {
+RefBox2D *createEdgeShape(double x1, double y1, double x2, double y2) {
     b2Vec2 a = vector(x1, y1);
     b2Vec2 b = vector(x2, y2);
     separated(a, b);
     b2EdgeShape *value = new b2EdgeShape();
     value->SetTwoSided(a, b);
-    return track(Kind::Shape, value);
+    return allocate(Kind::Shape, value);
 }
 
-double createChainShape(RefCollection *points, bool loop) {
+RefBox2D *createChainShape(RefCollection *points, bool loop) {
     b2Vec2 chain[128];
     int count = vertices(points, chain, loop ? 3 : 2, 128);
     for (int i = 1; i < count; ++i)
@@ -457,17 +582,15 @@ double createChainShape(RefCollection *points, bool loop) {
     else
         value->CreateChain(chain, count, 2 * chain[0] - chain[1],
                            2 * chain[count - 1] - chain[count - 2]);
-    return track(Kind::Shape, value);
+    return allocate(Kind::Shape, value);
 }
 
-void destroyShape(double handle) {
-    Entry *entry = lookup(handle, Kind::Shape);
-    delete static_cast<b2Shape *>(entry->pointer);
-    forget(entry->id);
+void destroyShape(RefBox2D *handle) {
+    lookup(handle, Kind::Shape)->dispose();
 }
 
-double createFixture(double bodyHandle, double shapeHandle, double density, double friction, double restitution, bool sensor) {
-    Entry *owner = lookup(bodyHandle, Kind::Body);
+RefBox2D *createFixture(RefBox2D *bodyHandle, RefBox2D *shapeHandle, double density, double friction, double restitution, bool sensor) {
+    RefBox2D *owner = lookup(bodyHandle, Kind::Body);
     b2FixtureDef def;
     def.shape = static_cast<b2Shape *>(lookup(shapeHandle, Kind::Shape)->pointer);
     def.density = nonnegative(density);
@@ -475,23 +598,20 @@ double createFixture(double bodyHandle, double shapeHandle, double density, doub
     def.restitution = nonnegative(restitution);
     def.isSensor = sensor;
     b2Fixture *value = static_cast<b2Body *>(owner->pointer)->CreateFixture(&def);
-    int id = track(Kind::Fixture, value, owner->world, owner->id);
-    value->GetUserData().pointer = id;
-    return id;
+    RefBox2D *result = allocate(Kind::Fixture, value, owner->world, owner);
+    value->GetUserData().pointer = reinterpret_cast<uintptr_t>(result);
+    return result;
 }
 
-void destroyFixture(double handle) {
-    Entry *entry = lookup(handle, Kind::Fixture);
-    b2Fixture *value = static_cast<b2Fixture *>(entry->pointer);
-    value->GetBody()->DestroyFixture(value);
-    forget(entry->id);
+void destroyFixture(RefBox2D *handle) {
+    lookup(handle, Kind::Fixture)->dispose();
 }
 
-double getFixtureBody(double handle) {
+RefBox2D *getFixtureBody(RefBox2D *handle) {
     return lookup(handle, Kind::Fixture)->bodyA;
 }
 
-void setFixtureMaterial(double handle, double density, double friction, double restitution) {
+void setFixtureMaterial(RefBox2D *handle, double density, double friction, double restitution) {
     float d = nonnegative(density);
     float f = nonnegative(friction);
     float r = nonnegative(restitution);
@@ -512,11 +632,11 @@ void setFixtureMaterial(double handle, double density, double friction, double r
     }
 }
 
-void setFixtureSensor(double handle, bool sensor) {
+void setFixtureSensor(RefBox2D *handle, bool sensor) {
     fixture(handle)->SetSensor(sensor);
 }
 
-void setFixtureFilter(double handle, double categoryBits, double maskBits, double groupIndex) {
+void setFixtureFilter(RefBox2D *handle, double categoryBits, double maskBits, double groupIndex) {
     b2Filter filter;
     filter.categoryBits = (uint16)integer(categoryBits, 0, 65535);
     filter.maskBits = (uint16)integer(maskBits, 0, 65535);
@@ -524,18 +644,29 @@ void setFixtureFilter(double handle, double categoryBits, double maskBits, doubl
     fixture(handle)->SetFilterData(filter);
 }
 
-bool testPoint(double handle, double x, double y) {
+bool testPoint(RefBox2D *handle, double x, double y) {
     return fixture(handle)->TestPoint(vector(x, y));
 }
 
-static b2World *jointWorld(double bodyA, double bodyB) {
-    Entry *a = lookup(bodyA, Kind::Body);
-    Entry *b = lookup(bodyB, Kind::Body);
-    require(a->id != b->id && a->world == b->world);
+static b2World *jointWorld(RefBox2D *bodyA, RefBox2D *bodyB) {
+    RefBox2D *a = lookup(bodyA, Kind::Body);
+    RefBox2D *b = lookup(bodyB, Kind::Body);
+    require(a != b && a->world == b->world);
     return world(a->world);
 }
 
-double createDistanceJoint(double bodyA, double bodyB, double ax, double ay, double bx, double by, bool collideConnected) {
+static RefBox2D *allocateJoint(b2Joint *value, RefBox2D *bodyA, RefBox2D *bodyB) {
+    RefBox2D *result = allocate(Kind::Joint, value, bodyA->world, bodyA, bodyB);
+    value->GetUserData().pointer = reinterpret_cast<uintptr_t>(result);
+    TValue reference = (TValue)(uintptr_t)result;
+    registerGC(&reference);
+    retainJoint(bodyA, result);
+    retainJoint(bodyB, result);
+    unregisterGC(&reference);
+    return result;
+}
+
+RefBox2D *createDistanceJoint(RefBox2D *bodyA, RefBox2D *bodyB, double ax, double ay, double bx, double by, bool collideConnected) {
     b2World *owner = jointWorld(bodyA, bodyB);
     b2Vec2 a = vector(ax, ay);
     b2Vec2 b = vector(bx, by);
@@ -543,11 +674,10 @@ double createDistanceJoint(double bodyA, double bodyB, double ax, double ay, dou
     b2DistanceJointDef def;
     def.Initialize(body(bodyA), body(bodyB), a, b);
     def.collideConnected = collideConnected;
-    return track(Kind::Joint, owner->CreateJoint(&def),
-                 lookup(bodyA, Kind::Body)->world, (int)bodyA, (int)bodyB);
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
 }
 
-void setDistanceJoint(double handle, double length, double minLength, double maxLength, double stiffness, double damping) {
+void setDistanceJoint(RefBox2D *handle, double length, double minLength, double maxLength, double stiffness, double damping) {
     float l = positive(length);
     float min = positive(minLength);
     float max = positive(maxLength);
@@ -566,16 +696,15 @@ void setDistanceJoint(double handle, double length, double minLength, double max
     value->GetBodyB()->SetAwake(true);
 }
 
-double createRevoluteJoint(double bodyA, double bodyB, double anchorX, double anchorY, bool collideConnected) {
+RefBox2D *createRevoluteJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, bool collideConnected) {
     b2World *owner = jointWorld(bodyA, bodyB);
     b2RevoluteJointDef def;
     def.Initialize(body(bodyA), body(bodyB), vector(anchorX, anchorY));
     def.collideConnected = collideConnected;
-    return track(Kind::Joint, owner->CreateJoint(&def),
-                 lookup(bodyA, Kind::Body)->world, (int)bodyA, (int)bodyB);
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
 }
 
-void setRevoluteJointMotor(double handle, bool enabled, double speed, double maxTorque) {
+void setRevoluteJointMotor(RefBox2D *handle, bool enabled, double speed, double maxTorque) {
     float s = scalar(speed);
     float t = nonnegative(maxTorque);
     b2RevoluteJoint *value = static_cast<b2RevoluteJoint *>(joint(handle, e_revoluteJoint));
@@ -584,7 +713,7 @@ void setRevoluteJointMotor(double handle, bool enabled, double speed, double max
     value->EnableMotor(enabled);
 }
 
-void setRevoluteJointLimits(double handle, bool enabled, double lower, double upper) {
+void setRevoluteJointLimits(RefBox2D *handle, bool enabled, double lower, double upper) {
     float l = scalar(lower);
     float u = scalar(upper);
     require(l <= u);
@@ -593,7 +722,7 @@ void setRevoluteJointLimits(double handle, bool enabled, double lower, double up
     value->EnableLimit(enabled);
 }
 
-double createWheelJoint(double bodyA, double bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
+RefBox2D *createWheelJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
     b2World *owner = jointWorld(bodyA, bodyB);
     require(isfinite(axisX) && isfinite(axisY));
     double scale = b2Max(fabs(axisX), fabs(axisY));
@@ -604,11 +733,10 @@ double createWheelJoint(double bodyA, double bodyB, double anchorX, double ancho
     b2WheelJointDef def;
     def.Initialize(body(bodyA), body(bodyB), vector(anchorX, anchorY), axis);
     def.collideConnected = collideConnected;
-    return track(Kind::Joint, owner->CreateJoint(&def),
-                 lookup(bodyA, Kind::Body)->world, (int)bodyA, (int)bodyB);
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
 }
 
-void setWheelJointMotor(double handle, bool enabled, double speed, double maxTorque) {
+void setWheelJointMotor(RefBox2D *handle, bool enabled, double speed, double maxTorque) {
     float s = scalar(speed);
     float t = nonnegative(maxTorque);
     b2WheelJoint *value = static_cast<b2WheelJoint *>(joint(handle, e_wheelJoint));
@@ -617,7 +745,7 @@ void setWheelJointMotor(double handle, bool enabled, double speed, double maxTor
     value->EnableMotor(enabled);
 }
 
-void setWheelJointLimits(double handle, bool enabled, double lower, double upper) {
+void setWheelJointLimits(RefBox2D *handle, bool enabled, double lower, double upper) {
     float l = scalar(lower);
     float u = scalar(upper);
     require(l <= u);
@@ -626,7 +754,7 @@ void setWheelJointLimits(double handle, bool enabled, double lower, double upper
     value->EnableLimit(enabled);
 }
 
-void setWheelJointSuspension(double handle, double stiffness, double damping) {
+void setWheelJointSuspension(RefBox2D *handle, double stiffness, double damping) {
     float s = nonnegative(stiffness);
     float d = nonnegative(damping);
     b2WheelJoint *value = static_cast<b2WheelJoint *>(joint(handle, e_wheelJoint));
@@ -636,7 +764,7 @@ void setWheelJointSuspension(double handle, double stiffness, double damping) {
     value->GetBodyB()->SetAwake(true);
 }
 
-double createMouseJoint(double bodyA, double bodyB, double anchorX, double anchorY, double maxForce, double stiffness, double damping) {
+RefBox2D *createMouseJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double maxForce, double stiffness, double damping) {
     b2World *owner = jointWorld(bodyA, bodyB);
     require(body(bodyB)->GetType() == b2_dynamicBody);
     b2MouseJointDef def;
@@ -646,28 +774,25 @@ double createMouseJoint(double bodyA, double bodyB, double anchorX, double ancho
     def.maxForce = nonnegative(maxForce);
     def.stiffness = nonnegative(stiffness);
     def.damping = nonnegative(damping);
-    return track(Kind::Joint, owner->CreateJoint(&def),
-                 lookup(bodyA, Kind::Body)->world, (int)bodyA, (int)bodyB);
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
 }
 
-void setMouseJointTarget(double handle, double x, double y) {
+void setMouseJointTarget(RefBox2D *handle, double x, double y) {
     b2MouseJoint *value = static_cast<b2MouseJoint *>(joint(handle, e_mouseJoint));
     value->SetTarget(vector(x, y));
 }
 
-void destroyJoint(double handle) {
-    Entry *entry = lookup(handle, Kind::Joint);
-    world(entry->world)->DestroyJoint(static_cast<b2Joint *>(entry->pointer));
-    forget(entry->id);
+void destroyJoint(RefBox2D *handle) {
+    lookup(handle, Kind::Joint)->dispose();
 }
 
-RefCollection *getContacts(double handle) {
+RefCollection *getContacts(RefBox2D *handle) {
     b2World *owner = world(handle);
     RefCollection *result = newArray();
     for (b2Contact *contact = owner->GetContactList(); contact; contact = contact->GetNext()) {
         if (contact->IsTouching() && contact->IsEnabled()) {
-            push(result, fixtureId(contact->GetFixtureA()));
-            push(result, fixtureId(contact->GetFixtureB()));
+            pushObject(result, fixtureObject(contact->GetFixtureA()));
+            pushObject(result, fixtureObject(contact->GetFixtureB()));
         }
     }
     return finishArray(result);
@@ -678,17 +803,17 @@ class Query : public b2QueryCallback {
     RefCollection *result;
     explicit Query(RefCollection *array) : result(array) {}
     bool ReportFixture(b2Fixture *value) override {
-        int id = fixtureId(value);
+        RefBox2D *object = fixtureObject(value);
         // Chains can report multiple child proxies for the same fixture.
         for (int i = 0; i < Array_::length(result); ++i)
-            if (at(result, i) == id)
+            if ((RefBox2D *)(uintptr_t)Array_::getAt(result, i) == object)
                 return true;
-        push(result, id);
+        pushObject(result, object);
         return true;
     }
 };
 
-RefCollection *queryAABB(double handle, double minX, double minY, double maxX, double maxY) {
+RefCollection *queryAABB(RefBox2D *handle, double minX, double minY, double maxX, double maxY) {
     b2World *owner = world(handle);
     b2AABB bounds;
     bounds.lowerBound = vector(minX, minY);
@@ -702,12 +827,12 @@ RefCollection *queryAABB(double handle, double minX, double minY, double maxX, d
 
 class Ray : public b2RayCastCallback {
   public:
-    int id = 0;
+    RefBox2D *fixture = nullptr;
     b2Vec2 point;
     b2Vec2 normal;
     float fraction = 1;
     float ReportFixture(b2Fixture *value, const b2Vec2 &p, const b2Vec2 &n, float f) override {
-        id = fixtureId(value);
+        fixture = fixtureObject(value);
         point = p;
         normal = n;
         fraction = f;
@@ -715,7 +840,7 @@ class Ray : public b2RayCastCallback {
     }
 };
 
-RefCollection *rayCast(double handle, double x1, double y1, double x2, double y2) {
+RefCollection *rayCast(RefBox2D *handle, double x1, double y1, double x2, double y2) {
     b2World *owner = world(handle);
     b2Vec2 a = vector(x1, y1);
     b2Vec2 b = vector(x2, y2);
@@ -723,8 +848,8 @@ RefCollection *rayCast(double handle, double x1, double y1, double x2, double y2
     Ray ray;
     owner->RayCast(&ray, a, b);
     RefCollection *result = newArray();
-    if (ray.id) {
-        push(result, ray.id);
+    if (ray.fixture) {
+        pushObject(result, ray.fixture);
         push(result, ray.point.x);
         push(result, ray.point.y);
         push(result, ray.normal.x);

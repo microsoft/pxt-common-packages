@@ -15,291 +15,295 @@ static bool booleanArgument(RefCollection *args, int index) {
     return value != 0;
 }
 
-//%
-TNumber createWorld(TNumber gravityX, TNumber gravityY) {
-    return fromDouble(box2d_native::createWorld(toDouble(gravityX), toDouble(gravityY)));
+static Box2DObject objectArgument(RefCollection *args, int index) {
+    return (Box2DObject)(uintptr_t)Array_::getAt(args, index);
 }
 
 //%
-void destroyWorld(TNumber world) {
-    box2d_native::destroyWorld(toDouble(world));
+Box2DObject createWorld(TNumber gravityX, TNumber gravityY) {
+    return box2d_native::createWorld(toDouble(gravityX), toDouble(gravityY));
 }
 
 //%
-bool isValid(TNumber handle) {
-    return box2d_native::isValid(toDouble(handle));
+void destroyWorld(Box2DObject world) {
+    box2d_native::destroyWorld(world);
 }
 
 //%
-void setGravity(TNumber world, TNumber x, TNumber y) {
-    box2d_native::setGravity(toDouble(world), toDouble(x), toDouble(y));
+bool isValid(Box2DObject handle) {
+    return box2d_native::isValid(handle);
 }
 
 //%
-void step(TNumber world, TNumber seconds, TNumber velocityIterations, TNumber positionIterations) {
-    box2d_native::step(toDouble(world), toDouble(seconds), toDouble(velocityIterations), toDouble(positionIterations));
+void setGravity(Box2DObject world, TNumber x, TNumber y) {
+    box2d_native::setGravity(world, toDouble(x), toDouble(y));
 }
 
 //%
-void setWorldSleepingAllowed(TNumber world, bool allowed) {
-    box2d_native::setWorldSleepingAllowed(toDouble(world), allowed);
+void step(Box2DObject world, TNumber seconds, TNumber velocityIterations, TNumber positionIterations) {
+    box2d_native::step(world, toDouble(seconds), toDouble(velocityIterations), toDouble(positionIterations));
 }
 
 //%
-TNumber createBody(RefCollection *args) {
+void setWorldSleepingAllowed(Box2DObject world, bool allowed) {
+    box2d_native::setWorldSleepingAllowed(world, allowed);
+}
+
+//%
+Box2DObject createBody(RefCollection *args) {
     if (!args || Array_::length(args) != 5) target_panic(906);
-    return fromDouble(box2d_native::createBody(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4)));
+    return box2d_native::createBody(objectArgument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
 }
 
 //%
-void destroyBody(TNumber body) {
-    box2d_native::destroyBody(toDouble(body));
+void destroyBody(Box2DObject body) {
+    box2d_native::destroyBody(body);
 }
 
 //%
-RefCollection* getBodyState(TNumber body) {
-    return box2d_native::getBodyState(toDouble(body));
+RefCollection* getBodyState(Box2DObject body) {
+    return box2d_native::getBodyState(body);
 }
 
 //%
-void readBodyTransform(TNumber body, RefCollection* output) {
-    box2d_native::readBodyTransform(toDouble(body), output);
+void readBodyTransform(Box2DObject body, RefCollection* output) {
+    box2d_native::readBodyTransform(body, output);
 }
 
 //%
-void readBodyBoxVertices(TNumber body, RefCollection* box, RefCollection* view, RefCollection* output) {
-    box2d_native::readBodyBoxVertices(toDouble(body), box, view, output);
+void readBodyBoxVertices(Box2DObject body, RefCollection* box, RefCollection* view, RefCollection* output) {
+    box2d_native::readBodyBoxVertices(body, box, view, output);
 }
 
 //%
-void setTransform(TNumber body, TNumber x, TNumber y, TNumber angle) {
-    box2d_native::setTransform(toDouble(body), toDouble(x), toDouble(y), toDouble(angle));
+void setTransform(Box2DObject body, TNumber x, TNumber y, TNumber angle) {
+    box2d_native::setTransform(body, toDouble(x), toDouble(y), toDouble(angle));
 }
 
 //%
-void setLinearVelocity(TNumber body, TNumber x, TNumber y) {
-    box2d_native::setLinearVelocity(toDouble(body), toDouble(x), toDouble(y));
+void setLinearVelocity(Box2DObject body, TNumber x, TNumber y) {
+    box2d_native::setLinearVelocity(body, toDouble(x), toDouble(y));
 }
 
 //%
-void setAngularVelocity(TNumber body, TNumber velocity) {
-    box2d_native::setAngularVelocity(toDouble(body), toDouble(velocity));
+void setAngularVelocity(Box2DObject body, TNumber velocity) {
+    box2d_native::setAngularVelocity(body, toDouble(velocity));
 }
 
 //%
-void setBodyType(TNumber body, TNumber type) {
-    box2d_native::setBodyType(toDouble(body), toDouble(type));
+void setBodyType(Box2DObject body, TNumber type) {
+    box2d_native::setBodyType(body, toDouble(type));
 }
 
 //%
-void setDamping(TNumber body, TNumber linear, TNumber angular) {
-    box2d_native::setDamping(toDouble(body), toDouble(linear), toDouble(angular));
+void setDamping(Box2DObject body, TNumber linear, TNumber angular) {
+    box2d_native::setDamping(body, toDouble(linear), toDouble(angular));
 }
 
 //%
-void setGravityScale(TNumber body, TNumber scale) {
-    box2d_native::setGravityScale(toDouble(body), toDouble(scale));
+void setGravityScale(Box2DObject body, TNumber scale) {
+    box2d_native::setGravityScale(body, toDouble(scale));
 }
 
 //%
-void setBodyFlag(TNumber body, TNumber flag, bool enabled) {
-    box2d_native::setBodyFlag(toDouble(body), toDouble(flag), enabled);
+void setBodyFlag(Box2DObject body, TNumber flag, bool enabled) {
+    box2d_native::setBodyFlag(body, toDouble(flag), enabled);
 }
 
 //%
-bool getBodyFlag(TNumber body, TNumber flag) {
-    return box2d_native::getBodyFlag(toDouble(body), toDouble(flag));
+bool getBodyFlag(Box2DObject body, TNumber flag) {
+    return box2d_native::getBodyFlag(body, toDouble(flag));
 }
 
 //%
 void applyForce(RefCollection *args) {
     if (!args || Array_::length(args) != 6) target_panic(906);
-    box2d_native::applyForce(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), booleanArgument(args, 5));
+    box2d_native::applyForce(objectArgument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), booleanArgument(args, 5));
 }
 
 //%
-void applyForceToCenter(TNumber body, TNumber x, TNumber y, bool wake) {
-    box2d_native::applyForceToCenter(toDouble(body), toDouble(x), toDouble(y), wake);
+void applyForceToCenter(Box2DObject body, TNumber x, TNumber y, bool wake) {
+    box2d_native::applyForceToCenter(body, toDouble(x), toDouble(y), wake);
 }
 
 //%
 void applyLinearImpulse(RefCollection *args) {
     if (!args || Array_::length(args) != 6) target_panic(906);
-    box2d_native::applyLinearImpulse(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), booleanArgument(args, 5));
+    box2d_native::applyLinearImpulse(objectArgument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), booleanArgument(args, 5));
 }
 
 //%
-void applyLinearImpulseToCenter(TNumber body, TNumber x, TNumber y, bool wake) {
-    box2d_native::applyLinearImpulseToCenter(toDouble(body), toDouble(x), toDouble(y), wake);
+void applyLinearImpulseToCenter(Box2DObject body, TNumber x, TNumber y, bool wake) {
+    box2d_native::applyLinearImpulseToCenter(body, toDouble(x), toDouble(y), wake);
 }
 
 //%
-void applyTorque(TNumber body, TNumber torque, bool wake) {
-    box2d_native::applyTorque(toDouble(body), toDouble(torque), wake);
+void applyTorque(Box2DObject body, TNumber torque, bool wake) {
+    box2d_native::applyTorque(body, toDouble(torque), wake);
 }
 
 //%
-void applyAngularImpulse(TNumber body, TNumber impulse, bool wake) {
-    box2d_native::applyAngularImpulse(toDouble(body), toDouble(impulse), wake);
+void applyAngularImpulse(Box2DObject body, TNumber impulse, bool wake) {
+    box2d_native::applyAngularImpulse(body, toDouble(impulse), wake);
 }
 
 //%
-RefCollection* getWorldPoint(TNumber body, TNumber x, TNumber y) {
-    return box2d_native::getWorldPoint(toDouble(body), toDouble(x), toDouble(y));
+RefCollection* getWorldPoint(Box2DObject body, TNumber x, TNumber y) {
+    return box2d_native::getWorldPoint(body, toDouble(x), toDouble(y));
 }
 
 //%
-RefCollection* getLocalPoint(TNumber body, TNumber x, TNumber y) {
-    return box2d_native::getLocalPoint(toDouble(body), toDouble(x), toDouble(y));
+RefCollection* getLocalPoint(Box2DObject body, TNumber x, TNumber y) {
+    return box2d_native::getLocalPoint(body, toDouble(x), toDouble(y));
 }
 
 //%
-TNumber createCircleShape(TNumber radius, TNumber centerX, TNumber centerY) {
-    return fromDouble(box2d_native::createCircleShape(toDouble(radius), toDouble(centerX), toDouble(centerY)));
+Box2DObject createCircleShape(TNumber radius, TNumber centerX, TNumber centerY) {
+    return box2d_native::createCircleShape(toDouble(radius), toDouble(centerX), toDouble(centerY));
 }
 
 //%
-TNumber createBoxShape(RefCollection *args) {
+Box2DObject createBoxShape(RefCollection *args) {
     if (!args || Array_::length(args) != 5) target_panic(906);
-    return fromDouble(box2d_native::createBoxShape(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4)));
+    return box2d_native::createBoxShape(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
 }
 
 //%
-TNumber createPolygonShape(RefCollection* vertices) {
-    return fromDouble(box2d_native::createPolygonShape(vertices));
+Box2DObject createPolygonShape(RefCollection* vertices) {
+    return box2d_native::createPolygonShape(vertices);
 }
 
 //%
-TNumber createEdgeShape(TNumber x1, TNumber y1, TNumber x2, TNumber y2) {
-    return fromDouble(box2d_native::createEdgeShape(toDouble(x1), toDouble(y1), toDouble(x2), toDouble(y2)));
+Box2DObject createEdgeShape(TNumber x1, TNumber y1, TNumber x2, TNumber y2) {
+    return box2d_native::createEdgeShape(toDouble(x1), toDouble(y1), toDouble(x2), toDouble(y2));
 }
 
 //%
-TNumber createChainShape(RefCollection* vertices, bool loop) {
-    return fromDouble(box2d_native::createChainShape(vertices, loop));
+Box2DObject createChainShape(RefCollection* vertices, bool loop) {
+    return box2d_native::createChainShape(vertices, loop);
 }
 
 //%
-void destroyShape(TNumber shape) {
-    box2d_native::destroyShape(toDouble(shape));
+void destroyShape(Box2DObject shape) {
+    box2d_native::destroyShape(shape);
 }
 
 //%
-TNumber createFixture(RefCollection *args) {
+Box2DObject createFixture(RefCollection *args) {
     if (!args || Array_::length(args) != 6) target_panic(906);
-    return fromDouble(box2d_native::createFixture(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), booleanArgument(args, 5)));
+    return box2d_native::createFixture(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), booleanArgument(args, 5));
 }
 
 //%
-void destroyFixture(TNumber fixture) {
-    box2d_native::destroyFixture(toDouble(fixture));
+void destroyFixture(Box2DObject fixture) {
+    box2d_native::destroyFixture(fixture);
 }
 
 //%
-TNumber getFixtureBody(TNumber fixture) {
-    return fromDouble(box2d_native::getFixtureBody(toDouble(fixture)));
+Box2DObject getFixtureBody(Box2DObject fixture) {
+    return box2d_native::getFixtureBody(fixture);
 }
 
 //%
-void setFixtureMaterial(TNumber fixture, TNumber density, TNumber friction, TNumber restitution) {
-    box2d_native::setFixtureMaterial(toDouble(fixture), toDouble(density), toDouble(friction), toDouble(restitution));
+void setFixtureMaterial(Box2DObject fixture, TNumber density, TNumber friction, TNumber restitution) {
+    box2d_native::setFixtureMaterial(fixture, toDouble(density), toDouble(friction), toDouble(restitution));
 }
 
 //%
-void setFixtureSensor(TNumber fixture, bool sensor) {
-    box2d_native::setFixtureSensor(toDouble(fixture), sensor);
+void setFixtureSensor(Box2DObject fixture, bool sensor) {
+    box2d_native::setFixtureSensor(fixture, sensor);
 }
 
 //%
-void setFixtureFilter(TNumber fixture, TNumber categoryBits, TNumber maskBits, TNumber groupIndex) {
-    box2d_native::setFixtureFilter(toDouble(fixture), toDouble(categoryBits), toDouble(maskBits), toDouble(groupIndex));
+void setFixtureFilter(Box2DObject fixture, TNumber categoryBits, TNumber maskBits, TNumber groupIndex) {
+    box2d_native::setFixtureFilter(fixture, toDouble(categoryBits), toDouble(maskBits), toDouble(groupIndex));
 }
 
 //%
-bool testPoint(TNumber fixture, TNumber x, TNumber y) {
-    return box2d_native::testPoint(toDouble(fixture), toDouble(x), toDouble(y));
+bool testPoint(Box2DObject fixture, TNumber x, TNumber y) {
+    return box2d_native::testPoint(fixture, toDouble(x), toDouble(y));
 }
 
 //%
-TNumber createDistanceJoint(RefCollection *args) {
+Box2DObject createDistanceJoint(RefCollection *args) {
     if (!args || Array_::length(args) != 7) target_panic(906);
-    return fromDouble(box2d_native::createDistanceJoint(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), booleanArgument(args, 6)));
+    return box2d_native::createDistanceJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), booleanArgument(args, 6));
 }
 
 //%
 void setDistanceJoint(RefCollection *args) {
     if (!args || Array_::length(args) != 6) target_panic(906);
-    box2d_native::setDistanceJoint(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5));
+    box2d_native::setDistanceJoint(objectArgument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5));
 }
 
 //%
-TNumber createRevoluteJoint(RefCollection *args) {
+Box2DObject createRevoluteJoint(RefCollection *args) {
     if (!args || Array_::length(args) != 5) target_panic(906);
-    return fromDouble(box2d_native::createRevoluteJoint(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), booleanArgument(args, 4)));
+    return box2d_native::createRevoluteJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), booleanArgument(args, 4));
 }
 
 //%
-void setRevoluteJointMotor(TNumber joint, bool enabled, TNumber speed, TNumber maxTorque) {
-    box2d_native::setRevoluteJointMotor(toDouble(joint), enabled, toDouble(speed), toDouble(maxTorque));
+void setRevoluteJointMotor(Box2DObject joint, bool enabled, TNumber speed, TNumber maxTorque) {
+    box2d_native::setRevoluteJointMotor(joint, enabled, toDouble(speed), toDouble(maxTorque));
 }
 
 //%
-void setRevoluteJointLimits(TNumber joint, bool enabled, TNumber lower, TNumber upper) {
-    box2d_native::setRevoluteJointLimits(toDouble(joint), enabled, toDouble(lower), toDouble(upper));
+void setRevoluteJointLimits(Box2DObject joint, bool enabled, TNumber lower, TNumber upper) {
+    box2d_native::setRevoluteJointLimits(joint, enabled, toDouble(lower), toDouble(upper));
 }
 
 //%
-TNumber createWheelJoint(RefCollection *args) {
+Box2DObject createWheelJoint(RefCollection *args) {
     if (!args || Array_::length(args) != 7) target_panic(906);
-    return fromDouble(box2d_native::createWheelJoint(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), booleanArgument(args, 6)));
+    return box2d_native::createWheelJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), booleanArgument(args, 6));
 }
 
 //%
-void setWheelJointMotor(TNumber joint, bool enabled, TNumber speed, TNumber maxTorque) {
-    box2d_native::setWheelJointMotor(toDouble(joint), enabled, toDouble(speed), toDouble(maxTorque));
+void setWheelJointMotor(Box2DObject joint, bool enabled, TNumber speed, TNumber maxTorque) {
+    box2d_native::setWheelJointMotor(joint, enabled, toDouble(speed), toDouble(maxTorque));
 }
 
 //%
-void setWheelJointLimits(TNumber joint, bool enabled, TNumber lower, TNumber upper) {
-    box2d_native::setWheelJointLimits(toDouble(joint), enabled, toDouble(lower), toDouble(upper));
+void setWheelJointLimits(Box2DObject joint, bool enabled, TNumber lower, TNumber upper) {
+    box2d_native::setWheelJointLimits(joint, enabled, toDouble(lower), toDouble(upper));
 }
 
 //%
-void setWheelJointSuspension(TNumber joint, TNumber stiffness, TNumber damping) {
-    box2d_native::setWheelJointSuspension(toDouble(joint), toDouble(stiffness), toDouble(damping));
+void setWheelJointSuspension(Box2DObject joint, TNumber stiffness, TNumber damping) {
+    box2d_native::setWheelJointSuspension(joint, toDouble(stiffness), toDouble(damping));
 }
 
 //%
-TNumber createMouseJoint(RefCollection *args) {
+Box2DObject createMouseJoint(RefCollection *args) {
     if (!args || Array_::length(args) != 7) target_panic(906);
-    return fromDouble(box2d_native::createMouseJoint(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), argument(args, 6)));
+    return box2d_native::createMouseJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), argument(args, 6));
 }
 
 //%
-void setMouseJointTarget(TNumber joint, TNumber x, TNumber y) {
-    box2d_native::setMouseJointTarget(toDouble(joint), toDouble(x), toDouble(y));
+void setMouseJointTarget(Box2DObject joint, TNumber x, TNumber y) {
+    box2d_native::setMouseJointTarget(joint, toDouble(x), toDouble(y));
 }
 
 //%
-void destroyJoint(TNumber joint) {
-    box2d_native::destroyJoint(toDouble(joint));
+void destroyJoint(Box2DObject joint) {
+    box2d_native::destroyJoint(joint);
 }
 
 //%
-RefCollection* getContacts(TNumber world) {
-    return box2d_native::getContacts(toDouble(world));
+RefCollection* getContacts(Box2DObject world) {
+    return box2d_native::getContacts(world);
 }
 
 //%
 RefCollection* queryAABB(RefCollection *args) {
     if (!args || Array_::length(args) != 5) target_panic(906);
-    return box2d_native::queryAABB(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
+    return box2d_native::queryAABB(objectArgument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
 }
 
 //%
 RefCollection* rayCast(RefCollection *args) {
     if (!args || Array_::length(args) != 5) target_panic(906);
-    return box2d_native::rayCast(argument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
+    return box2d_native::rayCast(objectArgument(args, 0), argument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4));
 }
 
 } // namespace box2dNative

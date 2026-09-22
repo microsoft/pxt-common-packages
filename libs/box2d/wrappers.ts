@@ -28,10 +28,10 @@ namespace box2d {
     }
 
     class NativeObject {
-        constructor(private _handle: number) {}
+        constructor(private _handle: box2dNative.Handle) {}
 
         /** For interoperation with the low-level primitive API. */
-        get handle(): number {
+        get handle(): box2dNative.Handle {
             return this._handle;
         }
 
@@ -103,7 +103,7 @@ namespace box2d {
 
     export class Body extends NativeObject {
         /** Wrap an existing body handle without creating or taking ownership of another body. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -267,7 +267,7 @@ namespace box2d {
     /** A reusable, independently owned native shape template. */
     export class Shape extends NativeObject {
         /** Wrap an existing shape handle. Prefer the static circle/box/polygon/edge/chain factories. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -301,7 +301,7 @@ namespace box2d {
 
     export class Fixture extends NativeObject {
         /** Wrap an existing fixture handle. Prefer Body.createFixture for creation. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -333,7 +333,7 @@ namespace box2d {
 
     export class Joint extends NativeObject {
         /** Wrap an existing joint handle. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -344,7 +344,7 @@ namespace box2d {
 
     export class DistanceJoint extends Joint {
         /** Wrap an existing distance-joint handle. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -356,7 +356,7 @@ namespace box2d {
 
     export class RevoluteJoint extends Joint {
         /** Wrap an existing revolute-joint handle. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -371,7 +371,7 @@ namespace box2d {
 
     export class WheelJoint extends Joint {
         /** Wrap an existing wheel-joint handle. */
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 
@@ -392,7 +392,7 @@ namespace box2d {
     }
 
     export class MouseJoint extends Joint {
-        constructor(handle: number) {
+        constructor(handle: box2dNative.Handle) {
             super(handle);
         }
 

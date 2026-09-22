@@ -3,167 +3,167 @@
 declare namespace box2dNativeShim {
 
     //% shim=box2dNative::createWorld
-    function createWorld(gravityX: number, gravityY: number): number;
+    function createWorld(gravityX: number, gravityY: number): box2dNative.Handle;
 
     //% shim=box2dNative::destroyWorld
-    function destroyWorld(world: number): void;
+    function destroyWorld(world: box2dNative.Handle): void;
 
     //% shim=box2dNative::isValid
-    function isValid(handle: number): boolean;
+    function isValid(handle: box2dNative.Handle): boolean;
 
     //% shim=box2dNative::setGravity
-    function setGravity(world: number, x: number, y: number): void;
+    function setGravity(world: box2dNative.Handle, x: number, y: number): void;
 
     //% shim=box2dNative::step
-    function step(world: number, seconds: number, velocityIterations: number, positionIterations: number): void;
+    function step(world: box2dNative.Handle, seconds: number, velocityIterations: number, positionIterations: number): void;
 
     //% shim=box2dNative::setWorldSleepingAllowed
-    function setWorldSleepingAllowed(world: number, allowed: boolean): void;
+    function setWorldSleepingAllowed(world: box2dNative.Handle, allowed: boolean): void;
 
     //% shim=box2dNative::createBody
-    function createBody(args: number[]): number;
+    function createBody(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::destroyBody
-    function destroyBody(body: number): void;
+    function destroyBody(body: box2dNative.Handle): void;
 
     //% shim=box2dNative::getBodyState
-    function getBodyState(body: number): number[];
+    function getBodyState(body: box2dNative.Handle): number[];
 
     //% shim=box2dNative::readBodyTransform
-    function readBodyTransform(body: number, output: number[]): void;
+    function readBodyTransform(body: box2dNative.Handle, output: number[]): void;
 
     //% shim=box2dNative::readBodyBoxVertices
-    function readBodyBoxVertices(body: number, box: number[], view: number[], output: number[]): void;
+    function readBodyBoxVertices(body: box2dNative.Handle, box: number[], view: number[], output: number[]): void;
 
     //% shim=box2dNative::setTransform
-    function setTransform(body: number, x: number, y: number, angle: number): void;
+    function setTransform(body: box2dNative.Handle, x: number, y: number, angle: number): void;
 
     //% shim=box2dNative::setLinearVelocity
-    function setLinearVelocity(body: number, x: number, y: number): void;
+    function setLinearVelocity(body: box2dNative.Handle, x: number, y: number): void;
 
     //% shim=box2dNative::setAngularVelocity
-    function setAngularVelocity(body: number, velocity: number): void;
+    function setAngularVelocity(body: box2dNative.Handle, velocity: number): void;
 
     //% shim=box2dNative::setBodyType
-    function setBodyType(body: number, type: number): void;
+    function setBodyType(body: box2dNative.Handle, type: number): void;
 
     //% shim=box2dNative::setDamping
-    function setDamping(body: number, linear: number, angular: number): void;
+    function setDamping(body: box2dNative.Handle, linear: number, angular: number): void;
 
     //% shim=box2dNative::setGravityScale
-    function setGravityScale(body: number, scale: number): void;
+    function setGravityScale(body: box2dNative.Handle, scale: number): void;
 
     //% shim=box2dNative::setBodyFlag
-    function setBodyFlag(body: number, flag: number, enabled: boolean): void;
+    function setBodyFlag(body: box2dNative.Handle, flag: number, enabled: boolean): void;
 
     //% shim=box2dNative::getBodyFlag
-    function getBodyFlag(body: number, flag: number): boolean;
+    function getBodyFlag(body: box2dNative.Handle, flag: number): boolean;
 
     //% shim=box2dNative::applyForce
-    function applyForce(args: number[]): void;
+    function applyForce(args: any[]): void;
 
     //% shim=box2dNative::applyForceToCenter
-    function applyForceToCenter(body: number, x: number, y: number, wake: boolean): void;
+    function applyForceToCenter(body: box2dNative.Handle, x: number, y: number, wake: boolean): void;
 
     //% shim=box2dNative::applyLinearImpulse
-    function applyLinearImpulse(args: number[]): void;
+    function applyLinearImpulse(args: any[]): void;
 
     //% shim=box2dNative::applyLinearImpulseToCenter
-    function applyLinearImpulseToCenter(body: number, x: number, y: number, wake: boolean): void;
+    function applyLinearImpulseToCenter(body: box2dNative.Handle, x: number, y: number, wake: boolean): void;
 
     //% shim=box2dNative::applyTorque
-    function applyTorque(body: number, torque: number, wake: boolean): void;
+    function applyTorque(body: box2dNative.Handle, torque: number, wake: boolean): void;
 
     //% shim=box2dNative::applyAngularImpulse
-    function applyAngularImpulse(body: number, impulse: number, wake: boolean): void;
+    function applyAngularImpulse(body: box2dNative.Handle, impulse: number, wake: boolean): void;
 
     //% shim=box2dNative::getWorldPoint
-    function getWorldPoint(body: number, x: number, y: number): number[];
+    function getWorldPoint(body: box2dNative.Handle, x: number, y: number): number[];
 
     //% shim=box2dNative::getLocalPoint
-    function getLocalPoint(body: number, x: number, y: number): number[];
+    function getLocalPoint(body: box2dNative.Handle, x: number, y: number): number[];
 
     //% shim=box2dNative::createCircleShape
-    function createCircleShape(radius: number, centerX: number, centerY: number): number;
+    function createCircleShape(radius: number, centerX: number, centerY: number): box2dNative.Handle;
 
     //% shim=box2dNative::createBoxShape
-    function createBoxShape(args: number[]): number;
+    function createBoxShape(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::createPolygonShape
-    function createPolygonShape(vertices: number[]): number;
+    function createPolygonShape(vertices: number[]): box2dNative.Handle;
 
     //% shim=box2dNative::createEdgeShape
-    function createEdgeShape(x1: number, y1: number, x2: number, y2: number): number;
+    function createEdgeShape(x1: number, y1: number, x2: number, y2: number): box2dNative.Handle;
 
     //% shim=box2dNative::createChainShape
-    function createChainShape(vertices: number[], loop: boolean): number;
+    function createChainShape(vertices: number[], loop: boolean): box2dNative.Handle;
 
     //% shim=box2dNative::destroyShape
-    function destroyShape(shape: number): void;
+    function destroyShape(shape: box2dNative.Handle): void;
 
     //% shim=box2dNative::createFixture
-    function createFixture(args: number[]): number;
+    function createFixture(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::destroyFixture
-    function destroyFixture(fixture: number): void;
+    function destroyFixture(fixture: box2dNative.Handle): void;
 
     //% shim=box2dNative::getFixtureBody
-    function getFixtureBody(fixture: number): number;
+    function getFixtureBody(fixture: box2dNative.Handle): box2dNative.Handle;
 
     //% shim=box2dNative::setFixtureMaterial
-    function setFixtureMaterial(fixture: number, density: number, friction: number, restitution: number): void;
+    function setFixtureMaterial(fixture: box2dNative.Handle, density: number, friction: number, restitution: number): void;
 
     //% shim=box2dNative::setFixtureSensor
-    function setFixtureSensor(fixture: number, sensor: boolean): void;
+    function setFixtureSensor(fixture: box2dNative.Handle, sensor: boolean): void;
 
     //% shim=box2dNative::setFixtureFilter
-    function setFixtureFilter(fixture: number, categoryBits: number, maskBits: number, groupIndex: number): void;
+    function setFixtureFilter(fixture: box2dNative.Handle, categoryBits: number, maskBits: number, groupIndex: number): void;
 
     //% shim=box2dNative::testPoint
-    function testPoint(fixture: number, x: number, y: number): boolean;
+    function testPoint(fixture: box2dNative.Handle, x: number, y: number): boolean;
 
     //% shim=box2dNative::createDistanceJoint
-    function createDistanceJoint(args: number[]): number;
+    function createDistanceJoint(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::setDistanceJoint
-    function setDistanceJoint(args: number[]): void;
+    function setDistanceJoint(args: any[]): void;
 
     //% shim=box2dNative::createRevoluteJoint
-    function createRevoluteJoint(args: number[]): number;
+    function createRevoluteJoint(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::setRevoluteJointMotor
-    function setRevoluteJointMotor(joint: number, enabled: boolean, speed: number, maxTorque: number): void;
+    function setRevoluteJointMotor(joint: box2dNative.Handle, enabled: boolean, speed: number, maxTorque: number): void;
 
     //% shim=box2dNative::setRevoluteJointLimits
-    function setRevoluteJointLimits(joint: number, enabled: boolean, lower: number, upper: number): void;
+    function setRevoluteJointLimits(joint: box2dNative.Handle, enabled: boolean, lower: number, upper: number): void;
 
     //% shim=box2dNative::createWheelJoint
-    function createWheelJoint(args: number[]): number;
+    function createWheelJoint(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::setWheelJointMotor
-    function setWheelJointMotor(joint: number, enabled: boolean, speed: number, maxTorque: number): void;
+    function setWheelJointMotor(joint: box2dNative.Handle, enabled: boolean, speed: number, maxTorque: number): void;
 
     //% shim=box2dNative::setWheelJointLimits
-    function setWheelJointLimits(joint: number, enabled: boolean, lower: number, upper: number): void;
+    function setWheelJointLimits(joint: box2dNative.Handle, enabled: boolean, lower: number, upper: number): void;
 
     //% shim=box2dNative::setWheelJointSuspension
-    function setWheelJointSuspension(joint: number, stiffness: number, damping: number): void;
+    function setWheelJointSuspension(joint: box2dNative.Handle, stiffness: number, damping: number): void;
 
     //% shim=box2dNative::createMouseJoint
-    function createMouseJoint(args: number[]): number;
+    function createMouseJoint(args: any[]): box2dNative.Handle;
 
     //% shim=box2dNative::setMouseJointTarget
-    function setMouseJointTarget(joint: number, x: number, y: number): void;
+    function setMouseJointTarget(joint: box2dNative.Handle, x: number, y: number): void;
 
     //% shim=box2dNative::destroyJoint
-    function destroyJoint(joint: number): void;
+    function destroyJoint(joint: box2dNative.Handle): void;
 
     //% shim=box2dNative::getContacts
-    function getContacts(world: number): number[];
+    function getContacts(world: box2dNative.Handle): box2dNative.Handle[];
 
     //% shim=box2dNative::queryAABB
-    function queryAABB(args: number[]): number[];
+    function queryAABB(args: any[]): box2dNative.Handle[];
 
     //% shim=box2dNative::rayCast
-    function rayCast(args: number[]): number[];
+    function rayCast(args: any[]): any[];
 }

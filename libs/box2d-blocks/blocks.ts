@@ -520,7 +520,7 @@ namespace box2dblocks {
             }
         }
 
-        findFixture(handle: number): Body {
+        findFixture(handle: box2dNative.Handle): Body {
             for (let i = 0; i < this.bodies.length; ++i) {
                 const body = this.bodies[i];
                 for (let j = 0; j < body.fixtures.length; ++j) {

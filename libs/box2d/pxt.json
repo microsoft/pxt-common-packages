@@ -1,6 +1,6 @@
 {
     "name": "box2d",
-    "description": "Box2D physics for MakeCode Arcade hardware and the browser simulator, with TypeScript classes over primitive numeric-handle bindings.",
+    "description": "Box2D physics for MakeCode Arcade hardware and the browser simulator, with TypeScript classes over garbage-collected native objects.",
     "version": "0.0.0",
     "files": [
         "main.ts",

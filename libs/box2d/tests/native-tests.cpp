@@ -24,20 +24,20 @@ static void rejects(const std::function<void()> &operation) {
     assert(false && "Expected invalid-input panic");
 }
 
-static std::vector<double> take(RefCollection *array) {
-    std::vector<double> result = array->values;
+static std::vector<TValue> take(RefCollection *array) {
+    std::vector<TValue> result = array->values;
     delete array;
     return result;
 }
 
 static void fallingBody() {
-    double w = createWorld(0, 10);
-    double ground = createBody(w, 0, 0, 5, 0);
-    double box = createBoxShape(10, 0.5, 0, 0, 0);
-    double floor = createFixture(ground, box, 0, 0.2, 0, false);
-    double ball = createBody(w, 2, 0, 0, 0);
-    double circle = createCircleShape(0.5, 0, 0);
-    double f = createFixture(ball, circle, 1, 0.2, 0, false);
+    auto w = createWorld(0, 10);
+    auto ground = createBody(w, 0, 0, 5, 0);
+    auto box = createBoxShape(10, 0.5, 0, 0, 0);
+    auto floor = createFixture(ground, box, 0, 0.2, 0, false);
+    auto ball = createBody(w, 2, 0, 0, 0);
+    auto circle = createCircleShape(0.5, 0, 0);
+    auto f = createFixture(ball, circle, 1, 0.2, 0, false);
     destroyShape(circle);
     destroyShape(box);
     assert(!isValid(circle));
@@ -78,10 +78,10 @@ static void fallingBody() {
 }
 
 static void shapesAndMotion() {
-    double w = createWorld(0, 0);
-    double b = createBody(w, 2, 2, 3, b2_pi / 2);
-    double box = createBoxShape(1, 2, 0, 0, 0);
-    double f = createFixture(b, box, 1, 0.2, 0, false);
+    auto w = createWorld(0, 0);
+    auto b = createBody(w, 2, 2, 3, b2_pi / 2);
+    auto box = createBoxShape(1, 2, 0, 0, 0);
+    auto f = createFixture(b, box, 1, 0.2, 0, false);
     close(take(getBodyState(b))[6], 8);
     auto point = take(getWorldPoint(b, 1, 0));
     close(point[0], 2);
@@ -123,13 +123,13 @@ static void shapesAndMotion() {
     setBodyType(b, 1);
     assert(body(b)->GetType() == b2_kinematicBody);
     RefCollection polygon{{-1, -1, 1, -1, 1, 1, -1, 1}};
-    double p = createPolygonShape(&polygon);
+    auto p = createPolygonShape(&polygon);
     RefCollection clockwise{{-1, 1, 1, 1, 1, -1, -1, -1}};
-    double p2 = createPolygonShape(&clockwise);
-    double edge = createEdgeShape(0, 0, 1, 0);
-    double chain = createChainShape(&polygon, false);
-    double loop = createChainShape(&polygon, true);
-    double chainFixture = createFixture(b, chain, 0, 0.2, 0, false);
+    auto p2 = createPolygonShape(&clockwise);
+    auto edge = createEdgeShape(0, 0, 1, 0);
+    auto chain = createChainShape(&polygon, false);
+    auto loop = createChainShape(&polygon, true);
+    auto chainFixture = createFixture(b, chain, 0, 0.2, 0, false);
     auto query = take(queryAABB(w, -100, -100, 100, 100));
     assert(query.size() == 2);
     assert((query[0] == chainFixture || query[1] == chainFixture));
@@ -137,22 +137,22 @@ static void shapesAndMotion() {
     assert(!isValid(f) && isValid(b));
     destroyWorld(w);
     assert(isValid(box) && isValid(p) && isValid(edge) && isValid(chain));
-    for (double shape : {box, p, p2, edge, chain, loop})
+    for (auto shape : {box, p, p2, edge, chain, loop})
         destroyShape(shape);
 }
 
 static void jointsAndLifetime() {
-    double w = createWorld(0, 0);
-    double otherWorld = createWorld(0, 0);
-    double a = createBody(w, 2, 0, 0, 0);
-    double b = createBody(w, 2, 2, 0, 0);
-    double c = createBody(otherWorld, 2, 0, 0, 0);
-    double shape = createCircleShape(0.5, 0, 0);
-    double fa = createFixture(a, shape, 1, 0.2, 0, false);
-    double fb = createFixture(b, shape, 1, 0.2, 0, false);
+    auto w = createWorld(0, 0);
+    auto otherWorld = createWorld(0, 0);
+    auto a = createBody(w, 2, 0, 0, 0);
+    auto b = createBody(w, 2, 2, 0, 0);
+    auto c = createBody(otherWorld, 2, 0, 0, 0);
+    auto shape = createCircleShape(0.5, 0, 0);
+    auto fa = createFixture(a, shape, 1, 0.2, 0, false);
+    auto fb = createFixture(b, shape, 1, 0.2, 0, false);
     rejects([&] { createDistanceJoint(a, c, 0, 0, 1, 0, false); });
     rejects([&] { createRevoluteJoint(a, a, 0, 0, false); });
-    double distance = createDistanceJoint(a, b, 0, 0, 2, 0, false);
+    auto distance = createDistanceJoint(a, b, 0, 0, 2, 0, false);
     setDistanceJoint(distance, 4, 3, 5, 0, 0);
     auto value = static_cast<b2DistanceJoint *>(joint(distance, e_distanceJoint));
     close(value->GetMinLength(), 3);
@@ -165,7 +165,7 @@ static void jointsAndLifetime() {
     for (int i = 0; i < 60; ++i)
         step(w, 1.0 / 60, 8, 3);
     close(value->GetCurrentLength(), 2, 0.01);
-    double hinge = createRevoluteJoint(a, b, 1, 0, false);
+    auto hinge = createRevoluteJoint(a, b, 1, 0, false);
     setRevoluteJointMotor(hinge, true, 0.25, 2);
     setRevoluteJointLimits(hinge, true, -0.5, 0.5);
     rejects([&] { setRevoluteJointMotor(distance, true, 1, 1); });
@@ -175,7 +175,7 @@ static void jointsAndLifetime() {
     destroyBody(b);
     assert(!isValid(b) && !isValid(fb) && !isValid(distance) && !isValid(hinge));
     assert(isValid(a) && isValid(fa) && isValid(c));
-    double replacement = createBody(w, 2, 0, 0, 0);
+    auto replacement = createBody(w, 2, 0, 0, 0);
     assert(replacement != b && !isValid(b));
     destroyWorld(w);
     assert(isValid(c) && isValid(shape));
@@ -184,13 +184,13 @@ static void jointsAndLifetime() {
 }
 
 static void wheelSuspensionAndMotor() {
-    double w = createWorld(0, 0);
-    double a = createBody(w, 0, 0, 0, 0.4);
-    double b = createBody(w, 2, 0, 1, 0);
-    double shape = createCircleShape(0.4, 0, 0);
+    auto w = createWorld(0, 0);
+    auto a = createBody(w, 0, 0, 0, 0.4);
+    auto b = createBody(w, 2, 0, 1, 0);
+    auto shape = createCircleShape(0.4, 0, 0);
     createFixture(b, shape, 1, 0.9, 0, false);
     destroyShape(shape);
-    double handle = createWheelJoint(a, b, 0, 1, 0, 7, false);
+    auto handle = createWheelJoint(a, b, 0, 1, 0, 7, false);
     auto wheel = static_cast<b2WheelJoint *>(joint(handle, e_wheelJoint));
     b2Vec2 axis = body(a)->GetWorldVector(wheel->GetLocalAxisA());
     close(axis.x, 0);
@@ -255,13 +255,13 @@ static void wheelSuspensionAndMotor() {
 }
 
 static void wheelValidationAndLifetime() {
-    double w = createWorld(0, 0);
-    double otherWorld = createWorld(0, 0);
-    double a = createBody(w, 2, 0, 0, 0);
-    double b = createBody(w, 2, 1, 0, 0);
-    double c = createBody(otherWorld, 2, 0, 0, 0);
-    double shape = createCircleShape(0.4, 0, 0);
-    double f = createFixture(b, shape, 1, 0.2, 0, false);
+    auto w = createWorld(0, 0);
+    auto otherWorld = createWorld(0, 0);
+    auto a = createBody(w, 2, 0, 0, 0);
+    auto b = createBody(w, 2, 1, 0, 0);
+    auto c = createBody(otherWorld, 2, 0, 0, 0);
+    auto shape = createCircleShape(0.4, 0, 0);
+    auto f = createFixture(b, shape, 1, 0.2, 0, false);
     rejects([&] { createWheelJoint(a, c, 0, 0, 0, 1, false); });
     rejects([&] { createWheelJoint(a, a, 0, 0, 0, 1, false); });
     rejects([&] { createWheelJoint(w, b, 0, 0, 0, 1, false); });
@@ -279,7 +279,7 @@ static void wheelValidationAndLifetime() {
         rejects([&] { createWheelJoint(a, b, 0, invalid, 0, 1, false); });
     }
     for (double magnitude : {std::numeric_limits<double>::denorm_min(), 1.0, std::numeric_limits<double>::max()}) {
-        double h = createWheelJoint(a, b, 0, 0, magnitude, -magnitude, true);
+        auto h = createWheelJoint(a, b, 0, 0, magnitude, -magnitude, true);
         auto wheel = static_cast<b2WheelJoint *>(joint(h, e_wheelJoint));
         close(wheel->GetLocalAxisA().x, std::sqrt(0.5));
         close(wheel->GetLocalAxisA().y, -std::sqrt(0.5));
@@ -287,10 +287,10 @@ static void wheelValidationAndLifetime() {
         destroyJoint(h);
         assert(!isValid(h));
     }
-    double h = createWheelJoint(a, b, 1, 0, 0, 1, false);
-    double hinge = createRevoluteJoint(a, b, 1, 0, false);
-    double distance = createDistanceJoint(a, b, 0, 0, 1, 0, false);
-    for (double wrong : {w, a, shape, f, hinge, distance, h + 0.5, -1.0}) {
+    auto h = createWheelJoint(a, b, 1, 0, 0, 1, false);
+    auto hinge = createRevoluteJoint(a, b, 1, 0, false);
+    auto distance = createDistanceJoint(a, b, 0, 0, 1, 0, false);
+    for (auto wrong : {w, a, shape, f, hinge, distance, (RefBox2D *)nullptr}) {
         rejects([&] { setWheelJointMotor(wrong, true, 1, 20); });
         rejects([&] { setWheelJointLimits(wrong, true, -0.25, 0.25); });
         rejects([&] { setWheelJointSuspension(wrong, 1, 1); });
@@ -320,7 +320,7 @@ static void wheelValidationAndLifetime() {
     rejects([&] { destroyJoint(h); });
     rejects([&] { createWheelJoint(a, b, 0, 0, 0, 1, false); });
     b = createBody(w, 2, 1, 0, 0);
-    double replacement = createWheelJoint(a, b, 1, 0, 0, 1, false);
+    auto replacement = createWheelJoint(a, b, 1, 0, 0, 1, false);
     assert(replacement != h && !isValid(h));
     destroyBody(a);
     assert(!isValid(replacement) && isValid(b));
@@ -335,11 +335,11 @@ static void wheelValidationAndLifetime() {
 }
 
 static void sensorsAndFiltering() {
-    double w = createWorld(0, 0);
-    double a = createBody(w, 0, 0, 0, 0);
-    double b = createBody(w, 2, 0, 0, 0);
-    double shape = createCircleShape(1, 0, 0);
-    double fa = createFixture(a, shape, 0, 0.2, 0, true);
+    auto w = createWorld(0, 0);
+    auto a = createBody(w, 0, 0, 0, 0);
+    auto b = createBody(w, 2, 0, 0, 0);
+    auto shape = createCircleShape(1, 0, 0);
+    auto fa = createFixture(a, shape, 0, 0.2, 0, true);
     createFixture(b, shape, 1, 0.2, 0, false);
     step(w, 1.0 / 60, 8, 3);
     assert(take(getContacts(w)).size() == 2);
@@ -357,11 +357,10 @@ static void sensorsAndFiltering() {
 }
 
 static void invalidInputs() {
-    double w = createWorld(0, 0);
-    double b = createBody(w, 2, 0, 0, 0);
+    auto w = createWorld(0, 0);
+    auto b = createBody(w, 2, 0, 0, 0);
     rejects([&] { destroyBody(w); });
-    rejects([&] { destroyWorld(-1); });
-    rejects([&] { destroyWorld(w + 0.5); });
+    rejects([&] { destroyWorld(nullptr); });
     rejects([&] { createWorld(std::numeric_limits<double>::quiet_NaN(), 0); });
     rejects([&] { setLinearVelocity(b, std::numeric_limits<double>::infinity(), 0); });
     rejects([&] { step(w, 0, 8, 3); });
@@ -382,22 +381,20 @@ static void invalidInputs() {
         rejects([&] { createPolygonShape(&bad); });
     RefCollection repeated{{0, 0, 1, 0, 0, 0}};
     rejects([&] { createChainShape(&repeated, true); });
-    assert(!isValid(0) && !isValid(-1) && !isValid(1.5));
-    assert(!isValid(std::numeric_limits<double>::quiet_NaN()));
-    assert(!isValid(std::numeric_limits<double>::infinity()));
+    assert(!isValid(nullptr));
     destroyWorld(w);
     rejects([&] { getBodyState(b); });
     rejects([&] { destroyWorld(w); });
 }
 
 static void packedBindings() {
-    double w = box2dNative::createWorld(0, 0);
+    auto w = box2dNative::createWorld(0, 0);
     RefCollection bodyArgs{{w, 2, 1.25, 2.5, 0}};
-    double b = box2dNative::createBody(&bodyArgs);
+    auto b = box2dNative::createBody(&bodyArgs);
     RefCollection boxArgs{{0.5, 0.25, 0, 0, 0}};
-    double shape = box2dNative::createBoxShape(&boxArgs);
+    auto shape = box2dNative::createBoxShape(&boxArgs);
     RefCollection fixtureArgs{{b, shape, 2, 0.2, 0.4, 1}};
-    double f = box2dNative::createFixture(&fixtureArgs);
+    auto f = box2dNative::createFixture(&fixtureArgs);
     auto state = take(box2dNative::getBodyState(b));
     close(state[0], 1.25);
     close(state[1], 2.5);
@@ -407,7 +404,7 @@ static void packedBindings() {
     box2dNative::applyLinearImpulse(&impulseArgs);
     close(take(box2dNative::getBodyState(b))[3], 0.5);
     RefCollection queryArgs{{w, -10, -10, 10, 10}};
-    assert(take(box2dNative::queryAABB(&queryArgs)) == std::vector<double>{f});
+    assert(take(box2dNative::queryAABB(&queryArgs)) == std::vector<TValue>{f});
     RefCollection rayArgs{{w, 1.25, 0, 1.25, 5}};
     auto hit = take(box2dNative::rayCast(&rayArgs));
     assert(hit.size() == 6 && hit[0] == f);
@@ -418,9 +415,9 @@ static void packedBindings() {
     fixtureArgs.values[5] = 2;
     rejects([&] { box2dNative::createFixture(&fixtureArgs); });
     RefCollection otherArgs{{w, 2, -1, 2.5, 0}};
-    double other = box2dNative::createBody(&otherArgs);
+    auto other = box2dNative::createBody(&otherArgs);
     RefCollection wheelArgs{{b, other, -1, 2.5, 0, 4, 1}};
-    double wheelHandle = box2dNative::createWheelJoint(&wheelArgs);
+    auto wheelHandle = box2dNative::createWheelJoint(&wheelArgs);
     auto wheel = static_cast<b2WheelJoint *>(joint(wheelHandle, e_wheelJoint));
     assert(wheel->GetBodyA() == body(b) && wheel->GetBodyB() == body(other));
     assert(wheel->GetCollideConnected());
@@ -437,7 +434,7 @@ static void packedBindings() {
     close(wheel->GetStiffness(), 300);
     close(wheel->GetDamping(), 17);
     RefCollection mouseArgs{{b, other, -1, 2.5, 100, 10, 1}};
-    double mouseHandle = box2dNative::createMouseJoint(&mouseArgs);
+    auto mouseHandle = box2dNative::createMouseJoint(&mouseArgs);
     box2dNative::setMouseJointTarget(mouseHandle, 2, 3);
     auto mouse = static_cast<b2MouseJoint *>(joint(mouseHandle, e_mouseJoint));
     close(mouse->GetTarget().x, 2);
@@ -459,18 +456,18 @@ static void packedBindings() {
 }
 
 static void mouseJointAndLifetime() {
-    double w = createWorld(0, 0);
-    double follower = createBody(w, 0, 0, 0, 0);
-    double dragged = createBody(w, 2, 0, 0, 0);
-    double shape = createCircleShape(0.5, 0, 0);
+    auto w = createWorld(0, 0);
+    auto follower = createBody(w, 0, 0, 0, 0);
+    auto dragged = createBody(w, 2, 0, 0, 0);
+    auto shape = createCircleShape(0.5, 0, 0);
     createFixture(dragged, shape, 1, 0.2, 0, false);
-    double handle = createMouseJoint(follower, dragged, 0, 0, 100, 10, 1);
+    auto handle = createMouseJoint(follower, dragged, 0, 0, 100, 10, 1);
     setMouseJointTarget(handle, 2, 3);
     auto mouse = static_cast<b2MouseJoint *>(joint(handle, e_mouseJoint));
     close(mouse->GetTarget().x, 2);
     close(mouse->GetTarget().y, 3);
     rejects([&] { setMouseJointTarget(createRevoluteJoint(follower, dragged, 0, 0, false), 0, 0); });
-    double staticBody = createBody(w, 0, 0, 0, 0);
+    auto staticBody = createBody(w, 0, 0, 0, 0);
     rejects([&] { createMouseJoint(follower, staticBody, 0, 0, 100, 10, 1); });
     destroyBody(dragged);
     assert(!isValid(handle));
@@ -478,11 +475,44 @@ static void mouseJointAndLifetime() {
     destroyWorld(w);
 }
 
+static void garbageCollectedLifetime() {
+    auto worldHandle = createWorld(0, 0);
+    auto bodyA = createBody(worldHandle, 2, 0, 0, 0);
+    auto bodyB = createBody(worldHandle, 2, 1, 0, 0);
+    auto shape = createCircleShape(0.5, 0, 0);
+    auto fixtureHandle = createFixture(bodyA, shape, 1, 0.2, 0, false);
+    auto jointHandle = createRevoluteJoint(bodyA, bodyB, 0, 0, false);
+
+    assert(bodyA->world == worldHandle);
+    assert(fixtureHandle->world == worldHandle && fixtureHandle->bodyA == bodyA);
+    assert(jointHandle->world == worldHandle &&
+           jointHandle->bodyA == bodyA && jointHandle->bodyB == bodyB);
+    assert(Array_::length(bodyA->joints) == 1 &&
+           Array_::getAt(bodyA->joints, 0) == jointHandle);
+    assert(Array_::length(bodyB->joints) == 1 &&
+           Array_::getAt(bodyB->joints, 0) == jointHandle);
+
+    RefBox2D::destroy(fixtureHandle);
+    assert(!isValid(fixtureHandle) && isValid(bodyA));
+    RefBox2D::destroy(bodyA);
+    assert(!isValid(bodyA) && !isValid(jointHandle) && isValid(bodyB));
+    assert(Array_::length(bodyB->joints) == 0);
+    RefBox2D::destroy(shape);
+    RefBox2D::destroy(worldHandle);
+    assert(!isValid(shape) && !isValid(worldHandle) && !isValid(bodyB));
+
+    // Explicit destruction followed by GC finalization is harmless.
+    RefBox2D::destroy(fixtureHandle);
+    RefBox2D::destroy(bodyA);
+    RefBox2D::destroy(shape);
+    RefBox2D::destroy(worldHandle);
+}
+
 static void reusableTransforms() {
-    double w = createWorld(0, 0);
-    double b = createBody(w, 2, 1.25, -2.5, 0.75);
+    auto w = createWorld(0, 0);
+    auto b = createBody(w, 2, 1.25, -2.5, 0.75);
     RefCollection output{{0, 0, 0, 12345}};
-    double *storage = output.values.data();
+    TValue *storage = output.values.data();
     int arraysBefore = pxt::arrayAllocations;
     int numbersBefore = pxt::numberConversions;
     int rootsBefore = pxt::rootCount;
@@ -507,7 +537,7 @@ static void reusableTransforms() {
     rejects([&] { readBodyTransform(b, nullptr); });
     rejects([&] { readBodyTransform(b, &empty); });
     rejects([&] { readBodyTransform(b, &shortOutput); });
-    assert(shortOutput.values == std::vector<double>({1, 2}));
+    assert(shortOutput.values == std::vector<TValue>({1, 2}));
     auto previous = output.values;
     rejects([&] { readBodyTransform(w, &output); });
     assert(output.values == previous);
@@ -517,32 +547,32 @@ static void reusableTransforms() {
 }
 
 static void integerBoxVertices() {
-    double w = createWorld(0, 0);
-    double b = createBody(w, 2, 0, 0, 0);
+    auto w = createWorld(0, 0);
+    auto b = createBody(w, 2, 0, 0, 0);
     RefCollection box{{1, 0.5, 0, 0}};
     RefCollection view{{8, 80, 60}};
     RefCollection output{{0, 0, 0, 0, 0, 0, 0, 0, 12345}};
-    double *storage = output.values.data();
+    TValue *storage = output.values.data();
     int arraysBefore = pxt::arrayAllocations;
     int numbersBefore = pxt::numberConversions;
     int integersBefore = pxt::integerConversions;
     int rootsBefore = pxt::rootCount;
     box2dNative::readBodyBoxVertices(b, &box, &view, &output);
-    assert(output.values == std::vector<double>({72, 56, 88, 56, 88, 64, 72, 64, 12345}));
+    assert(output.values == std::vector<TValue>({72, 56, 88, 56, 88, 64, 72, 64, 12345}));
 
     box.values = {0.5, 0.5, 0, 0};
     view.values = {1, 0, 0};
     readBodyBoxVertices(b, &box, &view, &output);
-    assert(output.values == std::vector<double>({0, 0, 1, 0, 1, 1, 0, 1, 12345}));
+    assert(output.values == std::vector<TValue>({0, 0, 1, 0, 1, 1, 0, 1, 12345}));
     view.values = {1, -1, -1};
     readBodyBoxVertices(b, &box, &view, &output);
-    assert(output.values == std::vector<double>({-1, -1, 0, -1, 0, 0, -1, 0, 12345}));
+    assert(output.values == std::vector<TValue>({-1, -1, 0, -1, 0, 0, -1, 0, 12345}));
 
     setTransform(b, 1.25, -2.5, b2_pi / 2);
     box.values = {1, 0.5, 2, -1};
     view.values = {8, 80, 60};
     readBodyBoxVertices(b, &box, &view, &output);
-    assert(output.values == std::vector<double>({102, 48, 102, 64, 94, 64, 94, 48, 12345}));
+    assert(output.values == std::vector<TValue>({102, 48, 102, 64, 94, 64, 94, 48, 12345}));
 
     for (int i = 0; i < 100; ++i) {
         setTransform(b, -1.25, 2.5, (i - 50) * 0.137);
@@ -591,7 +621,7 @@ static void integerBoxVertices() {
     box.values = {1, 1, 0, 0};
     view.values = {30000, 0, 0};
     readBodyBoxVertices(b, &box, &view, &output);
-    assert(output.values == std::vector<double>({-30000, -30000, 30000, -30000, 30000, 30000, -30000, 30000, 12345}));
+    assert(output.values == std::vector<TValue>({-30000, -30000, 30000, -30000, 30000, 30000, -30000, 30000, 12345}));
     unchanged = output.values;
     view.values[1] = 1; // The first corner fits, but a later corner is out of range.
     rejects([&] { readBodyBoxVertices(b, &box, &view, &output); });
@@ -602,24 +632,24 @@ static void integerBoxVertices() {
 }
 
 static void carDemo() {
-    double w = createWorld(0, 10);
-    double ground = createBody(w, 0, 0, 2, 0);
-    double floor = createBoxShape(200, 0.5, 0, 0, 0);
+    auto w = createWorld(0, 10);
+    auto ground = createBody(w, 0, 0, 2, 0);
+    auto floor = createBoxShape(200, 0.5, 0, 0, 0);
     createFixture(ground, floor, 0, 0.6, 0, false);
     destroyShape(floor);
-    double chassis = createBody(w, 2, 0, 0, 0);
+    auto chassis = createBody(w, 2, 0, 0, 0);
     RefCollection vertices{{-1.5, 0.5, 1.5, 0.5, 1.5, 0, 0, -0.9, -1.15, -0.9, -1.5, -0.2}};
-    double hull = createPolygonShape(&vertices);
+    auto hull = createPolygonShape(&vertices);
     createFixture(chassis, hull, 1, 0.2, 0, false);
     destroyShape(hull);
-    double circle = createCircleShape(0.4, 0, 0);
-    std::vector<double> wheels;
-    std::vector<double> joints;
+    auto circle = createCircleShape(0.4, 0, 0);
+    std::vector<RefBox2D *> wheels;
+    std::vector<RefBox2D *> joints;
     double omega = 2 * b2_pi * 4;
     for (double x : {-1.0, 1.0}) {
-        double wheel = createBody(w, 2, x, 0.65, 0);
+        auto wheel = createBody(w, 2, x, 0.65, 0);
         createFixture(wheel, circle, 1, 0.9, 0, false);
-        double h = createWheelJoint(chassis, wheel, x, 0.65, 0, 1, false);
+        auto h = createWheelJoint(chassis, wheel, x, 0.65, 0, 1, false);
         double mass = body(wheel)->GetMass();
         setWheelJointSuspension(h, mass * omega * omega, 2 * mass * 0.7 * omega);
         setWheelJointLimits(h, true, -0.25, 0.25);
@@ -631,14 +661,14 @@ static void carDemo() {
     auto advance = [&](int frames) {
         for (int i = 0; i < frames; ++i) {
             step(w, 1.0 / 60, 8, 3);
-            for (double b : {chassis, wheels[0], wheels[1]}) {
+            for (auto b : {chassis, wheels[0], wheels[1]}) {
                 auto state = take(getBodyState(b));
-                for (double value : state)
-                    assert(std::isfinite(value));
+                for (TValue value : state)
+                    assert(std::isfinite((double)value));
                 assert(std::abs(state[0]) < 190 && std::abs(state[1]) < 2);
             }
             assert(std::abs(body(chassis)->GetAngle()) < 0.7);
-            for (double h : joints) {
+            for (auto h : joints) {
                 auto wheel = static_cast<b2WheelJoint *>(joint(h, e_wheelJoint));
                 assert(std::abs(wheel->GetJointTranslation()) < 0.27);
             }
@@ -663,14 +693,14 @@ static void carDemo() {
     std::cout << "Car: forward " << forward - start << "m, reverse "
               << body(chassis)->GetPosition().x - stopped << "m; stable braking\n";
     destroyWorld(w);
-    for (double h : {ground, chassis, wheels[0], wheels[1], joints[0], joints[1]})
+    for (auto h : {ground, chassis, wheels[0], wheels[1], joints[0], joints[1]})
         assert(!isValid(h));
 }
 
 static void carCourseDemo() {
     // Match test-car.ts, including reflected-Y terrain, suspension, and the 16-body budget.
-    double w = createWorld(0, 10);
-    double ground = createBody(w, 0, 0, 0, 0);
+    auto w = createWorld(0, 10);
+    auto ground = createBody(w, 0, 0, 0, 0);
     RefCollection firstRoad{{-20, -20, -20, 0, 20, 0}};
     const double hills[] = {0.25, 1, 4, 0, 0, -1, -2, -2, -1.25, 0};
     for (int repeat = 0; repeat < 2; ++repeat) {
@@ -684,22 +714,22 @@ static void carCourseDemo() {
     RefCollection secondRoad{{176, 0, 216, 0, 226, -5}};
     RefCollection thirdRoad{{236, 0, 276, 0, 276, -20}};
     for (RefCollection *road : {&firstRoad, &secondRoad, &thirdRoad}) {
-        double shape = createChainShape(road, false);
+        auto shape = createChainShape(road, false);
         createFixture(ground, shape, 0, 0.6, 0, false);
         destroyShape(shape);
     }
-    double seesaw = createBody(w, 2, 140, -1, 0);
-    double shape = createBoxShape(10, 0.25, 0, 0, 0);
+    auto seesaw = createBody(w, 2, 140, -1, 0);
+    auto shape = createBoxShape(10, 0.25, 0, 0, 0);
     createFixture(seesaw, shape, 1, 0.6, 0, false);
     destroyShape(shape);
-    double hinge = createRevoluteJoint(ground, seesaw, 140, -1, false);
+    auto hinge = createRevoluteJoint(ground, seesaw, 140, -1, false);
     setRevoluteJointLimits(hinge, true, -8 * b2_pi / 180, 8 * b2_pi / 180);
     applyAngularImpulse(seesaw, -100, true);
     shape = createBoxShape(1, 0.125, 0, 0, 0);
-    double previous = ground;
-    std::vector<double> planks;
+    RefBox2D *previous = ground;
+    std::vector<RefBox2D *> planks;
     for (int i = 0; i < 8; ++i) {
-        double plank = createBody(w, 2, 161 + 2 * i, 0.125, 0);
+        auto plank = createBody(w, 2, 161 + 2 * i, 0.125, 0);
         createFixture(plank, shape, 1, 0.6, 0, false);
         createRevoluteJoint(previous, plank, 160 + 2 * i, 0.125, false);
         previous = plank;
@@ -709,11 +739,11 @@ static void carCourseDemo() {
     destroyShape(shape);
     shape = createBoxShape(0.5, 0.5, 0, 0, 0);
     for (int i = 0; i < 3; ++i) {
-        double crate = createBody(w, 2, 206, -0.5 - i, 0);
+        auto crate = createBody(w, 2, 206, -0.5 - i, 0);
         createFixture(crate, shape, 0.5, 0.6, 0, false);
     }
     destroyShape(shape);
-    double chassis = createBody(w, 2, 0, -1, 0);
+    auto chassis = createBody(w, 2, 0, -1, 0);
     RefCollection chassisVertices{{-1.5, 0.5, 1.5, 0.5, 1.5, 0, 0, -0.9, -1.15, -0.9, -1.5, -0.2}};
     shape = createPolygonShape(&chassisVertices);
     createFixture(chassis, shape, 1, 0.2, 0, false);
@@ -721,11 +751,11 @@ static void carCourseDemo() {
     shape = createCircleShape(0.4, 0, 0);
     double omega = 2 * b2_pi * 4;
     double wheelMass = b2_pi * 0.4 * 0.4;
-    std::vector<double> springs;
+    std::vector<RefBox2D *> springs;
     for (const auto &position : {b2Vec2(-1, -0.35), b2Vec2(1, -0.4)}) {
-        double wheel = createBody(w, 2, position.x, position.y, 0);
+        auto wheel = createBody(w, 2, position.x, position.y, 0);
         createFixture(wheel, shape, 1, 0.9, 0, false);
-        double spring = createWheelJoint(chassis, wheel, position.x, position.y, 0, 1, false);
+        auto spring = createWheelJoint(chassis, wheel, position.x, position.y, 0, 1, false);
         setWheelJointSuspension(spring, wheelMass * omega * omega, 2 * wheelMass * 0.7 * omega);
         setWheelJointLimits(spring, true, -0.25, 0.25);
         springs.push_back(spring);
@@ -759,7 +789,7 @@ static void carCourseDemo() {
             for (b2Body *carBody : carBodies) {
                 b2Body *obstacle = a == carBody ? b : b == carBody ? a : nullptr;
                 if (obstacle == body(seesaw)) touchedSeesaw = true;
-                for (double plank : planks)
+                for (auto plank : planks)
                     if (obstacle == body(plank)) touchedBridge = true;
             }
         }
@@ -790,28 +820,28 @@ static void carCourseDemo() {
 }
 
 static void tumblerDemo() {
-    double w = createWorld(0, 10);
-    double ground = createBody(w, 0, 0, 0, 0);
-    double container = createBody(w, 2, 0, 0, 0);
+    auto w = createWorld(0, 10);
+    auto ground = createBody(w, 0, 0, 0, 0);
+    auto container = createBody(w, 2, 0, 0, 0);
     setBodyFlag(container, 2, false);
     const double walls[4][4] = {
         {0.2, 4.2, 4, 0}, {0.2, 4.2, -4, 0},
         {4.2, 0.2, 0, 4}, {4.2, 0.2, 0, -4}
     };
     for (const auto &wall : walls) {
-        double shape = createBoxShape(wall[0], wall[1], wall[2], wall[3], 0);
+        auto shape = createBoxShape(wall[0], wall[1], wall[2], wall[3], 0);
         createFixture(container, shape, 5, 0.5, 0, false);
         destroyShape(shape);
     }
-    double motor = createRevoluteJoint(ground, container, 0, 0, false);
+    auto motor = createRevoluteJoint(ground, container, 0, 0, false);
     setRevoluteJointMotor(motor, true, 0.4, 10000);
-    double shape = createBoxShape(0.24, 0.24, 0, 0, 0);
-    std::vector<double> boxes;
+    auto shape = createBoxShape(0.24, 0.24, 0, 0, 0);
+    std::vector<RefBox2D *> boxes;
     double angleAtReverse = 0;
     for (int frame = 0; frame < 1800; ++frame) {
         if (frame % 12 == 0 && boxes.size() < 48) {
             int index = (int)boxes.size();
-            double b = createBody(w, 2, (index % 3 - 1) * 0.6, 0, (index % 5) * 0.15);
+            auto b = createBody(w, 2, (index % 3 - 1) * 0.6, 0, (index % 5) * 0.15);
             createFixture(b, shape, 1, 0.3, 0.1, false);
             boxes.push_back(b);
         }
@@ -821,7 +851,7 @@ static void tumblerDemo() {
             setRevoluteJointMotor(motor, true, -0.4, 10000);
         }
         step(w, 1.0 / 60, 8, 3);
-        for (double b : boxes) {
+        for (auto b : boxes) {
             b2Vec2 position = body(container)->GetLocalPoint(body(b)->GetPosition());
             assert(std::isfinite(position.x) && std::isfinite(position.y));
             assert(std::abs(position.x) < 4 && std::abs(position.y) < 4);
@@ -847,12 +877,12 @@ int main() {
     invalidInputs();
     packedBindings();
     mouseJointAndLifetime();
+    garbageCollectedLifetime();
     reusableTransforms();
     integerBoxVertices();
     carDemo();
     carCourseDemo();
     tumblerDemo();
-    assert(entries == nullptr);
     assert(pxt::rootCount == 0);
     std::cout << "All native Box2D binding tests passed\n";
 }
