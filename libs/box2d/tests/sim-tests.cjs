@@ -120,7 +120,8 @@ const sim = context.pxsim.box2dNative;
 for (const name of [
     "createBody", "applyForce", "applyLinearImpulse", "createBoxShape",
     "createFixture", "createDistanceJoint", "setDistanceJoint",
-    "createRevoluteJoint", "createWheelJoint", "createMouseJoint", "queryAABB", "rayCast"
+    "createRevoluteJoint", "createWheelJoint", "createMouseJoint",
+    "getJointAnchors", "queryAABB", "rayCast"
 ]) {
     assert.equal(typeof sim[name], "function", `${name} must be registered in pxsim.box2dNative`);
 }
@@ -132,6 +133,13 @@ sim.createFixture(collection([simGround, simGroundShape, 0, 0.2, 0, 0]));
 const simBall = sim.createBody(collection([simWorld, 2, 0, 0, 0]));
 const simBallShape = sim.createCircleShape(0.5, 0, 0);
 sim.createFixture(collection([simBall, simBallShape, 1, 0.2, 0, 0]));
+const simDistance = sim.createDistanceJoint(collection([
+    simGround, simBall, 0, 0, 0, 0, false
+]));
+assert.equal(sim.isValid(simDistance), true);
+assert.deepEqual(sim.getJointAnchors(simDistance).values, [0, 0, 0, 0]);
+sim.setDistanceJoint(collection([simDistance, 1, 0, 2, 0, 0]));
+sim.destroyJoint(simDistance);
 for (let i = 0; i < 120; ++i)
     sim.step(simWorld, 1 / 60, 8, 3);
 assert.ok(Math.abs(sim.getBodyState(simBall).getAt(1) - 4) < 0.02);

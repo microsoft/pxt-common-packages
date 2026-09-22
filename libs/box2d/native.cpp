@@ -670,7 +670,6 @@ RefBox2D *createDistanceJoint(RefBox2D *bodyA, RefBox2D *bodyB, double ax, doubl
     b2World *owner = jointWorld(bodyA, bodyB);
     b2Vec2 a = vector(ax, ay);
     b2Vec2 b = vector(bx, by);
-    separated(a, b);
     b2DistanceJointDef def;
     def.Initialize(body(bodyA), body(bodyB), a, b);
     def.collideConnected = collideConnected;
@@ -679,7 +678,7 @@ RefBox2D *createDistanceJoint(RefBox2D *bodyA, RefBox2D *bodyB, double ax, doubl
 
 void setDistanceJoint(RefBox2D *handle, double length, double minLength, double maxLength, double stiffness, double damping) {
     float l = positive(length);
-    float min = positive(minLength);
+    float min = nonnegative(minLength);
     float max = positive(maxLength);
     float s = nonnegative(stiffness);
     float d = nonnegative(damping);
@@ -780,6 +779,18 @@ RefBox2D *createMouseJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, dou
 void setMouseJointTarget(RefBox2D *handle, double x, double y) {
     b2MouseJoint *value = static_cast<b2MouseJoint *>(joint(handle, e_mouseJoint));
     value->SetTarget(vector(x, y));
+}
+
+RefCollection *getJointAnchors(RefBox2D *handle) {
+    b2Joint *value = static_cast<b2Joint *>(lookup(handle, Kind::Joint)->pointer);
+    b2Vec2 anchorA = value->GetAnchorA();
+    b2Vec2 anchorB = value->GetAnchorB();
+    RefCollection *result = newArray();
+    push(result, anchorA.x);
+    push(result, anchorA.y);
+    push(result, anchorB.x);
+    push(result, anchorB.y);
+    return finishArray(result);
 }
 
 void destroyJoint(RefBox2D *handle) {

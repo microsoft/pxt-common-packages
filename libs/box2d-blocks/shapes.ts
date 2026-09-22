@@ -8,9 +8,25 @@ namespace box2dblocks {
 
     export class PhysicsPoint {
         constructor(
-            public x: number,
-            public y: number
+            public _x: number,
+            public _y: number
         ) {}
+
+        //% block="x"
+        //% blockSetVariable="myPoint"
+        //% blockCombine
+        //% group="Global" weight=0
+        get x(): number {
+            return this._x;
+        }
+
+        //% block="y"
+        //% blockSetVariable="myPoint"
+        //% blockCombine
+        //% group="Global" weight=0
+        get y(): number {
+            return this._y;
+        }
     }
 
     export class PhysicsShape {
@@ -31,13 +47,13 @@ namespace box2dblocks {
         shiftValues(dx: number, dy: number, angle: number) {
             switch (this.type) {
                 case ShapeType.Circle:
-                    this.values[0] += dx;
-                    this.values[1] += dy;
+                    this.values[1] += dx;
+                    this.values[2] += dy;
                     break;
                 case ShapeType.Box:
-                    this.values[0] += dx;
-                    this.values[1] += dy;
-                    this.values[2] += angle;
+                    this.values[2] += dx;
+                    this.values[3] += dy;
+                    this.values[4] += angle;
                     break;
                 case ShapeType.Polygon:
                 case ShapeType.Edge:

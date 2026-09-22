@@ -58,6 +58,7 @@ void setWheelJointLimits(RefBox2D* joint, bool enabled, double lower, double upp
 void setWheelJointSuspension(RefBox2D* joint, double stiffness, double damping);
 RefBox2D* createMouseJoint(RefBox2D* bodyA, RefBox2D* bodyB, double anchorX, double anchorY, double maxForce, double stiffness, double damping);
 void setMouseJointTarget(RefBox2D* joint, double x, double y);
+RefCollection* getJointAnchors(RefBox2D* joint);
 void destroyJoint(RefBox2D* joint);
 RefCollection* getContacts(RefBox2D* world);
 RefCollection* queryAABB(RefBox2D* world, double minX, double minY, double maxX, double maxY);

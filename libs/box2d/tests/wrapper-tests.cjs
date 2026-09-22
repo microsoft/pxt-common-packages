@@ -160,6 +160,10 @@ for (const method of ["getWorldPoint", "getLocalPoint"]) {
 const distance = call("createDistanceJoint", [20, 21, 1, 2, 3, 4, false], 50,
     () => body.createDistanceJoint(other, 1, 2, 3, 4));
 assert.ok(distance instanceof api.DistanceJoint && distance instanceof api.Joint);
+assert.deepEqual(
+    call("getJointAnchors", [50], [1, 2, 3, 4], () => distance.getAnchors()),
+    [1, 2, 3, 4]
+);
 command("setDistanceJoint", [50, 2, 1, 3, 0, 0], () => distance.configure(2, 1, 3));
 command("setDistanceJoint", [50, 2, 1, 3, 4, 0.5], () => distance.configure(2, 1, 3, 4, 0.5));
 const hinge = call("createRevoluteJoint", [20, 21, 1, 2, false], 51,

@@ -21,10 +21,21 @@ namespace box2dblocks {
     }
 
     export enum AttachmentJointType {
+        //% block="distance"
+        Distance,
         //% block="revolute"
         Revolute,
         //% block="wheel"
         Wheel
+    }
+
+    export enum JointPoint {
+        //% block="start"
+        Start,
+        //% block="center"
+        Center,
+        //% block="end"
+        End
     }
 
     export class JointAnchor {
@@ -158,21 +169,24 @@ namespace box2dblocks {
             bodyB.connectedBodies.push(bodyA);
     }
 
-    //% blockId=box2d_blocks_distance_joint
-    //% block="distance joint from $bodyA at $anchorA to $bodyB at $anchorB"
-    //% bodyA.shadow=variables_get
-    //% bodyA.defl=body
-    //% bodyB.shadow=variables_get
-    //% bodyB.defl=otherBody
-    //% anchorA.shadow=box2d_blocks_xy_point
-    //% anchorB.shadow=box2d_blocks_xy_point
-    //% blockSetVariable=myJoint
-    //% group="Joints" weight=100
-    export function createDistanceJoint(bodyA: Body, bodyB: Body, anchorA: PhysicsPoint | Sprite | tiles.Location | Body, anchorB: PhysicsPoint | Sprite | tiles.Location | Body): Joint {
+    export function _createDistanceJoint(bodyA: Body, anchorA: JointAnchor, bodyB: Body, anchorB: JointAnchor): Joint {
+        const owner = _state();
+        if (!bodyA || bodyA.destroyed || !bodyA.belongsTo(owner) ||
+            !bodyB || bodyB.destroyed || !bodyB.belongsTo(owner) || bodyA == bodyB)
+            throw "Cannot connect these Box2D bodies.";
+        if (!anchorA || !anchorB)
+            throw "Distance joints require an anchor on each Box2D body.";
+
+        const localA = bodyA.localAnchor(anchorA);
+        const localB = bodyB.localAnchor(anchorB);
+        const stateA = bodyA.nativeBody.getState();
+        const stateB = bodyB.nativeBody.getState();
         return new Joint(bodyA.nativeBody.createDistanceJoint(
             bodyB.nativeBody,
-            anchorA.x / PIXELS_PER_METER, anchorA.y / PIXELS_PER_METER,
-            anchorB.x / PIXELS_PER_METER, anchorB.y / PIXELS_PER_METER
+            pointX(stateA, localA[0], localA[1]),
+            pointY(stateA, localA[0], localA[1]),
+            pointX(stateB, localB[0], localB[1]),
+            pointY(stateB, localB[0], localB[1])
         ));
     }
 
@@ -188,6 +202,10 @@ namespace box2dblocks {
     //% blockSetVariable=myJoint
     //% group="Joints" weight=100
     export function attachBodies(bodyA: Body, anchorA: JointAnchor, bodyB: Body, anchorB: JointAnchor, jointType: AttachmentJointType = AttachmentJointType.Revolute): Joint {
+        if (jointType === AttachmentJointType.Distance) {
+            return _createDistanceJoint(bodyA, anchorA, bodyB, anchorB);
+        }
+
         const worldAnchor = _attachAtAnchors(bodyA, anchorA, bodyB, anchorB);
         let nativeJoint: box2d.Joint;
         if (jointType == AttachmentJointType.Wheel) {
@@ -285,6 +303,36 @@ namespace box2dblocks {
         if (!joint.nativeJoint.valid)
             throw "This Box2D joint is invalid.";
         (joint.nativeJoint as box2d.WheelJoint).setSuspension(stiffness, damping);
+    }
+
+    //% blockId=box2d_blocks_joint_point
+    //% block="$point of $joint"
+    //% joint.shadow=variables_get joint.defl=myJoint
+    //% point.defl=JointPoint.Start
+    //% group="Joints" weight=55
+    export function jointPoint(joint: Joint, point: JointPoint = JointPoint.Start): PhysicsPoint {
+        if (!joint || !joint.nativeJoint || !joint.nativeJoint.valid)
+            throw "This Box2D joint is invalid.";
+
+        const anchors = joint.nativeJoint.getAnchors();
+        let x: number;
+        let y: number;
+        if (point == JointPoint.Start) {
+            x = anchors[0];
+            y = anchors[1];
+        }
+        else if (point == JointPoint.End) {
+            x = anchors[2];
+            y = anchors[3];
+        }
+        else if (point == JointPoint.Center) {
+            x = (anchors[0] + anchors[2]) / 2;
+            y = (anchors[1] + anchors[3]) / 2;
+        }
+        else {
+            throw "Unknown Box2D joint point.";
+        }
+        return new PhysicsPoint(x * PIXELS_PER_METER, y * PIXELS_PER_METER);
     }
 
     //% blockId=box2d_blocks_mouse_joint

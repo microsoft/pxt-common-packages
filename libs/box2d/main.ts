@@ -351,6 +351,12 @@ namespace box2dNative {
         box2dNativeShim.setMouseJointTarget(joint, x, y);
     }
 
+    /** Current world-space anchors: [anchorAX, anchorAY, anchorBX, anchorBY]. */
+    // Native wrapper: box2dNative::getJointAnchors
+    export function getJointAnchors(joint: Handle): number[] {
+        return box2dNativeShim.getJointAnchors(joint);
+    }
+
     // Native wrapper: box2dNative::destroyJoint
     export function destroyJoint(joint: Handle): void {
         box2dNativeShim.destroyJoint(joint);

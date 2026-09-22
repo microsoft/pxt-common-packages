@@ -26,6 +26,11 @@ The `attach` block creates either a revolute or wheel joint between named points
 such as the center, edge midpoints, or corners of two bodies. Wheel joints use a
 vertical suspension axis. The anchor dropdowns are shadow blocks that can be
 replaced with an `offset x y` block for a body-local coordinate.
+The distance-joint block uses the same body-local anchor dropdowns and offsets,
+but it does not reposition either body before creating the joint.
+The joint-point block returns the live start, center, or end position in pixels.
+Start belongs to the first body passed to the attach block and end belongs to
+the second; center is the midpoint between the two anchors.
 Both variants return the same block-facing joint type. Motor and limit blocks
 work with either variant; wheel limits use pixels while revolute limits use
 radians. The suspension block rejects non-wheel joints.

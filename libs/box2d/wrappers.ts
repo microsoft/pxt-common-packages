@@ -337,6 +337,11 @@ namespace box2d {
             super(handle);
         }
 
+        /** Current world-space anchors: [anchorAX, anchorAY, anchorBX, anchorBY]. */
+        getAnchors(): number[] {
+            return box2dNative.getJointAnchors(this.handle);
+        }
+
         destroy(): void {
             box2dNative.destroyJoint(this.handle);
         }

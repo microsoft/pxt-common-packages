@@ -129,7 +129,8 @@ functions in `main.ts`; no extra C++ bindings are needed.
 | `Body` | `world.createBody(type, x?, y?, angle?)`, `createFixture`, `getState`, `readTransform`, `readBoxVertices`, `setPosition`, `setTransform`, `setLinearVelocity`, `setType`, `setDamping`, `setGravityScale`, `setFlag`, `getFlag`, force/impulse and coordinate methods, `destroy` |
 | `Shape` | Static `circle`, `box`, `polygon`, `edge`, and `chain` factories; `destroy` |
 | `Fixture` | `body.createFixture(shape, density?, friction?, restitution?, sensor?)`, `body`, `setMaterial`, `setSensor`, `setFilter`, `testPoint`, `destroy` |
-| `DistanceJoint` | `body.createDistanceJoint(other, anchorX, anchorY, otherAnchorX, otherAnchorY, collideConnected?)`, `configure(length, minLength, maxLength, stiffness?, damping?)`, `destroy` |
+| `Joint` | `getAnchors`, `destroy` |
+| `DistanceJoint` | `body.createDistanceJoint(other, anchorX, anchorY, otherAnchorX, otherAnchorY, collideConnected?)`, `getAnchors`, `configure(length, minLength, maxLength, stiffness?, damping?)`, `destroy` |
 | `RevoluteJoint` | `body.createRevoluteJoint(other, anchorX, anchorY, collideConnected?)`, `setMotor`, `setLimits`, `destroy` |
 | `WheelJoint` | `body.createWheelJoint(other, anchorX, anchorY, axisX, axisY, collideConnected?)`, `setMotor`, `setLimits`, `setSuspension`, `destroy` |
 | `MouseJoint` | `body.createMouseJoint(other, anchorX, anchorY, maxForce, stiffness, damping)`, `setTarget`, `destroy` |
@@ -280,7 +281,7 @@ Optional parameters are supplied by TypeScript, not native definition objects.
 | Coordinates | `getWorldPoint`, `getLocalPoint` |
 | Shapes | `createCircleShape`, `createBoxShape`, `createPolygonShape`, `createEdgeShape`, `createChainShape`, `destroyShape` |
 | Fixtures | `createFixture`, `destroyFixture`, `getFixtureBody`, `setFixtureMaterial`, `setFixtureSensor`, `setFixtureFilter`, `testPoint` |
-| Joints | `createDistanceJoint`, `setDistanceJoint`, `createRevoluteJoint`, `setRevoluteJointMotor`, `setRevoluteJointLimits`, `createWheelJoint`, `setWheelJointMotor`, `setWheelJointLimits`, `setWheelJointSuspension`, `destroyJoint` |
+| Joints | `createDistanceJoint`, `setDistanceJoint`, `createRevoluteJoint`, `setRevoluteJointMotor`, `setRevoluteJointLimits`, `createWheelJoint`, `setWheelJointMotor`, `setWheelJointLimits`, `setWheelJointSuspension`, `getJointAnchors`, `destroyJoint` |
 | Queries | `getContacts`, `queryAABB`, `rayCast`, `isValid` |
 
 `BodyType` is `Static`, `Kinematic`, or `Dynamic`. `BodyFlag` is `Bullet`,

@@ -155,6 +155,9 @@ declare namespace box2dNativeShim {
     //% shim=box2dNative::setMouseJointTarget
     function setMouseJointTarget(joint: box2dNative.Handle, x: number, y: number): void;
 
+    //% shim=box2dNative::getJointAnchors
+    function getJointAnchors(joint: box2dNative.Handle): number[];
+
     //% shim=box2dNative::destroyJoint
     function destroyJoint(joint: box2dNative.Handle): void;
 

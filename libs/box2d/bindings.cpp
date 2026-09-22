@@ -285,6 +285,11 @@ void setMouseJointTarget(Box2DObject joint, TNumber x, TNumber y) {
 }
 
 //%
+RefCollection* getJointAnchors(Box2DObject joint) {
+    return box2d_native::getJointAnchors(joint);
+}
+
+//%
 void destroyJoint(Box2DObject joint) {
     box2d_native::destroyJoint(joint);
 }

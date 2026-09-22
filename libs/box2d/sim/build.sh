@@ -22,7 +22,8 @@ exports=(
     bx_setDistanceJoint bx_createRevoluteJoint bx_setRevoluteJointMotor
     bx_setRevoluteJointLimits bx_createWheelJoint bx_setWheelJointMotor
     bx_setWheelJointLimits bx_setWheelJointSuspension bx_createMouseJoint
-    bx_setMouseJointTarget bx_destroyJoint bx_getContacts bx_queryAABB bx_rayCast malloc free
+    bx_setMouseJointTarget bx_getJointAnchors bx_destroyJoint bx_getContacts
+    bx_queryAABB bx_rayCast malloc free
 )
 exported="$(printf '"_%s",' "${exports[@]}")"
 exported="[${exported%,}]"

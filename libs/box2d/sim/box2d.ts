@@ -277,6 +277,10 @@ namespace pxsim.box2dNative {
         invoke("bx_setMouseJointTarget", [joint, x, y]);
     }
 
+    export function getJointAnchors(joint: number): RefCollection {
+        return arrayResult("bx_getJointAnchors", [joint]);
+    }
+
     export function destroyJoint(joint: number): void {
         invoke("bx_destroyJoint", [joint]);
     }

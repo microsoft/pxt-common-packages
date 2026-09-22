@@ -152,7 +152,16 @@ static void jointsAndLifetime() {
     auto fb = createFixture(b, shape, 1, 0.2, 0, false);
     rejects([&] { createDistanceJoint(a, c, 0, 0, 1, 0, false); });
     rejects([&] { createRevoluteJoint(a, a, 0, 0, false); });
+    auto coincident = createDistanceJoint(a, b, 0, 0, 0, 0, false);
+    auto coincidentValue = static_cast<b2DistanceJoint *>(joint(coincident, e_distanceJoint));
+    close(coincidentValue->GetLength(), b2_linearSlop);
+    destroyJoint(coincident);
     auto distance = createDistanceJoint(a, b, 0, 0, 2, 0, false);
+    auto anchors = take(getJointAnchors(distance));
+    close(toDouble(anchors[0]), 0);
+    close(toDouble(anchors[1]), 0);
+    close(toDouble(anchors[2]), 2);
+    close(toDouble(anchors[3]), 0);
     setDistanceJoint(distance, 4, 3, 5, 0, 0);
     auto value = static_cast<b2DistanceJoint *>(joint(distance, e_distanceJoint));
     close(value->GetMinLength(), 3);
@@ -160,6 +169,8 @@ static void jointsAndLifetime() {
     setDistanceJoint(distance, 0.5, 0.25, 0.75, 2, 0.5);
     close(value->GetMinLength(), 0.25);
     close(value->GetMaxLength(), 0.75);
+    setDistanceJoint(distance, 0.5, 0, 0.75, 0, 0);
+    close(value->GetMinLength(), b2_linearSlop);
     setDistanceJoint(distance, 2, 2, 2, 0, 0);
     applyLinearImpulseToCenter(b, 1, 1, true);
     for (int i = 0; i < 60; ++i)
