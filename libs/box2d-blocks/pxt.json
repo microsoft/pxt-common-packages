@@ -4,6 +4,12 @@
     "version": "0.0.0",
     "files": [
         "blocks.ts",
+        "state.ts",
+        "constants.ts",
+        "body.ts",
+        "joints.ts",
+        "shapes.ts",
+        "physics.ts",
         "README.md"
     ],
     "testFiles": [
