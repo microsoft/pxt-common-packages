@@ -392,15 +392,17 @@ namespace pxsim {
         useShake = false;
         private tiltDecayer: any = 0;
         private element: HTMLElement | SVGElement;
+        private moveHandler: (ev: MouseEvent) => void;
+        private leaveHandler: () => void;
 
         constructor(runtime: Runtime) {
            this.accelerometer = new Accelerometer(runtime);
         }
 
-        attachEvents(element: HTMLElement | SVGElement) {
+        attachEvents(element: HTMLElement | SVGElement): void {
+            this.detachEvents();
             this.element = element;
-            this.tiltDecayer = 0;
-            this.element.addEventListener(pointerEvents.move, (ev: MouseEvent) => {
+            this.moveHandler = (ev: MouseEvent) => {
                 if (!this.accelerometer.isActive) return;
                 if (this.tiltDecayer) {
                     clearInterval(this.tiltDecayer);
@@ -418,8 +420,8 @@ namespace pxsim {
 
                 this.accelerometer.update(-x, y, z);
                 this.updateTilt();
-            }, false);
-            this.element.addEventListener(pointerEvents.leave, (ev: MouseEvent) => {
+            };
+            this.leaveHandler = () => {
                 if (!this.accelerometer.isActive) return;
 
                 if (!this.tiltDecayer) {
@@ -440,7 +442,21 @@ namespace pxsim {
                         this.updateTilt();
                     }, 50)
                 }
-            }, false);
+            };
+            this.element.addEventListener(pointerEvents.move, this.moveHandler, false);
+            this.element.addEventListener(pointerEvents.leave, this.leaveHandler, false);
+        }
+
+        detachEvents(): void {
+            if (this.element) {
+                this.element.removeEventListener(pointerEvents.move, this.moveHandler, false);
+                this.element.removeEventListener(pointerEvents.leave, this.leaveHandler, false);
+            }
+            clearInterval(this.tiltDecayer);
+            this.tiltDecayer = 0;
+            this.element = undefined;
+            this.moveHandler = undefined;
+            this.leaveHandler = undefined;
         }
 
         private updateTilt() {
