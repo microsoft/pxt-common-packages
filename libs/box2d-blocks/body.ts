@@ -4,6 +4,7 @@ namespace box2dblocks {
         public connectedBodies: Body[] = [];
         public destroyed = false;
         public collisionGroup = 0;
+        public data: any = {};
 
         constructor(
             public nativeBody: box2d.Body,

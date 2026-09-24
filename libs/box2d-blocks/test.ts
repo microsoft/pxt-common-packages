@@ -11,6 +11,17 @@ const body = box2dblocks.createBody(
     PhysicsBodyKind.Body,
     box2dblocks.circle(6)
 )
+bodyData.setNumber(body, "health", 100)
+bodyData.changeNumber(body, "health", -10)
+bodyData.setBody(body, "ground", ground)
+control.assert(bodyData.getNumber(body, "health") == 90, 0x213)
+control.assert(bodyData.getBody(body, "ground") == ground, 0x214)
+const bodySprite = sprites.create(image.create(1, 1))
+bodyData.setSpriteBody(bodySprite, "body", body)
+bodyData.setSpriteBodyArray(bodySprite, "bodies", [body, ground])
+control.assert(bodyData.getSpriteBody(bodySprite, "body") == body, 0x215)
+control.assert(bodyData.getSpriteBodyArray(bodySprite, "bodies").length == 2, 0x216)
+bodySprite.destroy()
 box2dblocks.setCollisionGroup(body, -1)
 box2dblocks.setBodyMaterial(body, 0.5, 2, 0.1)
 body.x = 80

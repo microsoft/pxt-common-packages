@@ -88,5 +88,14 @@ Linear velocity uses pixels per second. The edge properties use the world-space
 bounds of every attached shape and move the body so the selected edge reaches
 the requested pixel coordinate.
 
+The separate **Body Data** category stores typed values directly on bodies. It
+provides scalar and array set/get blocks for strings, numbers, booleans,
+tilemap locations, images, sprites, and bodies. Number data also has a change
+block, and body functions can be defined by key and called later. Missing
+number values read as zero. Data remains attached to the TypeScript body object
+even after its native physics object is destroyed. The **Sprite Bodies** group
+contains separate sprite-target APIs for storing and retrieving a body or body
+array without mixing those blocks with the body-target versions.
+
 This package depends on `box2d`; it contains only the block-facing TypeScript
 API and no additional physics implementation.
