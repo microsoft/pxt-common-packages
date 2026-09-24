@@ -199,6 +199,18 @@ void bx_setFixtureMaterial(double fixture, double density, double friction, doub
     box2d_native::setFixtureMaterial(object(fixture), density, friction, restitution);
 }
 
+void bx_setFixtureDensity(double fixture, double density) {
+    box2d_native::setFixtureDensity(object(fixture), density);
+}
+
+void bx_setFixtureFriction(double fixture, double friction) {
+    box2d_native::setFixtureFriction(object(fixture), friction);
+}
+
+void bx_setFixtureRestitution(double fixture, double restitution) {
+    box2d_native::setFixtureRestitution(object(fixture), restitution);
+}
+
 void bx_setFixtureSensor(double fixture, bool sensor) {
     box2d_native::setFixtureSensor(object(fixture), sensor);
 }

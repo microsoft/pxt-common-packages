@@ -35,9 +35,23 @@ combined body property blocks to change their `x`, `y`, or angle afterward.
 Forces and linear impulses accept either x/y components or a nonnegative
 magnitude and radian angle. Their optional body-local anchor defaults to the
 body center; selecting another anchor also produces rotation.
+The body-material block requires friction and optionally overrides density and
+restitution. It updates every existing fixture immediately. Fixtures added
+later use the material values supplied to the add-shape block. Omitted density
+or restitution values retain their previous per-fixture settings.
 Edge shapes are centered on the body and use a pixel length and radian angle.
 The create-ground block accepts a list of world-space point blocks and creates
 one static Wall-kind body with an open edge chain connecting them in order.
+The create-tilemap-walls block creates one static Wall-kind body for the
+current scene. Before each Box2D update it checks the tilemap wall image
+identity and revision, and rebuilds fixtures only when the wall pixels, map
+dimensions, or tile scale actually change. Nonrectangular wall regions are
+traced into closed one-sided chain contours around the remaining open regions.
+Space outside the tilemap is treated as solid, matching Arcade tilemap
+collision behavior. A connected region uses a box fixture only when every tile
+in its bounding rectangle is a wall and the rectangle does not touch the map
+edge. Repeated calls return the same body; destroying it disables
+synchronization until the block is called again.
 The body-at block returns the first-created body with a fixture containing the
 requested world-space pixel coordinate, or `null` if no body is there. Box2D
 point tests do not treat zero-width edge and chain fixtures as containing a

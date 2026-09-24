@@ -39,6 +39,7 @@ namespace box2dblocks {
         public paused = false;
         public gravityX = 0;
         public gravityY = 10;
+        public tilemapWalls: _TilemapWallState;
         private disabledCollisions: _CollisionRule[] = [];
         private filteredKinds: number[] = [];
         private accumulator = 0;
@@ -64,6 +65,18 @@ namespace box2dblocks {
 
         removeBody(body: Body): void {
             this.bodies.removeElement(body);
+            if (this.tilemapWalls && this.tilemapWalls.body == body)
+                this.tilemapWalls = null;
+        }
+
+        createTilemapWalls(): Body {
+            if (this.tilemapWalls && !this.tilemapWalls.body.destroyed)
+                return this.tilemapWalls.body;
+
+            const body = this.createBody(box2d.BodyType.Static, 0, 0, 0, PhysicsBodyKind.Wall);
+            this.tilemapWalls = new _TilemapWallState(body);
+            this.tilemapWalls.update();
+            return body;
         }
 
         setGravity(x: number, y: number): void {
@@ -181,6 +194,9 @@ namespace box2dblocks {
         }
 
         update(): void {
+            if (this.tilemapWalls)
+                this.tilemapWalls.update();
+
             const now = game.runtime();
             const elapsed = Math.min((now - this.lastUpdate) / 1000, STEP * MAX_STEPS);
             this.lastUpdate = now;
@@ -255,6 +271,7 @@ namespace box2dblocks {
             this.activePairs = [];
             this.disabledCollisions = [];
             this.filteredKinds = [];
+            this.tilemapWalls = null;
         }
     }
 

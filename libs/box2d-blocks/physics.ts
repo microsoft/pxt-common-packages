@@ -129,4 +129,40 @@ namespace box2dblocks {
     export function setGravityScale(body: Body, scale: number): void {
         body.nativeBody.setGravityScale(scale);
     }
+
+    /**
+     * Override fixture material values for this body. Omitted density and
+     * restitution values retain their existing settings.
+     */
+    //% blockId=box2d_blocks_set_body_material
+    //% block="set $body friction $friction||density $density restitution $restitution"
+    //% body.shadow=variables_get body.defl=myBody
+    //% friction.min=0 friction.defl=0.2 density.min=0 density.defl=1 restitution.min=0 restitution.defl=0
+    //% expandableArgumentMode=toggle
+    //% inlineInputMode="inline"
+    //% group="Physics" weight=10
+    export function setBodyMaterial(body: Body, friction: number, density?: number, restitution?: number): void {
+        const owner = _state();
+        if (!body || body.destroyed || !body.belongsTo(owner) || !body.nativeBody.valid)
+            throw "This Box2D body is invalid.";
+        validateMaterialValue(friction);
+        if (density !== undefined)
+            validateMaterialValue(density);
+        if (restitution !== undefined)
+            validateMaterialValue(restitution);
+
+        for (let i = 0; i < body.fixtures.length; ++i) {
+            const fixture = body.fixtures[i].fixture;
+            fixture.setFriction(friction);
+            if (density !== undefined)
+                fixture.setDensity(density);
+            if (restitution !== undefined)
+                fixture.setRestitution(restitution);
+        }
+    }
+
+    function validateMaterialValue(value: number): void {
+        if (value < 0 || value > 1000000 || value != value)
+            throw "Fixture material values must be nonnegative finite numbers.";
+    }
 }

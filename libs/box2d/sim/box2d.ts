@@ -241,6 +241,18 @@ namespace pxsim.box2dNative {
         invoke("bx_setFixtureMaterial", [fixture, density, friction, restitution]);
     }
 
+    export function setFixtureDensity(fixture: number, density: number): void {
+        invoke("bx_setFixtureDensity", [fixture, density]);
+    }
+
+    export function setFixtureFriction(fixture: number, friction: number): void {
+        invoke("bx_setFixtureFriction", [fixture, friction]);
+    }
+
+    export function setFixtureRestitution(fixture: number, restitution: number): void {
+        invoke("bx_setFixtureRestitution", [fixture, restitution]);
+    }
+
     export function setFixtureSensor(fixture: number, sensor: boolean): void {
         invoke("bx_setFixtureSensor", [fixture, sensor ? 1 : 0]);
     }

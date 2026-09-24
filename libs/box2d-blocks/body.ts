@@ -365,6 +365,18 @@ namespace box2dblocks {
         return body;
     }
 
+    /**
+     * Create a static Wall-kind body that follows the current tilemap walls.
+     * Destroying the returned body disables tilemap wall synchronization.
+     */
+    //% blockId=box2d_blocks_create_tilemap_walls
+    //% block="create walls from tilemap"
+    //% blockSetVariable=tilemapWalls
+    //% group="Body" weight=85
+    export function createTilemapWalls(): Body {
+        return _state().createTilemapWalls();
+    }
+
     //% blockId=box2d_blocks_set_body_flag
     //% block="set $body $flag $enabled"
     //% body.shadow=variables_get body.defl=myBody enabled.shadow=toggleOnOff

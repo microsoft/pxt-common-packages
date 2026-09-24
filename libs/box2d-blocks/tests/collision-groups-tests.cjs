@@ -21,8 +21,15 @@ const context = vm.createContext({
     _state() {
         return owner;
     },
+    PIXELS_PER_METER: 10,
+    ShapeType: { Circle: 0, Box: 1, Polygon: 2, Edge: 3, Chain: 4 },
     box2d: {
-        BodyType: { Static: 0, Kinematic: 1, Dynamic: 2 }
+        BodyType: { Static: 0, Kinematic: 1, Dynamic: 2 },
+        Shape: {
+            box(...args) {
+                return { args };
+            }
+        }
     },
     screen: { width: 160, height: 120 },
     PhysicsBodyKind: { Body: 1, Wall: 2 }
@@ -39,6 +46,13 @@ for (const file of ["body.ts", "shapes.ts"]) {
 }
 
 const api = context.box2dblocks;
+const offsetBox = api.box(20, 30);
+offsetBox.shiftValues(0.5, 0.75, 0.25);
+assert.deepEqual(
+    Array.from(offsetBox.toNativeShape().args),
+    [1, 1.5, 0.5, 0.75, 0.25],
+    "Native boxes retain both offsets and their angle"
+);
 const groups = [];
 function fixture() {
     return {

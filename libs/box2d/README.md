@@ -280,7 +280,7 @@ Optional parameters are supplied by TypeScript, not native definition objects.
 | Forces | `applyForce`, `applyForceToCenter`, `applyLinearImpulse`, `applyLinearImpulseToCenter`, `applyTorque`, `applyAngularImpulse` |
 | Coordinates | `getWorldPoint`, `getLocalPoint` |
 | Shapes | `createCircleShape`, `createBoxShape`, `createPolygonShape`, `createEdgeShape`, `createChainShape`, `destroyShape` |
-| Fixtures | `createFixture`, `destroyFixture`, `getFixtureBody`, `setFixtureMaterial`, `setFixtureSensor`, `setFixtureFilter`, `setFixtureGroup`, `setFixtureCategoryMask`, `testPoint` |
+| Fixtures | `createFixture`, `destroyFixture`, `getFixtureBody`, `setFixtureMaterial`, `setFixtureDensity`, `setFixtureFriction`, `setFixtureRestitution`, `setFixtureSensor`, `setFixtureFilter`, `setFixtureGroup`, `setFixtureCategoryMask`, `testPoint` |
 | Joints | `createDistanceJoint`, `setDistanceJoint`, `createRevoluteJoint`, `setRevoluteJointMotor`, `setRevoluteJointLimits`, `createWheelJoint`, `setWheelJointMotor`, `setWheelJointLimits`, `setWheelJointSuspension`, `getJointAnchors`, `destroyJoint` |
 | Queries | `getContacts`, `getContactPoints`, `getContactNormals`, `queryAABB`, `rayCast`, `isValid` |
 

@@ -84,6 +84,12 @@ static void fallingBody() {
     b2Contact *contact = world(w)->GetContactList();
     close(contact->GetFriction(), std::sqrt(0.7 * 0.2));
     close(contact->GetRestitution(), 0.4);
+    setFixtureDensity(f, 3);
+    close(take(getBodyState(ball))[6], b2_pi * 0.75);
+    setFixtureFriction(f, 0.5);
+    close(contact->GetFriction(), std::sqrt(0.5 * 0.2));
+    setFixtureRestitution(f, 0.8);
+    close(contact->GetRestitution(), 0.8);
     destroyWorld(w);
     assert(!isValid(w) && !isValid(ball) && !isValid(ground) && !isValid(floor) && !isValid(f));
 }

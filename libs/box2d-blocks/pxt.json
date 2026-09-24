@@ -7,6 +7,7 @@
         "state.ts",
         "constants.ts",
         "body.ts",
+        "tilemap.ts",
         "joints.ts",
         "shapes.ts",
         "physics.ts",

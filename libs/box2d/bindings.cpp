@@ -210,6 +210,21 @@ void setFixtureMaterial(Box2DObject fixture, TNumber density, TNumber friction, 
 }
 
 //%
+void setFixtureDensity(Box2DObject fixture, TNumber density) {
+    box2d_native::setFixtureDensity(fixture, toDouble(density));
+}
+
+//%
+void setFixtureFriction(Box2DObject fixture, TNumber friction) {
+    box2d_native::setFixtureFriction(fixture, toDouble(friction));
+}
+
+//%
+void setFixtureRestitution(Box2DObject fixture, TNumber restitution) {
+    box2d_native::setFixtureRestitution(fixture, toDouble(restitution));
+}
+
+//%
 void setFixtureSensor(Box2DObject fixture, bool sensor) {
     box2d_native::setFixtureSensor(fixture, sensor);
 }

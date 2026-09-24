@@ -113,6 +113,15 @@ declare namespace box2dNativeShim {
     //% shim=box2dNative::setFixtureMaterial
     function setFixtureMaterial(fixture: box2dNative.Handle, density: number, friction: number, restitution: number): void;
 
+    //% shim=box2dNative::setFixtureDensity
+    function setFixtureDensity(fixture: box2dNative.Handle, density: number): void;
+
+    //% shim=box2dNative::setFixtureFriction
+    function setFixtureFriction(fixture: box2dNative.Handle, friction: number): void;
+
+    //% shim=box2dNative::setFixtureRestitution
+    function setFixtureRestitution(fixture: box2dNative.Handle, restitution: number): void;
+
     //% shim=box2dNative::setFixtureSensor
     function setFixtureSensor(fixture: box2dNative.Handle, sensor: boolean): void;
 

@@ -127,7 +127,8 @@ vm.runInContext(simulatorJavaScript, context);
 const sim = context.pxsim.box2dNative;
 for (const name of [
     "createBody", "applyForce", "applyLinearImpulse", "createBoxShape",
-    "createFixture", "setFixtureGroup", "setFixtureCategoryMask",
+    "createFixture", "setFixtureDensity", "setFixtureFriction", "setFixtureRestitution",
+    "setFixtureGroup", "setFixtureCategoryMask",
     "createDistanceJoint", "setDistanceJoint",
     "createRevoluteJoint", "createWheelJoint", "createMouseJoint",
     "getJointAnchors", "getContactPoints", "getContactNormals", "queryAABB", "rayCast"
@@ -142,6 +143,9 @@ const simGroundFixture = sim.createFixture(collection([simGround, simGroundShape
 const simBall = sim.createBody(collection([simWorld, 2, 0, 0, 0]));
 const simBallShape = sim.createCircleShape(0.5, 0, 0);
 const simBallFixture = sim.createFixture(collection([simBall, simBallShape, 1, 0.2, 0, 0]));
+sim.setFixtureDensity(simBallFixture, 2);
+sim.setFixtureFriction(simBallFixture, 0.4);
+sim.setFixtureRestitution(simBallFixture, 0.1);
 sim.setFixtureGroup(simBallFixture, -7);
 sim.setFixtureCategoryMask(simBallFixture, 8, 16);
 sim.setFixtureCategoryMask(simBallFixture, 1, 65535);
@@ -179,5 +183,26 @@ const simChain = sim.createChainShape(collection([-2, 5, 0, 4, 2, 5]), false);
 sim.destroyShape(simPolygon);
 sim.destroyShape(simChain);
 assert.ok(sim.queryAABB(collection([simWorld, -1, 3, 1, 6])).getLength() > 0);
+
+const boundaryWorld = sim.createWorld(0, 0);
+const boundaryBody = sim.createBody(collection([boundaryWorld, 0, 0, 0, 0]));
+const boundaryShape = sim.createChainShape(collection([
+    0, 0,
+    0, 8,
+    8, 8,
+    8, 0
+]), true);
+sim.createFixture(collection([boundaryBody, boundaryShape, 0, 0.2, 0, 0]));
+const boundaryMover = sim.createBody(collection([boundaryWorld, 2, 4, 1, 0]));
+const boundaryCircle = sim.createCircleShape(0.5, 0, 0);
+sim.createFixture(collection([boundaryMover, boundaryCircle, 1, 0.2, 0, 0]));
+sim.setLinearVelocity(boundaryMover, 0, -5);
+for (let i = 0; i < 30; ++i)
+    sim.step(boundaryWorld, 1 / 60, 8, 3);
+assert.ok(
+    sim.getBodyState(boundaryMover).getAt(1) >= 0.49,
+    "Clockwise screen-space tilemap boundaries collide from inside the map"
+);
+sim.destroyWorld(boundaryWorld);
 
 console.log("Box2D simulator WebAssembly and TypeScript shim tests passed");

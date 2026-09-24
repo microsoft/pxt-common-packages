@@ -318,6 +318,18 @@ namespace box2d {
             box2dNative.setFixtureMaterial(this.handle, density, friction, restitution);
         }
 
+        setDensity(density: number): void {
+            box2dNative.setFixtureDensity(this.handle, density);
+        }
+
+        setFriction(friction: number): void {
+            box2dNative.setFixtureFriction(this.handle, friction);
+        }
+
+        setRestitution(restitution: number): void {
+            box2dNative.setFixtureRestitution(this.handle, restitution);
+        }
+
         setSensor(sensor: boolean): void {
             box2dNative.setFixtureSensor(this.handle, sensor);
         }

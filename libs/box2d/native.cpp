@@ -611,6 +611,19 @@ RefBox2D *getFixtureBody(RefBox2D *handle) {
     return lookup(handle, Kind::Fixture)->bodyA;
 }
 
+static void resetFixtureContacts(b2Fixture *value, bool friction, bool restitution) {
+    b2Body *owner = value->GetBody();
+    for (b2ContactEdge *edge = owner->GetContactList(); edge; edge = edge->next) {
+        b2Contact *contact = edge->contact;
+        if (contact->GetFixtureA() == value || contact->GetFixtureB() == value) {
+            if (friction)
+                contact->ResetFriction();
+            if (restitution)
+                contact->ResetRestitution();
+        }
+    }
+}
+
 void setFixtureMaterial(RefBox2D *handle, double density, double friction, double restitution) {
     float d = nonnegative(density);
     float f = nonnegative(friction);
@@ -622,14 +635,26 @@ void setFixtureMaterial(RefBox2D *handle, double density, double friction, doubl
     b2Body *owner = value->GetBody();
     owner->ResetMassData();
     owner->SetAwake(true);
-    // Contacts cache mixed material values, so update existing contacts too.
-    for (b2ContactEdge *edge = owner->GetContactList(); edge; edge = edge->next) {
-        b2Contact *contact = edge->contact;
-        if (contact->GetFixtureA() == value || contact->GetFixtureB() == value) {
-            contact->ResetFriction();
-            contact->ResetRestitution();
-        }
-    }
+    resetFixtureContacts(value, true, true);
+}
+
+void setFixtureDensity(RefBox2D *handle, double density) {
+    b2Fixture *value = fixture(handle);
+    value->SetDensity(nonnegative(density));
+    value->GetBody()->ResetMassData();
+    value->GetBody()->SetAwake(true);
+}
+
+void setFixtureFriction(RefBox2D *handle, double friction) {
+    b2Fixture *value = fixture(handle);
+    value->SetFriction(nonnegative(friction));
+    resetFixtureContacts(value, true, false);
+}
+
+void setFixtureRestitution(RefBox2D *handle, double restitution) {
+    b2Fixture *value = fixture(handle);
+    value->SetRestitution(nonnegative(restitution));
+    resetFixtureContacts(value, false, true);
 }
 
 void setFixtureSensor(RefBox2D *handle, bool sensor) {

@@ -18,6 +18,7 @@ exports=(
     bx_getWorldPoint bx_getLocalPoint bx_createCircleShape bx_createBoxShape
     bx_createPolygonShape bx_createEdgeShape bx_createChainShape bx_destroyShape
     bx_createFixture bx_destroyFixture bx_getFixtureBody bx_setFixtureMaterial
+    bx_setFixtureDensity bx_setFixtureFriction bx_setFixtureRestitution
     bx_setFixtureSensor bx_setFixtureFilter bx_setFixtureGroup bx_setFixtureCategoryMask
     bx_testPoint bx_createDistanceJoint
     bx_setDistanceJoint bx_createRevoluteJoint bx_setRevoluteJointMotor

@@ -280,6 +280,10 @@ namespace tiles {
             return this.layers.setPixel(col, row, on ? TM_WALL : 0);
         }
 
+        getWallImage(): Image {
+            return this.layers;
+        }
+
         isWall(col: number, row: number) {
             return this.layers.getPixel(col, row) === TM_WALL;
         }

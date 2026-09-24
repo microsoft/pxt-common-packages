@@ -44,6 +44,9 @@ RefBox2D* createFixture(RefBox2D* body, RefBox2D* shape, double density, double 
 void destroyFixture(RefBox2D* fixture);
 RefBox2D* getFixtureBody(RefBox2D* fixture);
 void setFixtureMaterial(RefBox2D* fixture, double density, double friction, double restitution);
+void setFixtureDensity(RefBox2D* fixture, double density);
+void setFixtureFriction(RefBox2D* fixture, double friction);
+void setFixtureRestitution(RefBox2D* fixture, double restitution);
 void setFixtureSensor(RefBox2D* fixture, bool sensor);
 void setFixtureFilter(RefBox2D* fixture, double categoryBits, double maskBits, double groupIndex);
 void setFixtureGroup(RefBox2D* fixture, double groupIndex);

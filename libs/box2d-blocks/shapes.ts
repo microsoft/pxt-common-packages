@@ -86,7 +86,13 @@ namespace box2dblocks {
                 case ShapeType.Circle:
                     return box2d.Shape.circle(this.values[0], this.values[1], this.values[2]);
                 case ShapeType.Box:
-                    return box2d.Shape.box(this.values[0], this.values[1], this.values[2]);
+                    return box2d.Shape.box(
+                        this.values[0],
+                        this.values[1],
+                        this.values[2],
+                        this.values[3],
+                        this.values[4]
+                    );
                 case ShapeType.Polygon:
                     return box2d.Shape.polygon(this.values);
                 case ShapeType.Edge:

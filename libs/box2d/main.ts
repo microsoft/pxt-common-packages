@@ -266,6 +266,21 @@ namespace box2dNative {
         box2dNativeShim.setFixtureMaterial(fixture, density, friction, restitution);
     }
 
+    // Native wrapper: box2dNative::setFixtureDensity
+    export function setFixtureDensity(fixture: Handle, density: number): void {
+        box2dNativeShim.setFixtureDensity(fixture, density);
+    }
+
+    // Native wrapper: box2dNative::setFixtureFriction
+    export function setFixtureFriction(fixture: Handle, friction: number): void {
+        box2dNativeShim.setFixtureFriction(fixture, friction);
+    }
+
+    // Native wrapper: box2dNative::setFixtureRestitution
+    export function setFixtureRestitution(fixture: Handle, restitution: number): void {
+        box2dNativeShim.setFixtureRestitution(fixture, restitution);
+    }
+
     // Native wrapper: box2dNative::setFixtureSensor
     export function setFixtureSensor(fixture: Handle, sensor: boolean): void {
         box2dNativeShim.setFixtureSensor(fixture, sensor);

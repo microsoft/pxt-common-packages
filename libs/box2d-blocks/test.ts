@@ -2,6 +2,9 @@ const ground = box2dblocks.createGround([
     box2dblocks.point(10, 115),
     box2dblocks.point(150, 115)
 ])
+const tilemapWalls = box2dblocks.createTilemapWalls()
+control.assert(tilemapWalls.type == box2d.BodyType.Static, 0x211)
+control.assert(tilemapWalls.kind == PhysicsBodyKind.Wall, 0x212)
 
 const body = box2dblocks.createBody(
     box2d.BodyType.Dynamic,
@@ -9,6 +12,7 @@ const body = box2dblocks.createBody(
     box2dblocks.circle(6)
 )
 box2dblocks.setCollisionGroup(body, -1)
+box2dblocks.setBodyMaterial(body, 0.5, 2, 0.1)
 body.x = 80
 body.y = 20
 body.vx = 10
