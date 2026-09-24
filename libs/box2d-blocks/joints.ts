@@ -335,6 +335,26 @@ namespace box2dblocks {
         return new PhysicsPoint(x * PIXELS_PER_METER, y * PIXELS_PER_METER);
     }
 
+    //% blockId=box2d_blocks_body_point
+    //% block="position of $anchor of $body"
+    //% body.shadow=variables_get body.defl=myBody
+    //% anchor.defl=BodyAnchor.Center
+    //% group="Body" weight=15
+    export function bodyPoint(body: Body, anchor: BodyAnchor = BodyAnchor.Center): PhysicsPoint {
+        const owner = _state();
+        if (!body || body.destroyed || !body.belongsTo(owner) || !body.nativeBody.valid)
+            throw "This Box2D body is invalid.";
+        if (anchor < BodyAnchor.Center || anchor > BodyAnchor.BottomRight)
+            throw "Unknown Box2D body anchor.";
+
+        const localAnchor = body.localAnchor(new JointAnchor(anchor, 0, 0));
+        const snapshot = body.nativeBody.getState();
+        return new PhysicsPoint(
+            pointX(snapshot, localAnchor[0], localAnchor[1]) * PIXELS_PER_METER,
+            pointY(snapshot, localAnchor[0], localAnchor[1]) * PIXELS_PER_METER
+        );
+    }
+
     //% blockId=box2d_blocks_mouse_joint
     //% block="drag $anchor of $body with $sprite||max force $maxForce stiffness $stiffness damping $damping"
     //% anchor.shadow=box2d_blocks_body_anchor

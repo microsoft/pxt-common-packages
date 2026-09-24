@@ -58,6 +58,17 @@ static void fallingBody() {
     assert(contacts.size() == 2);
     assert((contacts[0] == floor && contacts[1] == f) ||
            (contacts[0] == f && contacts[1] == floor));
+    auto contactPoints = take(getContactPoints(floor, f));
+    assert(contactPoints.size() == 2);
+    close(contactPoints[0], 0);
+    close(contactPoints[1], 4.5, 0.02);
+    auto contactNormals = take(getContactNormals(floor, f));
+    assert(contactNormals.size() == 2);
+    close(contactNormals[0], 0);
+    close(contactNormals[1], -1);
+    auto reverseNormals = take(getContactNormals(f, floor));
+    close(reverseNormals[0], 0);
+    close(reverseNormals[1], 1);
     assert(testPoint(f, 0, state[1]));
     assert(!testPoint(f, 3, state[1]));
     auto query = take(queryAABB(w, -1, 3, 1, 6));
@@ -358,6 +369,18 @@ static void sensorsAndFiltering() {
     setFixtureFilter(fa, 1, 0, 0);
     step(w, 1.0 / 60, 8, 3);
     assert(take(getContacts(w)).empty());
+    setFixtureFilter(fa, 1, 65535, 0);
+    setFixtureFilter(fa, 2, 4, 0);
+    setFixtureGroup(fa, -7);
+    b2Filter preservedFilter = fixture(fa)->GetFilterData();
+    assert(preservedFilter.categoryBits == 2);
+    assert(preservedFilter.maskBits == 4);
+    assert(preservedFilter.groupIndex == -7);
+    setFixtureCategoryMask(fa, 8, 16);
+    preservedFilter = fixture(fa)->GetFilterData();
+    assert(preservedFilter.categoryBits == 8);
+    assert(preservedFilter.maskBits == 16);
+    assert(preservedFilter.groupIndex == -7);
     setFixtureFilter(fa, 1, 65535, 0);
     setFixtureSensor(fa, false);
     step(w, 1.0 / 60, 8, 3);

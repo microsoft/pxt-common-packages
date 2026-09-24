@@ -128,7 +128,7 @@ functions in `main.ts`; no extra C++ bindings are needed.
 | `World` | `new World(gravityX?, gravityY?)`, `createBody`, `step`, `setGravity`, `setSleepingAllowed`, `getContacts`, `queryAABB`, `rayCast`, `destroy` |
 | `Body` | `world.createBody(type, x?, y?, angle?)`, `createFixture`, `getState`, `readTransform`, `readBoxVertices`, `setPosition`, `setTransform`, `setLinearVelocity`, `setType`, `setDamping`, `setGravityScale`, `setFlag`, `getFlag`, force/impulse and coordinate methods, `destroy` |
 | `Shape` | Static `circle`, `box`, `polygon`, `edge`, and `chain` factories; `destroy` |
-| `Fixture` | `body.createFixture(shape, density?, friction?, restitution?, sensor?)`, `body`, `setMaterial`, `setSensor`, `setFilter`, `testPoint`, `destroy` |
+| `Fixture` | `body.createFixture(shape, density?, friction?, restitution?, sensor?)`, `body`, `setMaterial`, `setSensor`, `setFilter`, `setGroup`, `setCategoryMask`, `testPoint`, `destroy` |
 | `Joint` | `getAnchors`, `destroy` |
 | `DistanceJoint` | `body.createDistanceJoint(other, anchorX, anchorY, otherAnchorX, otherAnchorY, collideConnected?)`, `getAnchors`, `configure(length, minLength, maxLength, stiffness?, damping?)`, `destroy` |
 | `RevoluteJoint` | `body.createRevoluteJoint(other, anchorX, anchorY, collideConnected?)`, `setMotor`, `setLimits`, `destroy` |
@@ -280,9 +280,9 @@ Optional parameters are supplied by TypeScript, not native definition objects.
 | Forces | `applyForce`, `applyForceToCenter`, `applyLinearImpulse`, `applyLinearImpulseToCenter`, `applyTorque`, `applyAngularImpulse` |
 | Coordinates | `getWorldPoint`, `getLocalPoint` |
 | Shapes | `createCircleShape`, `createBoxShape`, `createPolygonShape`, `createEdgeShape`, `createChainShape`, `destroyShape` |
-| Fixtures | `createFixture`, `destroyFixture`, `getFixtureBody`, `setFixtureMaterial`, `setFixtureSensor`, `setFixtureFilter`, `testPoint` |
+| Fixtures | `createFixture`, `destroyFixture`, `getFixtureBody`, `setFixtureMaterial`, `setFixtureSensor`, `setFixtureFilter`, `setFixtureGroup`, `setFixtureCategoryMask`, `testPoint` |
 | Joints | `createDistanceJoint`, `setDistanceJoint`, `createRevoluteJoint`, `setRevoluteJointMotor`, `setRevoluteJointLimits`, `createWheelJoint`, `setWheelJointMotor`, `setWheelJointLimits`, `setWheelJointSuspension`, `getJointAnchors`, `destroyJoint` |
-| Queries | `getContacts`, `queryAABB`, `rayCast`, `isValid` |
+| Queries | `getContacts`, `getContactPoints`, `getContactNormals`, `queryAABB`, `rayCast`, `isValid` |
 
 `BodyType` is `Static`, `Kinematic`, or `Dynamic`. `BodyFlag` is `Bullet`,
 `FixedRotation`, `SleepingAllowed`, `Awake`, or `Enabled`. Distance, revolute,
@@ -333,6 +333,8 @@ Arrays are snapshots, not native storage. Mutating them cannot change physics.
 | `getBodyState` | `[x, y, angle, velocityX, velocityY, angularVelocity, mass, inertia]`; use `BodyState` indices |
 | `getWorldPoint`, `getLocalPoint` | `[x, y]` |
 | `getContacts` | `[fixtureA, fixtureB, fixtureA, fixtureB, ...]` |
+| `getContactPoints` | `[x0, y0, x1, y1, ...]` in world-space meters |
+| `getContactNormals` | `[x0, y0, x1, y1, ...]`, pointing from the first fixture toward the second |
 | `queryAABB` | Unique fixture references |
 | `rayCast` | `[fixture, x, y, normalX, normalY, fraction]`; use `RayHit` indices; `[]` for no hit |
 
@@ -340,6 +342,11 @@ Contacts report touching, enabled contacts from the last step, including sensors
 They are not begin/end events; compare snapshots if needed. Chain child contacts
 may repeat a fixture pair. Mutations take effect in contact results on subsequent
 steps. `getFixtureBody` maps a contact fixture to its owning body.
+`getContactPoints` returns the current manifold points for a touching fixture
+pair. Sensors can be touching without producing manifold points.
+`getContactNormals` returns one world-space unit normal per matching physical
+contact, oriented from its first fixture argument toward its second. Sensor
+contacts produce no normals.
 
 An AABB query uses broad-phase bounds and can have false positives. Use
 `testPoint` for exact point containment in circles/polygons. Ray casts return

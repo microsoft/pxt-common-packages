@@ -220,6 +220,16 @@ void setFixtureFilter(Box2DObject fixture, TNumber categoryBits, TNumber maskBit
 }
 
 //%
+void setFixtureGroup(Box2DObject fixture, TNumber groupIndex) {
+    box2d_native::setFixtureGroup(fixture, toDouble(groupIndex));
+}
+
+//%
+void setFixtureCategoryMask(Box2DObject fixture, TNumber categoryBits, TNumber maskBits) {
+    box2d_native::setFixtureCategoryMask(fixture, toDouble(categoryBits), toDouble(maskBits));
+}
+
+//%
 bool testPoint(Box2DObject fixture, TNumber x, TNumber y) {
     return box2d_native::testPoint(fixture, toDouble(x), toDouble(y));
 }
@@ -297,6 +307,16 @@ void destroyJoint(Box2DObject joint) {
 //%
 RefCollection* getContacts(Box2DObject world) {
     return box2d_native::getContacts(world);
+}
+
+//%
+RefCollection* getContactPoints(Box2DObject fixtureA, Box2DObject fixtureB) {
+    return box2d_native::getContactPoints(fixtureA, fixtureB);
+}
+
+//%
+RefCollection* getContactNormals(Box2DObject fixtureA, Box2DObject fixtureB) {
+    return box2d_native::getContactNormals(fixtureA, fixtureB);
 }
 
 //%

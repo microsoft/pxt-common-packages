@@ -8,8 +8,12 @@ const body = box2dblocks.createBody(
     PhysicsBodyKind.Body,
     box2dblocks.circle(6)
 )
+box2dblocks.setCollisionGroup(body, -1)
 body.x = 80
 body.y = 20
+body.vx = 10
+body.vy = 20
+control.assert(body.vx == 10 && body.vy == 20, 0x20d)
 control.assert(box2dblocks.bodyAt(box2dblocks.point(80, 20)) == body, 0x208)
 
 const polygonBody = box2dblocks.createBody(
@@ -23,13 +27,19 @@ const polygonBody = box2dblocks.createBody(
 )
 
 box2dblocks.onCollision(PhysicsBodyKind.Body, PhysicsBodyKind.Wall, function (fallingBody, wall) {
-    box2dblocks.applyLinearImpulseToCenter(fallingBody, 0, -2)
+    box2dblocks.applyLinearImpulseAtAngle(fallingBody, 2, -Math.PI / 2)
 })
+control.assert(!box2dblocks.bodiesTouching(body, polygonBody), 0x20e)
+control.assert(box2dblocks.contactPoints(body, polygonBody).length == 0, 0x20f)
+control.assert(!box2dblocks.isOnGround(body), 0x210)
+box2dblocks.setKindsCollide(PhysicsBodyKind.Body, PhysicsBodyKind.Projectile, false)
 
 const leftBody = box2dblocks.createEmptyBody(box2d.BodyType.Static, PhysicsBodyKind.Body)
 leftBody.x = 20
 leftBody.y = 20
 box2dblocks.addShape(leftBody, box2dblocks.box(10, 10), box2dblocks.point(0, 0), 0)
+const leftBottomRight = box2dblocks.bodyPoint(leftBody, box2dblocks.BodyAnchor.BottomRight)
+control.assert(leftBottomRight.x == 25 && leftBottomRight.y == 25, 0x20c)
 
 const middleBody = box2dblocks.createEmptyBody(box2d.BodyType.Dynamic, PhysicsBodyKind.Body)
 middleBody.x = 100

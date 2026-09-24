@@ -249,6 +249,14 @@ namespace pxsim.box2dNative {
         invoke("bx_setFixtureFilter", [fixture, categoryBits, maskBits, groupIndex]);
     }
 
+    export function setFixtureGroup(fixture: number, groupIndex: number): void {
+        invoke("bx_setFixtureGroup", [fixture, groupIndex]);
+    }
+
+    export function setFixtureCategoryMask(fixture: number, categoryBits: number, maskBits: number): void {
+        invoke("bx_setFixtureCategoryMask", [fixture, categoryBits, maskBits]);
+    }
+
     export function testPoint(fixture: number, x: number, y: number): boolean {
         return !!invoke("bx_testPoint", [fixture, x, y]);
     }
@@ -287,6 +295,14 @@ namespace pxsim.box2dNative {
 
     export function getContacts(world: number): RefCollection {
         return arrayResult("bx_getContacts", [world]);
+    }
+
+    export function getContactPoints(fixtureA: number, fixtureB: number): RefCollection {
+        return arrayResult("bx_getContactPoints", [fixtureA, fixtureB]);
+    }
+
+    export function getContactNormals(fixtureA: number, fixtureB: number): RefCollection {
+        return arrayResult("bx_getContactNormals", [fixtureA, fixtureB]);
     }
 
     export function createBody(args: RefCollection): number {

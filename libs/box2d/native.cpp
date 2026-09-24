@@ -644,6 +644,21 @@ void setFixtureFilter(RefBox2D *handle, double categoryBits, double maskBits, do
     fixture(handle)->SetFilterData(filter);
 }
 
+void setFixtureGroup(RefBox2D *handle, double groupIndex) {
+    b2Fixture *value = fixture(handle);
+    b2Filter filter = value->GetFilterData();
+    filter.groupIndex = (int16)integer(groupIndex, -32768, 32767);
+    value->SetFilterData(filter);
+}
+
+void setFixtureCategoryMask(RefBox2D *handle, double categoryBits, double maskBits) {
+    b2Fixture *value = fixture(handle);
+    b2Filter filter = value->GetFilterData();
+    filter.categoryBits = (uint16)integer(categoryBits, 0, 65535);
+    filter.maskBits = (uint16)integer(maskBits, 0, 65535);
+    value->SetFilterData(filter);
+}
+
 bool testPoint(RefBox2D *handle, double x, double y) {
     return fixture(handle)->TestPoint(vector(x, y));
 }
@@ -805,6 +820,57 @@ RefCollection *getContacts(RefBox2D *handle) {
             pushObject(result, fixtureObject(contact->GetFixtureA()));
             pushObject(result, fixtureObject(contact->GetFixtureB()));
         }
+    }
+    return finishArray(result);
+}
+
+RefCollection *getContactPoints(RefBox2D *fixtureAHandle, RefBox2D *fixtureBHandle) {
+    RefBox2D *objectA = lookup(fixtureAHandle, Kind::Fixture);
+    RefBox2D *objectB = lookup(fixtureBHandle, Kind::Fixture);
+    require(objectA != objectB && objectA->world == objectB->world);
+    b2Fixture *fixtureA = static_cast<b2Fixture *>(objectA->pointer);
+    b2Fixture *fixtureB = static_cast<b2Fixture *>(objectB->pointer);
+    RefCollection *result = newArray();
+    for (b2ContactEdge *edge = fixtureA->GetBody()->GetContactList(); edge; edge = edge->next) {
+        b2Contact *contact = edge->contact;
+        if (!contact->IsTouching() || !contact->IsEnabled())
+            continue;
+        if (!((contact->GetFixtureA() == fixtureA && contact->GetFixtureB() == fixtureB) ||
+              (contact->GetFixtureA() == fixtureB && contact->GetFixtureB() == fixtureA)))
+            continue;
+
+        b2WorldManifold manifold;
+        contact->GetWorldManifold(&manifold);
+        int count = contact->GetManifold()->pointCount;
+        for (int i = 0; i < count; ++i) {
+            push(result, manifold.points[i].x);
+            push(result, manifold.points[i].y);
+        }
+    }
+    return finishArray(result);
+}
+
+RefCollection *getContactNormals(RefBox2D *fixtureAHandle, RefBox2D *fixtureBHandle) {
+    RefBox2D *objectA = lookup(fixtureAHandle, Kind::Fixture);
+    RefBox2D *objectB = lookup(fixtureBHandle, Kind::Fixture);
+    require(objectA != objectB && objectA->world == objectB->world);
+    b2Fixture *fixtureA = static_cast<b2Fixture *>(objectA->pointer);
+    b2Fixture *fixtureB = static_cast<b2Fixture *>(objectB->pointer);
+    RefCollection *result = newArray();
+    for (b2ContactEdge *edge = fixtureA->GetBody()->GetContactList(); edge; edge = edge->next) {
+        b2Contact *contact = edge->contact;
+        if (!contact->IsTouching() || !contact->IsEnabled() ||
+            contact->GetManifold()->pointCount == 0)
+            continue;
+        bool forward = contact->GetFixtureA() == fixtureA && contact->GetFixtureB() == fixtureB;
+        bool reverse = contact->GetFixtureA() == fixtureB && contact->GetFixtureB() == fixtureA;
+        if (!forward && !reverse)
+            continue;
+
+        b2WorldManifold manifold;
+        contact->GetWorldManifold(&manifold);
+        push(result, forward ? manifold.normal.x : -manifold.normal.x);
+        push(result, forward ? manifold.normal.y : -manifold.normal.y);
     }
     return finishArray(result);
 }

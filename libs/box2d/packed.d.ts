@@ -119,6 +119,12 @@ declare namespace box2dNativeShim {
     //% shim=box2dNative::setFixtureFilter
     function setFixtureFilter(fixture: box2dNative.Handle, categoryBits: number, maskBits: number, groupIndex: number): void;
 
+    //% shim=box2dNative::setFixtureGroup
+    function setFixtureGroup(fixture: box2dNative.Handle, groupIndex: number): void;
+
+    //% shim=box2dNative::setFixtureCategoryMask
+    function setFixtureCategoryMask(fixture: box2dNative.Handle, categoryBits: number, maskBits: number): void;
+
     //% shim=box2dNative::testPoint
     function testPoint(fixture: box2dNative.Handle, x: number, y: number): boolean;
 
@@ -163,6 +169,12 @@ declare namespace box2dNativeShim {
 
     //% shim=box2dNative::getContacts
     function getContacts(world: box2dNative.Handle): box2dNative.Handle[];
+
+    //% shim=box2dNative::getContactPoints
+    function getContactPoints(fixtureA: box2dNative.Handle, fixtureB: box2dNative.Handle): number[];
+
+    //% shim=box2dNative::getContactNormals
+    function getContactNormals(fixtureA: box2dNative.Handle, fixtureB: box2dNative.Handle): number[];
 
     //% shim=box2dNative::queryAABB
     function queryAABB(args: any[]): box2dNative.Handle[];

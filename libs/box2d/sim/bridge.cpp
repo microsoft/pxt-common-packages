@@ -207,6 +207,14 @@ void bx_setFixtureFilter(double fixture, double categoryBits, double maskBits, d
     box2d_native::setFixtureFilter(object(fixture), categoryBits, maskBits, groupIndex);
 }
 
+void bx_setFixtureGroup(double fixture, double groupIndex) {
+    box2d_native::setFixtureGroup(object(fixture), groupIndex);
+}
+
+void bx_setFixtureCategoryMask(double fixture, double categoryBits, double maskBits) {
+    box2d_native::setFixtureCategoryMask(object(fixture), categoryBits, maskBits);
+}
+
 bool bx_testPoint(double fixture, double x, double y) {
     return box2d_native::testPoint(object(fixture), x, y);
 }
@@ -275,6 +283,14 @@ void bx_destroyJoint(double joint) {
 
 int bx_getContacts(double world) {
     return publish(box2d_native::getContacts(object(world)));
+}
+
+int bx_getContactPoints(double fixtureA, double fixtureB) {
+    return publish(box2d_native::getContactPoints(object(fixtureA), object(fixtureB)));
+}
+
+int bx_getContactNormals(double fixtureA, double fixtureB) {
+    return publish(box2d_native::getContactNormals(object(fixtureA), object(fixtureB)));
 }
 
 int bx_queryAABB(double world, double minX, double minY, double maxX, double maxY) {

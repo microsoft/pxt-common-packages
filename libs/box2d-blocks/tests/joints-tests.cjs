@@ -41,6 +41,7 @@ const api = context.box2dblocks;
 let jointArguments;
 function body(state, localAnchor) {
     const nativeBody = {
+        valid: true,
         getState() {
             return state;
         },
@@ -89,7 +90,10 @@ assert.deepEqual(
     [20, 40]
 );
 assert.deepEqual(
-    [api.jointPoint(joint).x, api.jointPoint(joint).y],
+    [
+        api.jointPoint(joint, api.JointPoint.Center).x,
+        api.jointPoint(joint, api.JointPoint.Center).y
+    ],
     [35, 45]
 );
 assert.deepEqual(
@@ -97,6 +101,11 @@ assert.deepEqual(
     [50, 50]
 );
 assert.throws(() => api.jointPoint(joint, 99), /Unknown Box2D joint point/);
+assert.deepEqual(
+    [api.bodyPoint(bodyA, api.BodyAnchor.Right).x, api.bodyPoint(bodyA, api.BodyAnchor.Right).y],
+    [20, 40]
+);
+assert.throws(() => api.bodyPoint(bodyA, 99), /Unknown Box2D body anchor/);
 assert.throws(
     () => api.attachBodies(
         bodyA,

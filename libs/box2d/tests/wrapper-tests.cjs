@@ -138,6 +138,8 @@ command("setFixtureMaterial", [40, 2, 0.3, 0.4], () => fixture.setMaterial(2, 0.
 command("setFixtureSensor", [40, true], () => fixture.setSensor(true));
 command("setFixtureFilter", [40, 1, 65535, 0], () => fixture.setFilter());
 command("setFixtureFilter", [40, 2, 4, -1], () => fixture.setFilter(2, 4, -1));
+command("setFixtureGroup", [40, -7], () => fixture.setGroup(-7));
+command("setFixtureCategoryMask", [40, 8, 16], () => fixture.setCategoryMask(8, 16));
 assert.equal(call("testPoint", [40, 1, 2], true, () => fixture.testPoint(1, 2)), true);
 
 for (const wake of [undefined, false]) {
@@ -195,6 +197,10 @@ const contacts = call("getContacts", [10], [40, 41, 42, 43], () => world.getCont
 assert.equal(contacts.length, 2);
 assert.ok(contacts[0] instanceof api.Contact);
 assert.deepEqual(Array.from(contacts, c => [c.fixtureA.handle, c.fixtureB.handle]), [[40, 41], [42, 43]]);
+const contactPoints = call("getContactPoints", [40, 41], [1, 2, 3, 4], () => contacts[0].getPoints());
+assert.deepEqual(Array.from(contactPoints, point => [point.x, point.y]), [[1, 2], [3, 4]]);
+const contactNormals = call("getContactNormals", [40, 41], [0, -1], () => contacts[0].getNormals());
+assert.deepEqual(Array.from(contactNormals, normal => [normal.x, normal.y]), [[0, -1]]);
 assert.equal(call("getContacts", [10], [], () => world.getContacts()).length, 0);
 const candidates = call("queryAABB", [10, 1, 2, 3, 4], [40, 41], () => world.queryAABB(1, 2, 3, 4));
 assert.deepEqual(Array.from(candidates, f => f.handle), [40, 41]);

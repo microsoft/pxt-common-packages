@@ -15,6 +15,13 @@ namespace box2dblocks {
         ) {}
     }
 
+    export class _CollisionRule {
+        constructor(
+            public kindA: number,
+            public kindB: number
+        ) {}
+    }
+
     export class _FixtureDrawing {
         constructor(
             public fixture: box2d.Fixture,
@@ -30,6 +37,10 @@ namespace box2dblocks {
         public activePairs: string[] = [];
         public speed = 1;
         public paused = false;
+        public gravityX = 0;
+        public gravityY = 10;
+        private disabledCollisions: _CollisionRule[] = [];
+        private filteredKinds: number[] = [];
         private accumulator = 0;
         private nextBodyId = 1;
         private lastUpdate = game.runtime();
@@ -53,6 +64,93 @@ namespace box2dblocks {
 
         removeBody(body: Body): void {
             this.bodies.removeElement(body);
+        }
+
+        setGravity(x: number, y: number): void {
+            this.gravityX = x;
+            this.gravityY = y;
+            this.world.setGravity(x, y);
+        }
+
+        setKindsCollide(kindA: number, kindB: number, collide: boolean): void {
+            if (kindA != Math.floor(kindA) || kindB != Math.floor(kindB))
+                throw "Box2D body kinds must be integers.";
+            const low = Math.min(kindA, kindB);
+            const high = Math.max(kindA, kindB);
+            let ruleIndex = -1;
+            for (let i = 0; i < this.disabledCollisions.length; ++i) {
+                const rule = this.disabledCollisions[i];
+                if (rule.kindA == low && rule.kindB == high) {
+                    ruleIndex = i;
+                    break;
+                }
+            }
+
+            if (!collide && ruleIndex < 0) {
+                const kinds = this.filteredKinds.slice();
+                if (kinds.indexOf(low) < 0) kinds.push(low);
+                if (kinds.indexOf(high) < 0) kinds.push(high);
+                if (kinds.length > 15)
+                    throw "Too many Box2D body kinds have custom collision rules.";
+                this.disabledCollisions.push(new _CollisionRule(low, high));
+            }
+            else if (collide && ruleIndex >= 0) {
+                this.disabledCollisions.removeAt(ruleIndex);
+            }
+            else {
+                return;
+            }
+
+            this.rebuildCollisionFilters();
+        }
+
+        updateBodyFilter(body: Body): void {
+            const filter = this.filterForKind(body.kind);
+            for (let i = 0; i < body.fixtures.length; ++i)
+                body.fixtures[i].fixture.setCategoryMask(filter[0], filter[1]);
+        }
+
+        configureFixture(body: Body, fixture: box2d.Fixture): void {
+            const filter = this.filterForKind(body.kind);
+            fixture.setCategoryMask(filter[0], filter[1]);
+        }
+
+        private rebuildCollisionFilters(): void {
+            this.filteredKinds = [];
+            for (let i = 0; i < this.disabledCollisions.length; ++i) {
+                const rule = this.disabledCollisions[i];
+                if (this.filteredKinds.indexOf(rule.kindA) < 0)
+                    this.filteredKinds.push(rule.kindA);
+                if (this.filteredKinds.indexOf(rule.kindB) < 0)
+                    this.filteredKinds.push(rule.kindB);
+            }
+            for (let i = 0; i < this.bodies.length; ++i)
+                this.updateBodyFilter(this.bodies[i]);
+        }
+
+        private filterForKind(kind: number): number[] {
+            const index = this.filteredKinds.indexOf(kind);
+            if (index < 0)
+                return [1, 65535];
+
+            const category = Math.pow(2, index + 1);
+            let mask = 1;
+            for (let i = 0; i < this.filteredKinds.length; ++i) {
+                if (this.kindsCollide(kind, this.filteredKinds[i]))
+                    mask += Math.pow(2, i + 1);
+            }
+            return [category, mask];
+        }
+
+        private kindsCollide(kindA: number, kindB: number): boolean {
+            const low = Math.min(kindA, kindB);
+            const high = Math.max(kindA, kindB);
+            for (let i = 0; i < this.disabledCollisions.length; ++i) {
+                const rule = this.disabledCollisions[i];
+                if (rule.kindA == low && rule.kindB == high)
+                    return false;
+            }
+            return true;
         }
 
         addMouseJoint(joint: MouseJoint): MouseJoint {
@@ -155,6 +253,8 @@ namespace box2dblocks {
             this.bodies = [];
             this.handlers = [];
             this.activePairs = [];
+            this.disabledCollisions = [];
+            this.filteredKinds = [];
         }
     }
 

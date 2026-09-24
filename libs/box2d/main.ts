@@ -277,6 +277,18 @@ namespace box2dNative {
         box2dNativeShim.setFixtureFilter(fixture, categoryBits, maskBits, groupIndex);
     }
 
+    /** Update only the signed 16-bit collision group, preserving category and mask bits. */
+    // Native wrapper: box2dNative::setFixtureGroup
+    export function setFixtureGroup(fixture: Handle, groupIndex: number): void {
+        box2dNativeShim.setFixtureGroup(fixture, groupIndex);
+    }
+
+    /** Update category and mask bits while preserving the collision group. */
+    // Native wrapper: box2dNative::setFixtureCategoryMask
+    export function setFixtureCategoryMask(fixture: Handle, categoryBits: number, maskBits: number): void {
+        box2dNativeShim.setFixtureCategoryMask(fixture, categoryBits, maskBits);
+    }
+
     /** Test a world-space point against a fixture. Edges and chains always return false. */
     // Native wrapper: box2dNative::testPoint
     export function testPoint(fixture: Handle, x: number, y: number): boolean {
@@ -366,6 +378,18 @@ namespace box2dNative {
     // Native wrapper: box2dNative::getContacts
     export function getContacts(world: Handle): Handle[] {
         return box2dNativeShim.getContacts(world);
+    }
+
+    /** World-space contact manifold points: [x0, y0, ...]. Sensors may return no points. */
+    // Native wrapper: box2dNative::getContactPoints
+    export function getContactPoints(fixtureA: Handle, fixtureB: Handle): number[] {
+        return box2dNativeShim.getContactPoints(fixtureA, fixtureB);
+    }
+
+    /** Contact normals from fixture A toward fixture B: [x0, y0, ...]. */
+    // Native wrapper: box2dNative::getContactNormals
+    export function getContactNormals(fixtureA: Handle, fixtureB: Handle): number[] {
+        return box2dNativeShim.getContactNormals(fixtureA, fixtureB);
     }
 
     /** Unique fixture handles whose broad-phase bounds overlap the world-space rectangle. */

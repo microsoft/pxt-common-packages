@@ -69,7 +69,10 @@ namespace box2dblocks {
         }
 
         clone(): PhysicsShape {
-            return new PhysicsShape(this.type, this.values.slice(), this.loop);
+            const result = new PhysicsShape(this.type, this.values.slice(), this.loop);
+            result.fillColor = this.fillColor;
+            result.outlineColor = this.outlineColor;
+            return result;
         }
 
         shifted(dx: number, dy: number, angle: number): PhysicsShape {
@@ -122,6 +125,8 @@ namespace box2dblocks {
         const nativeShape = shape.toNativeShape();
 
         const fixture = body.nativeBody.createFixture(nativeShape, density, friction, restitution, sensor);
+        fixture.setGroup(body.collisionGroup);
+        owner.configureFixture(body, fixture);
         body.fixtures.push(new _FixtureDrawing(fixture, shape));
         nativeShape.destroy();
     }

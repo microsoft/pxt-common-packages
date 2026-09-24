@@ -209,6 +209,9 @@ assert.equal(circle.nativeShape.valid, false, "Attaching consumes the native sha
 assert.deepEqual([body.nativeBody.x, body.nativeBody.y], [8, 6], "Bodies start at the center of the screen");
 body.x = 80;
 body.y = 20;
+body.vx = 30;
+body.vy = 40;
+assert.deepEqual([body.vx, body.vy], [30, 40], "Velocity properties use pixels per second");
 
 scenes[0].renderers[0](target, { drawOffsetX: 0, drawOffsetY: 0 });
 assert.deepEqual(drawings[0], ["fillCircle", 80, 20, 6, 6]);

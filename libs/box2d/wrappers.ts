@@ -326,6 +326,14 @@ namespace box2d {
             box2dNative.setFixtureFilter(this.handle, categoryBits, maskBits, groupIndex);
         }
 
+        setGroup(groupIndex: number): void {
+            box2dNative.setFixtureGroup(this.handle, groupIndex);
+        }
+
+        setCategoryMask(categoryBits: number, maskBits: number): void {
+            box2dNative.setFixtureCategoryMask(this.handle, categoryBits, maskBits);
+        }
+
         testPoint(x: number, y: number): boolean {
             return box2dNative.testPoint(this.handle, x, y);
         }
@@ -409,6 +417,24 @@ namespace box2d {
     /** A detached pair from the world's latest contact snapshot. */
     export class Contact {
         constructor(public fixtureA: Fixture, public fixtureB: Fixture) {}
+
+        /** Current world-space manifold points for this fixture pair. */
+        getPoints(): Vec2[] {
+            const values = box2dNative.getContactPoints(this.fixtureA.handle, this.fixtureB.handle);
+            const result: Vec2[] = [];
+            for (let i = 0; i < values.length; i += 2)
+                result.push(new Vec2(values[i], values[i + 1]));
+            return result;
+        }
+
+        /** Current normals pointing from fixture A toward fixture B. */
+        getNormals(): Vec2[] {
+            const values = box2dNative.getContactNormals(this.fixtureA.handle, this.fixtureB.handle);
+            const result: Vec2[] = [];
+            for (let i = 0; i < values.length; i += 2)
+                result.push(new Vec2(values[i], values[i + 1]));
+            return result;
+        }
     }
 
     /** A detached closest-hit result. Fraction is in the range 0-1 along the ray. */

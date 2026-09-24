@@ -9,7 +9,7 @@ namespace box2dblocks {
     //% x.defl=0 y.defl=100
     //% group="Global" weight=100
     export function setGravity(x: number, y: number): void {
-        _state().world.setGravity(x / PIXELS_PER_METER, y / PIXELS_PER_METER);
+        _state().setGravity(x / PIXELS_PER_METER, y / PIXELS_PER_METER);
     }
 
     //% blockId=box2d_blocks_pause

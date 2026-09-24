@@ -27,6 +27,8 @@ function runWrapperSmokeTests() {
     const wrappedContacts = wrappedWorld.getContacts()
     check(wrappedContacts.length == 1, "wrapped contacts")
     check(wrappedContacts[0].fixtureA.valid && wrappedContacts[0].fixtureB.valid, "wrapped contact fixtures")
+    check(wrappedContacts[0].getPoints().length == 1, "wrapped contact manifold point")
+    check(wrappedContacts[0].getNormals().length == 1, "wrapped contact normal")
     const wrappedHit = wrappedWorld.rayCast(0, 0, 0, 10)
     check(wrappedHit != null && wrappedHit.fixture.handle == wrappedFixture.handle, "wrapped ray fixture")
     check(wrappedHit.point.y > 3 && wrappedHit.normal.y == -1 && wrappedHit.fraction > 0, "wrapped ray fields")

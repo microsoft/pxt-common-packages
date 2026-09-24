@@ -3,6 +3,7 @@ namespace box2dblocks {
         public fixtures: _FixtureDrawing[] = [];
         public connectedBodies: Body[] = [];
         public destroyed = false;
+        public collisionGroup = 0;
 
         constructor(
             public nativeBody: box2d.Body,
@@ -38,6 +39,32 @@ namespace box2dblocks {
         set y(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setTransform(snapshot.x, value / PIXELS_PER_METER, snapshot.angle);
+        }
+
+        //% group="Physics" blockSetVariable="myBody"
+        //% blockCombine block="vx" callInDebugger
+        get vx(): number {
+            return this.nativeBody.getState().velocityX * PIXELS_PER_METER;
+        }
+
+        //% group="Physics" blockSetVariable="myBody"
+        //% blockCombine block="vx"
+        set vx(value: number) {
+            const snapshot = this.nativeBody.getState();
+            this.nativeBody.setLinearVelocity(value / PIXELS_PER_METER, snapshot.velocityY);
+        }
+
+        //% group="Physics" blockSetVariable="myBody"
+        //% blockCombine block="vy" callInDebugger
+        get vy(): number {
+            return this.nativeBody.getState().velocityY * PIXELS_PER_METER;
+        }
+
+        //% group="Physics" blockSetVariable="myBody"
+        //% blockCombine block="vy"
+        set vy(value: number) {
+            const snapshot = this.nativeBody.getState();
+            this.nativeBody.setLinearVelocity(snapshot.velocityX, value / PIXELS_PER_METER);
         }
 
         //% group="Physics" blockSetVariable="myBody"
@@ -361,6 +388,7 @@ namespace box2dblocks {
     //% group="Body" weight=45
     export function setBodyKind(body: Body, kind: number): void {
         body.kind = kind;
+        _state().updateBodyFilter(body);
     }
 
     //% blockId=box2d_blocks_destroy_body
@@ -416,5 +444,153 @@ namespace box2dblocks {
     export function onCollision(kind: number, otherKind: number, handler: (body: Body, otherBody: Body) => void): void {
         if (!handler) return;
         _state().handlers.push(new _CollisionHandler(kind, otherKind, handler));
+    }
+
+    /**
+     * Return whether two bodies have at least one pair of touching fixtures.
+     * Sensor contacts count as touching.
+     */
+    //% blockId=box2d_blocks_bodies_touching
+    //% block="$body is touching $otherBody"
+    //% body.shadow=variables_get body.defl=myBody
+    //% otherBody.shadow=variables_get otherBody.defl=otherBody
+    //% group="Collisions" weight=95
+    export function bodiesTouching(body: Body, otherBody: Body): boolean {
+        const owner = validateBodyPair(body, otherBody);
+        if (body == otherBody) return false;
+
+        const contacts = owner.world.getContacts();
+        for (let i = 0; i < contacts.length; ++i) {
+            const bodyA = owner.findFixture(contacts[i].fixtureA.handle);
+            const bodyB = owner.findFixture(contacts[i].fixtureB.handle);
+            if ((bodyA == body && bodyB == otherBody) ||
+                (bodyA == otherBody && bodyB == body))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Return whether a physical contact supports this body against gravity.
+     * The maximum slope angle is measured in degrees from level ground.
+     */
+    //% blockId=box2d_blocks_is_on_ground
+    //% block="$body is on ground || with maximum slope $maxSlopeAngle degrees"
+    //% body.shadow=variables_get body.defl=myBody
+    //% maxSlopeAngle.defl=45 maxSlopeAngle.min=0 maxSlopeAngle.max=90
+    //% group="Collisions" weight=92
+    export function isOnGround(body: Body, maxSlopeAngle: number = 45): boolean {
+        const owner = validateBody(body);
+        if (maxSlopeAngle < 0 || maxSlopeAngle > 90)
+            throw "Maximum slope angle must be from 0 to 90 degrees.";
+
+        const gravityLength = Math.sqrt(
+            owner.gravityX * owner.gravityX +
+            owner.gravityY * owner.gravityY
+        );
+        if (gravityLength == 0) return false;
+        const gravityX = owner.gravityX / gravityLength;
+        const gravityY = owner.gravityY / gravityLength;
+        const threshold = -Math.cos(maxSlopeAngle * Math.PI / 180);
+
+        const contacts = owner.world.getContacts();
+        for (let i = 0; i < contacts.length; ++i) {
+            const bodyA = owner.findFixture(contacts[i].fixtureA.handle);
+            const bodyB = owner.findFixture(contacts[i].fixtureB.handle);
+            if (bodyA != body && bodyB != body)
+                continue;
+
+            const direction = bodyA == body ? -1 : 1;
+            const normals = contacts[i].getNormals();
+            for (let j = 0; j < normals.length; ++j) {
+                const supportX = normals[j].x * direction;
+                const supportY = normals[j].y * direction;
+                if (supportX * gravityX + supportY * gravityY <= threshold)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return all current contact manifold points between two bodies in
+     * world-space pixels. Sensor contacts may have no points.
+     */
+    //% blockId=box2d_blocks_contact_points
+    //% block="contact points between $body and $otherBody"
+    //% body.shadow=variables_get body.defl=myBody
+    //% otherBody.shadow=variables_get otherBody.defl=otherBody
+    //% group="Collisions" weight=90
+    export function contactPoints(body: Body, otherBody: Body): PhysicsPoint[] {
+        const owner = validateBodyPair(body, otherBody);
+        const result: PhysicsPoint[] = [];
+        if (body == otherBody) return result;
+
+        const contacts = owner.world.getContacts();
+        for (let i = 0; i < contacts.length; ++i) {
+            const bodyA = owner.findFixture(contacts[i].fixtureA.handle);
+            const bodyB = owner.findFixture(contacts[i].fixtureB.handle);
+            if (!((bodyA == body && bodyB == otherBody) ||
+                  (bodyA == otherBody && bodyB == body)))
+                continue;
+
+            const points = contacts[i].getPoints();
+            for (let j = 0; j < points.length; ++j)
+                result.push(new PhysicsPoint(
+                    points[j].x * PIXELS_PER_METER,
+                    points[j].y * PIXELS_PER_METER
+                ));
+        }
+        return result;
+    }
+
+    function validateBodyPair(body: Body, otherBody: Body): _SceneState {
+        const owner = _state();
+        if (!isValidBody(body, owner) || !isValidBody(otherBody, owner))
+            throw "One or both Box2D bodies are invalid.";
+        return owner;
+    }
+
+    function validateBody(body: Body): _SceneState {
+        const owner = _state();
+        if (!isValidBody(body, owner))
+            throw "This Box2D body is invalid.";
+        return owner;
+    }
+
+    function isValidBody(body: Body, owner: _SceneState): boolean {
+        return !!body && !body.destroyed && body.belongsTo(owner) && body.nativeBody.valid;
+    }
+
+    /**
+     * Configure whether two body kinds collide. All pairs collide by default.
+     */
+    //% blockId=box2d_blocks_set_kinds_collide
+    //% block="set kind $kind=box2d_blocks_body_kind collides with kind $otherKind=box2d_blocks_body_kind to $collide"
+    //% collide.shadow=toggleOnOff
+    //% group="Collisions" weight=90
+    export function setKindsCollide(kind: number, otherKind: number, collide: boolean): void {
+        _state().setKindsCollide(kind, otherKind, collide);
+    }
+
+    /**
+     * Equal positive groups always collide; equal negative groups never collide.
+     * Group zero uses the normal category and mask rules.
+     */
+    //% blockId=box2d_blocks_set_collision_group
+    //% block="set $body collision group $group"
+    //% body.shadow=variables_get body.defl=myBody
+    //% group.defl=0
+    //% group="Collisions" weight=55
+    export function setCollisionGroup(body: Body, group: number): void {
+        const owner = _state();
+        if (!body || body.destroyed || !body.belongsTo(owner) || !body.nativeBody.valid)
+            throw "This Box2D body is invalid.";
+        if (group < -32768 || group > 32767 || group != Math.floor(group))
+            throw "Collision groups must be integers from -32768 to 32767.";
+
+        for (let i = 0; i < body.fixtures.length; ++i)
+            body.fixtures[i].fixture.setGroup(group);
+        body.collisionGroup = group;
     }
 }

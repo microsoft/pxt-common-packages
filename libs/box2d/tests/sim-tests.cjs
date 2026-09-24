@@ -61,6 +61,14 @@ for (let i = 0; i < 120; ++i)
 
 const state = result(api.bx_getBodyState(ball));
 assert.ok(Math.abs(state[1] - 4) < 0.02, `ball stopped at y=${state[1]}`);
+const contactPoints = result(api.bx_getContactPoints(groundFixture, ballFixture));
+assert.equal(contactPoints.length, 2);
+assert.ok(Math.abs(contactPoints[0]) < 0.001);
+assert.ok(Math.abs(contactPoints[1] - 4.5) < 0.02);
+const contactNormals = result(api.bx_getContactNormals(groundFixture, ballFixture));
+assert.equal(contactNormals.length, 2);
+assert.ok(Math.abs(contactNormals[0]) < 0.001);
+assert.ok(Math.abs(contactNormals[1] + 1) < 0.001);
 
 const hits = result(api.bx_queryAABB(world, -1, 3, 1, 6));
 assert.deepEqual(new Set(hits), new Set([groundFixture, ballFixture]));
@@ -119,9 +127,10 @@ vm.runInContext(simulatorJavaScript, context);
 const sim = context.pxsim.box2dNative;
 for (const name of [
     "createBody", "applyForce", "applyLinearImpulse", "createBoxShape",
-    "createFixture", "createDistanceJoint", "setDistanceJoint",
+    "createFixture", "setFixtureGroup", "setFixtureCategoryMask",
+    "createDistanceJoint", "setDistanceJoint",
     "createRevoluteJoint", "createWheelJoint", "createMouseJoint",
-    "getJointAnchors", "queryAABB", "rayCast"
+    "getJointAnchors", "getContactPoints", "getContactNormals", "queryAABB", "rayCast"
 ]) {
     assert.equal(typeof sim[name], "function", `${name} must be registered in pxsim.box2dNative`);
 }
@@ -129,10 +138,13 @@ for (const name of [
 const simWorld = sim.createWorld(0, 9.8);
 const simGround = sim.createBody(collection([simWorld, 0, 0, 5, 0]));
 const simGroundShape = sim.createBoxShape(collection([10, 0.5, 0, 0, 0]));
-sim.createFixture(collection([simGround, simGroundShape, 0, 0.2, 0, 0]));
+const simGroundFixture = sim.createFixture(collection([simGround, simGroundShape, 0, 0.2, 0, 0]));
 const simBall = sim.createBody(collection([simWorld, 2, 0, 0, 0]));
 const simBallShape = sim.createCircleShape(0.5, 0, 0);
-sim.createFixture(collection([simBall, simBallShape, 1, 0.2, 0, 0]));
+const simBallFixture = sim.createFixture(collection([simBall, simBallShape, 1, 0.2, 0, 0]));
+sim.setFixtureGroup(simBallFixture, -7);
+sim.setFixtureCategoryMask(simBallFixture, 8, 16);
+sim.setFixtureCategoryMask(simBallFixture, 1, 65535);
 const simDistance = sim.createDistanceJoint(collection([
     simGround, simBall, 0, 0, 0, 0, false
 ]));
@@ -143,6 +155,14 @@ sim.destroyJoint(simDistance);
 for (let i = 0; i < 120; ++i)
     sim.step(simWorld, 1 / 60, 8, 3);
 assert.ok(Math.abs(sim.getBodyState(simBall).getAt(1) - 4) < 0.02);
+const simContactPoints = sim.getContactPoints(simBallFixture, simGroundFixture);
+assert.equal(simContactPoints.getLength(), 2);
+assert.ok(Math.abs(simContactPoints.getAt(0)) < 0.001);
+assert.ok(Math.abs(simContactPoints.getAt(1) - 4.5) < 0.02);
+const simContactNormals = sim.getContactNormals(simGroundFixture, simBallFixture);
+assert.equal(simContactNormals.getLength(), 2);
+assert.ok(Math.abs(simContactNormals.getAt(0)) < 0.001);
+assert.ok(Math.abs(simContactNormals.getAt(1) + 1) < 0.001);
 const simTransform = collection([0, 0, 0]);
 sim.readBodyTransform(simBall, simTransform);
 assert.ok(Math.abs(simTransform.getAt(1) - 4) < 0.02);

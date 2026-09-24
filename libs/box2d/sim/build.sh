@@ -18,11 +18,13 @@ exports=(
     bx_getWorldPoint bx_getLocalPoint bx_createCircleShape bx_createBoxShape
     bx_createPolygonShape bx_createEdgeShape bx_createChainShape bx_destroyShape
     bx_createFixture bx_destroyFixture bx_getFixtureBody bx_setFixtureMaterial
-    bx_setFixtureSensor bx_setFixtureFilter bx_testPoint bx_createDistanceJoint
+    bx_setFixtureSensor bx_setFixtureFilter bx_setFixtureGroup bx_setFixtureCategoryMask
+    bx_testPoint bx_createDistanceJoint
     bx_setDistanceJoint bx_createRevoluteJoint bx_setRevoluteJointMotor
     bx_setRevoluteJointLimits bx_createWheelJoint bx_setWheelJointMotor
     bx_setWheelJointLimits bx_setWheelJointSuspension bx_createMouseJoint
     bx_setMouseJointTarget bx_getJointAnchors bx_destroyJoint bx_getContacts
+    bx_getContactPoints bx_getContactNormals
     bx_queryAABB bx_rayCast malloc free
 )
 exported="$(printf '"_%s",' "${exports[@]}")"

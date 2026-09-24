@@ -23,6 +23,8 @@ function runNativeSmokeTests() {
     box2dNative.readBodyBoxVertices(groundBody, [1, 0.5, 0, 0], [8, 80, 60], vertices)
     check(vertices[0] == 72 && vertices[1] == 96 && vertices[4] == 88 && vertices[5] == 104, "integer box vertices")
     check(box2dNative.getContacts(physicsWorld).length == 2, "touching fixtures")
+    check(box2dNative.getContactPoints(groundFixture, ballFixture).length == 2, "contact manifold point")
+    check(box2dNative.getContactNormals(groundFixture, ballFixture)[1] < -0.9, "contact normal")
     check(box2dNative.rayCast(physicsWorld, 0, 0, 0, 10)[box2d.RayHit.Fixture] == ballFixture, "closest ray hit")
     check(box2dNative.queryAABB(physicsWorld, -1, 3, 1, 6).length == 2, "query fixtures")
     check(box2dNative.testPoint(ballFixture, 0, 4), "point in ball")

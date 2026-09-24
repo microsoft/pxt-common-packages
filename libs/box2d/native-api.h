@@ -46,6 +46,8 @@ RefBox2D* getFixtureBody(RefBox2D* fixture);
 void setFixtureMaterial(RefBox2D* fixture, double density, double friction, double restitution);
 void setFixtureSensor(RefBox2D* fixture, bool sensor);
 void setFixtureFilter(RefBox2D* fixture, double categoryBits, double maskBits, double groupIndex);
+void setFixtureGroup(RefBox2D* fixture, double groupIndex);
+void setFixtureCategoryMask(RefBox2D* fixture, double categoryBits, double maskBits);
 bool testPoint(RefBox2D* fixture, double x, double y);
 RefBox2D* createDistanceJoint(RefBox2D* bodyA, RefBox2D* bodyB, double anchorAX, double anchorAY, double anchorBX, double anchorBY, bool collideConnected);
 void setDistanceJoint(RefBox2D* joint, double length, double minLength, double maxLength, double stiffness, double damping);
@@ -61,6 +63,8 @@ void setMouseJointTarget(RefBox2D* joint, double x, double y);
 RefCollection* getJointAnchors(RefBox2D* joint);
 void destroyJoint(RefBox2D* joint);
 RefCollection* getContacts(RefBox2D* world);
+RefCollection* getContactPoints(RefBox2D* fixtureA, RefBox2D* fixtureB);
+RefCollection* getContactNormals(RefBox2D* fixtureA, RefBox2D* fixtureB);
 RefCollection* queryAABB(RefBox2D* world, double minX, double minY, double maxX, double maxY);
 RefCollection* rayCast(RefBox2D* world, double x1, double y1, double x2, double y2);
 } // namespace box2d_native
