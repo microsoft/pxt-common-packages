@@ -14,12 +14,13 @@ namespace pxsim.radio {
         state.setTransmitPower(power);
     }
 
-    export function setFrequencyBand(band: number) { 
+    export function setFrequencyBand(band: number) {
         const state = pxsim.getRadioState();
         state.setFrequencyBand(band);
     }
 
     export function sendRawPacket(buf: RefBuffer) {
+        BufferMethods.typeCheck(buf);
         let cb = getResume();
         const state = pxsim.getRadioState();
         if (state.enable) {
