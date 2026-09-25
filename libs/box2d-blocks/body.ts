@@ -1,10 +1,12 @@
 namespace box2dblocks {
-    export class Body extends Destroyable {
+    export class Body extends Destroyable implements SpriteLike {
         public fixtures: _FixtureDrawing[] = [];
         public connectedBodies: Body[] = [];
         public destroyed = false;
         public collisionGroup = 0;
         public data: any = {};
+        private _z = scene.SPRITE_Z;
+        private addedToScene = false;
 
         constructor(
             public nativeBody: box2d.Body,
@@ -40,6 +42,21 @@ namespace box2dblocks {
         set y(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setTransform(snapshot.x, value / PIXELS_PER_METER, snapshot.angle);
+        }
+
+        //% group="Physics" blockSetVariable="myBody"
+        //% blockCombine block="z" callInDebugger
+        get z(): number {
+            return this._z;
+        }
+
+        //% group="Physics" blockSetVariable="myBody"
+        //% blockCombine block="z"
+        set z(value: number) {
+            if (this._z != value) {
+                this._z = value;
+                this.owner.requestSpriteSort();
+            }
         }
 
         //% group="Physics" blockSetVariable="myBody"
@@ -152,6 +169,32 @@ namespace box2dblocks {
                 this.nativeBody.destroy();
             this.fixtures = [];
             this.owner.removeBody(this);
+        }
+
+        __update(camera: scene.Camera, dt: number): void {
+        }
+
+        __draw(camera: scene.Camera): void {
+            if (!this.destroyed && this.nativeBody.valid)
+                this.owner.drawBody(this, camera);
+        }
+
+        __serialize(offset: number): Buffer {
+            return undefined;
+        }
+
+        _ensureInScene(): void {
+            if (!this.addedToScene) {
+                this.addedToScene = true;
+                this.owner.addBodySprite(this);
+            }
+        }
+
+        _removeFromScene(): void {
+            if (this.addedToScene) {
+                this.addedToScene = false;
+                this.owner.removeBodySprite(this);
+            }
         }
 
         belongsTo(owner: _SceneState): boolean {

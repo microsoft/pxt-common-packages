@@ -76,6 +76,9 @@ const body = {
     },
     belongsTo(value) {
         return value === owner;
+    },
+    _ensureInScene() {
+        this.ensureInSceneCalls = (this.ensureInSceneCalls || 0) + 1;
     }
 };
 
@@ -100,6 +103,7 @@ api.addShape(
 );
 assert.deepEqual(groups, [-12, -12], "New fixtures inherit the body's group");
 assert.equal(shapeDestroyed, true);
+assert.equal(body.ensureInSceneCalls, 1, "Adding a shape registers its body for scene drawing");
 assert.throws(
     () => api.setCollisionGroup(body, 1.5),
     /integers from -32768 to 32767/

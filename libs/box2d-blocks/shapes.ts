@@ -134,6 +134,7 @@ namespace box2dblocks {
         fixture.setGroup(body.collisionGroup);
         owner.configureFixture(body, fixture);
         body.fixtures.push(new _FixtureDrawing(fixture, shape));
+        body._ensureInScene();
         nativeShape.destroy();
     }
 

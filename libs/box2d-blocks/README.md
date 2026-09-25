@@ -64,6 +64,10 @@ point.
 The body-point block returns the live world-space pixel position for a named
 body anchor such as its center, an edge midpoint, or a corner.
 
+Bodies have a `z` property like sprites. A body is added to the scene's sprite
+rendering order when its first shape is added, so bodies and sprites are drawn
+together by z index. Destroying a body removes it from that scene ordering.
+
 The `attach` block creates a revolute, wheel, prismatic, weld, or distance joint between named points
 such as the center, edge midpoints, or corners of two bodies. Wheel joints use a
 vertical suspension axis. Prismatic joints use the same vertical axis, allow

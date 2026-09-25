@@ -75,6 +75,8 @@ const body = {
     },
     belongsTo(value) {
         return value === owner;
+    },
+    _ensureInScene() {
     }
 };
 

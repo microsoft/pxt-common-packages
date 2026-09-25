@@ -60,7 +60,9 @@ control.assert(leftBottomRight.x == 25 && leftBottomRight.y == 25, 0x20c)
 const middleBody = box2dblocks.createEmptyBody(box2d.BodyType.Dynamic, PhysicsBodyKind.Body)
 middleBody.x = 100
 middleBody.y = 50
+middleBody.z = 5
 box2dblocks.addShape(middleBody, box2dblocks.box(20, 20), box2dblocks.point(0, 0), 0)
+control.assert(middleBody.z == 5, 0x1ff)
 
 const rightBody = box2dblocks.createEmptyBody(box2d.BodyType.Dynamic, PhysicsBodyKind.Body)
 rightBody.x = 140

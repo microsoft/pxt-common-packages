@@ -7,6 +7,22 @@ const ts = require("typescript");
 class World {
     destroy() {}
 }
+const currentScene = {
+    allSprites: [],
+    flags: 0,
+    nextId: 0,
+    addSprite(sprite) {
+        this.allSprites.push(sprite);
+        sprite.id = this.nextId++;
+    }
+};
+Object.defineProperty(currentScene.allSprites, "removeElement", {
+    value(value) {
+        const index = this.indexOf(value);
+        if (index >= 0)
+            this.splice(index, 1);
+    }
+});
 const context = vm.createContext({
     Math,
     box2d: { World },
@@ -17,13 +33,16 @@ const context = vm.createContext({
         eventContext() {
             return { registerFrameHandler() {} };
         },
+        currentScene() {
+            return currentScene;
+        },
         addScenePushHandler() {},
         addScenePopHandler() {}
     },
     scene: {
         PHYSICS_PRIORITY: 0,
         SPRITE_Z: 0,
-        createRenderable() {}
+        Flag: { NeedsSorting: 1 }
     }
 });
 vm.runInContext(
@@ -56,6 +75,13 @@ function body(kind) {
 }
 
 const state = new api._SceneState();
+const drawable = { z: 5 };
+state.addBodySprite(drawable);
+assert.deepEqual(currentScene.allSprites, [drawable]);
+assert.equal(drawable.id, 0);
+assert.equal(currentScene.flags, 1, "Adding a body requests z sorting");
+state.removeBodySprite(drawable);
+assert.deepEqual(currentScene.allSprites, []);
 const kind1 = body(1);
 const kind2 = body(2);
 const defaultKind = body(99);

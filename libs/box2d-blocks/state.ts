@@ -45,10 +45,11 @@ namespace box2dblocks {
         private accumulator = 0;
         private nextBodyId = 1;
         private lastUpdate = game.runtime();
+        private scene: scene.Scene;
 
         constructor() {
+            this.scene = game.currentScene();
             game.eventContext().registerFrameHandler(scene.PHYSICS_PRIORITY, () => this.update());
-            scene.createRenderable(scene.SPRITE_Z, (target, camera) => this.draw(target, camera));
         }
 
         createBody(type: box2d.BodyType, x: number, y: number, angle: number, kind: number): Body {
@@ -64,9 +65,25 @@ namespace box2dblocks {
         }
 
         removeBody(body: Body): void {
+            body._removeFromScene();
             this.bodies.removeElement(body);
             if (this.tilemapWalls && this.tilemapWalls.body == body)
                 this.tilemapWalls = null;
+        }
+
+        addBodySprite(body: Body): void {
+            this.scene.addSprite(body);
+            this.requestSpriteSort();
+        }
+
+        removeBodySprite(body: Body): void {
+            if (this.scene && this.scene.allSprites)
+                this.scene.allSprites.removeElement(body);
+        }
+
+        requestSpriteSort(): void {
+            if (this.scene)
+                this.scene.flags |= scene.Flag.NeedsSorting;
         }
 
         createTilemapWalls(): Body {
@@ -247,14 +264,10 @@ namespace box2dblocks {
             }
         }
 
-        draw(target: Image, camera: scene.Camera): void {
-            for (let i = 0; i < this.bodies.length; ++i) {
-                const body = this.bodies[i];
-                if (body.destroyed || !body.nativeBody.valid) continue;
-                const state = body.nativeBody.getState();
-                for (let j = 0; j < body.fixtures.length; ++j)
-                    drawFixture(target, camera, state, body.fixtures[j]);
-            }
+        drawBody(body: Body, camera: scene.Camera): void {
+            const state = body.nativeBody.getState();
+            for (let i = 0; i < body.fixtures.length; ++i)
+                drawFixture(screen, camera, state, body.fixtures[i]);
         }
 
         destroy(): void {
@@ -265,6 +278,7 @@ namespace box2dblocks {
             for (let i = 0; i < this.bodies.length; ++i) {
                 this.bodies[i].destroyed = true;
                 this.bodies[i].fixtures = [];
+                this.bodies[i]._removeFromScene();
             }
             this.bodies = [];
             this.handlers = [];
