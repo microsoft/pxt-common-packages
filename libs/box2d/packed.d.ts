@@ -152,6 +152,21 @@ declare namespace box2dNativeShim {
     //% shim=box2dNative::setRevoluteJointLimits
     function setRevoluteJointLimits(joint: box2dNative.Handle, enabled: boolean, lower: number, upper: number): void;
 
+    //% shim=box2dNative::createPrismaticJoint
+    function createPrismaticJoint(args: any[]): box2dNative.Handle;
+
+    //% shim=box2dNative::setPrismaticJointMotor
+    function setPrismaticJointMotor(joint: box2dNative.Handle, enabled: boolean, speed: number, maxForce: number): void;
+
+    //% shim=box2dNative::setPrismaticJointLimits
+    function setPrismaticJointLimits(joint: box2dNative.Handle, enabled: boolean, lower: number, upper: number): void;
+
+    //% shim=box2dNative::createPulleyJoint
+    function createPulleyJoint(args: any[]): box2dNative.Handle;
+
+    //% shim=box2dNative::createWeldJoint
+    function createWeldJoint(args: any[]): box2dNative.Handle;
+
     //% shim=box2dNative::createWheelJoint
     function createWheelJoint(args: any[]): box2dNative.Handle;
 

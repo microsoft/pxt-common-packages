@@ -47,6 +47,7 @@ box2dblocks.onCollision(PhysicsBodyKind.Body, PhysicsBodyKind.Wall, function (fa
 control.assert(!box2dblocks.bodiesTouching(body, polygonBody), 0x20e)
 control.assert(box2dblocks.contactPoints(body, polygonBody).length == 0, 0x20f)
 control.assert(!box2dblocks.isOnGround(body), 0x210)
+control.assert(!box2dblocks.isBeingSquished(body), 0x217)
 box2dblocks.setKindsCollide(PhysicsBodyKind.Body, PhysicsBodyKind.Projectile, false)
 
 const leftBody = box2dblocks.createEmptyBody(box2d.BodyType.Static, PhysicsBodyKind.Body)
@@ -77,6 +78,62 @@ box2dblocks.setJointMotor(wheelJoint, false, 0, 10)
 box2dblocks.setJointLimits(wheelJoint, true, -5, 5)
 box2dblocks.setWheelSuspension(wheelJoint, 10, 1)
 const connectedOffset = rightBody.x - middleBody.x
+
+const sliderBody = box2dblocks.createBody(
+    box2d.BodyType.Dynamic,
+    PhysicsBodyKind.Body,
+    box2dblocks.box(8, 8)
+)
+sliderBody.x = 180
+sliderBody.y = 50
+const sliderJoint = box2dblocks.attachBodies(
+    ground,
+    box2dblocks.jointOffset(180, 50),
+    sliderBody,
+    box2dblocks.bodyAnchor(box2dblocks.BodyAnchor.Center),
+    box2dblocks.AttachmentJointType.Prismatic
+)
+box2dblocks.setJointMotor(sliderJoint, false, 0, 10)
+box2dblocks.setJointLimits(sliderJoint, true, -10, 10)
+
+const weldedBody = box2dblocks.createBody(
+    box2d.BodyType.Dynamic,
+    PhysicsBodyKind.Body,
+    box2dblocks.box(8, 8)
+)
+weldedBody.x = 180
+weldedBody.y = 80
+box2dblocks.attachBodies(
+    ground,
+    box2dblocks.jointOffset(180, 80),
+    weldedBody,
+    box2dblocks.bodyAnchor(box2dblocks.BodyAnchor.Center),
+    box2dblocks.AttachmentJointType.Weld
+)
+
+const pulleyBodyA = box2dblocks.createBody(
+    box2d.BodyType.Dynamic,
+    PhysicsBodyKind.Body,
+    box2dblocks.box(8, 8)
+)
+pulleyBodyA.x = 210
+pulleyBodyA.y = 80
+const pulleyBodyB = box2dblocks.createBody(
+    box2d.BodyType.Dynamic,
+    PhysicsBodyKind.Body,
+    box2dblocks.box(8, 8)
+)
+pulleyBodyB.x = 250
+pulleyBodyB.y = 80
+box2dblocks.createPulleyJoint(
+    pulleyBodyA,
+    box2dblocks.bodyAnchor(box2dblocks.BodyAnchor.Top),
+    box2dblocks.point(210, 40),
+    pulleyBodyB,
+    box2dblocks.bodyAnchor(box2dblocks.BodyAnchor.Top),
+    box2dblocks.point(250, 40),
+    1
+)
 
 box2dblocks.attachBodies(
     leftBody,

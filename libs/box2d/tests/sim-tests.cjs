@@ -50,6 +50,22 @@ const groundFixture = api.bx_createFixture(ground, groundShape, 0, 0.2, 0, 0);
 const ball = api.bx_createBody(world, 2, 0, 0, 0);
 const ballShape = api.bx_createCircleShape(0.5, 0, 0);
 const ballFixture = api.bx_createFixture(ball, ballShape, 1, 0.2, 0, 0);
+const prismaticJoint = api.bx_createPrismaticJoint(ground, ball, 0, 0, 0, 1, 0);
+assert.equal(api.bx_isValid(prismaticJoint), 1);
+api.bx_setPrismaticJointMotor(prismaticJoint, 1, 1, 10);
+api.bx_setPrismaticJointLimits(prismaticJoint, 1, -1, 1);
+api.bx_destroyJoint(prismaticJoint);
+const pulleyJoint = api.bx_createPulleyJoint(
+    ground, ball,
+    -1, -1, 1, -1,
+    0, 5, 0, 0,
+    1, 1
+);
+assert.equal(api.bx_isValid(pulleyJoint), 1);
+api.bx_destroyJoint(pulleyJoint);
+const weldJoint = api.bx_createWeldJoint(ground, ball, 0, 0, 0);
+assert.equal(api.bx_isValid(weldJoint), 1);
+api.bx_destroyJoint(weldJoint);
 const follower = api.bx_createBody(world, 0, 0, 0, 0);
 const mouseJoint = api.bx_createMouseJoint(follower, ball, 0, 0, 100, 10, 1);
 api.bx_setMouseJointTarget(mouseJoint, 1, 2);
@@ -130,7 +146,9 @@ for (const name of [
     "createFixture", "setFixtureDensity", "setFixtureFriction", "setFixtureRestitution",
     "setFixtureGroup", "setFixtureCategoryMask",
     "createDistanceJoint", "setDistanceJoint",
-    "createRevoluteJoint", "createWheelJoint", "createMouseJoint",
+    "createRevoluteJoint", "createPrismaticJoint", "setPrismaticJointMotor",
+    "setPrismaticJointLimits", "createPulleyJoint", "createWeldJoint",
+    "createWheelJoint", "createMouseJoint",
     "getJointAnchors", "getContactPoints", "getContactNormals", "queryAABB", "rayCast"
 ]) {
     assert.equal(typeof sim[name], "function", `${name} must be registered in pxsim.box2dNative`);
@@ -156,6 +174,25 @@ assert.equal(sim.isValid(simDistance), true);
 assert.deepEqual(sim.getJointAnchors(simDistance).values, [0, 0, 0, 0]);
 sim.setDistanceJoint(collection([simDistance, 1, 0, 2, 0, 0]));
 sim.destroyJoint(simDistance);
+const simPrismatic = sim.createPrismaticJoint(collection([
+    simGround, simBall, 0, 0, 0, 1, false
+]));
+sim.setPrismaticJointMotor(simPrismatic, true, 1, 10);
+sim.setPrismaticJointLimits(simPrismatic, true, -1, 1);
+sim.destroyJoint(simPrismatic);
+const simPulley = sim.createPulleyJoint(collection([
+    simGround, simBall,
+    -1, -1, 1, -1,
+    0, 5, 0, 0,
+    1, true
+]));
+assert.equal(sim.isValid(simPulley), true);
+sim.destroyJoint(simPulley);
+const simWeld = sim.createWeldJoint(collection([
+    simGround, simBall, 0, 0, false
+]));
+assert.equal(sim.isValid(simWeld), true);
+sim.destroyJoint(simWeld);
 for (let i = 0; i < 120; ++i)
     sim.step(simWorld, 1 / 60, 8, 3);
 assert.ok(Math.abs(sim.getBodyState(simBall).getAt(1) - 4) < 0.02);

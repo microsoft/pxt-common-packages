@@ -340,6 +340,62 @@ namespace box2dNative {
     }
 
     /**
+     * Create a slider joint between different bodies in one world.
+     * Anchor and axis are world-space; the finite, nonzero axis is normalized and fixed in bodyA.
+     */
+    // Native wrapper: box2dNative::createPrismaticJoint
+    export function createPrismaticJoint(bodyA: Handle, bodyB: Handle, anchorX: number, anchorY: number, axisX: number, axisY: number, collideConnected: boolean = false): Handle {
+        return box2dNativeShim.createPrismaticJoint([bodyA, bodyB, anchorX, anchorY, axisX, axisY, collideConnected ? 1 : 0]);
+    }
+
+    /** Motor speed is meters/second and maxForce is nonnegative newtons. */
+    // Native wrapper: box2dNative::setPrismaticJointMotor
+    export function setPrismaticJointMotor(joint: Handle, enabled: boolean, speed: number, maxForce: number): void {
+        box2dNativeShim.setPrismaticJointMotor(joint, enabled, speed, maxForce);
+    }
+
+    /** Translation limits in meters along the axis, relative to the creation anchor. */
+    // Native wrapper: box2dNative::setPrismaticJointLimits
+    export function setPrismaticJointLimits(joint: Handle, enabled: boolean, lower: number, upper: number): void {
+        box2dNativeShim.setPrismaticJointLimits(joint, enabled, lower, upper);
+    }
+
+    /**
+     * Create a pulley using fixed world-space ground anchors and body anchors.
+     * Coordinates are meters and ratio must be positive.
+     */
+    // Native wrapper: box2dNative::createPulleyJoint
+    export function createPulleyJoint(
+        bodyA: Handle,
+        bodyB: Handle,
+        groundAnchorAX: number,
+        groundAnchorAY: number,
+        groundAnchorBX: number,
+        groundAnchorBY: number,
+        anchorAX: number,
+        anchorAY: number,
+        anchorBX: number,
+        anchorBY: number,
+        ratio: number = 1,
+        collideConnected: boolean = true
+    ): Handle {
+        return box2dNativeShim.createPulleyJoint([
+            bodyA, bodyB,
+            groundAnchorAX, groundAnchorAY,
+            groundAnchorBX, groundAnchorBY,
+            anchorAX, anchorAY,
+            anchorBX, anchorBY,
+            ratio, collideConnected ? 1 : 0
+        ]);
+    }
+
+    /** Create a rigid weld at a world-space anchor on two different bodies in one world. */
+    // Native wrapper: box2dNative::createWeldJoint
+    export function createWeldJoint(bodyA: Handle, bodyB: Handle, anchorX: number, anchorY: number, collideConnected: boolean = false): Handle {
+        return box2dNativeShim.createWeldJoint([bodyA, bodyB, anchorX, anchorY, collideConnected ? 1 : 0]);
+    }
+
+    /**
      * Create a wheel suspension between different bodies in one world.
      * Anchor and axis are world-space; the finite, nonzero axis is normalized and fixed in bodyA.
      * Motor, limits, and spring are initially disabled.

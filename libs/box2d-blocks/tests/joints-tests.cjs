@@ -10,6 +10,47 @@ function PhysicsPoint(x, y) {
     this.x = x;
     this.y = y;
 }
+class PrismaticJoint {
+    constructor() {
+        this.valid = true;
+    }
+    setMotor(...args) {
+        this.motorArguments = args;
+    }
+    setLimits(...args) {
+        this.limitArguments = args;
+    }
+    destroy() {
+        this.valid = false;
+    }
+    getAnchors() {
+        return [2, 4, 2, 4];
+    }
+}
+class WheelJoint {}
+class RevoluteJoint {}
+class PulleyJoint {
+    constructor() {
+        this.valid = true;
+    }
+    destroy() {
+        this.valid = false;
+    }
+    getAnchors() {
+        return [2, 4, 2, 4];
+    }
+}
+class WeldJoint {
+    constructor() {
+        this.valid = true;
+    }
+    destroy() {
+        this.valid = false;
+    }
+    getAnchors() {
+        return [2, 4, 2, 4];
+    }
+}
 const context = vm.createContext({
     Math,
     Destroyable,
@@ -24,7 +65,12 @@ const context = vm.createContext({
         }
     },
     box2d: {
-        BodyType: { Static: 0, Kinematic: 1, Dynamic: 2 }
+        BodyType: { Static: 0, Kinematic: 1, Dynamic: 2 },
+        PrismaticJoint,
+        PulleyJoint,
+        WeldJoint,
+        WheelJoint,
+        RevoluteJoint
     },
     sprites: { Flag: { Destroyed: 1 << 1 } }
 });
@@ -45,6 +91,11 @@ function body(state, localAnchor) {
         getState() {
             return state;
         },
+        setTransform(x, y, angle) {
+            state.x = x;
+            state.y = y;
+            state.angle = angle;
+        },
         createDistanceJoint(other, ...args) {
             jointArguments = [other, ...args];
             return {
@@ -54,10 +105,24 @@ function body(state, localAnchor) {
                     return [2, 4, 5, 5];
                 }
             };
+        },
+        createPrismaticJoint(other, ...args) {
+            jointArguments = [other, ...args];
+            return new PrismaticJoint();
+        },
+        createPulleyJoint(other, ...args) {
+            jointArguments = [other, ...args];
+            return new PulleyJoint();
+        },
+        createWeldJoint(other, ...args) {
+            jointArguments = [other, ...args];
+            return new WeldJoint();
         }
     };
     return {
         destroyed: false,
+        type: context.box2d.BodyType.Dynamic,
+        connectedBodies: [],
         nativeBody,
         belongsTo(value) {
             return value === owner;
@@ -99,6 +164,56 @@ assert.deepEqual(
 assert.deepEqual(
     [api.jointPoint(joint, api.JointPoint.End).x, api.jointPoint(joint, api.JointPoint.End).y],
     [50, 50]
+);
+const slider = api.attachBodies(
+    bodyA,
+    api.bodyAnchor(api.BodyAnchor.Right),
+    bodyB,
+    api.jointOffset(0, 20),
+    api.AttachmentJointType.Prismatic
+);
+assert.ok(slider.nativeJoint instanceof PrismaticJoint);
+assert.deepEqual(jointArguments, [bodyB.nativeBody, 2, 4, 0, 1]);
+api.setJointMotor(slider, true, 20, 12);
+assert.deepEqual(slider.nativeJoint.motorArguments, [true, 2, 12]);
+api.setJointLimits(slider, true, -5, 15);
+assert.deepEqual(slider.nativeJoint.limitArguments, [true, -0.5, 1.5]);
+const welded = api.attachBodies(
+    bodyA,
+    api.bodyAnchor(api.BodyAnchor.Right),
+    bodyB,
+    api.jointOffset(0, 20),
+    api.AttachmentJointType.Weld
+);
+assert.ok(welded.nativeJoint instanceof WeldJoint);
+assert.equal(jointArguments[0], bodyB.nativeBody);
+assert.ok(Math.abs(jointArguments[1] - 2) < 0.0001);
+assert.ok(Math.abs(jointArguments[2] - 4) < 0.0001);
+const pulley = api.createPulleyJoint(
+    bodyA,
+    api.bodyAnchor(api.BodyAnchor.Right),
+    new PhysicsPoint(10, 20),
+    bodyB,
+    api.jointOffset(0, 20),
+    new PhysicsPoint(50, 60),
+    2
+);
+assert.ok(pulley.nativeJoint instanceof PulleyJoint);
+assert.equal(jointArguments[0], bodyB.nativeBody);
+const expectedPulleyArguments = [1, 2, 5, 6, 2, 4, 2, 4, 2];
+for (let i = 0; i < expectedPulleyArguments.length; ++i)
+    assert.ok(Math.abs(jointArguments[i + 1] - expectedPulleyArguments[i]) < 0.0001);
+assert.throws(
+    () => api.createPulleyJoint(
+        bodyA,
+        api.bodyAnchor(api.BodyAnchor.Right),
+        new PhysicsPoint(10, 20),
+        bodyB,
+        api.jointOffset(0, 20),
+        new PhysicsPoint(50, 60),
+        0
+    ),
+    /ratio must be positive/
 );
 assert.throws(() => api.jointPoint(joint, 99), /Unknown Box2D joint point/);
 assert.deepEqual(

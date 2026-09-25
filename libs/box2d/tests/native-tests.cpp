@@ -198,6 +198,42 @@ static void jointsAndLifetime() {
     setRevoluteJointLimits(hinge, true, -0.5, 0.5);
     rejects([&] { setRevoluteJointMotor(distance, true, 1, 1); });
     destroyJoint(hinge);
+    auto slider = createPrismaticJoint(a, b, 1, 0, 0, 1, false);
+    auto sliderValue = static_cast<b2PrismaticJoint *>(joint(slider, e_prismaticJoint));
+    setPrismaticJointMotor(slider, true, 2, 5);
+    setPrismaticJointLimits(slider, true, -0.5, 0.75);
+    assert(sliderValue->IsMotorEnabled() && sliderValue->IsLimitEnabled());
+    close(sliderValue->GetMotorSpeed(), 2);
+    close(sliderValue->GetMaxMotorForce(), 5);
+    close(sliderValue->GetLowerLimit(), -0.5);
+    close(sliderValue->GetUpperLimit(), 0.75);
+    destroyJoint(slider);
+    rejects([&] { createPrismaticJoint(a, b, 0, 0, 0, 0, false); });
+    rejects([&] { setPrismaticJointLimits(distance, true, -1, 1); });
+    auto pulley = createPulleyJoint(
+        a, b,
+        -1, 2,
+        2, 2,
+        0, 0,
+        1, 0,
+        1.5, true
+    );
+    auto pulleyValue = static_cast<b2PulleyJoint *>(joint(pulley, e_pulleyJoint));
+    close(pulleyValue->GetGroundAnchorA().x, -1);
+    close(pulleyValue->GetGroundAnchorA().y, 2);
+    close(pulleyValue->GetGroundAnchorB().x, 2);
+    close(pulleyValue->GetGroundAnchorB().y, 2);
+    close(pulleyValue->GetRatio(), 1.5);
+    assert(pulleyValue->GetCollideConnected());
+    destroyJoint(pulley);
+    rejects([&] { createPulleyJoint(a, b, -1, 2, 2, 2, 0, 0, 1, 0, 0, true); });
+    auto weld = createWeldJoint(a, b, 1, 0, true);
+    auto weldValue = static_cast<b2WeldJoint *>(joint(weld, e_weldJoint));
+    close(weldValue->GetAnchorA().x, 1);
+    close(weldValue->GetAnchorA().y, 0);
+    close(weldValue->GetReferenceAngle(), 0);
+    assert(weldValue->GetCollideConnected());
+    destroyJoint(weld);
     assert(!isValid(hinge) && isValid(distance));
     hinge = createRevoluteJoint(a, b, 1, 0, false);
     destroyBody(b);

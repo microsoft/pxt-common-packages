@@ -49,8 +49,9 @@ vm.runInContext(compiled, context, { filename: "body.ts" });
 
 const api = context.box2dblocks;
 
-function body() {
+function body(type = 2) {
     return {
+        type,
         destroyed: false,
         nativeBody: { valid: true },
         belongsTo(value) {
@@ -59,12 +60,14 @@ function body() {
     };
 }
 
-const bodyA = body();
+const bodyA = body(0);
 const bodyB = body();
 const bodyC = body();
+const bodyD = body(1);
 fixtureBodies[1] = bodyA;
 fixtureBodies[2] = bodyB;
 fixtureBodies[3] = bodyC;
+fixtureBodies[4] = bodyD;
 
 assert.equal(api.bodiesTouching(bodyA, bodyB), false);
 
@@ -111,6 +114,38 @@ owner.gravityX = 0;
 owner.gravityY = 0;
 assert.equal(api.isOnGround(bodyB), false, "Zero gravity has no ground direction");
 assert.throws(() => api.isOnGround(bodyB, 91), /0 to 90 degrees/);
+
+owner.world.contacts = [
+    {
+        fixtureA: { handle: 1 },
+        fixtureB: { handle: 2 },
+        getNormals() {
+            return [{ x: 0, y: -1 }];
+        }
+    },
+    {
+        fixtureA: { handle: 2 },
+        fixtureB: { handle: 4 },
+        getNormals() {
+            return [{ x: 0, y: -1 }];
+        }
+    }
+];
+assert.equal(api.isBeingSquished(bodyB), true, "Opposing static and kinematic contacts squish a body");
+
+bodyD.type = 2;
+assert.equal(api.isBeingSquished(bodyB), false, "Dynamic bodies do not count as immovable");
+bodyD.type = 1;
+owner.world.contacts[1].getNormals = () => [{ x: -1, y: 0 }];
+assert.equal(api.isBeingSquished(bodyB), false, "Perpendicular contacts do not squish a body");
+
+owner.world.contacts[1].getNormals = () => [{
+    x: -Math.sin(Math.PI / 12),
+    y: -Math.cos(Math.PI / 12)
+}];
+assert.equal(api.isBeingSquished(bodyB), true, "The default tolerance accepts a 15 degree offset");
+assert.equal(api.isBeingSquished(bodyB, 10), false, "The squish angle tolerance is configurable");
+assert.throws(() => api.isBeingSquished(bodyB, 91), /0 to 90 degrees/);
 
 bodyB.destroyed = true;
 assert.throws(

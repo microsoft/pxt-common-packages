@@ -179,6 +179,29 @@ command("setRevoluteJointLimits", [51, true, -1, 1], () => hinge.setLimits(true,
 call("createDistanceJoint", [20, 21, 1, 2, 3, 4, true], 52,
     () => body.createDistanceJoint(other, 1, 2, 3, 4, true));
 call("createRevoluteJoint", [20, 21, 1, 2, true], 53, () => body.createRevoluteJoint(other, 1, 2, true));
+const slider = call("createPrismaticJoint", [20, 21, 1, 2, 0, 3, false], 57,
+    () => body.createPrismaticJoint(other, 1, 2, 0, 3));
+assert.ok(slider instanceof api.PrismaticJoint);
+command("setPrismaticJointMotor", [57, true, 2, 10], () => slider.setMotor(true, 2, 10));
+command("setPrismaticJointLimits", [57, true, -1, 1], () => slider.setLimits(true, -1, 1));
+const pulley = call(
+    "createPulleyJoint",
+    [20, 21, -2, 4, 3, 4, 0, 1, 2, 1, 1.5, true],
+    58,
+    () => body.createPulleyJoint(other, -2, 4, 3, 4, 0, 1, 2, 1, 1.5)
+);
+assert.ok(pulley instanceof api.PulleyJoint && pulley instanceof api.Joint);
+call(
+    "createPulleyJoint",
+    [20, 21, -2, 4, 3, 4, 0, 1, 2, 1, 1, false],
+    59,
+    () => body.createPulleyJoint(other, -2, 4, 3, 4, 0, 1, 2, 1, 1, false)
+);
+const weld = call("createWeldJoint", [20, 21, 1, 2, false], 60,
+    () => body.createWeldJoint(other, 1, 2));
+assert.ok(weld instanceof api.WeldJoint && weld instanceof api.Joint);
+call("createWeldJoint", [20, 21, 1, 2, true], 61,
+    () => body.createWeldJoint(other, 1, 2, true));
 const wheel = call("createWheelJoint", [20, 21, 1, 2, 0, 3, false], 54,
     () => body.createWheelJoint(other, 1, 2, 0, 3));
 assert.ok(wheel instanceof api.WheelJoint && wheel instanceof api.Joint);

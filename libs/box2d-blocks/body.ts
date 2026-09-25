@@ -526,6 +526,66 @@ namespace box2dblocks {
     }
 
     /**
+     * Return whether a dynamic body is touching two distinct static or
+     * kinematic bodies on approximately opposite sides.
+     */
+    //% blockId=box2d_blocks_is_being_squished
+    //% block="$body is being squished||with angle tolerance $angleTolerance degrees"
+    //% body.shadow=variables_get body.defl=myBody
+    //% angleTolerance.defl=15 angleTolerance.min=0 angleTolerance.max=90
+    //% group="Collisions" weight=91
+    export function isBeingSquished(body: Body, angleTolerance: number = 15): boolean {
+        const owner = validateBody(body);
+        if (body.type != box2d.BodyType.Dynamic)
+            return false;
+        if (angleTolerance < 0 || angleTolerance > 90 || angleTolerance != angleTolerance)
+            throw "Squish angle tolerance must be from 0 to 90 degrees.";
+
+        const normals: number[] = [];
+        const otherBodies: Body[] = [];
+        const contacts = owner.world.getContacts();
+        for (let i = 0; i < contacts.length; ++i) {
+            const bodyA = owner.findFixture(contacts[i].fixtureA.handle);
+            const bodyB = owner.findFixture(contacts[i].fixtureB.handle);
+            let otherBody: Body;
+            let direction: number;
+            if (bodyA == body) {
+                otherBody = bodyB;
+                direction = -1;
+            }
+            else if (bodyB == body) {
+                otherBody = bodyA;
+                direction = 1;
+            }
+            else {
+                continue;
+            }
+            if (!otherBody || otherBody.destroyed ||
+                otherBody.type == box2d.BodyType.Dynamic)
+                continue;
+
+            const contactNormals = contacts[i].getNormals();
+            for (let j = 0; j < contactNormals.length; ++j) {
+                normals.push(contactNormals[j].x * direction);
+                normals.push(contactNormals[j].y * direction);
+                otherBodies.push(otherBody);
+            }
+        }
+
+        const threshold = -Math.cos(angleTolerance * Math.PI / 180);
+        for (let i = 0; i < otherBodies.length; ++i) {
+            for (let j = i + 1; j < otherBodies.length; ++j) {
+                if (otherBodies[i] == otherBodies[j])
+                    continue;
+                if (normals[i * 2] * normals[j * 2] +
+                    normals[i * 2 + 1] * normals[j * 2 + 1] <= threshold)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Return all current contact manifold points between two bodies in
      * world-space pixels. Sensor contacts may have no points.
      */

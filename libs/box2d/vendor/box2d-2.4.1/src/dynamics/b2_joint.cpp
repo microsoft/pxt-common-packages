@@ -87,9 +87,21 @@ void b2AngularStiffness(float& stiffness, float& damping,
 	damping = 2.0f * I * dampingRatio * omega;
 }
 
-// Arcade exposes distance, mouse, revolute, and wheel joints; avoid linking other solvers.
+// Arcade exposes distance, mouse, prismatic, pulley, revolute, weld, and wheel joints; avoid linking other solvers.
 #ifndef B2_ENABLE_EXTRA_JOINTS
 #define B2_ENABLE_EXTRA_JOINTS 0
+#endif
+
+#ifndef B2_ENABLE_PRISMATIC_JOINT
+#define B2_ENABLE_PRISMATIC_JOINT 1
+#endif
+
+#ifndef B2_ENABLE_PULLEY_JOINT
+#define B2_ENABLE_PULLEY_JOINT 1
+#endif
+
+#ifndef B2_ENABLE_WELD_JOINT
+#define B2_ENABLE_WELD_JOINT 1
 #endif
 
 #ifndef B2_ENABLE_MOUSE_JOINT
@@ -118,7 +130,7 @@ b2Joint* b2Joint::Create(const b2JointDef* def, b2BlockAllocator* allocator)
 		break;
 #endif
 
-#if B2_ENABLE_EXTRA_JOINTS
+#if B2_ENABLE_PRISMATIC_JOINT
 	case e_prismaticJoint:
 		{
 			void* mem = allocator->Allocate(sizeof(b2PrismaticJoint));
@@ -134,7 +146,7 @@ b2Joint* b2Joint::Create(const b2JointDef* def, b2BlockAllocator* allocator)
 		}
 		break;
 
-#if B2_ENABLE_EXTRA_JOINTS
+#if B2_ENABLE_PULLEY_JOINT
 	case e_pulleyJoint:
 		{
 			void* mem = allocator->Allocate(sizeof(b2PulleyJoint));
@@ -159,7 +171,7 @@ b2Joint* b2Joint::Create(const b2JointDef* def, b2BlockAllocator* allocator)
 		}
 		break;
 
-#if B2_ENABLE_EXTRA_JOINTS
+#if B2_ENABLE_WELD_JOINT
 	case e_weldJoint:
 		{
 			void* mem = allocator->Allocate(sizeof(b2WeldJoint));
@@ -209,7 +221,7 @@ void b2Joint::Destroy(b2Joint* joint, b2BlockAllocator* allocator)
 		break;
 #endif
 
-#if B2_ENABLE_EXTRA_JOINTS
+#if B2_ENABLE_PRISMATIC_JOINT
 	case e_prismaticJoint:
 		allocator->Free(joint, sizeof(b2PrismaticJoint));
 		break;
@@ -219,7 +231,7 @@ void b2Joint::Destroy(b2Joint* joint, b2BlockAllocator* allocator)
 		allocator->Free(joint, sizeof(b2RevoluteJoint));
 		break;
 
-#if B2_ENABLE_EXTRA_JOINTS
+#if B2_ENABLE_PULLEY_JOINT
 	case e_pulleyJoint:
 		allocator->Free(joint, sizeof(b2PulleyJoint));
 		break;
@@ -235,7 +247,7 @@ void b2Joint::Destroy(b2Joint* joint, b2BlockAllocator* allocator)
 		allocator->Free(joint, sizeof(b2WheelJoint));
 		break;
     
-#if B2_ENABLE_EXTRA_JOINTS
+#if B2_ENABLE_WELD_JOINT
 	case e_weldJoint:
 		allocator->Free(joint, sizeof(b2WeldJoint));
 		break;

@@ -281,7 +281,7 @@ Optional parameters are supplied by TypeScript, not native definition objects.
 | Coordinates | `getWorldPoint`, `getLocalPoint` |
 | Shapes | `createCircleShape`, `createBoxShape`, `createPolygonShape`, `createEdgeShape`, `createChainShape`, `destroyShape` |
 | Fixtures | `createFixture`, `destroyFixture`, `getFixtureBody`, `setFixtureMaterial`, `setFixtureDensity`, `setFixtureFriction`, `setFixtureRestitution`, `setFixtureSensor`, `setFixtureFilter`, `setFixtureGroup`, `setFixtureCategoryMask`, `testPoint` |
-| Joints | `createDistanceJoint`, `setDistanceJoint`, `createRevoluteJoint`, `setRevoluteJointMotor`, `setRevoluteJointLimits`, `createWheelJoint`, `setWheelJointMotor`, `setWheelJointLimits`, `setWheelJointSuspension`, `getJointAnchors`, `destroyJoint` |
+| Joints | `createDistanceJoint`, `setDistanceJoint`, `createRevoluteJoint`, `setRevoluteJointMotor`, `setRevoluteJointLimits`, `createPrismaticJoint`, `setPrismaticJointMotor`, `setPrismaticJointLimits`, `createPulleyJoint`, `createWeldJoint`, `createWheelJoint`, `setWheelJointMotor`, `setWheelJointLimits`, `setWheelJointSuspension`, `getJointAnchors`, `destroyJoint` |
 | Queries | `getContacts`, `getContactPoints`, `getContactNormals`, `queryAABB`, `rayCast`, `isValid` |
 
 `BodyType` is `Static`, `Kinematic`, or `Dynamic`. `BodyFlag` is `Bullet`,
@@ -314,7 +314,7 @@ vertex at the end of a loop. Chains are one-sided: their front face is on the
 right of each directed edge. Open-chain ghost vertices are extrapolated from
 the end segments. Use edges/chains for static terrain, not dynamic mass.
 
-Density, friction, restitution, damping, stiffness, and maximum motor torque
+Density, friction, restitution, damping, stiffness, and maximum motor force/torque
 must be nonnegative. Restitution is usually 0-1, but values above 1 are allowed
 by Box2D. Collision category and mask values are unsigned 16-bit integers;
 groups are signed 16-bit integers. Joint bodies must be different and belong
@@ -491,8 +491,9 @@ Block-allocation chunks are reduced from 16 KiB to 4 KiB (below PXT's
 single-allocation limit), with chunk tables growing by 16 instead of 128 entries.
 These changes reduce the memory overhead of small scenes; they do not cap the
 number of bodies. Total available RAM and PXT allocation limits still apply.
-The native joint factory enables only the exposed distance, revolute, and wheel types
-by default, allowing unused joint solvers to be removed by the linker so the
-SAMD51 firmware fits in flash. C++ builds can define `B2_ENABLE_EXTRA_JOINTS=1`
-to restore the other upstream joint types; this does not add TypeScript bindings.
+The native joint factory enables only the exposed distance, mouse, prismatic,
+pulley, revolute, weld, and wheel types by default, allowing unused joint solvers to be
+removed by the linker so the SAMD51 firmware fits in flash. C++ builds can
+define `B2_ENABLE_EXTRA_JOINTS=1` to restore the other upstream joint types;
+this does not add TypeScript bindings.
 Keep the upstream license with redistributed sources.

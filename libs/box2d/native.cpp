@@ -761,16 +761,95 @@ void setRevoluteJointLimits(RefBox2D *handle, bool enabled, double lower, double
     value->EnableLimit(enabled);
 }
 
-RefBox2D *createWheelJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
-    b2World *owner = jointWorld(bodyA, bodyB);
+static b2Vec2 normalizedAxis(double axisX, double axisY) {
     require(isfinite(axisX) && isfinite(axisY));
     double scale = b2Max(fabs(axisX), fabs(axisY));
     require(scale > 0);
     // Scale before converting to float so tiny and large finite axes normalize safely.
     b2Vec2 axis = vector(axisX / scale, axisY / scale);
     axis.Normalize();
+    return axis;
+}
+
+RefBox2D *createPrismaticJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
+    b2World *owner = jointWorld(bodyA, bodyB);
+    b2PrismaticJointDef def;
+    def.Initialize(
+        body(bodyA),
+        body(bodyB),
+        vector(anchorX, anchorY),
+        normalizedAxis(axisX, axisY)
+    );
+    def.collideConnected = collideConnected;
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+}
+
+void setPrismaticJointMotor(RefBox2D *handle, bool enabled, double speed, double maxForce) {
+    float s = scalar(speed);
+    float f = nonnegative(maxForce);
+    b2PrismaticJoint *value = static_cast<b2PrismaticJoint *>(joint(handle, e_prismaticJoint));
+    value->SetMotorSpeed(s);
+    value->SetMaxMotorForce(f);
+    value->EnableMotor(enabled);
+}
+
+void setPrismaticJointLimits(RefBox2D *handle, bool enabled, double lower, double upper) {
+    float l = scalar(lower);
+    float u = scalar(upper);
+    require(l <= u);
+    b2PrismaticJoint *value = static_cast<b2PrismaticJoint *>(joint(handle, e_prismaticJoint));
+    value->SetLimits(l, u);
+    value->EnableLimit(enabled);
+}
+
+RefBox2D *createPulleyJoint(
+    RefBox2D *bodyA,
+    RefBox2D *bodyB,
+    double groundAnchorAX,
+    double groundAnchorAY,
+    double groundAnchorBX,
+    double groundAnchorBY,
+    double anchorAX,
+    double anchorAY,
+    double anchorBX,
+    double anchorBY,
+    double ratio,
+    bool collideConnected
+) {
+    b2World *owner = jointWorld(bodyA, bodyB);
+    float r = scalar(ratio);
+    require(r > b2_epsilon);
+    b2PulleyJointDef def;
+    def.Initialize(
+        body(bodyA),
+        body(bodyB),
+        vector(groundAnchorAX, groundAnchorAY),
+        vector(groundAnchorBX, groundAnchorBY),
+        vector(anchorAX, anchorAY),
+        vector(anchorBX, anchorBY),
+        r
+    );
+    def.collideConnected = collideConnected;
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+}
+
+RefBox2D *createWeldJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, bool collideConnected) {
+    b2World *owner = jointWorld(bodyA, bodyB);
+    b2WeldJointDef def;
+    def.Initialize(body(bodyA), body(bodyB), vector(anchorX, anchorY));
+    def.collideConnected = collideConnected;
+    return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+}
+
+RefBox2D *createWheelJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
+    b2World *owner = jointWorld(bodyA, bodyB);
     b2WheelJointDef def;
-    def.Initialize(body(bodyA), body(bodyB), vector(anchorX, anchorY), axis);
+    def.Initialize(
+        body(bodyA),
+        body(bodyB),
+        vector(anchorX, anchorY),
+        normalizedAxis(axisX, axisY)
+    );
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
 }

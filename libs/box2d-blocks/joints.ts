@@ -26,7 +26,11 @@ namespace box2dblocks {
         //% block="revolute"
         Revolute,
         //% block="wheel"
-        Wheel
+        Wheel,
+        //% block="prismatic"
+        Prismatic,
+        //% block="weld"
+        Weld
     }
 
     export enum JointPoint {
@@ -216,6 +220,20 @@ namespace box2dblocks {
                 0,
                 1
             );
+        } else if (jointType == AttachmentJointType.Prismatic) {
+            nativeJoint = bodyA.nativeBody.createPrismaticJoint(
+                bodyB.nativeBody,
+                worldAnchor[0],
+                worldAnchor[1],
+                0,
+                1
+            );
+        } else if (jointType == AttachmentJointType.Weld) {
+            nativeJoint = bodyA.nativeBody.createWeldJoint(
+                bodyB.nativeBody,
+                worldAnchor[0],
+                worldAnchor[1]
+            );
         } else {
             nativeJoint = bodyA.nativeBody.createRevoluteJoint(
                 bodyB.nativeBody,
@@ -223,6 +241,57 @@ namespace box2dblocks {
                 worldAnchor[1]
             );
         }
+        _connectBodies(bodyA, bodyB);
+        return new Joint(nativeJoint);
+    }
+
+    //% blockId=box2d_blocks_create_pulley_joint
+    //% block="create pulley from $anchorA of $bodyA over $pulleyPointA to $anchorB of $bodyB over $pulleyPointB||ratio $ratio"
+    //% anchorA.shadow=box2d_blocks_body_anchor
+    //% anchorB.shadow=box2d_blocks_body_anchor
+    //% pulleyPointA.shadow=box2d_blocks_xy_point
+    //% pulleyPointB.shadow=box2d_blocks_xy_point
+    //% bodyA.shadow=variables_get bodyA.defl=body
+    //% bodyB.shadow=variables_get bodyB.defl=otherBody
+    //% ratio.defl=1
+    //% expandableArgumentMode=toggle
+    //% inlineInputMode=inline
+    //% blockSetVariable=myJoint
+    //% group="Joints" weight=98
+    export function createPulleyJoint(
+        bodyA: Body,
+        anchorA: JointAnchor,
+        pulleyPointA: PhysicsPoint | Sprite | tiles.Location | Body,
+        bodyB: Body,
+        anchorB: JointAnchor,
+        pulleyPointB: PhysicsPoint | Sprite | tiles.Location | Body,
+        ratio: number = 1
+    ): Joint {
+        const owner = _state();
+        if (!bodyA || bodyA.destroyed || !bodyA.belongsTo(owner) ||
+            !bodyB || bodyB.destroyed || !bodyB.belongsTo(owner) || bodyA == bodyB)
+            throw "Cannot connect these Box2D bodies.";
+        if (!anchorA || !anchorB || !pulleyPointA || !pulleyPointB)
+            throw "Pulley joints require two body anchors and two world points.";
+        if (!(ratio > 0))
+            throw "Pulley joint ratio must be positive.";
+
+        const localA = bodyA.localAnchor(anchorA);
+        const localB = bodyB.localAnchor(anchorB);
+        const stateA = bodyA.nativeBody.getState();
+        const stateB = bodyB.nativeBody.getState();
+        const nativeJoint = bodyA.nativeBody.createPulleyJoint(
+            bodyB.nativeBody,
+            pulleyPointA.x / PIXELS_PER_METER,
+            pulleyPointA.y / PIXELS_PER_METER,
+            pulleyPointB.x / PIXELS_PER_METER,
+            pulleyPointB.y / PIXELS_PER_METER,
+            pointX(stateA, localA[0], localA[1]),
+            pointY(stateA, localA[0], localA[1]),
+            pointX(stateB, localB[0], localB[1]),
+            pointY(stateB, localB[0], localB[1]),
+            ratio
+        );
         _connectBodies(bodyA, bodyB);
         return new Joint(nativeJoint);
     }
@@ -248,7 +317,7 @@ namespace box2dblocks {
     }
 
     //% blockId=box2d_blocks_joint_motor
-    //% block="set $joint motor $enabled speed $speed max torque $maxTorque"
+    //% block="set $joint motor $enabled speed $speed max force or torque $maxTorque"
     //% joint.shadow=variables_get joint.defl=myJoint enabled.shadow=toggleOnOff
     //% group="Joints" weight=85
     //% inlineInputMode="inline"
@@ -259,6 +328,13 @@ namespace box2dblocks {
 
         if (joint.nativeJoint instanceof box2d.WheelJoint) {
             joint.nativeJoint.setMotor(enabled, speed, maxTorque);
+        }
+        else if (joint.nativeJoint instanceof box2d.PrismaticJoint) {
+            joint.nativeJoint.setMotor(
+                enabled,
+                speed / PIXELS_PER_METER,
+                maxTorque
+            );
         }
         else if (joint.nativeJoint instanceof box2d.RevoluteJoint) {
             joint.nativeJoint.setMotor(enabled, speed, maxTorque);
@@ -279,6 +355,13 @@ namespace box2dblocks {
         }
 
         if (joint.nativeJoint instanceof box2d.WheelJoint) {
+            joint.nativeJoint.setLimits(
+                enabled,
+                lower / PIXELS_PER_METER,
+                upper / PIXELS_PER_METER
+            );
+        }
+        else if (joint.nativeJoint instanceof box2d.PrismaticJoint) {
             joint.nativeJoint.setLimits(
                 enabled,
                 lower / PIXELS_PER_METER,

@@ -57,6 +57,11 @@ void setDistanceJoint(RefBox2D* joint, double length, double minLength, double m
 RefBox2D* createRevoluteJoint(RefBox2D* bodyA, RefBox2D* bodyB, double anchorX, double anchorY, bool collideConnected);
 void setRevoluteJointMotor(RefBox2D* joint, bool enabled, double speed, double maxTorque);
 void setRevoluteJointLimits(RefBox2D* joint, bool enabled, double lower, double upper);
+RefBox2D* createPrismaticJoint(RefBox2D* bodyA, RefBox2D* bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected);
+void setPrismaticJointMotor(RefBox2D* joint, bool enabled, double speed, double maxForce);
+void setPrismaticJointLimits(RefBox2D* joint, bool enabled, double lower, double upper);
+RefBox2D* createPulleyJoint(RefBox2D* bodyA, RefBox2D* bodyB, double groundAnchorAX, double groundAnchorAY, double groundAnchorBX, double groundAnchorBY, double anchorAX, double anchorAY, double anchorBX, double anchorBY, double ratio, bool collideConnected);
+RefBox2D* createWeldJoint(RefBox2D* bodyA, RefBox2D* bodyB, double anchorX, double anchorY, bool collideConnected);
 RefBox2D* createWheelJoint(RefBox2D* bodyA, RefBox2D* bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected);
 void setWheelJointMotor(RefBox2D* joint, bool enabled, double speed, double maxTorque);
 void setWheelJointLimits(RefBox2D* joint, bool enabled, double lower, double upper);

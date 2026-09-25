@@ -28,6 +28,11 @@ The on-ground block checks for a physical contact whose support normal points
 against the current scene gravity. Its optional maximum slope is measured in
 degrees from level ground and defaults to 45 degrees. Walls, ceilings, and
 sensor-only overlaps do not count as ground.
+The being-squished block detects a dynamic body touching two distinct
+immovable bodies on approximately opposite sides. Static and kinematic bodies
+count as immovable; dynamic bodies and sensor-only contacts do not. Its
+optional angle tolerance defaults to 15 degrees, allowing slightly nonparallel
+surfaces without treating an ordinary floor-and-wall corner as a squish.
 Polygon shapes accept a list of body-local pixel point blocks. Points must
 describe a convex polygon in boundary order.
 New bodies start at the center of the screen with an angle of zero. Use the
@@ -59,18 +64,28 @@ point.
 The body-point block returns the live world-space pixel position for a named
 body anchor such as its center, an edge midpoint, or a corner.
 
-The `attach` block creates either a revolute or wheel joint between named points
+The `attach` block creates a revolute, wheel, prismatic, weld, or distance joint between named points
 such as the center, edge midpoints, or corners of two bodies. Wheel joints use a
-vertical suspension axis. The anchor dropdowns are shadow blocks that can be
+vertical suspension axis. Prismatic joints use the same vertical axis, allow
+translation without relative rotation, and have no suspension. The anchor dropdowns are shadow blocks that can be
 replaced with an `offset x y` block for a body-local coordinate.
+Weld joints rigidly preserve both the aligned anchor and the bodies' relative
+angle at creation.
 The distance-joint block uses the same body-local anchor dropdowns and offsets,
 but it does not reposition either body before creating the joint.
 The joint-point block returns the live start, center, or end position in pixels.
 Start belongs to the first body passed to the attach block and end belongs to
 the second; center is the midpoint between the two anchors.
-Both variants return the same block-facing joint type. Motor and limit blocks
-work with either variant; wheel limits use pixels while revolute limits use
-radians. The suspension block rejects non-wheel joints.
+All variants return the same block-facing joint type. Motor and limit blocks
+work with wheel, prismatic, and revolute joints. Wheel and prismatic limits use
+pixels while revolute limits use radians. Prismatic motor speed uses pixels per
+second and maximum force; wheel and revolute motor speed uses radians per
+second and maximum torque. The suspension block rejects non-wheel joints.
+
+The separate pulley block connects two body-local anchors through two fixed
+world-space points. It preserves both bodies' current positions. A ratio of `1`
+keeps the sum of the two rope segment lengths constant; larger ratios make
+motion on the second body's side contribute proportionally more.
 Before creating the joint, the second body and every body already attached to it
 are translated so that the two selected points coincide. Connected dynamic and
 kinematic bodies move together even when they are attached to a static body;

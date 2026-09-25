@@ -22,7 +22,9 @@ exports=(
     bx_setFixtureSensor bx_setFixtureFilter bx_setFixtureGroup bx_setFixtureCategoryMask
     bx_testPoint bx_createDistanceJoint
     bx_setDistanceJoint bx_createRevoluteJoint bx_setRevoluteJointMotor
-    bx_setRevoluteJointLimits bx_createWheelJoint bx_setWheelJointMotor
+    bx_setRevoluteJointLimits bx_createPrismaticJoint bx_setPrismaticJointMotor
+    bx_setPrismaticJointLimits bx_createPulleyJoint bx_createWeldJoint
+    bx_createWheelJoint bx_setWheelJointMotor
     bx_setWheelJointLimits bx_setWheelJointSuspension bx_createMouseJoint
     bx_setMouseJointTarget bx_getJointAnchors bx_destroyJoint bx_getContacts
     bx_getContactPoints bx_getContactNormals

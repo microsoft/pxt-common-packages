@@ -278,6 +278,34 @@ void setRevoluteJointLimits(Box2DObject joint, bool enabled, TNumber lower, TNum
 }
 
 //%
+Box2DObject createPrismaticJoint(RefCollection *args) {
+    if (!args || Array_::length(args) != 7) target_panic(906);
+    return box2d_native::createPrismaticJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), booleanArgument(args, 6));
+}
+
+//%
+void setPrismaticJointMotor(Box2DObject joint, bool enabled, TNumber speed, TNumber maxForce) {
+    box2d_native::setPrismaticJointMotor(joint, enabled, toDouble(speed), toDouble(maxForce));
+}
+
+//%
+void setPrismaticJointLimits(Box2DObject joint, bool enabled, TNumber lower, TNumber upper) {
+    box2d_native::setPrismaticJointLimits(joint, enabled, toDouble(lower), toDouble(upper));
+}
+
+//%
+Box2DObject createPulleyJoint(RefCollection *args) {
+    if (!args || Array_::length(args) != 12) target_panic(906);
+    return box2d_native::createPulleyJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), argument(args, 6), argument(args, 7), argument(args, 8), argument(args, 9), argument(args, 10), booleanArgument(args, 11));
+}
+
+//%
+Box2DObject createWeldJoint(RefCollection *args) {
+    if (!args || Array_::length(args) != 5) target_panic(906);
+    return box2d_native::createWeldJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), booleanArgument(args, 4));
+}
+
+//%
 Box2DObject createWheelJoint(RefCollection *args) {
     if (!args || Array_::length(args) != 7) target_panic(906);
     return box2d_native::createWheelJoint(objectArgument(args, 0), objectArgument(args, 1), argument(args, 2), argument(args, 3), argument(args, 4), argument(args, 5), booleanArgument(args, 6));

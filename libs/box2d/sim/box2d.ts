@@ -281,6 +281,14 @@ namespace pxsim.box2dNative {
         invoke("bx_setRevoluteJointLimits", [joint, enabled ? 1 : 0, lower, upper]);
     }
 
+    export function setPrismaticJointMotor(joint: number, enabled: boolean, speed: number, maxForce: number): void {
+        invoke("bx_setPrismaticJointMotor", [joint, enabled ? 1 : 0, speed, maxForce]);
+    }
+
+    export function setPrismaticJointLimits(joint: number, enabled: boolean, lower: number, upper: number): void {
+        invoke("bx_setPrismaticJointLimits", [joint, enabled ? 1 : 0, lower, upper]);
+    }
+
     export function setWheelJointMotor(joint: number, enabled: boolean, speed: number, maxTorque: number): void {
         invoke("bx_setWheelJointMotor", [joint, enabled ? 1 : 0, speed, maxTorque]);
     }
@@ -351,6 +359,18 @@ namespace pxsim.box2dNative {
 
     export function createWheelJoint(args: RefCollection): number {
         return invoke("bx_createWheelJoint", toNumbers(args));
+    }
+
+    export function createPrismaticJoint(args: RefCollection): number {
+        return invoke("bx_createPrismaticJoint", toNumbers(args));
+    }
+
+    export function createPulleyJoint(args: RefCollection): number {
+        return invoke("bx_createPulleyJoint", toNumbers(args));
+    }
+
+    export function createWeldJoint(args: RefCollection): number {
+        return invoke("bx_createWeldJoint", toNumbers(args));
     }
 
     export function createMouseJoint(args: RefCollection): number {

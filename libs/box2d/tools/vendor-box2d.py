@@ -68,10 +68,23 @@ def main():
                 )
                 if count != 14:
                     raise RuntimeError("Unexpected Box2D joint factory layout")
+                factory = factory.replace(
+                    "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_prismaticJoint:",
+                    "#if B2_ENABLE_PRISMATIC_JOINT\n\tcase e_prismaticJoint:",
+                ).replace(
+                    "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_pulleyJoint:",
+                    "#if B2_ENABLE_PULLEY_JOINT\n\tcase e_pulleyJoint:",
+                ).replace(
+                    "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_weldJoint:",
+                    "#if B2_ENABLE_WELD_JOINT\n\tcase e_weldJoint:",
+                )
                 contents = (
                     contents[:start]
-                    + "// Arcade only exposes distance, revolute, and wheel joints; avoid linking unused solvers.\n"
+                    + "// Arcade exposes distance, mouse, prismatic, pulley, revolute, weld, and wheel joints; avoid linking other solvers.\n"
                     + "#ifndef B2_ENABLE_EXTRA_JOINTS\n#define B2_ENABLE_EXTRA_JOINTS 0\n#endif\n\n"
+                    + "#ifndef B2_ENABLE_PRISMATIC_JOINT\n#define B2_ENABLE_PRISMATIC_JOINT 1\n#endif\n\n"
+                    + "#ifndef B2_ENABLE_PULLEY_JOINT\n#define B2_ENABLE_PULLEY_JOINT 1\n#endif\n\n"
+                    + "#ifndef B2_ENABLE_WELD_JOINT\n#define B2_ENABLE_WELD_JOINT 1\n#endif\n\n"
                     + factory
                     + contents[end:]
                 )

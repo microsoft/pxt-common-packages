@@ -257,6 +257,43 @@ void bx_setRevoluteJointLimits(double joint, bool enabled, double lower, double 
     box2d_native::setRevoluteJointLimits(object(joint), enabled, lower, upper);
 }
 
+int bx_createPrismaticJoint(double bodyA, double bodyB, double anchorX, double anchorY,
+                            double axisX, double axisY, bool collideConnected) {
+    return handle(box2d_native::createPrismaticJoint(
+        object(bodyA), object(bodyB), anchorX, anchorY, axisX, axisY, collideConnected));
+}
+
+void bx_setPrismaticJointMotor(double joint, bool enabled, double speed, double maxForce) {
+    box2d_native::setPrismaticJointMotor(object(joint), enabled, speed, maxForce);
+}
+
+void bx_setPrismaticJointLimits(double joint, bool enabled, double lower, double upper) {
+    box2d_native::setPrismaticJointLimits(object(joint), enabled, lower, upper);
+}
+
+int bx_createPulleyJoint(
+    double bodyA, double bodyB,
+    double groundAnchorAX, double groundAnchorAY,
+    double groundAnchorBX, double groundAnchorBY,
+    double anchorAX, double anchorAY,
+    double anchorBX, double anchorBY,
+    double ratio, bool collideConnected
+) {
+    return handle(box2d_native::createPulleyJoint(
+        object(bodyA), object(bodyB),
+        groundAnchorAX, groundAnchorAY,
+        groundAnchorBX, groundAnchorBY,
+        anchorAX, anchorAY,
+        anchorBX, anchorBY,
+        ratio, collideConnected));
+}
+
+int bx_createWeldJoint(double bodyA, double bodyB, double anchorX, double anchorY,
+                       bool collideConnected) {
+    return handle(box2d_native::createWeldJoint(
+        object(bodyA), object(bodyB), anchorX, anchorY, collideConnected));
+}
+
 int bx_createWheelJoint(double bodyA, double bodyB, double anchorX, double anchorY,
                         double axisX, double axisY, bool collideConnected) {
     return handle(box2d_native::createWheelJoint(

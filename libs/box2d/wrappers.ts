@@ -249,6 +249,44 @@ namespace box2d {
             return new RevoluteJoint(box2dNative.createRevoluteJoint(this.handle, other.handle, anchorX, anchorY, collideConnected));
         }
 
+        /** Create a slider along a world-space axis fixed in this body. */
+        createPrismaticJoint(other: Body, anchorX: number, anchorY: number, axisX: number, axisY: number, collideConnected: boolean = false): PrismaticJoint {
+            return new PrismaticJoint(box2dNative.createPrismaticJoint(
+                this.handle, other.handle, anchorX, anchorY, axisX, axisY, collideConnected
+            ));
+        }
+
+        /** Create a pulley using fixed world-space ground anchors and body anchors. */
+        createPulleyJoint(
+            other: Body,
+            groundAnchorAX: number,
+            groundAnchorAY: number,
+            groundAnchorBX: number,
+            groundAnchorBY: number,
+            anchorAX: number,
+            anchorAY: number,
+            anchorBX: number,
+            anchorBY: number,
+            ratio: number = 1,
+            collideConnected: boolean = true
+        ): PulleyJoint {
+            return new PulleyJoint(box2dNative.createPulleyJoint(
+                this.handle, other.handle,
+                groundAnchorAX, groundAnchorAY,
+                groundAnchorBX, groundAnchorBY,
+                anchorAX, anchorAY,
+                anchorBX, anchorBY,
+                ratio, collideConnected
+            ));
+        }
+
+        /** Create a rigid weld at a world-space anchor. */
+        createWeldJoint(other: Body, anchorX: number, anchorY: number, collideConnected: boolean = false): WeldJoint {
+            return new WeldJoint(box2dNative.createWeldJoint(
+                this.handle, other.handle, anchorX, anchorY, collideConnected
+            ));
+        }
+
         /** World-space anchor and finite nonzero axis; the normalized axis stays fixed in this body. */
         createWheelJoint(other: Body, anchorX: number, anchorY: number, axisX: number, axisY: number, collideConnected: boolean = false): WheelJoint {
             return new WheelJoint(box2dNative.createWheelJoint(
@@ -413,6 +451,37 @@ namespace box2d {
         /** Nonnegative stiffness in N/m and damping in N*s/m, not frequency/damping ratio. */
         setSuspension(stiffness: number, damping: number): void {
             box2dNative.setWheelJointSuspension(this.handle, stiffness, damping);
+        }
+    }
+
+    export class PrismaticJoint extends Joint {
+        /** Wrap an existing prismatic-joint handle. */
+        constructor(handle: box2dNative.Handle) {
+            super(handle);
+        }
+
+        /** Speed is meters/second; force is nonnegative newtons. */
+        setMotor(enabled: boolean, speed: number, maxForce: number): void {
+            box2dNative.setPrismaticJointMotor(this.handle, enabled, speed, maxForce);
+        }
+
+        /** Translation limits in meters along the axis, relative to creation. */
+        setLimits(enabled: boolean, lower: number, upper: number): void {
+            box2dNative.setPrismaticJointLimits(this.handle, enabled, lower, upper);
+        }
+    }
+
+    export class PulleyJoint extends Joint {
+        /** Wrap an existing pulley-joint handle. */
+        constructor(handle: box2dNative.Handle) {
+            super(handle);
+        }
+    }
+
+    export class WeldJoint extends Joint {
+        /** Wrap an existing weld-joint handle. */
+        constructor(handle: box2dNative.Handle) {
+            super(handle);
         }
     }
 
