@@ -6,7 +6,7 @@ Set the scoring type to decide the best game score for multiple games.
 game.setGameOverScoringType(game.ScoringType.HighScore)
 ```
 
-When mulitple games are played with your game program, you can set the method to record the best game score. You can use the highest score, lowest score, or no score as the best game score.
+When multiple games are played with your game program, you can set the method to record the best game score. You can use the highest score, lowest score, or no score as the best game score.
 
 ## Parameters
 

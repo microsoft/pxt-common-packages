@@ -16,7 +16,7 @@ You can make a sprite locate itself right on top of a random tile in the tile ma
 
 ## Example #example
 
-Make a tilemap with several different tiles. Create a round shaped sprite. Ramdomly place the sprite on a tile with color number `8`.
+Make a tilemap with several different tiles. Create a round shaped sprite. Randomly place the sprite on a tile with color number `8`.
 
 ```blocks
 let mySprite: Sprite = null

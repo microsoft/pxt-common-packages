@@ -12,7 +12,7 @@ controller.A.isPressed()
 
 ## Example #example
 
-Ramdomly move a yellow box around the screen while the ``A`` button is pressed.
+Randomly move a yellow box around the screen while the ``A`` button is pressed.
 
 ### Single player
 

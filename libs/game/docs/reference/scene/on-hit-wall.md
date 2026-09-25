@@ -10,7 +10,7 @@ You can detect when a moving sprite contacts a wall tile in the tilemap. If your
 
 When a wall hit is detected by the sprite of the kind you asked for, it is given to you in the **sprite** parameter of **handler** along with contacted tile's **location**.
 
-A sprite hitting a wall is dectected when the outside edges of its image makes contact with the tile. If a sprite has it's ``ghost`` flag set, any contact with the wall tile isn't noticed.
+A sprite hitting a wall is detected when the outside edges of its image makes contact with the tile. If a sprite has it's ``ghost`` flag set, any contact with the wall tile isn't noticed.
 
 ## Parameters
 

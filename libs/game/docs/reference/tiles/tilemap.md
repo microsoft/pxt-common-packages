@@ -18,7 +18,7 @@ tiles.setCurrentTilemap(tilemap`level2`)
 
 You modify the tilemap using the Tilemap Editor. When coding with blocks, the Tilemap Editor will open when you click on the map image in the tilemap block. If you're editing code, the Tilemap Editor opens by clicking the map symbol in the line of code where you use the tilemap.
 
-You design your game scene, or _level_, using the tiles your create or by chosing some from the tile library. You also can set the tilemap size and tile attributes. The example here shows a tilemap created for a maze game: 
+You design your game scene, or _level_, using the tiles your create or by choosing some from the tile library. You also can set the tilemap size and tile attributes. The example here shows a tilemap created for a maze game: 
 
 ```block
 tiles.setCurrentTilemap(tilemap`level1`)

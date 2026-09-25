@@ -4,7 +4,7 @@ The **playable** data object provides a common format to play tones, melodies, a
 
 ## Music sources for playable objects
 
-The blocks used to create playable music soucres are the following:
+The blocks used to create playable music sources are the following:
 
 ### Tone
 

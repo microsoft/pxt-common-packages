@@ -55,8 +55,8 @@ to the serial port.
 
 ```blocks
 forever(() => {
-    let celcius = pins.i2cReadNumber(24, NumberFormat.Int8LE, false)
-    let fahr = Math.map(celcius, 0, 100, 32, 212)
+    let celsius = pins.i2cReadNumber(24, NumberFormat.Int8LE, false)
+    let fahr = Math.map(celsius, 0, 100, 32, 212)
     serial.writeValue("Degrees F", fahr)
     pause(30000)
 })

@@ -21,7 +21,7 @@ Basic notes have names that use one of the first nine letters of the alphabet. T
 
 ``|A|``, ``|B|``, ``|C|``, ``|D|``, ``|E|``, ``|F|``, ``|G|``
 
-Ther are other notes named like the basic notes but have extra parts to the name called _sharp_ and _flat_. These other
+There are other notes named like the basic notes but have extra parts to the name called _sharp_ and _flat_. These other
 notes are just a bit different from the basic notes and have frequencies a little higher or lower than the
 basic note. This makes music a little more complicated but much more interesting!
 

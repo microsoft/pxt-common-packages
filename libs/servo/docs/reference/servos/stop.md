@@ -6,7 +6,7 @@ Stop sending commands to the servo so that its rotation will stop at the current
 servos.P0.stop()
 ```
 
-A servo is stopped by not sending anymore commands to drive the rotation angle. This lets you stop a servo at its current postion which is useful for stopping a continuous rotation servo. The servo drive is stopped but it's shaft has no force on it to lock the current position.
+A servo is stopped by not sending anymore commands to drive the rotation angle. This lets you stop a servo at its current position which is useful for stopping a continuous rotation servo. The servo drive is stopped but it's shaft has no force on it to lock the current position.
 
 ## Example
 

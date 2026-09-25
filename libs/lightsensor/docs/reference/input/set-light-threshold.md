@@ -14,7 +14,7 @@ light gets brighter or darker.
 
 ## Parameters
 
-* **conditon**: the light condition you are checking for, either `dark` or `bright`.
+* **condition**: the light condition you are checking for, either `dark` or `bright`.
 * **value**: a [number](/types/number) which is the brightness value that will make a light event happen. This is a number between `0` (completely dark) and `255` (very bright).
 
 ## Example #example

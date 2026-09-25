@@ -13,7 +13,7 @@ input.setAccelerometerRange(AcceleratorRange.OneG);
 
 * ``range`` the biggest g-force (acceleration) number you will measure: `1g`, `2g`, `4g`, or `8g`.
 Any bigger numbers measured by your @boardname@ are ignored. So, you won't receive
-events or measurments to your program when a bigger g-force occurs.
+events or measurements to your program when a bigger g-force occurs.
 
 ## Example #example
 

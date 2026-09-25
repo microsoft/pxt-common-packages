@@ -13,7 +13,7 @@ Showing different frames with a brief pause between them will create the effect 
 ## Sprite animations
 
 Animations are shown in a [sprite](/types/sprite). So, wherever the sprite is placed,
-the animation will run there. You create your animation by setting two or more images into the **frames** array assigned to the sprite. You can set the amount of time between frames to make the animation run fast or slow. If you want the animation to repeat itself continously, you can make it _loop_.
+the animation will run there. You create your animation by setting two or more images into the **frames** array assigned to the sprite. You can set the amount of time between frames to make the animation run fast or slow. If you want the animation to repeat itself continuously, you can make it _loop_.
 
 ### ~ hint
 

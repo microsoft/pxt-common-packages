@@ -21,7 +21,7 @@ In blocks, a multiplayer state kind identifier is used to make a state kind item
 let lifeState = MultiplayerState.life
 ```
 
-In blocks, the multiplayer state list lets you add your own custom state identifers to it. Let's say you wanted to give players 'gems' as rewards during a game. When you add `gems` to the state list, it also adds a new state constant called `gems` to your project code:
+In blocks, the multiplayer state list lets you add your own custom state identifiers to it. Let's say you wanted to give players 'gems' as rewards during a game. When you add `gems` to the state list, it also adds a new state constant called `gems` to your project code:
 
 ```typescript-ignore
 namespace MultiplayerState {

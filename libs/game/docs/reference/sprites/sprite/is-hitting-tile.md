@@ -20,7 +20,7 @@ The sprite must be in motion (a velocity of ``vx`` or ``vy`` that isn't `0`) bef
 
 ## Example
 
-Build a brick wall of tiles in the scene. Send a arrow sprite towards the wall. If the sprite hits the wall, send it back in the oppsite direction.
+Build a brick wall of tiles in the scene. Send a arrow sprite towards the wall. If the sprite hits the wall, send it back in the opposite direction.
 
 ```blocks
 let flipImage: Image = null

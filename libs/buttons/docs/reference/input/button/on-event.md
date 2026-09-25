@@ -40,7 +40,7 @@ Read about [**touch sensors**](/reference/input/button/touch-sensors) and using 
 
 ### Button release #ex1
 
-Wnen the ``B`` button is released, log a message.
+When the ``B`` button is released, log a message.
 
 ```blocks
 input.buttonB.onEvent(ButtonEvent.Up, function() {

@@ -15,7 +15,7 @@ A sprite will locate itself on top of a tile in the tilemap using a tilemap loca
 
 ## Example #example
 
-Make a grid tilemap with two tile colors. Create a round shaped sprite. Ramdomly place the sprite on a tile in the grid.
+Make a grid tilemap with two tile colors. Create a round shaped sprite. Randomly place the sprite on a tile in the grid.
 
 ```blocks
 tiles.setTilemap(tilemap`level1`)

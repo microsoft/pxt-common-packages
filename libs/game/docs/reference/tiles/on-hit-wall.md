@@ -12,7 +12,7 @@ We can detect when a moving sprite contacts a wall in the scene. You can then ru
 
 When a wall hit is detected the sprite of the kind you asked for is given to you in the **sprite** parameter of **handler**.
 
-A a sprite hitting a wall is dectected when the outside edges of their images make contact. If a sprite has it's ``ghost`` flag set, any contact with the wall is ignored.
+A a sprite hitting a wall is detected when the outside edges of their images make contact. If a sprite has it's ``ghost`` flag set, any contact with the wall is ignored.
 
 ## Parameters
 

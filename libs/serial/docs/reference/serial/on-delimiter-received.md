@@ -1,4 +1,4 @@
-# on Delimeter Received
+# on Delimiter Received
 
 Run some code when a delimiter character is received.
 
@@ -6,7 +6,7 @@ Run some code when a delimiter character is received.
 serial.onDelimiterReceived(Delimiters.NewLine, function () {})
 ```
 
-The end of of a line of text, a sequence of command characters, and other messages are often signalled by a special character. This character is called a _delimiter_. Common delimeter characters are spaces, tabs, commas, and newlines. You can watch for a delimiter and then have your program process data you've already received when the delimiter arrives on the serial connection.
+The end of of a line of text, a sequence of command characters, and other messages are often signalled by a special character. This character is called a _delimiter_. Common delimiter characters are spaces, tabs, commas, and newlines. You can watch for a delimiter and then have your program process data you've already received when the delimiter arrives on the serial connection.
 
 ## Parameters
 

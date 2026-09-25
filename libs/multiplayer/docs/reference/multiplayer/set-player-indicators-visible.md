@@ -8,7 +8,7 @@ mp.setPlayerIndicatorsVisible(true)
 
 When set as visible, player indicators are displayed on the screen next to the player's character sprite. All active players will have an indicator shown.
 
-## Paramters
+## Parameters
 
 * **visible**: a [boolean](/types/boolean) value that when set `true` all player's indicators are visible on the screen to every player. Otherwise, if set `false`, the indicators aren't displayed on any player's screen.
 

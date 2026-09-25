@@ -16,7 +16,7 @@ The tile that is under the center of the sprite is considered as the sprite's ti
 
 ## Example #example
 
-Make a grid tilemap with two tile colors. Create a sprite to appear on the tilemap. Display the column and row postion of the sprite on the tilemap.
+Make a grid tilemap with two tile colors. Create a sprite to appear on the tilemap. Display the column and row position of the sprite on the tilemap.
 
 ```blocks
 tiles.setCurrentTilemap(tilemap`level1`)

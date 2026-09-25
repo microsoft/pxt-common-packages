@@ -12,7 +12,7 @@ You can detect when a moving sprite contacts a tile in the scene. If your sprite
 
 When the tile overlap is detected the sprite of the kind you asked for is given to you in the **sprite** parameter of **handler**. The [tile](/types/tile) location is give in the **tile** parameter.
 
-A sprite overlapping a tile is dectected when the outside edges of their images make contact. If a sprite has it's ``ghost`` flag set, any contact with the tile is ignored.
+A sprite overlapping a tile is detected when the outside edges of their images make contact. If a sprite has it's ``ghost`` flag set, any contact with the tile is ignored.
 
 ## Parameters
 

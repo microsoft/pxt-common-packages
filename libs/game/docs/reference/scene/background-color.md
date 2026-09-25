@@ -12,9 +12,9 @@ The background color is the color painted behind other images shown on the scree
 
 #### Color number
 
-There are 16 colors available to choose from. These colors are set in the current color _pallete_.
-The pallete contains a collection of colors, each of which have an index number from `0` to `15`. The index
-is also known as the **color number**. Unless the pallete is changed, the pallete has these colors as the
+There are 16 colors available to choose from. These colors are set in the current color _palette_.
+The palette contains a collection of colors, each of which have an index number from `0` to `15`. The index
+is also known as the **color number**. Unless the palette is changed, the palette has these colors as the
 default:
 
 * `0`: transparent

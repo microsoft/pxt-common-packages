@@ -6,7 +6,7 @@ Set the minimum and maximum rotation angles for a servo.
 servos.P0.setRange(0, 180)
 ```
 
-If you want to limit the rotation range of a servo you can set it's minimum and maximum rotation angle. The minimum angle limit is set in degrees from `0` to `90`. The maximum rotation angle is set in degress from `90` to `180`.
+If you want to limit the rotation range of a servo you can set it's minimum and maximum rotation angle. The minimum angle limit is set in degrees from `0` to `90`. The maximum rotation angle is set in degrees from `90` to `180`.
 
 ## Parameters
 

@@ -1,6 +1,6 @@
 # high Score
 
-Get the highest score recored for the game.
+Get the highest score recorded for the game.
 
 ```sig
 info.highScore()

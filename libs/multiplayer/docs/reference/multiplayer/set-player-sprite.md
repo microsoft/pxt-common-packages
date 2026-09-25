@@ -10,7 +10,7 @@ The sprite that is set for a [Player](/types/player) is moved when controller bu
 
 ## Parameters
 
-* **player**: the [Player](/types/player) to assing a sprite to.
+* **player**: the [Player](/types/player) to assign a sprite to.
 * **sprite**: the sprite to set as the character sprite for **player**.
 
 ## Example #example

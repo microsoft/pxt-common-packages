@@ -7,7 +7,7 @@ game.setDialogFrame(null)
 ```
 A dialog frame includes the outside edge and the inside of the dialog. You make a dialog frame by creating an [image](/types/image) that has pixels to represent the borders and the inside of the frame.
 
-The frame image needs enough pixels to tell the dialog what the frame design should look like. The simplist frame is a image with 3 rows and 3 columns. This has enough pixels to show what colors the edges have and what color the middle has:
+The frame image needs enough pixels to tell the dialog what the frame design should look like. The simplest frame is a image with 3 rows and 3 columns. This has enough pixels to show what colors the edges have and what color the middle has:
 
 ```block
 game.setDialogFrame(img`

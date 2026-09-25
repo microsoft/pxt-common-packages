@@ -19,7 +19,7 @@ A tile location object represents a column and a row position in the tilemap. Lo
 
 ## Example #example
 
-Make a grid tilemap with two tile colors. Create a round shaped sprite. Ramdomly choose a tile location to place the sprite at in the grid.
+Make a grid tilemap with two tile colors. Create a round shaped sprite. Randomly choose a tile location to place the sprite at in the grid.
 
 ```blocks
 tiles.setTilemap(tilemap`level1`)

@@ -171,7 +171,7 @@ e e e e e e e e
 `
 ```
 
-Putting the green circle image exacly over the yellow square, you see that the yellow from the image below isn't blocked out by the transparent pixels from the image on top.
+Putting the green circle image exactly over the yellow square, you see that the yellow from the image below isn't blocked out by the transparent pixels from the image on top.
 
 ```sim
 let greenBall = img`

@@ -21,7 +21,7 @@ Or, you use ``warm`` to run your code when it warms to your temperature _thresho
 >  * ``cold``: the code runs when the temperature cools to a certain point
 >  * ``hot``: the code runs when the temperature warms to as certain point
 * **temperature**: the temperature to get to before your code starts
-* **unit**: the unit of temperature, Celcius or Fahrenheit
+* **unit**: the unit of temperature, Celsius or Fahrenheit
 * **handler**: the code to run when the temperature changes
 
 ## Example #example

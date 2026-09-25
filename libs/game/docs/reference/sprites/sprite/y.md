@@ -38,7 +38,7 @@ mySprite.y = 0
 
 ## Sprite locations
 
-The sprite image forms a rectangle with some number of pixel rows. The **y** postion of the sprite is the vertical location of the center column of the sprite's pixels on the screen. The **y** position of the sprite can have a value that is greater than the height of the screen. It can also have a value that is less than the top side of the screen (the top of screen is `0` and the value of the **y** position of the sprite in this case is negative). When this happens, some or all of the sprite isn't visible on the screen.
+The sprite image forms a rectangle with some number of pixel rows. The **y** position of the sprite is the vertical location of the center column of the sprite's pixels on the screen. The **y** position of the sprite can have a value that is greater than the height of the screen. It can also have a value that is less than the top side of the screen (the top of screen is `0` and the value of the **y** position of the sprite in this case is negative). When this happens, some or all of the sprite isn't visible on the screen.
 
 ## Example #example
 

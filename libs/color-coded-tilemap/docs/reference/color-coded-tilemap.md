@@ -11,7 +11,7 @@ scene.getTilesByType(0)
 scene.getTile(0, 0).place(null)
 scene.setTile(0, null)
 scene.setTileAt(null, 0)
-scene.onHitTile(0, 0, function (sprite) {
+scene.onHitTile(0, 0, function (sprite) {})
 scene.placeOnRandomTile(null, 0)
 ```
 

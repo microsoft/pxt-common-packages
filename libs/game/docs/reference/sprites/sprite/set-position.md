@@ -13,7 +13,7 @@ sprites.create(null).setPosition(0, 0)
 
 ## Sprite locations
 
-The sprite image forms a rectangle with some number of pixel rows and columns. The **x** postion of the sprite is the horizontal location of the center column of the sprite's pixels on the screen. The **y** postion of the sprite is the vertical location of the center row of the sprite's pixels.
+The sprite image forms a rectangle with some number of pixel rows and columns. The **x** position of the sprite is the horizontal location of the center column of the sprite's pixels on the screen. The **y** position of the sprite is the vertical location of the center row of the sprite's pixels.
 
 The **x** position of the sprite can have a value that is greater than the width of the screen. It can also have a value that is less than the left side of the screen (the left of screen is `0` and the value of the **x** position of the sprite in this case is negative). When this happens, some or all of the sprite isn't visible on the screen.
 

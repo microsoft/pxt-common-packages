@@ -40,7 +40,7 @@ control.runInParallel(function() {
 })
 ```
 
-Code is added to the main part of the program to turn the bit rotation on, pause for `5` seconds and then turn it off. It pauses for another `5` seconds and then trys to turn the bit rotation back on. However, the parallel task has finished and
+Code is added to the main part of the program to turn the bit rotation on, pause for `5` seconds and then turn it off. It pauses for another `5` seconds and then tries to turn the bit rotation back on. However, the parallel task has finished and
 the bit rotation won't start again.
 
 ```blocks

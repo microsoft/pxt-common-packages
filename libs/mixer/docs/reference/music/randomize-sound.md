@@ -14,7 +14,7 @@ The resulting sound effect will randomize some of the parameters of the original
 
 ## Returns
 
-* a new [sound-effect](/types/sound-effect) with some differences from the oringal **sound**.
+* a new [sound-effect](/types/sound-effect) with some differences from the original **sound**.
 
 ## Example
 

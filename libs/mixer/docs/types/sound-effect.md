@@ -53,13 +53,13 @@ The triangle wave is has symmetrical a rising and a falling edge. It makes the s
 
 ### Square wave
 
-A square wave has both verical rising and falling edges with a flat section on the top and bottom. The flat sections match the volume set for the sound. Square waves are sometimes used to represent digital data and will make an "electronic" sound.
+A square wave has both vertical rising and falling edges with a flat section on the top and bottom. The flat sections match the volume set for the sound. Square waves are sometimes used to represent digital data and will make an "electronic" sound.
 
 ![Square wave](/static/types/sound/square-wave.png)
 
 ### Noise wave
 
-The noise wave is created using random frequenices and volume. Setting the frequency parameters for the sound expression creates a "tuning" range for the noise sound effect.
+The noise wave is created using random frequencies and volume. Setting the frequency parameters for the sound expression creates a "tuning" range for the noise sound effect.
 
 ![Noise wave](/static/types/sound/noise-wave.png)
 
@@ -85,9 +85,9 @@ The volume controls the loudness (amplitude) of the sound. The sound can start w
 
 ## Frequency
 
-Frequency is how fast a wave repeats itself from the zero line to its peak down to its trough and back to the zero line. If it does this 1000 times in one second then the frequency has 1000 cycles per second and is measured in units of Hertz (1000 Hz). The frequency of the sound at any point in time is its current _pitch_. Musical notes and parts of speech are different frequecies that last for short periods of time in a sound.
+Frequency is how fast a wave repeats itself from the zero line to its peak down to its trough and back to the zero line. If it does this 1000 times in one second then the frequency has 1000 cycles per second and is measured in units of Hertz (1000 Hz). The frequency of the sound at any point in time is its current _pitch_. Musical notes and parts of speech are different frequencies that last for short periods of time in a sound.
 
-A sound expression has both a starting frequency and an ending frequecy. The frequency can start low and end high, start high and end low, or remain the same for the duration of the sound.
+A sound expression has both a starting frequency and an ending frequency. The frequency can start low and end high, start high and end low, or remain the same for the duration of the sound.
 
 ### High to low
 
