@@ -11,6 +11,9 @@ declare namespace box2dNativeShim {
     //% shim=box2dNative::isValid
     function isValid(handle: box2dNative.Handle): boolean;
 
+    //% shim=box2dNative::isJointTypeEnabled
+    function isJointTypeEnabled(type: number): boolean;
+
     //% shim=box2dNative::setGravity
     function setGravity(world: box2dNative.Handle, x: number, y: number): void;
 

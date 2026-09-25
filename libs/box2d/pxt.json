@@ -121,5 +121,30 @@
     "dependencies": {
         "device": "*"
     },
+    "yotta": {
+        "optionalConfig": {
+            "BOX2D_ENABLE_DISTANCE_JOINT": 1,
+            "BOX2D_ENABLE_MOUSE_JOINT": 1,
+            "BOX2D_ENABLE_PRISMATIC_JOINT": 0,
+            "BOX2D_ENABLE_PULLEY_JOINT": 0,
+            "BOX2D_ENABLE_REVOLUTE_JOINT": 1,
+            "BOX2D_ENABLE_WELD_JOINT": 0,
+            "BOX2D_ENABLE_WHEEL_JOINT": 1
+        },
+        "userConfigs": [
+            {
+                "description": "Enable every Box2D joint solver.",
+                "config": {
+                    "BOX2D_ENABLE_DISTANCE_JOINT": 1,
+                    "BOX2D_ENABLE_MOUSE_JOINT": 1,
+                    "BOX2D_ENABLE_PRISMATIC_JOINT": 1,
+                    "BOX2D_ENABLE_PULLEY_JOINT": 1,
+                    "BOX2D_ENABLE_REVOLUTE_JOINT": 1,
+                    "BOX2D_ENABLE_WELD_JOINT": 1,
+                    "BOX2D_ENABLE_WHEEL_JOINT": 1
+                }
+            }
+        ]
+    },
     "testDependencies": {}
 }

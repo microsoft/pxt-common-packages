@@ -491,9 +491,24 @@ Block-allocation chunks are reduced from 16 KiB to 4 KiB (below PXT's
 single-allocation limit), with chunk tables growing by 16 instead of 128 entries.
 These changes reduce the memory overhead of small scenes; they do not cap the
 number of bodies. Total available RAM and PXT allocation limits still apply.
-The native joint factory enables only the exposed distance, mouse, prismatic,
-pulley, revolute, weld, and wheel types by default, allowing unused joint solvers to be
-removed by the linker so the SAMD51 firmware fits in flash. C++ builds can
-define `B2_ENABLE_EXTRA_JOINTS=1` to restore the other upstream joint types;
-this does not add TypeScript bindings.
+Native joint solvers are independently controlled by yotta configuration:
+
+| Define | Hardware default |
+|---|---:|
+| `BOX2D_ENABLE_DISTANCE_JOINT` | `1` |
+| `BOX2D_ENABLE_MOUSE_JOINT` | `1` |
+| `BOX2D_ENABLE_PRISMATIC_JOINT` | `0` |
+| `BOX2D_ENABLE_PULLEY_JOINT` | `0` |
+| `BOX2D_ENABLE_REVOLUTE_JOINT` | `1` |
+| `BOX2D_ENABLE_WELD_JOINT` | `0` |
+| `BOX2D_ENABLE_WHEEL_JOINT` | `1` |
+
+The TypeScript APIs are always present. When a solver is disabled, its
+constructor returns an inert joint whose configuration calls are no-ops,
+anchor queries return the creation anchors, and destruction remains safe.
+The browser simulator explicitly enables every surfaced joint type. Hardware
+targets can override any define through the package's `yotta` configuration;
+an "Enable every Box2D joint solver" configuration preset is also provided.
+Disabled solvers are not referenced by the native bridge or Box2D joint
+factory, allowing the linker to remove their implementations.
 Keep the upstream license with redistributed sources.

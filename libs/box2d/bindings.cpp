@@ -35,6 +35,11 @@ bool isValid(Box2DObject handle) {
 }
 
 //%
+bool isJointTypeEnabled(TNumber type) {
+    return box2d_native::isJointTypeEnabled(toDouble(type));
+}
+
+//%
 void setGravity(Box2DObject world, TNumber x, TNumber y) {
     box2d_native::setGravity(world, toDouble(x), toDouble(y));
 }

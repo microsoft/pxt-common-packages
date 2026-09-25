@@ -65,6 +65,12 @@ namespace box2dNative {
         return box2dNativeShim.isValid(handle);
     }
 
+    /** Check whether a native joint solver was included in this build. */
+    // Native wrapper: box2dNative::isJointTypeEnabled
+    export function isJointTypeEnabled(type: number): boolean {
+        return box2dNativeShim.isJointTypeEnabled(type);
+    }
+
     /** Change the world's gravity in meters per second squared. */
     // Native wrapper: box2dNative::setGravity
     export function setGravity(world: Handle, x: number, y: number): void {

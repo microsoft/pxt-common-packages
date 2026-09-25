@@ -1,3 +1,11 @@
+#define BOX2D_ENABLE_DISTANCE_JOINT 1
+#define BOX2D_ENABLE_MOUSE_JOINT 1
+#define BOX2D_ENABLE_PRISMATIC_JOINT 1
+#define BOX2D_ENABLE_PULLEY_JOINT 1
+#define BOX2D_ENABLE_REVOLUTE_JOINT 1
+#define BOX2D_ENABLE_WELD_JOINT 1
+#define BOX2D_ENABLE_WHEEL_JOINT 1
+
 #include "../native.cpp"
 #include "../bindings.cpp"
 #include <cassert>

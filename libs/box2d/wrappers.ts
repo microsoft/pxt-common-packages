@@ -1,4 +1,19 @@
 namespace box2d {
+    export enum JointType {
+        Distance,
+        Mouse,
+        Prismatic,
+        Pulley,
+        Revolute,
+        Weld,
+        Wheel
+    }
+
+    /** Whether this runtime includes the selected native joint solver. */
+    export function isJointTypeEnabled(type: JointType): boolean {
+        return box2dNative.isJointTypeEnabled(type);
+    }
+
     /** A detached TypeScript vector; editing it does not change native physics. */
     export class Vec2 {
         constructor(public x: number = 0, public y: number = 0) {}

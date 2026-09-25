@@ -70,21 +70,37 @@ def main():
                     raise RuntimeError("Unexpected Box2D joint factory layout")
                 factory = factory.replace(
                     "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_prismaticJoint:",
-                    "#if B2_ENABLE_PRISMATIC_JOINT\n\tcase e_prismaticJoint:",
+                    "#if BOX2D_ENABLE_PRISMATIC_JOINT\n\tcase e_prismaticJoint:",
                 ).replace(
                     "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_pulleyJoint:",
-                    "#if B2_ENABLE_PULLEY_JOINT\n\tcase e_pulleyJoint:",
+                    "#if BOX2D_ENABLE_PULLEY_JOINT\n\tcase e_pulleyJoint:",
                 ).replace(
                     "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_weldJoint:",
-                    "#if B2_ENABLE_WELD_JOINT\n\tcase e_weldJoint:",
+                    "#if BOX2D_ENABLE_WELD_JOINT\n\tcase e_weldJoint:",
+                ).replace(
+                    "#if B2_ENABLE_EXTRA_JOINTS\n\tcase e_mouseJoint:",
+                    "#if BOX2D_ENABLE_MOUSE_JOINT\n\tcase e_mouseJoint:",
                 )
+                for joint in ("distance", "revolute", "wheel"):
+                    factory, joint_count = re.subn(
+                        rf"(^\tcase e_{joint}Joint:\n.*?^\t\tbreak;)",
+                        rf"#if BOX2D_ENABLE_{joint.upper()}_JOINT\n\1\n#endif",
+                        factory,
+                        flags=re.MULTILINE | re.DOTALL,
+                    )
+                    if joint_count != 2:
+                        raise RuntimeError(f"Unexpected Box2D {joint} joint factory layout")
                 contents = (
                     contents[:start]
-                    + "// Arcade exposes distance, mouse, prismatic, pulley, revolute, weld, and wheel joints; avoid linking other solvers.\n"
+                    + "// Arcade exposes a configurable subset of joints; avoid linking disabled solvers.\n"
                     + "#ifndef B2_ENABLE_EXTRA_JOINTS\n#define B2_ENABLE_EXTRA_JOINTS 0\n#endif\n\n"
-                    + "#ifndef B2_ENABLE_PRISMATIC_JOINT\n#define B2_ENABLE_PRISMATIC_JOINT 1\n#endif\n\n"
-                    + "#ifndef B2_ENABLE_PULLEY_JOINT\n#define B2_ENABLE_PULLEY_JOINT 1\n#endif\n\n"
-                    + "#ifndef B2_ENABLE_WELD_JOINT\n#define B2_ENABLE_WELD_JOINT 1\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_DISTANCE_JOINT\n#define BOX2D_ENABLE_DISTANCE_JOINT 1\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_MOUSE_JOINT\n#define BOX2D_ENABLE_MOUSE_JOINT 1\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_PRISMATIC_JOINT\n#define BOX2D_ENABLE_PRISMATIC_JOINT 0\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_PULLEY_JOINT\n#define BOX2D_ENABLE_PULLEY_JOINT 0\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_REVOLUTE_JOINT\n#define BOX2D_ENABLE_REVOLUTE_JOINT 1\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_WELD_JOINT\n#define BOX2D_ENABLE_WELD_JOINT 0\n#endif\n\n"
+                    + "#ifndef BOX2D_ENABLE_WHEEL_JOINT\n#define BOX2D_ENABLE_WHEEL_JOINT 1\n#endif\n\n"
                     + factory
                     + contents[end:]
                 )

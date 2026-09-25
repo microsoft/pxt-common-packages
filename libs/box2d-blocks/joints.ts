@@ -173,6 +173,52 @@ namespace box2dblocks {
             bodyB.connectedBodies.push(bodyA);
     }
 
+    function attachmentJointType(jointType: AttachmentJointType): box2d.JointType {
+        switch (jointType) {
+            case AttachmentJointType.Distance:
+                return box2d.JointType.Distance;
+            case AttachmentJointType.Prismatic:
+                return box2d.JointType.Prismatic;
+            case AttachmentJointType.Weld:
+                return box2d.JointType.Weld;
+            case AttachmentJointType.Wheel:
+                return box2d.JointType.Wheel;
+            default:
+                return box2d.JointType.Revolute;
+        }
+    }
+
+    function createUnalignedAttachment(
+        bodyA: Body,
+        anchorA: JointAnchor,
+        bodyB: Body,
+        jointType: AttachmentJointType
+    ): Joint {
+        const localA = bodyA.localAnchor(anchorA);
+        const stateA = bodyA.nativeBody.getState();
+        const anchorX = pointX(stateA, localA[0], localA[1]);
+        const anchorY = pointY(stateA, localA[0], localA[1]);
+        let nativeJoint: box2d.Joint;
+        if (jointType == AttachmentJointType.Wheel) {
+            nativeJoint = bodyA.nativeBody.createWheelJoint(
+                bodyB.nativeBody, anchorX, anchorY, 0, 1
+            );
+        } else if (jointType == AttachmentJointType.Prismatic) {
+            nativeJoint = bodyA.nativeBody.createPrismaticJoint(
+                bodyB.nativeBody, anchorX, anchorY, 0, 1
+            );
+        } else if (jointType == AttachmentJointType.Weld) {
+            nativeJoint = bodyA.nativeBody.createWeldJoint(
+                bodyB.nativeBody, anchorX, anchorY
+            );
+        } else {
+            nativeJoint = bodyA.nativeBody.createRevoluteJoint(
+                bodyB.nativeBody, anchorX, anchorY
+            );
+        }
+        return new Joint(nativeJoint);
+    }
+
     export function _createDistanceJoint(bodyA: Body, anchorA: JointAnchor, bodyB: Body, anchorB: JointAnchor): Joint {
         const owner = _state();
         if (!bodyA || bodyA.destroyed || !bodyA.belongsTo(owner) ||
@@ -209,6 +255,15 @@ namespace box2dblocks {
         if (jointType === AttachmentJointType.Distance) {
             return _createDistanceJoint(bodyA, anchorA, bodyB, anchorB);
         }
+
+        const owner = _state();
+        if (!bodyA || bodyA.destroyed || !bodyA.belongsTo(owner) ||
+            !bodyB || bodyB.destroyed || !bodyB.belongsTo(owner) || bodyA == bodyB)
+            throw "Cannot attach these Box2D bodies.";
+        if (!anchorA || !anchorB)
+            throw "Attachment joints require an anchor on each Box2D body.";
+        if (!box2d.isJointTypeEnabled(attachmentJointType(jointType)))
+            return createUnalignedAttachment(bodyA, anchorA, bodyB, jointType);
 
         const worldAnchor = _attachAtAnchors(bodyA, anchorA, bodyB, anchorB);
         let nativeJoint: box2d.Joint;
@@ -292,7 +347,8 @@ namespace box2dblocks {
             pointY(stateB, localB[0], localB[1]),
             ratio
         );
-        _connectBodies(bodyA, bodyB);
+        if (box2d.isJointTypeEnabled(box2d.JointType.Pulley))
+            _connectBodies(bodyA, bodyB);
         return new Joint(nativeJoint);
     }
 

@@ -3,6 +3,28 @@
 #include "vendor/box2d-2.4.1/include/box2d/box2d.h"
 #include <math.h>
 
+#ifndef BOX2D_ENABLE_DISTANCE_JOINT
+#define BOX2D_ENABLE_DISTANCE_JOINT 1
+#endif
+#ifndef BOX2D_ENABLE_MOUSE_JOINT
+#define BOX2D_ENABLE_MOUSE_JOINT 1
+#endif
+#ifndef BOX2D_ENABLE_PRISMATIC_JOINT
+#define BOX2D_ENABLE_PRISMATIC_JOINT 0
+#endif
+#ifndef BOX2D_ENABLE_PULLEY_JOINT
+#define BOX2D_ENABLE_PULLEY_JOINT 0
+#endif
+#ifndef BOX2D_ENABLE_REVOLUTE_JOINT
+#define BOX2D_ENABLE_REVOLUTE_JOINT 1
+#endif
+#ifndef BOX2D_ENABLE_WELD_JOINT
+#define BOX2D_ENABLE_WELD_JOINT 0
+#endif
+#ifndef BOX2D_ENABLE_WHEEL_JOINT
+#define BOX2D_ENABLE_WHEEL_JOINT 1
+#endif
+
 using namespace pxt;
 
 namespace pxt {
@@ -17,6 +39,14 @@ struct Kind {
     static const int Shape = 2;
     static const int Fixture = 3;
     static const int Joint = 4;
+    static const int DisabledJoint = 5;
+};
+
+struct DisabledJointData {
+    double anchorAX;
+    double anchorAY;
+    double anchorBX;
+    double anchorBY;
 };
 
 class RefBox2D : public RefObject {
@@ -164,6 +194,19 @@ static void detachJoint(RefBox2D *object) {
     object->bodyB = nullptr;
 }
 
+static void invalidateDisabledJoints(RefBox2D *body) {
+    if (!body || !body->joints)
+        return;
+    for (int i = Array_::length(body->joints) - 1; i >= 0; --i) {
+        RefBox2D *joint = (RefBox2D *)(uintptr_t)Array_::getAt(body->joints, i);
+        if (joint && joint->kind == Kind::DisabledJoint && joint->pointer) {
+            delete static_cast<DisabledJointData *>(joint->pointer);
+            joint->pointer = nullptr;
+            detachJoint(joint);
+        }
+    }
+}
+
 static void invalidateFixture(b2Fixture *value) {
     RefBox2D *object = fixtureObject(value);
     if (object) {
@@ -211,9 +254,10 @@ void RefBox2D::dispose() {
         for (b2Joint *joint = value->GetJointList(); joint; joint = joint->GetNext())
             invalidateJoint(joint);
         for (b2Body *body = value->GetBodyList(); body; body = body->GetNext()) {
+            RefBox2D *object = bodyObject(body);
+            invalidateDisabledJoints(object);
             for (b2Fixture *fixture = body->GetFixtureList(); fixture; fixture = fixture->GetNext())
                 invalidateFixture(fixture);
-            RefBox2D *object = bodyObject(body);
             if (object) {
                 object->pointer = nullptr;
                 object->world = nullptr;
@@ -224,6 +268,7 @@ void RefBox2D::dispose() {
     else if (kind == Kind::Body) {
         b2Body *value = static_cast<b2Body *>(pointer);
         RefBox2D *owner = world;
+        invalidateDisabledJoints(this);
         pointer = nullptr;
         for (b2JointEdge *edge = value->GetJointList(); edge; edge = edge->next)
             invalidateJoint(edge->joint);
@@ -245,6 +290,11 @@ void RefBox2D::dispose() {
             static_cast<b2Body *>(owner->pointer)->DestroyFixture(value);
         world = nullptr;
         bodyA = nullptr;
+    }
+    else if (kind == Kind::DisabledJoint) {
+        delete static_cast<DisabledJointData *>(pointer);
+        pointer = nullptr;
+        detachJoint(this);
     }
     else {
         b2Joint *value = static_cast<b2Joint *>(pointer);
@@ -311,6 +361,19 @@ void destroyWorld(RefBox2D *handle) {
 
 bool isValid(RefBox2D *handle) {
     return handle && handle->vtable == &RefBox2D_vtable && handle->pointer;
+}
+
+bool isJointTypeEnabled(double type) {
+    switch (integer(type, 0, 6)) {
+        case 0: return BOX2D_ENABLE_DISTANCE_JOINT;
+        case 1: return BOX2D_ENABLE_MOUSE_JOINT;
+        case 2: return BOX2D_ENABLE_PRISMATIC_JOINT;
+        case 3: return BOX2D_ENABLE_PULLEY_JOINT;
+        case 4: return BOX2D_ENABLE_REVOLUTE_JOINT;
+        case 5: return BOX2D_ENABLE_WELD_JOINT;
+        case 6: return BOX2D_ENABLE_WHEEL_JOINT;
+        default: return false;
+    }
 }
 
 void setGravity(RefBox2D *handle, double x, double y) {
@@ -706,7 +769,38 @@ static RefBox2D *allocateJoint(b2Joint *value, RefBox2D *bodyA, RefBox2D *bodyB)
     return result;
 }
 
+static RefBox2D *allocateDisabledJoint(
+    RefBox2D *bodyA,
+    RefBox2D *bodyB,
+    double anchorAX,
+    double anchorAY,
+    double anchorBX,
+    double anchorBY
+) {
+    jointWorld(bodyA, bodyB);
+    DisabledJointData *data = new DisabledJointData{
+        anchorAX, anchorAY, anchorBX, anchorBY
+    };
+    RefBox2D *result = allocate(
+        Kind::DisabledJoint, data, bodyA->world, bodyA, bodyB
+    );
+    TValue reference = (TValue)(uintptr_t)result;
+    registerGC(&reference);
+    retainJoint(bodyA, result);
+    retainJoint(bodyB, result);
+    unregisterGC(&reference);
+    return result;
+}
+
+static bool disabledJoint(RefBox2D *handle) {
+    require(handle && handle->vtable == &RefBox2D_vtable &&
+            (handle->kind == Kind::Joint || handle->kind == Kind::DisabledJoint) &&
+            handle->pointer);
+    return handle->kind == Kind::DisabledJoint;
+}
+
 RefBox2D *createDistanceJoint(RefBox2D *bodyA, RefBox2D *bodyB, double ax, double ay, double bx, double by, bool collideConnected) {
+#if BOX2D_ENABLE_DISTANCE_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     b2Vec2 a = vector(ax, ay);
     b2Vec2 b = vector(bx, by);
@@ -714,9 +808,16 @@ RefBox2D *createDistanceJoint(RefBox2D *bodyA, RefBox2D *bodyB, double ax, doubl
     def.Initialize(body(bodyA), body(bodyB), a, b);
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)collideConnected;
+    return allocateDisabledJoint(bodyA, bodyB, ax, ay, bx, by);
+#endif
 }
 
 void setDistanceJoint(RefBox2D *handle, double length, double minLength, double maxLength, double stiffness, double damping) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_DISTANCE_JOINT
     float l = positive(length);
     float min = nonnegative(minLength);
     float max = positive(maxLength);
@@ -733,32 +834,60 @@ void setDistanceJoint(RefBox2D *handle, double length, double minLength, double 
     value->SetDamping(d);
     value->GetBodyA()->SetAwake(true);
     value->GetBodyB()->SetAwake(true);
+#else
+    (void)length;
+    (void)minLength;
+    (void)maxLength;
+    (void)stiffness;
+    (void)damping;
+#endif
 }
 
 RefBox2D *createRevoluteJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, bool collideConnected) {
+#if BOX2D_ENABLE_REVOLUTE_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     b2RevoluteJointDef def;
     def.Initialize(body(bodyA), body(bodyB), vector(anchorX, anchorY));
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)collideConnected;
+    return allocateDisabledJoint(bodyA, bodyB, anchorX, anchorY, anchorX, anchorY);
+#endif
 }
 
 void setRevoluteJointMotor(RefBox2D *handle, bool enabled, double speed, double maxTorque) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_REVOLUTE_JOINT
     float s = scalar(speed);
     float t = nonnegative(maxTorque);
     b2RevoluteJoint *value = static_cast<b2RevoluteJoint *>(joint(handle, e_revoluteJoint));
     value->SetMotorSpeed(s);
     value->SetMaxMotorTorque(t);
     value->EnableMotor(enabled);
+#else
+    (void)enabled;
+    (void)speed;
+    (void)maxTorque;
+#endif
 }
 
 void setRevoluteJointLimits(RefBox2D *handle, bool enabled, double lower, double upper) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_REVOLUTE_JOINT
     float l = scalar(lower);
     float u = scalar(upper);
     require(l <= u);
     b2RevoluteJoint *value = static_cast<b2RevoluteJoint *>(joint(handle, e_revoluteJoint));
     value->SetLimits(l, u);
     value->EnableLimit(enabled);
+#else
+    (void)enabled;
+    (void)lower;
+    (void)upper;
+#endif
 }
 
 static b2Vec2 normalizedAxis(double axisX, double axisY) {
@@ -772,6 +901,7 @@ static b2Vec2 normalizedAxis(double axisX, double axisY) {
 }
 
 RefBox2D *createPrismaticJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
+#if BOX2D_ENABLE_PRISMATIC_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     b2PrismaticJointDef def;
     def.Initialize(
@@ -782,24 +912,46 @@ RefBox2D *createPrismaticJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX,
     );
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)axisX;
+    (void)axisY;
+    (void)collideConnected;
+    return allocateDisabledJoint(bodyA, bodyB, anchorX, anchorY, anchorX, anchorY);
+#endif
 }
 
 void setPrismaticJointMotor(RefBox2D *handle, bool enabled, double speed, double maxForce) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_PRISMATIC_JOINT
     float s = scalar(speed);
     float f = nonnegative(maxForce);
     b2PrismaticJoint *value = static_cast<b2PrismaticJoint *>(joint(handle, e_prismaticJoint));
     value->SetMotorSpeed(s);
     value->SetMaxMotorForce(f);
     value->EnableMotor(enabled);
+#else
+    (void)enabled;
+    (void)speed;
+    (void)maxForce;
+#endif
 }
 
 void setPrismaticJointLimits(RefBox2D *handle, bool enabled, double lower, double upper) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_PRISMATIC_JOINT
     float l = scalar(lower);
     float u = scalar(upper);
     require(l <= u);
     b2PrismaticJoint *value = static_cast<b2PrismaticJoint *>(joint(handle, e_prismaticJoint));
     value->SetLimits(l, u);
     value->EnableLimit(enabled);
+#else
+    (void)enabled;
+    (void)lower;
+    (void)upper;
+#endif
 }
 
 RefBox2D *createPulleyJoint(
@@ -816,6 +968,7 @@ RefBox2D *createPulleyJoint(
     double ratio,
     bool collideConnected
 ) {
+#if BOX2D_ENABLE_PULLEY_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     float r = scalar(ratio);
     require(r > b2_epsilon);
@@ -831,17 +984,34 @@ RefBox2D *createPulleyJoint(
     );
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)groundAnchorAX;
+    (void)groundAnchorAY;
+    (void)groundAnchorBX;
+    (void)groundAnchorBY;
+    (void)ratio;
+    (void)collideConnected;
+    return allocateDisabledJoint(
+        bodyA, bodyB, anchorAX, anchorAY, anchorBX, anchorBY
+    );
+#endif
 }
 
 RefBox2D *createWeldJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, bool collideConnected) {
+#if BOX2D_ENABLE_WELD_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     b2WeldJointDef def;
     def.Initialize(body(bodyA), body(bodyB), vector(anchorX, anchorY));
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)collideConnected;
+    return allocateDisabledJoint(bodyA, bodyB, anchorX, anchorY, anchorX, anchorY);
+#endif
 }
 
 RefBox2D *createWheelJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double axisX, double axisY, bool collideConnected) {
+#if BOX2D_ENABLE_WHEEL_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     b2WheelJointDef def;
     def.Initialize(
@@ -852,27 +1022,52 @@ RefBox2D *createWheelJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, dou
     );
     def.collideConnected = collideConnected;
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)axisX;
+    (void)axisY;
+    (void)collideConnected;
+    return allocateDisabledJoint(bodyA, bodyB, anchorX, anchorY, anchorX, anchorY);
+#endif
 }
 
 void setWheelJointMotor(RefBox2D *handle, bool enabled, double speed, double maxTorque) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_WHEEL_JOINT
     float s = scalar(speed);
     float t = nonnegative(maxTorque);
     b2WheelJoint *value = static_cast<b2WheelJoint *>(joint(handle, e_wheelJoint));
     value->SetMotorSpeed(s);
     value->SetMaxMotorTorque(t);
     value->EnableMotor(enabled);
+#else
+    (void)enabled;
+    (void)speed;
+    (void)maxTorque;
+#endif
 }
 
 void setWheelJointLimits(RefBox2D *handle, bool enabled, double lower, double upper) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_WHEEL_JOINT
     float l = scalar(lower);
     float u = scalar(upper);
     require(l <= u);
     b2WheelJoint *value = static_cast<b2WheelJoint *>(joint(handle, e_wheelJoint));
     value->SetLimits(l, u);
     value->EnableLimit(enabled);
+#else
+    (void)enabled;
+    (void)lower;
+    (void)upper;
+#endif
 }
 
 void setWheelJointSuspension(RefBox2D *handle, double stiffness, double damping) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_WHEEL_JOINT
     float s = nonnegative(stiffness);
     float d = nonnegative(damping);
     b2WheelJoint *value = static_cast<b2WheelJoint *>(joint(handle, e_wheelJoint));
@@ -880,9 +1075,14 @@ void setWheelJointSuspension(RefBox2D *handle, double stiffness, double damping)
     value->SetDamping(d);
     value->GetBodyA()->SetAwake(true);
     value->GetBodyB()->SetAwake(true);
+#else
+    (void)stiffness;
+    (void)damping;
+#endif
 }
 
 RefBox2D *createMouseJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, double anchorY, double maxForce, double stiffness, double damping) {
+#if BOX2D_ENABLE_MOUSE_JOINT
     b2World *owner = jointWorld(bodyA, bodyB);
     require(body(bodyB)->GetType() == b2_dynamicBody);
     b2MouseJointDef def;
@@ -893,18 +1093,40 @@ RefBox2D *createMouseJoint(RefBox2D *bodyA, RefBox2D *bodyB, double anchorX, dou
     def.stiffness = nonnegative(stiffness);
     def.damping = nonnegative(damping);
     return allocateJoint(owner->CreateJoint(&def), bodyA, bodyB);
+#else
+    (void)maxForce;
+    (void)stiffness;
+    (void)damping;
+    return allocateDisabledJoint(bodyA, bodyB, anchorX, anchorY, anchorX, anchorY);
+#endif
 }
 
 void setMouseJointTarget(RefBox2D *handle, double x, double y) {
+    if (disabledJoint(handle))
+        return;
+#if BOX2D_ENABLE_MOUSE_JOINT
     b2MouseJoint *value = static_cast<b2MouseJoint *>(joint(handle, e_mouseJoint));
     value->SetTarget(vector(x, y));
+#else
+    (void)x;
+    (void)y;
+#endif
 }
 
 RefCollection *getJointAnchors(RefBox2D *handle) {
+    bool disabled = disabledJoint(handle);
+    RefCollection *result = newArray();
+    if (disabled) {
+        DisabledJointData *value = static_cast<DisabledJointData *>(handle->pointer);
+        push(result, value->anchorAX);
+        push(result, value->anchorAY);
+        push(result, value->anchorBX);
+        push(result, value->anchorBY);
+        return finishArray(result);
+    }
     b2Joint *value = static_cast<b2Joint *>(lookup(handle, Kind::Joint)->pointer);
     b2Vec2 anchorA = value->GetAnchorA();
     b2Vec2 anchorB = value->GetAnchorB();
-    RefCollection *result = newArray();
     push(result, anchorA.x);
     push(result, anchorA.y);
     push(result, anchorB.x);
@@ -913,7 +1135,8 @@ RefCollection *getJointAnchors(RefBox2D *handle) {
 }
 
 void destroyJoint(RefBox2D *handle) {
-    lookup(handle, Kind::Joint)->dispose();
+    disabledJoint(handle);
+    handle->dispose();
 }
 
 RefCollection *getContacts(RefBox2D *handle) {

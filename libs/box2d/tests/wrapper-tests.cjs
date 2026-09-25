@@ -45,6 +45,11 @@ function command(name, args, operation) {
     call(name, args, undefined, operation);
 }
 
+assert.equal(
+    call("isJointTypeEnabled", [api.JointType.Weld], true,
+        () => api.isJointTypeEnabled(api.JointType.Weld)),
+    true
+);
 const world = call("createWorld", [0, 9.8], 10, () => new api.World());
 assert.equal(world.handle, 10);
 const customWorld = call("createWorld", [-1, 2], 11, () => new api.World(-1, 2));

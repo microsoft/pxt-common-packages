@@ -142,7 +142,7 @@ const context = vm.createContext({
 vm.runInContext(simulatorJavaScript, context);
 const sim = context.pxsim.box2dNative;
 for (const name of [
-    "createBody", "applyForce", "applyLinearImpulse", "createBoxShape",
+    "isJointTypeEnabled", "createBody", "applyForce", "applyLinearImpulse", "createBoxShape",
     "createFixture", "setFixtureDensity", "setFixtureFriction", "setFixtureRestitution",
     "setFixtureGroup", "setFixtureCategoryMask",
     "createDistanceJoint", "setDistanceJoint",
@@ -153,6 +153,8 @@ for (const name of [
 ]) {
     assert.equal(typeof sim[name], "function", `${name} must be registered in pxsim.box2dNative`);
 }
+for (let type = 0; type <= 6; ++type)
+    assert.equal(sim.isJointTypeEnabled(type), true);
 
 const simWorld = sim.createWorld(0, 9.8);
 const simGround = sim.createBody(collection([simWorld, 0, 0, 5, 0]));

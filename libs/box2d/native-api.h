@@ -10,6 +10,7 @@ using namespace pxt;
 RefBox2D* createWorld(double gravityX, double gravityY);
 void destroyWorld(RefBox2D* world);
 bool isValid(RefBox2D* handle);
+bool isJointTypeEnabled(double type);
 void setGravity(RefBox2D* world, double x, double y);
 void step(RefBox2D* world, double seconds, double velocityIterations, double positionIterations);
 void setWorldSleepingAllowed(RefBox2D* world, bool allowed);

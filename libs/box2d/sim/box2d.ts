@@ -99,6 +99,10 @@ namespace pxsim.box2dNative {
         return !!invoke("bx_isValid", [handle]);
     }
 
+    export function isJointTypeEnabled(type: number): boolean {
+        return !!invoke("bx_isJointTypeEnabled", [type]);
+    }
+
     export function setGravity(world: number, x: number, y: number): void {
         invoke("bx_setGravity", [world, x, y]);
     }

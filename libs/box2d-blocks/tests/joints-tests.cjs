@@ -5,6 +5,7 @@ const vm = require("node:vm");
 const ts = require("typescript");
 
 const owner = {};
+const enabledJointTypes = {};
 function Destroyable() {}
 function PhysicsPoint(x, y) {
     this.x = x;
@@ -66,6 +67,18 @@ const context = vm.createContext({
     },
     box2d: {
         BodyType: { Static: 0, Kinematic: 1, Dynamic: 2 },
+        JointType: {
+            Distance: 0,
+            Mouse: 1,
+            Prismatic: 2,
+            Pulley: 3,
+            Revolute: 4,
+            Weld: 5,
+            Wheel: 6
+        },
+        isJointTypeEnabled(type) {
+            return enabledJointTypes[type] !== false;
+        },
         PrismaticJoint,
         PulleyJoint,
         WeldJoint,
@@ -215,6 +228,20 @@ assert.throws(
     ),
     /ratio must be positive/
 );
+const disabledA = body({ x: 0, y: 0, angle: 0 }, [0, 0]);
+const disabledB = body({ x: 10, y: 10, angle: 0 }, [0, 0]);
+enabledJointTypes[context.box2d.JointType.Weld] = false;
+const disabledWeld = api.attachBodies(
+    disabledA,
+    api.bodyAnchor(api.BodyAnchor.Center),
+    disabledB,
+    api.bodyAnchor(api.BodyAnchor.Center),
+    api.AttachmentJointType.Weld
+);
+assert.ok(disabledWeld.nativeJoint instanceof WeldJoint);
+assert.deepEqual(disabledB.nativeBody.getState(), { x: 10, y: 10, angle: 0 });
+assert.deepEqual(disabledA.connectedBodies, []);
+assert.deepEqual(disabledB.connectedBodies, []);
 assert.throws(() => api.jointPoint(joint, 99), /Unknown Box2D joint point/);
 assert.deepEqual(
     [api.bodyPoint(bodyA, api.BodyAnchor.Right).x, api.bodyPoint(bodyA, api.BodyAnchor.Right).y],

@@ -50,6 +50,10 @@ bool bx_isValid(double handle) {
     return box2d_native::isValid(object(handle));
 }
 
+bool bx_isJointTypeEnabled(double type) {
+    return box2d_native::isJointTypeEnabled(type);
+}
+
 void bx_setGravity(double world, double x, double y) {
     box2d_native::setGravity(object(world), x, y);
 }

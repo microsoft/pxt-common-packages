@@ -10,7 +10,7 @@ trap 'rm -f "$wasm"' EXIT
 mapfile -t sources < <(find "$vendor/src" -name '*.cpp' -print | sort)
 exports=(
     bx_result
-    bx_createWorld bx_destroyWorld bx_isValid bx_setGravity bx_step bx_setWorldSleepingAllowed
+    bx_createWorld bx_destroyWorld bx_isValid bx_isJointTypeEnabled bx_setGravity bx_step bx_setWorldSleepingAllowed
     bx_createBody bx_destroyBody bx_getBodyState bx_readBodyTransform bx_readBodyBoxVertices
     bx_setTransform bx_setLinearVelocity bx_setAngularVelocity bx_setBodyType bx_setDamping
     bx_setGravityScale bx_setBodyFlag bx_getBodyFlag bx_applyForce bx_applyForceToCenter
@@ -32,8 +32,18 @@ exports=(
 )
 exported="$(printf '"_%s",' "${exports[@]}")"
 exported="[${exported%,}]"
+joint_defines=(
+    -DBOX2D_ENABLE_DISTANCE_JOINT=1
+    -DBOX2D_ENABLE_MOUSE_JOINT=1
+    -DBOX2D_ENABLE_PRISMATIC_JOINT=1
+    -DBOX2D_ENABLE_PULLEY_JOINT=1
+    -DBOX2D_ENABLE_REVOLUTE_JOINT=1
+    -DBOX2D_ENABLE_WELD_JOINT=1
+    -DBOX2D_ENABLE_WHEEL_JOINT=1
+)
 
 em++ -std=c++11 -O3 -flto -fno-exceptions \
+    "${joint_defines[@]}" \
     -I"$sim" -I"$vendor/include" -I"$vendor/src" \
     "$root/native.cpp" "$sim/bridge.cpp" "${sources[@]}" \
     -s STANDALONE_WASM=1 -s ALLOW_MEMORY_GROWTH=1 \
