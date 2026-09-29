@@ -4,7 +4,7 @@ namespace box2dblocks {
     //% body.shadow=variables_get
     //% body.defl=myBody
     //% point.shadow=box2d_blocks_xy_point
-    //% group="Physics" weight=100
+    //% blockNamespace=box2dphysics group="Motion" weight=100
     //% blockGap=8
     export function setPosition(body: Body, point: PhysicsPoint | Sprite | tiles.Location | Body): void {
         body.nativeBody.setTransform(point.x / PIXELS_PER_METER, point.y / PIXELS_PER_METER, body.angle);
@@ -14,7 +14,7 @@ namespace box2dblocks {
     //% block="set $body velocity to vx $vx vy $vy"
     //% body.shadow=variables_get
     //% body.defl=myBody
-    //% group="Physics" weight=95
+    //% blockNamespace=box2dphysics group="Motion" weight=95
     export function setVelocity(body: Body, vx: number, vy: number): void {
         body.nativeBody.setLinearVelocity(vx / PIXELS_PER_METER, vy / PIXELS_PER_METER);
     }
@@ -37,7 +37,7 @@ namespace box2dblocks {
     //% anchor.shadow=box2d_blocks_body_anchor
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Physics" weight=40
+    //% blockNamespace=box2dphysics group="Forces & Impulses" weight=100
     //% blockGap=8
     export function applyForce(body: Body, x: number, y: number, anchor: JointAnchor = null): void {
         const point = applicationPoint(body, anchor);
@@ -52,7 +52,7 @@ namespace box2dblocks {
     //% magnitude.min=0 angle.defl=0
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Physics" weight=38
+    //% blockNamespace=box2dphysics group="Forces & Impulses" weight=95
     export function applyForceAtAngle(body: Body, magnitude: number, angle: number, anchor: JointAnchor = null): void {
         applyForce(
             body,
@@ -69,7 +69,7 @@ namespace box2dblocks {
     //% anchor.shadow=box2d_blocks_body_anchor
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Physics" weight=35
+    //% blockNamespace=box2dphysics group="Forces & Impulses" weight=90
     //% blockGap=8
     export function applyLinearImpulse(body: Body, x: number, y: number, anchor: JointAnchor = null): void {
         const point = applicationPoint(body, anchor);
@@ -84,7 +84,7 @@ namespace box2dblocks {
     //% magnitude.min=0 angle.defl=0
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Physics" weight=33
+    //% blockNamespace=box2dphysics group="Forces & Impulses" weight=85
     export function applyLinearImpulseAtAngle(body: Body, magnitude: number, angle: number, anchor: JointAnchor = null): void {
         applyLinearImpulse(
             body,
@@ -98,7 +98,7 @@ namespace box2dblocks {
     //% block="apply torque $torque to $body"
     //% body.shadow=variables_get
     //% body.defl=myBody
-    //% group="Physics" weight=30
+    //% blockNamespace=box2dphysics group="Forces & Impulses" weight=80
     //% blockGap=8
     export function applyTorque(body: Body, torque: number): void {
         body.nativeBody.applyTorque(torque);
@@ -108,7 +108,7 @@ namespace box2dblocks {
     //% block="apply angular impulse $impulse to $body"
     //% body.shadow=variables_get
     //% body.defl=myBody
-    //% group="Physics" weight=25
+    //% blockNamespace=box2dphysics group="Forces & Impulses" weight=75
     export function applyAngularImpulse(body: Body, impulse: number): void {
         body.nativeBody.applyAngularImpulse(impulse);
     }
@@ -116,7 +116,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_set_damping
     //% block="set $body damping to linear $linear angular $angular"
     //% body.shadow=variables_get body.defl=myBody linear.min=0 angular.min=0
-    //% group="Physics" weight=20
+    //% blockNamespace=box2dphysics group="Body Configuration" weight=100
     //% blockGap=8
     export function setDamping(body: Body, linear: number, angular: number): void {
         body.nativeBody.setDamping(linear, angular);
@@ -125,7 +125,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_set_gravity_scale
     //% block="set $body gravity scale to $scale"
     //% body.shadow=variables_get body.defl=myBody scale.defl=1
-    //% group="Physics" weight=15
+    //% blockNamespace=box2dphysics group="Body Configuration" weight=95
     export function setGravityScale(body: Body, scale: number): void {
         body.nativeBody.setGravityScale(scale);
     }
@@ -140,7 +140,7 @@ namespace box2dblocks {
     //% friction.min=0 friction.defl=0.2 density.min=0 density.defl=1 restitution.min=0 restitution.defl=0
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Physics" weight=10
+    //% blockNamespace=box2dphysics group="Body Configuration" weight=90
     export function setBodyMaterial(body: Body, friction: number, density?: number, restitution?: number): void {
         const owner = _state();
         if (!body || body.destroyed || !body.belongsTo(owner) || !body.nativeBody.valid)

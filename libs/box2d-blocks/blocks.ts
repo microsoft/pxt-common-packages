@@ -1,13 +1,21 @@
 /**
+ * Configure and interact with the Box2D physics simulation.
+ */
+//% color=#426b9a weight=77 icon="\uf085" block="Box2D Physics"
+//% groups='["World", "Motion", "Forces & Impulses", "Body Configuration", "Collisions"]'
+namespace box2dphysics {
+}
+
+/**
  * Scene-aware Box2D physics with automatic drawing.
  */
 //% color=#426b9a weight=80 icon="\uf1b2" block="Box2D"
-//% groups='["Body", "Shapes", "Physics", "Joints", "Collisions", "Global"]'
+//% groups='["Create", "Tilemaps", "Properties", "Lifecycle", "Global"]'
 namespace box2dblocks {
     //% blockId=box2d_blocks_set_gravity
     //% block="set gravity x $x y $y"
     //% x.defl=0 y.defl=100
-    //% group="Global" weight=100
+    //% blockNamespace=box2dphysics group="World" weight=100
     export function setGravity(x: number, y: number): void {
         _state().setGravity(x / PIXELS_PER_METER, y / PIXELS_PER_METER);
     }
@@ -15,7 +23,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_pause
     //% block="set physics paused $paused"
     //% paused.shadow=toggleOnOff
-    //% group="Global" weight=95
+    //% blockNamespace=box2dphysics group="World" weight=95
     export function setPaused(paused: boolean): void {
         _state().paused = paused;
     }
@@ -23,7 +31,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_speed
     //% block="set simulation speed $speed"
     //% speed.min=0 speed.max=4 speed.defl=1
-    //% group="Global" weight=90
+    //% blockNamespace=box2dphysics group="World" weight=90
     export function setSimulationSpeed(speed: number): void {
         _state().speed = Math.max(0, speed);
     }

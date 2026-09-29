@@ -48,6 +48,7 @@ namespace box2dblocks {
     //% shim=KIND_GET
     //% blockId=box2d_blocks_body_kind block="$kind"
     //% kindNamespace=PhysicsBodyKind kindMemberName=kind kindPromptHint="e.g. Player, Crate, Ground..."
+    //% group="Lifecycle" weight=0
     export function _bodyKind(kind: number): number {
         return kind;
     }

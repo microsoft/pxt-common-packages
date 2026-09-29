@@ -29,6 +29,7 @@ body.y = 20
 body.vx = 10
 body.vy = 20
 control.assert(body.vx == 10 && body.vy == 20, 0x20d)
+control.assert(body.mass > 0, 0x218)
 control.assert(box2dblocks.bodyAt(box2dblocks.point(80, 20)) == body, 0x208)
 
 const polygonBody = box2dblocks.createBody(

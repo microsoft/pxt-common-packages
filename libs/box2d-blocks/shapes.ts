@@ -1,3 +1,11 @@
+/**
+ * Create and configure shapes for Box2D bodies.
+ */
+//% color=#426b9a weight=79 icon="\uf0c8" block="Box2D Shapes"
+//% groups='["Circles", "Rectangles", "Triangles", "Polygons", "Lines", "All Shapes"]'
+namespace box2dshapes {
+}
+
 namespace box2dblocks {
     export enum TriangleType {
         //% block="isosceles"
@@ -118,7 +126,7 @@ namespace box2dblocks {
     //% sensor.shadow=toggleOnOff
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=100
+    //% blockNamespace=box2dshapes group="All Shapes" weight=100
     export function addShape(body: Body, shape: PhysicsShape, point: PhysicsPoint | Sprite | tiles.Location | Body, angle: number, density: number = 1, friction: number = 0.2, restitution: number = 0, sensor: boolean = false): void {
         const owner = _state();
         if (!body || body.destroyed || !body.belongsTo(owner) || !shape)
@@ -150,7 +158,7 @@ namespace box2dblocks {
     //% outline.defl=1
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=95
+    //% blockNamespace=box2dshapes group="Circles" weight=100
     export function circle(radius: number, fill = 0, outline = 1): PhysicsShape {
         return new PhysicsShape(
             ShapeType.Circle,
@@ -174,7 +182,7 @@ namespace box2dblocks {
     //% outline.defl=1
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=90
+    //% blockNamespace=box2dshapes group="Rectangles" weight=100
     export function box(width: number, height: number, fill = 0, outline = 1): PhysicsShape {
         const halfWidth = width / 2;
         const halfHeight = height / 2;
@@ -205,7 +213,7 @@ namespace box2dblocks {
     //% outline.shadow=colorindexpicker
     //% outline.defl=1
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=85
+    //% blockNamespace=box2dshapes group="Polygons" weight=100
     export function regularPolygon(sides: number, sideLength: number, fill = 0, outline = 1): PhysicsShape {
         if (sides < 3) {
             throw "A regular polygon must have at least 3 sides.";
@@ -246,7 +254,7 @@ namespace box2dblocks {
     //% outline.shadow=colorindexpicker
     //% outline.defl=1
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=80
+    //% blockNamespace=box2dshapes group="Circles" weight=95
     export function halfCircle(radius: number, fill = 0, outline = 1): PhysicsShape {
         const vertices: PhysicsPoint[] = [];
         const angleSlice = Math.PI / 7;
@@ -275,7 +283,7 @@ namespace box2dblocks {
     //% outline.shadow=colorindexpicker
     //% outline.defl=1
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=75
+    //% blockNamespace=box2dshapes group="Triangles" weight=100
     export function triangle(type: TriangleType, base: number, height: number, fill = 0, outline = 1): PhysicsShape {
         if (base <= 0 || height <= 0)
             throw "Base and height must be positive numbers.";
@@ -310,7 +318,7 @@ namespace box2dblocks {
     //% outline.shadow=colorindexpicker
     //% outline.defl=1
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=65
+    //% blockNamespace=box2dshapes group="Lines" weight=100
     export function edge(pointA: PhysicsPoint | Sprite | tiles.Location | Body, pointB: PhysicsPoint | Sprite | tiles.Location | Body, outline = 1): PhysicsShape {
         const values = [
             pointA.x / PIXELS_PER_METER, pointA.y / PIXELS_PER_METER,
@@ -339,7 +347,7 @@ namespace box2dblocks {
     //% outline.defl=1
     //% inlineInputMode="inline"
     //% blockGap=8
-    //% group="Shapes" weight=60
+    //% blockNamespace=box2dshapes group="Polygons" weight=95
     export function polygon(vertices: (PhysicsPoint | Sprite | tiles.Location | Body)[], fill = 0, outline = 1): PhysicsShape {
         if (!vertices || vertices.length < 3)
             throw "Polygon shapes need at least three vertices.";
@@ -370,7 +378,7 @@ namespace box2dblocks {
     //% outline.defl=1
     //% expandableArgumentMode=toggle
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=55
+    //% blockNamespace=box2dshapes group="Lines" weight=95
     export function chain(vertices: (PhysicsPoint | Sprite | tiles.Location | Body)[], loop: boolean = false, outline = 1): PhysicsShape {
         if (!vertices || vertices.length < 2)
             throw "Chain shapes need at least two vertices.";
@@ -393,7 +401,7 @@ namespace box2dblocks {
     //% dy.defl=0
     //% angle.defl=0
     //% inlineInputMode="inline"
-    //% group="Shapes" weight=50
+    //% blockNamespace=box2dshapes group="All Shapes" weight=95
     export function shiftShape(shape: PhysicsShape, dx: number, dy: number, angle: number): PhysicsShape {
         return shape.shifted(dx / PIXELS_PER_METER, dy / PIXELS_PER_METER, angle);
     }
@@ -406,7 +414,7 @@ namespace box2dblocks {
     //% fill.defl=0
     //% outline.shadow=colorindexpicker
     //% outline.defl=1
-    //% group="Shapes" weight=45
+    //% blockNamespace=box2dshapes group="All Shapes" weight=90
     export function setShapeColor(shape: PhysicsShape, fill: number, outline: number): void {
         shape.fillColor = fill;
         shape.outlineColor = outline;

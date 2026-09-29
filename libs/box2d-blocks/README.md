@@ -10,6 +10,9 @@ and destroying the body also destroys its fixtures and connected joints.
 Shape blocks create shape variables. Passing one to create-body creates its
 first fixture with default material settings. The attach-shape block can add
 more fixtures or customize their material and drawing options.
+The separate **Box2D Shapes** toolbox category groups shape blocks into circles,
+rectangles, triangles, polygons, lines, and operations that apply to every
+shape type.
 Collision groups apply to every existing fixture on a body and are retained for
 fixtures added later. Equal positive groups always collide, equal negative
 groups never collide, and group zero uses normal Box2D filtering.
@@ -44,6 +47,11 @@ The body-material block requires friction and optionally overrides density and
 restitution. It updates every existing fixture immediately. Fixtures added
 later use the material values supplied to the add-shape block. Omitted density
 or restitution values retain their previous per-fixture settings.
+The separate **Box2D Physics** toolbox category contains world settings, motion
+commands, forces and impulses, body physics configuration, and collision APIs.
+Combined body property blocks remain in the main **Box2D** category.
+The main category groups body creation, tilemap walls, body properties,
+lifecycle and kind blocks, and global body lookup helpers separately.
 Edge shapes are centered on the body and use a pixel length and radian angle.
 The create-ground block accepts a list of world-space point blocks and creates
 one static Wall-kind body with an open edge chain connecting them in order.
@@ -68,7 +76,8 @@ Bodies have a `z` property like sprites. A body is added to the scene's sprite
 rendering order when its first shape is added, so bodies and sprites are drawn
 together by z index. Destroying a body removes it from that scene ordering.
 
-The `attach` block creates a revolute, wheel, prismatic, weld, or distance joint between named points
+The separate **Box2D Joints** toolbox category groups blocks by the joint types
+they support. The `attach` block creates a revolute, wheel, prismatic, weld, or distance joint between named points
 such as the center, edge midpoints, or corners of two bodies. Wheel joints use a
 vertical suspension axis. Prismatic joints use the same vertical axis, allow
 translation without relative rotation, and have no suspension. The anchor dropdowns are shadow blocks that can be
@@ -103,11 +112,13 @@ immediately; destroying the sprite cleans everything up on the next frame.
 
 Body `x`, `y`, `vx`, `vy`, `angle (radians)`, `left`, `top`, `right`, and
 `bottom` properties use combined getter/setter blocks like sprite properties.
-Linear velocity uses pixels per second. The edge properties use the world-space
-bounds of every attached shape and move the body so the selected edge reaches
-the requested pixel coordinate.
+The read-only `mass` property returns the body's current Box2D mass, including
+changes caused by adding fixtures or changing fixture density. Linear velocity
+uses pixels per second. The edge properties use the world-space bounds of every
+attached shape and move the body so the selected edge reaches the requested
+pixel coordinate.
 
-The separate **Body Data** category stores typed values directly on bodies. It
+The separate **Box2D Data** category stores typed values directly on bodies. It
 provides scalar and array set/get blocks for strings, numbers, booleans,
 tilemap locations, images, sprites, and bodies. Number data also has a change
 block, and body functions can be defined by key and called later. Missing

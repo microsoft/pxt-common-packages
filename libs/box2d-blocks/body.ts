@@ -18,39 +18,39 @@ namespace box2dblocks {
             super();
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="x" callInDebugger
         get x(): number {
             return this.nativeBody.getState().x * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="x"
         set x(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setTransform(value / PIXELS_PER_METER, snapshot.y, snapshot.angle);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="y" callInDebugger
         get y(): number {
             return this.nativeBody.getState().y * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="y"
         set y(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setTransform(snapshot.x, value / PIXELS_PER_METER, snapshot.angle);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="z" callInDebugger
         get z(): number {
             return this._z;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="z"
         set z(value: number) {
             if (this._z != value) {
@@ -59,100 +59,106 @@ namespace box2dblocks {
             }
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="vx" callInDebugger
         get vx(): number {
             return this.nativeBody.getState().velocityX * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="vx"
         set vx(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setLinearVelocity(value / PIXELS_PER_METER, snapshot.velocityY);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="vy" callInDebugger
         get vy(): number {
             return this.nativeBody.getState().velocityY * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="vy"
         set vy(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setLinearVelocity(snapshot.velocityX, value / PIXELS_PER_METER);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="angle (radians)" callInDebugger
         get angle(): number {
             return this.nativeBody.getState().angle;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="angle (radians)"
         set angle(value: number) {
             const snapshot = this.nativeBody.getState();
             this.nativeBody.setTransform(snapshot.x, snapshot.y, value);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="angular velocity" callInDebugger
         get angularVelocity(): number {
             return this.nativeBody.angularVelocity;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="angular velocity"
         set angularVelocity(value: number) {
             this.nativeBody.angularVelocity = value;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
+        //% blockCombine block="mass" callInDebugger
+        get mass(): number {
+            return this.nativeBody.getState().mass;
+        }
+
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="left" callInDebugger
         get left(): number {
             return this.worldBounds()[0] * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="left"
         set left(value: number) {
             this.moveBy(value - this.left, 0);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="top" callInDebugger
         get top(): number {
             return this.worldBounds()[1] * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="top"
         set top(value: number) {
             this.moveBy(0, value - this.top);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="right" callInDebugger
         get right(): number {
             return this.worldBounds()[2] * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="right"
         set right(value: number) {
             this.moveBy(value - this.right, 0);
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="bottom" callInDebugger
         get bottom(): number {
             return this.worldBounds()[3] * PIXELS_PER_METER;
         }
 
-        //% group="Physics" blockSetVariable="myBody"
+        //% group="Properties" blockSetVariable="myBody"
         //% blockCombine block="bottom"
         set bottom(value: number) {
             this.moveBy(0, value - this.bottom);
@@ -359,7 +365,7 @@ namespace box2dblocks {
     //% kind.defl=PhysicsBodyKind.Body
     //% shape.shadow=box2d_blocks_circle_shape
     //% blockSetVariable=myBody
-    //% group="Body" weight=100
+    //% group="Create" weight=100
     //% blockGap=8
     export function createBody(type: box2d.BodyType, kind: number, shape: PhysicsShape): Body {
         const body = _state().createBody(type, screen.width / 2, screen.height / 2, 0, kind);
@@ -378,7 +384,7 @@ namespace box2dblocks {
     //% kind.shadow=box2d_blocks_body_kind
     //% kind.defl=PhysicsBodyKind.Body
     //% blockSetVariable=myBody
-    //% group="Body" weight=95
+    //% group="Create" weight=95
     //% blockGap=8
     export function createEmptyBody(type: box2d.BodyType, kind: number): Body {
         return _state().createBody(type, screen.width / 2, screen.height / 2, 0, kind);
@@ -394,7 +400,7 @@ namespace box2dblocks {
     //% color.shadow=colorindexpicker
     //% color.defl=1
     //% blockSetVariable=ground
-    //% group="Body" weight=90
+    //% group="Create" weight=90
     export function createGround(positions: PhysicsPoint[], color: number = 1): Body {
         if (!positions || positions.length < 2)
             throw "Ground and walls need at least two positions.";
@@ -416,7 +422,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_create_tilemap_walls
     //% block="create walls from tilemap"
     //% blockSetVariable=tilemapWalls
-    //% group="Body" weight=85
+    //% group="Tilemaps" weight=100
     export function createTilemapWalls(): Body {
         return _state().createTilemapWalls();
     }
@@ -424,7 +430,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_set_body_flag
     //% block="set $body $flag $enabled"
     //% body.shadow=variables_get body.defl=myBody enabled.shadow=toggleOnOff
-    //% group="Body" weight=60
+    //% group="Properties" weight=90
     export function setBodyFlag(body: Body, flag: box2d.BodyFlag, enabled: boolean): void {
         body.nativeBody.setFlag(flag, enabled);
     }
@@ -432,7 +438,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_body_kind_of
     //% block="$body kind"
     //% body.shadow=variables_get body.defl=myBody
-    //% group="Body" weight=50
+    //% group="Lifecycle" weight=100
     //% blockGap=8
     export function kindOf(body: Body): number {
         return body.kind;
@@ -441,7 +447,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_set_body_kind
     //% block="set $body kind $kind=box2d_blocks_body_kind"
     //% body.shadow=variables_get body.defl=myBody
-    //% group="Body" weight=45
+    //% group="Lifecycle" weight=95
     export function setBodyKind(body: Body, kind: number): void {
         body.kind = kind;
         _state().updateBodyFilter(body);
@@ -450,7 +456,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_destroy_body
     //% block="destroy $body"
     //% body.shadow=variables_get body.defl=myBody
-    //% group="Body" weight=30
+    //% group="Lifecycle" weight=90
     //% blockGap=8
     export function destroyBody(body: Body): void {
         if (body) body.destroy();
@@ -459,7 +465,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_is_destroyed
     //% block="$body is destroyed"
     //% body.shadow=variables_get body.defl=myBody
-    //% group="Body" weight=25
+    //% group="Lifecycle" weight=85
     export function isDestroyed(body: Body): boolean {
         return !body || body.destroyed || !body.nativeBody.valid;
     }
@@ -471,7 +477,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_body_at
     //% block="body at $point"
     //% point.shadow=box2d_blocks_xy_point
-    //% group="Body" weight=20
+    //% group="Global" weight=100
     export function bodyAt(point: PhysicsPoint | Sprite | tiles.Location | Body): Body {
         const owner = _state();
         const worldX = point.x / PIXELS_PER_METER;
@@ -496,7 +502,7 @@ namespace box2dblocks {
     //% block="on $body of kind $kind=box2d_blocks_body_kind collides with $otherBody of kind $otherKind=box2d_blocks_body_kind"
     //% draggableParameters="reporter"
     //% blockAllowMultiple=1
-    //% group="Collisions" weight=100
+    //% blockNamespace=box2dphysics group="Collisions" weight=100
     export function onCollision(kind: number, otherKind: number, handler: (body: Body, otherBody: Body) => void): void {
         if (!handler) return;
         _state().handlers.push(new _CollisionHandler(kind, otherKind, handler));
@@ -510,7 +516,7 @@ namespace box2dblocks {
     //% block="$body is touching $otherBody"
     //% body.shadow=variables_get body.defl=myBody
     //% otherBody.shadow=variables_get otherBody.defl=otherBody
-    //% group="Collisions" weight=95
+    //% blockNamespace=box2dphysics group="Collisions" weight=95
     export function bodiesTouching(body: Body, otherBody: Body): boolean {
         const owner = validateBodyPair(body, otherBody);
         if (body == otherBody) return false;
@@ -534,7 +540,7 @@ namespace box2dblocks {
     //% block="$body is on ground || with maximum slope $maxSlopeAngle degrees"
     //% body.shadow=variables_get body.defl=myBody
     //% maxSlopeAngle.defl=45 maxSlopeAngle.min=0 maxSlopeAngle.max=90
-    //% group="Collisions" weight=92
+    //% blockNamespace=box2dphysics group="Collisions" weight=92
     export function isOnGround(body: Body, maxSlopeAngle: number = 45): boolean {
         const owner = validateBody(body);
         if (maxSlopeAngle < 0 || maxSlopeAngle > 90)
@@ -576,7 +582,7 @@ namespace box2dblocks {
     //% block="$body is being squished||with angle tolerance $angleTolerance degrees"
     //% body.shadow=variables_get body.defl=myBody
     //% angleTolerance.defl=15 angleTolerance.min=0 angleTolerance.max=90
-    //% group="Collisions" weight=91
+    //% blockNamespace=box2dphysics group="Collisions" weight=91
     export function isBeingSquished(body: Body, angleTolerance: number = 15): boolean {
         const owner = validateBody(body);
         if (body.type != box2d.BodyType.Dynamic)
@@ -636,7 +642,7 @@ namespace box2dblocks {
     //% block="contact points between $body and $otherBody"
     //% body.shadow=variables_get body.defl=myBody
     //% otherBody.shadow=variables_get otherBody.defl=otherBody
-    //% group="Collisions" weight=90
+    //% blockNamespace=box2dphysics group="Collisions" weight=90
     export function contactPoints(body: Body, otherBody: Body): PhysicsPoint[] {
         const owner = validateBodyPair(body, otherBody);
         const result: PhysicsPoint[] = [];
@@ -684,7 +690,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_set_kinds_collide
     //% block="set kind $kind=box2d_blocks_body_kind collides with kind $otherKind=box2d_blocks_body_kind to $collide"
     //% collide.shadow=toggleOnOff
-    //% group="Collisions" weight=90
+    //% blockNamespace=box2dphysics group="Collisions" weight=85
     export function setKindsCollide(kind: number, otherKind: number, collide: boolean): void {
         _state().setKindsCollide(kind, otherKind, collide);
     }
@@ -697,7 +703,7 @@ namespace box2dblocks {
     //% block="set $body collision group $group"
     //% body.shadow=variables_get body.defl=myBody
     //% group.defl=0
-    //% group="Collisions" weight=55
+    //% blockNamespace=box2dphysics group="Collisions" weight=80
     export function setCollisionGroup(body: Body, group: number): void {
         const owner = _state();
         if (!body || body.destroyed || !body.belongsTo(owner) || !body.nativeBody.valid)

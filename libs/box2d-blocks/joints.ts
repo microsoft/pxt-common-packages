@@ -1,3 +1,11 @@
+/**
+ * Connect and configure Box2D bodies with joints.
+ */
+//% color=#426b9a weight=78 icon="\uf0c1" block="Box2D Joints"
+//% groups='["Attachment Joints", "Distance Joints", "Revolute, Prismatic & Wheel Joints", "Wheel Joints", "Pulley Joints", "Mouse Joints", "All Joints"]'
+namespace box2djoints {
+}
+
 namespace box2dblocks {
     export enum BodyAnchor {
         //% block="center"
@@ -250,7 +258,7 @@ namespace box2dblocks {
     //% bodyB.defl=otherBody
     //% jointType.defl=AttachmentJointType.Revolute
     //% blockSetVariable=myJoint
-    //% group="Joints" weight=100
+    //% blockNamespace=box2djoints group="Attachment Joints" weight=100
     export function attachBodies(bodyA: Body, anchorA: JointAnchor, bodyB: Body, anchorB: JointAnchor, jointType: AttachmentJointType = AttachmentJointType.Revolute): Joint {
         if (jointType === AttachmentJointType.Distance) {
             return _createDistanceJoint(bodyA, anchorA, bodyB, anchorB);
@@ -312,7 +320,7 @@ namespace box2dblocks {
     //% expandableArgumentMode=toggle
     //% inlineInputMode=inline
     //% blockSetVariable=myJoint
-    //% group="Joints" weight=98
+    //% blockNamespace=box2djoints group="Pulley Joints" weight=100
     export function createPulleyJoint(
         bodyA: Body,
         anchorA: JointAnchor,
@@ -356,7 +364,7 @@ namespace box2dblocks {
     //% block="set distance joint $joint length $length min $minLength max $maxLength||stiffness $stiffness damping $damping"
     //% joint.shadow=variables_get joint.defl=myJoint
     //% expandableArgumentMode=toggle
-    //% group="Joints" weight=95
+    //% blockNamespace=box2djoints group="Distance Joints" weight=100
     //% inlineInputMode="inline"
     export function configureDistanceJoint(joint: Joint, length: number, minLength: number, maxLength: number, stiffness: number = 0, damping: number = 0): void {
         if (!joint || !joint.nativeJoint || !joint.nativeJoint.valid || !(joint.nativeJoint instanceof box2d.DistanceJoint)) {
@@ -375,7 +383,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_joint_motor
     //% block="set $joint motor $enabled speed $speed max force or torque $maxTorque"
     //% joint.shadow=variables_get joint.defl=myJoint enabled.shadow=toggleOnOff
-    //% group="Joints" weight=85
+    //% blockNamespace=box2djoints group="Revolute, Prismatic & Wheel Joints" weight=100
     //% inlineInputMode="inline"
     export function setJointMotor(joint: Joint, enabled: boolean, speed: number, maxTorque: number): void {
         if (!joint || !joint.nativeJoint || !joint.nativeJoint.valid) {
@@ -403,7 +411,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_joint_limits
     //% block="set $joint limits $enabled lower $lower upper $upper"
     //% joint.shadow=variables_get joint.defl=myJoint enabled.shadow=toggleOnOff
-    //% group="Joints" weight=80
+    //% blockNamespace=box2djoints group="Revolute, Prismatic & Wheel Joints" weight=95
     //% inlineInputMode="inline"
     export function setJointLimits(joint: Joint, enabled: boolean, lower: number, upper: number): void {
         if (!joint || !joint.nativeJoint || !joint.nativeJoint.valid) {
@@ -435,7 +443,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_wheel_suspension
     //% block="set wheel $joint stiffness $stiffness damping $damping"
     //% joint.shadow=variables_get joint.defl=myJoint
-    //% group="Joints" weight=60
+    //% blockNamespace=box2djoints group="Wheel Joints" weight=100
     export function setWheelSuspension(joint: Joint, stiffness: number, damping: number): void {
         if (!joint || !joint.nativeJoint || !(joint.nativeJoint instanceof box2d.WheelJoint))
             throw "This Box2D joint is not a wheel joint.";
@@ -448,7 +456,7 @@ namespace box2dblocks {
     //% block="$point of $joint"
     //% joint.shadow=variables_get joint.defl=myJoint
     //% point.defl=JointPoint.Start
-    //% group="Joints" weight=55
+    //% blockNamespace=box2djoints group="All Joints" weight=90
     export function jointPoint(joint: Joint, point: JointPoint = JointPoint.Start): PhysicsPoint {
         if (!joint || !joint.nativeJoint || !joint.nativeJoint.valid)
             throw "This Box2D joint is invalid.";
@@ -478,7 +486,7 @@ namespace box2dblocks {
     //% block="position of $anchor of $body"
     //% body.shadow=variables_get body.defl=myBody
     //% anchor.defl=BodyAnchor.Center
-    //% group="Body" weight=15
+    //% group="Properties" weight=85
     export function bodyPoint(body: Body, anchor: BodyAnchor = BodyAnchor.Center): PhysicsPoint {
         const owner = _state();
         if (!body || body.destroyed || !body.belongsTo(owner) || !body.nativeBody.valid)
@@ -502,7 +510,7 @@ namespace box2dblocks {
     //% expandableArgumentMode=toggle
     //% blockSetVariable=mouseJoint
     //% inlineInputMode="inline"
-    //% group="Joints" weight=75
+    //% blockNamespace=box2djoints group="Mouse Joints" weight=100
     export function createMouseJoint(sprite: Sprite, body: Body, anchor: JointAnchor, maxForce: number = 1000, stiffness: number = 100, damping: number = 10): Joint {
         const owner = _state();
         if (!sprite || (sprite.flags & sprites.Flag.Destroyed))
@@ -534,7 +542,7 @@ namespace box2dblocks {
     //% blockId=box2d_blocks_destroy_joint
     //% block="destroy $joint"
     //% joint.shadow=variables_get joint.defl=myJoint
-    //% group="Joints" weight=70
+    //% blockNamespace=box2djoints group="All Joints" weight=85
     export function destroyJoint(joint: Joint): void {
         if (joint) joint.destroy();
     }
@@ -543,13 +551,14 @@ namespace box2dblocks {
     //% block="$anchor"
     //% anchor.defl=BodyAnchor.Center
     //% blockHidden=true
+    //% blockNamespace=box2djoints
     export function bodyAnchor(anchor: BodyAnchor = BodyAnchor.Center): JointAnchor {
         return new JointAnchor(anchor, 0, 0);
     }
 
     //% blockId=box2d_blocks_joint_offset
     //% block="offset x $dx y $dy"
-    //% group="Joints" weight=95
+    //% blockNamespace=box2djoints group="All Joints" weight=80
     export function jointOffset(dx: number, dy: number): JointAnchor {
         return new JointAnchor(undefined, dx, dy);
     }

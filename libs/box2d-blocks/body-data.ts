@@ -1,7 +1,7 @@
 /**
  * Typed key/value data stored on Box2D bodies.
  */
-//% color="#426b9a" weight=79 icon="\uf1c0" block="Body Data"
+//% color="#426b9a" weight=76 icon="\uf1c0" block="Box2D Data"
 //% groups='["String", "Number", "Boolean", "Location", "Image", "Sprite", "Body", "Sprite Bodies", "Body Functions"]'
 namespace bodyData {
     function getCore(target: box2dblocks.Body, key: string, type: string): any {

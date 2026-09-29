@@ -71,7 +71,7 @@ const nativeBody = {
         return {
             x: 0, y: 0, angle: 0,
             velocityX: 0, velocityY: 0,
-            angularVelocity: 0
+            angularVelocity: 0, mass: 3.5
         };
     },
     destroy() {
@@ -87,6 +87,7 @@ const physicsBody = new context.box2dblocks.Body(
 );
 
 assert.equal(physicsBody.z, 0);
+assert.equal(physicsBody.mass, 3.5, "Body mass reads the current native mass");
 assert.deepEqual(sceneSprites, [], "Bodies without shapes are not registered for drawing");
 physicsBody.z = 12;
 assert.equal(physicsBody.z, 12);
