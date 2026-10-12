@@ -245,6 +245,9 @@ void ST7735::drawNumber(int idx, int x, int y, int color) {
 }
 
 static void drawPanic(int code) {
+    // the panic screen bit-bangs SPI; skip it for parallel-bus displays or when SCK isn't wired
+    if ((getConfig(CFG_DISPLAY_CFG2, 0) >> 24) != 0 || getConfig(CFG_PIN_DISPLAY_SCK, -1) == -1)
+        return;
     if (!LOOKUP_PIN(DISPLAY_MOSI))
         return;
 

@@ -22,7 +22,9 @@
         "indexedscreen.h",
         "arcadesound.h",
         "jddisplay.h",
-        "jddisplay.cpp"
+        "jddisplay.cpp",
+        "ST7789.h",
+        "ST7789.cpp"
     ],
     "dependencies": {
         "core": "file:../core"

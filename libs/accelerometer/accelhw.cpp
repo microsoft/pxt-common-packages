@@ -56,6 +56,13 @@
 #include "MPU6050.h"
 #endif
 
+#ifndef PXT_SUPPORT_LSM6DS
+#define PXT_SUPPORT_LSM6DS 0
+#endif
+#if PXT_SUPPORT_LSM6DS
+#include "LSM6DS.h"
+#endif
+
 #if defined(CODAL_ACCELEROMETER)
 #error "please define PXT_SUPPORT_*"
 #endif
@@ -186,6 +193,13 @@ private:
 			return ACCELEROMETER_TYPE_MPU6050;	
 #endif 
 
+#if PXT_SUPPORT_LSM6DS
+		if (LSM6DS::isDetected(*i2c, ACCELEROMETER_TYPE_LSM6DS))
+			return ACCELEROMETER_TYPE_LSM6DS;
+		if (LSM6DS::isDetected(*i2c, ACCELEROMETER_TYPE_LSM6DS_ALT))
+			return ACCELEROMETER_TYPE_LSM6DS_ALT;
+#endif
+
 		return -1;
 	}
 
@@ -218,6 +232,11 @@ private:
 #if PXT_SUPPORT_MPU6050
         case ACCELEROMETER_TYPE_MPU6050:
             return new MPU6050(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+#endif
+#if PXT_SUPPORT_LSM6DS
+        case ACCELEROMETER_TYPE_LSM6DS:
+        case ACCELEROMETER_TYPE_LSM6DS_ALT:
+            return new LSM6DS(*i2c, space, accType);
 #endif
         default:
             return NULL;
