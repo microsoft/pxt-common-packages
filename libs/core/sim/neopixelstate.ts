@@ -43,3 +43,32 @@ namespace pxsim {
         neopixelState(pinId: number): CommonNeoPixelState;
     }
 }
+
+namespace pxsim {
+    export function neopixelState(pinId: number) {
+        return (board() as any as LightBoard).neopixelState(pinId);
+    }
+
+    export function sendBufferAsm(buffer: RefBuffer, pin: number) {
+        const b = board();
+        if (!b) return;
+        const p = b.edgeConnectorState.getPin(pin);
+        if (!p) return;
+        const lp = neopixelState(p.id);
+        if (!lp) return;
+        const mode = lp.mode;
+        pxsim.light.sendBuffer(p, undefined, mode, buffer);
+    }
+}
+
+namespace pxsim.light {
+    // Currently only modifies the builtin pixels
+    export function sendBuffer(pin: { id: number }, clk: { id: number }, mode: number, b: RefBuffer) {
+        const state = neopixelState(pin.id);
+        if (!state) return;
+        state.mode = mode & 0xff;
+        state.buffer = b.data;
+
+        runtime.queueDisplayUpdate();
+    }
+}
