@@ -152,7 +152,7 @@ namespace pxsim.pins {
         markUsed(scl);
         return b && b.edgeConnectorState && b.edgeConnectorState.createI2C(sda, scl);
     }
-   
+
     export function createSPI(mosi: DigitalInOutPin, miso: DigitalInOutPin, sck: DigitalInOutPin) {
         const b = board() as EdgeConnectorBoard;
         markUsed(mosi);
@@ -168,6 +168,7 @@ namespace pxsim.I2CMethods {
     }
 
     export function writeBuffer(i2c: I2C, address: number, buf: RefBuffer, repeat?: boolean): number {
+        BufferMethods.typeCheck(buf);
         return 0;
     }
 }
@@ -179,6 +180,8 @@ namespace pxsim.SPIMethods {
     }
 
     export function transfer(device: pxsim.SPI, command: RefBuffer, response: RefBuffer) {
+        BufferMethods.typeCheck(command);
+        BufferMethods.typeCheck(response);
         device.transfer(command, response);
     }
 

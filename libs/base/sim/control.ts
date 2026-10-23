@@ -20,6 +20,7 @@ namespace pxsim.BufferMethods {
     }
 
     export function hash(buf: RefBuffer, bits: number) {
+        BufferMethods.typeCheck(buf);
         bits |= 0
         if (bits < 1)
             return 0

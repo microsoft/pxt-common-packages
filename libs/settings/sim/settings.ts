@@ -26,6 +26,7 @@ namespace pxsim.settings {
     }
 
     export function _set(key: string, buf: RefBuffer) {
+        BufferMethods.typeCheck(buf);
         key = encodeKey(key)
         const storage = board().storedState
         const prev = storage[key]
