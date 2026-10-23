@@ -586,6 +586,54 @@ class Sprite extends sprites.BaseSprite {
     }
 
     /**
+     * Place the sprite at a random position on the screen.
+     */
+    //% group="Physics"
+    //% weight=99
+    //% blockId=spritesetrandomposition block="place %sprite(mySprite) at random position"
+    //% help=sprites/sprite/set-random-position
+    setRandomPosition(): void {
+        const scene = game.currentScene();
+        const camera = scene.camera;
+        const tm = scene.tileMap;
+        
+        const halfWidth = this.width >> 1;
+        const halfHeight = this.height >> 1;
+        
+        // Calculate visible screen bounds in world coordinates
+        const minX = camera.offsetX + halfWidth;
+        const maxX = camera.offsetX + screen.width - halfWidth;
+        const minY = camera.offsetY + halfHeight;
+        const maxY = camera.offsetY + screen.height - halfHeight;
+        
+        // Generate initial random position
+        let x = Math.randomRange(minX, maxX);
+        let y = Math.randomRange(minY, maxY);
+        
+        // If tilemap exists, try to find a non-wall position (max 100 attempts)
+        if (tm && tm.enabled) {
+            let attempts = 0;
+            const maxAttempts = 100;
+            
+            while (attempts < maxAttempts) {
+                const tileCol = x >> tm.scale;
+                const tileRow = y >> tm.scale;
+                
+                if (!tm.isObstacle(tileCol, tileRow)) {
+                    break;
+                }
+                
+                // Wall detected, try a new position
+                x = Math.randomRange(minX, maxX);
+                y = Math.randomRange(minY, maxY);
+                attempts++;
+            }
+        }
+        
+        this.setPosition(x, y);
+    }
+
+    /**
      * Sets the sprite velocity in pixel / sec
      * @param vx
      * @param vy
