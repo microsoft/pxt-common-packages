@@ -1,6 +1,7 @@
 #include "pxt.h"
 #include "ST7735.h"
 #include "ILI9341.h"
+#include "ST7789.h"
 
 #include "SPIScreenIO.h"
 #ifdef STM32F4
@@ -116,6 +117,9 @@ class WDisplay {
             lcd = new ST7735(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
         else if (dispTp == DISPLAY_TYPE_ILI9341) {
             lcd = new ILI9341(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
+            doubleSize = true;
+        } else if (dispTp == DISPLAY_TYPE_ST7789) {
+            lcd = new pxt::ST7789(*io, *LOOKUP_PIN(DISPLAY_CS), *LOOKUP_PIN(DISPLAY_DC));
             doubleSize = true;
 #ifdef ARCADE_MBIT_CODAL
         } else if (dispTp == DISPLAY_TYPE_SMART) {

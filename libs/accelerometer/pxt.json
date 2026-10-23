@@ -5,6 +5,8 @@
         "README.md",
         "accelerometer.cpp",
         "accelhw.cpp",
+        "LSM6DS.h",
+        "LSM6DS.cpp",
         "axis.h",
         "gesture.ts",
         "shims.d.ts",
