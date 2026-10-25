@@ -1,4 +1,7 @@
 namespace pxsim {
+    /** Time, in milliseconds, since the last flush beyond which maybeForceUpdate repaints the last image. */
+    const FORCE_UPDATE_MS = 200
+
     function htmlColorToUint32(hexColor: string) {
         const ca = new Uint8ClampedArray(4)
         const v = parseInt(hexColor.replace(/#/, ""), 16)
@@ -93,7 +96,7 @@ namespace pxsim {
         }
 
         maybeForceUpdate() {
-            if (Date.now() - this.lastImageFlushTime > 200) {
+            if (host.clock().now() - this.lastImageFlushTime > FORCE_UPDATE_MS) {
                 this.showImage(null)
             }
         }
@@ -113,7 +116,7 @@ namespace pxsim {
                 this.screen = new Uint32Array(this.width * this.height)
             }
 
-            this.lastImageFlushTime = Date.now()
+            this.lastImageFlushTime = host.clock().now()
             this.lastImage = img
             this.changed = true
 
@@ -136,34 +139,6 @@ namespace pxsim {
             const b = (board() as any);
             if (b && b.updateStats) {
                 b.updateStats();
-            }
-        }
-
-        bindToSvgImage(lcd: SVGImageElement) {
-            const screenCanvas = document.createElement("canvas");
-            screenCanvas.width = this.width
-            screenCanvas.height = this.height
-
-            const ctx = screenCanvas.getContext("2d")
-            ctx.imageSmoothingEnabled = false
-            const imgdata = ctx.getImageData(0, 0, this.width, this.height)
-            const arr = new Uint32Array(imgdata.data.buffer)
-
-            const flush = function () {
-                requested = false
-                ctx.putImageData(imgdata, 0, 0)
-                lcd.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", screenCanvas.toDataURL());
-            }
-
-            let requested = false;
-            this.onChange = () => {
-                arr.set(this.screen)
-                // paint rect
-                runtime.queueDisplayUpdate();
-                if (!requested) {
-                    requested = true
-                    window.requestAnimationFrame(flush)
-                }
             }
         }
 

@@ -97,7 +97,7 @@ namespace pxsim {
 
     export interface MultiplayerAudioEvent extends SimulatorMultiplayerMessage {
         content: "Audio";
-        instruction: "playinstructions" | "muteallchannels";
+        instruction: audiohost.SoundEvent;
         soundbuf?: Uint8Array;
     }
 
@@ -134,15 +134,15 @@ namespace pxsim {
             this.origin = origin;
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
             if (this.origin === "server") {
-                pxsim.AudioContextManager.soundEventCallback = (ev: "playinstructions" | "muteallchannels", data?: Uint8Array) => {
+                audiohost.setSoundEventHandler((ev: audiohost.SoundEvent, data?: Uint8Array) => {
                     this.send({
                         content: "Audio",
                         instruction: ev,
                         soundbuf: data,
                     } as pxsim.MultiplayerAudioEvent)
-                }
+                });
             } else {
-                pxsim.AudioContextManager.soundEventCallback = undefined;
+                audiohost.setSoundEventHandler(undefined);
             }
         }
 
@@ -189,9 +189,9 @@ namespace pxsim {
             } else if (isAudioMessage(msg)) {
                 if (this.origin === "client") {
                     if (msg.instruction === "playinstructions") {
-                        pxsim.AudioContextManager.playInstructionsAsync(msg.soundbuf)
+                        void audiohost.audio().playInstructionsAsync(msg.soundbuf);
                     } else if (msg.instruction === "muteallchannels") {
-                        pxsim.AudioContextManager.muteAllChannels();
+                        audiohost.audio().stopAll();
                     }
                 }
             } else if (isConnectionMessage(msg)) {

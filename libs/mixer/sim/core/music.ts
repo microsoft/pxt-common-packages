@@ -1,16 +1,16 @@
 namespace pxsim.music {
     export function playInstructions(b: RefBuffer) {
         setupOnStopAll();
-        return AudioContextManager.playInstructionsAsync(b.data)
+        return audiohost.audio().playInstructionsAsync(b.data)
     }
 
     export function queuePlayInstructions(when: number, b: RefBuffer) {
         setupOnStopAll();
-        AudioContextManager.queuePlayInstructions(when, b)
+        audiohost.queuePlayInstructions(when, b.data)
     }
 
     export function stopPlaying() {
-        AudioContextManager.muteAllChannels()
+        audiohost.audio().stopAll()
 
         if (sequencers) {
             for (const seq of sequencers) {
@@ -39,7 +39,7 @@ namespace pxsim.music {
     function setupOnStopAll() {
         if (!onStopAllSetup) {
             onStopAllSetup = true;
-            pxsim.AudioContextManager.onStopAll(() => {
+            audiohost.audio().onStopAll(() => {
                 if (sequencers) {
                     for (const seq of sequencers) {
                         seq.sequencer.stop();

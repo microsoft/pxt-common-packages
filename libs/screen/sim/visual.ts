@@ -86,7 +86,7 @@ namespace pxsim.visuals {
       this.canvas = partSvg.getElementById('thescreen') as SVGImageElement;
       this.element = svg.elt("g");
       this.element.appendChild(partSvg.firstElementChild as SVGElement);
-      this.state.bindToSvgImage(this.canvas);
+      bindScreenToSvgImage(this.state, this.canvas);
     }
 
     moveToCoord(xy: visuals.Coord): void {

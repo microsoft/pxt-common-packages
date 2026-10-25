@@ -21,6 +21,8 @@
     "LICENSE",
     "built/common-sim.js",
     "built/common-sim.d.ts",
+    "built/common-simcore.js",
+    "built/common-simcore.d.ts",
     "libs/**/*"
   ],
   "dependencies": {
