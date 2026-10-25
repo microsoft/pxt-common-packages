@@ -55,7 +55,7 @@ namespace pxsim {
                 broadcast: true,
                 rssi: this._rssi || -75,
                 serial: state.transmitSerialNumber ? pxsim.control.deviceSerialNumber() : 0,
-                time: new Date().getTime(),
+                time: host.clock().now(),
                 payload
             })
         }

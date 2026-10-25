@@ -1,4 +1,4 @@
-/// <reference path="../../core/sim/analogSensor.ts" />
+/// <reference path="../../../core/sim/core/analogSensor.ts" />
 
 namespace pxsim {
     export interface MicrophoneBoard {
@@ -8,7 +8,7 @@ namespace pxsim {
     export class MicrophoneState extends AnalogSensorState {
         public onSoundRegistered: boolean = false;
         public soundLevelRequested: boolean = false;
-        private pingUsed: ReturnType<typeof setTimeout>;
+        private pingUsed: host.TimerHandle;
 
         public pingSoundLevel = () => {
             if (this.onSoundRegistered) {
@@ -16,8 +16,8 @@ namespace pxsim {
             }
             this.soundLevelRequested = true;
             runtime.queueDisplayUpdate();
-            clearTimeout(this.pingUsed);
-            this.pingUsed = setTimeout(() => {
+            host.timers().clearTimeout(this.pingUsed);
+            this.pingUsed = host.timers().setTimeout(() => {
                 this.soundLevelRequested = false;
                 runtime.queueDisplayUpdate();
                 this.pingUsed = undefined;

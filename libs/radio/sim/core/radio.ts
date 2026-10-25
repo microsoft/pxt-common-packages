@@ -29,7 +29,7 @@ namespace pxsim.radio {
                 bufferData: buf.data
             });
         }
-        setTimeout(cb, 1);
+        host.timers().setTimeout(cb, 1);
     }
 
     export function readRawPacket() {
