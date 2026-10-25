@@ -60,12 +60,12 @@ namespace pxsim.music {
 
         audioState.startPlaying();
         runtime.queueDisplayUpdate();
-        AudioContextManager.tone(frequency, 1);
+        audiohost.audio().tone(frequency, 1);
         let cb = getResume();
         if (ms <= 0) cb();
         else {
             runtime.schedule(() => {
-                AudioContextManager.stop();
+                audiohost.audio().stop();
                 audioState.stopPlaying();
 
                 runtime.queueDisplayUpdate();

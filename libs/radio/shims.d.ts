@@ -6,9 +6,24 @@
 declare namespace radio {
 
     /**
+     * Disables the radio for use as a multipoint sender/receiver.
+     * Disabling radio will help conserve battery power when it is not in use.
+     */
+    //% help=radio/off shim=radio::off
+    function off(): void;
+
+    /**
+     * Initialises the radio for use as a multipoint sender/receiver
+     * Only useful when the radio.off() is used beforehand.
+     */
+    //% help=radio/on shim=radio::on
+    function on(): void;
+
+    /**
      * Sends an event over radio to neigboring devices
      */
     //% blockId=radioRaiseEvent block="radio raise event|from source %src=control_event_source_id|with value %value=control_event_value_id"
+    //% src.label="source" value.label="value"
     //% blockExternalInputs=1
     //% advanced=true
     //% weight=1
@@ -44,7 +59,9 @@ declare namespace radio {
     //% help=radio/set-group
     //% weight=100
     //% blockId=radio_set_group block="radio set group %ID"
-    //% id.min=0 id.max=255 shim=radio::setGroup
+    //% id.label="value"
+    //% id.min=0 id.max=255
+    //% group="Group" shim=radio::setGroup
     function setGroup(id: int32): void;
 
     /**
@@ -54,6 +71,7 @@ declare namespace radio {
     //% help=radio/set-transmit-power
     //% weight=9 blockGap=8
     //% blockId=radio_set_transmit_power block="radio set transmit power %power"
+    //% power.label="value"
     //% power.min=0 power.max=7
     //% advanced=true shim=radio::setTransmitPower
     function setTransmitPower(power: int32): void;
@@ -65,6 +83,7 @@ declare namespace radio {
     //% help=radio/set-frequency-band
     //% weight=8 blockGap=8
     //% blockId=radio_set_frequency_band block="radio set frequency band %band"
+    //% band.label="value"
     //% band.min=0 band.max=83
     //% advanced=true shim=radio::setFrequencyBand
     function setFrequencyBand(band: int32): void;

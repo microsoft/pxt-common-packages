@@ -11,5 +11,11 @@
         "rootDir": ".",
         "newLine": "LF",
         "sourceMap": false
-    }
+    },
+    "files": [
+        "../../../node_modules/pxt-core/built/pxtsim.d.ts"
+    ],
+    "include": [
+        "**/*.ts"
+    ]
 }
