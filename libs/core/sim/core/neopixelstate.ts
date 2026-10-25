@@ -18,9 +18,15 @@ namespace pxsim {
             return this.mode == NeoPixelMode.RGBW || this.mode == NeoPixelMode.DotStar ? 4 : 3;
         }
 
+        /**
+         * Reads one pixel from the buffer as color channels in R, G, B order, plus W in RGBW
+         * mode. The buffer's byte order per pixel depends on the mode: RGB stores G, R, B; RGBW
+         * stores G, R, B, W; RGB_RGB stores R, G, B; DotStar stores a leading byte, then B, G, R.
+         * @param pixel the index of the pixel, from 0
+         * @returns [r, g, b], or [r, g, b, w] in RGBW mode
+         */
         public pixelColor(pixel: number): number[] {
             const offset = pixel * this.stride;
-            // RBG
             switch (this.mode) {
                 case NeoPixelMode.RGBW:
                     return [this.buffer[offset + 1], this.buffer[offset], this.buffer[offset + 2], this.buffer[offset + 3]];
@@ -39,14 +45,16 @@ namespace pxsim {
     }
 
     export interface LightBoard {
+        /**
+         * Returns the NeoPixel state for `pinId` without allocating one; undefined when none
+         * exists.
+         */
         tryGetNeopixelState(pinId: number): CommonNeoPixelState;
         neopixelState(pinId: number): CommonNeoPixelState;
     }
-}
 
-namespace pxsim {
     export function neopixelState(pinId: number) {
-        return (board() as any as LightBoard).neopixelState(pinId);
+        return (board() as unknown as LightBoard).neopixelState(pinId);
     }
 
     export function sendBufferAsm(buffer: RefBuffer, pin: number) {

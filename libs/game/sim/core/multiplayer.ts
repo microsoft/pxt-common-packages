@@ -189,7 +189,7 @@ namespace pxsim {
             } else if (isAudioMessage(msg)) {
                 if (this.origin === "client") {
                     if (msg.instruction === "playinstructions") {
-                        audiohost.audio().playInstructionsAsync(msg.soundbuf)
+                        void audiohost.audio().playInstructionsAsync(msg.soundbuf);
                     } else if (msg.instruction === "muteallchannels") {
                         audiohost.audio().stopAll();
                     }
