@@ -1,4 +1,7 @@
 namespace pxsim {
+    /** Time, in milliseconds, since the last flush beyond which maybeForceUpdate repaints the last image. */
+    const FORCE_UPDATE_MS = 200
+
     function htmlColorToUint32(hexColor: string) {
         const ca = new Uint8ClampedArray(4)
         const v = parseInt(hexColor.replace(/#/, ""), 16)
@@ -93,7 +96,7 @@ namespace pxsim {
         }
 
         maybeForceUpdate() {
-            if (host.clock().now() - this.lastImageFlushTime > 200) {
+            if (host.clock().now() - this.lastImageFlushTime > FORCE_UPDATE_MS) {
                 this.showImage(null)
             }
         }
