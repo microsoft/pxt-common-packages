@@ -4,18 +4,19 @@
         "noImplicitAny": true,
         "noImplicitReturns": true,
         "lib": [
-            "DOM",
-            "DOM.Iterable",
             "ES2017"
         ],
         "rootDir": ".",
         "newLine": "LF",
-        "sourceMap": false
+        "sourceMap": false,
+        "skipLibCheck": true,
+        "types": []
     },
     "files": [
-        "../../../node_modules/pxt-core/built/pxtsim.d.ts"
+        "../../../node_modules/pxt-core/built/pxtsimcore.d.ts",
+        "../../../node_modules/pxt-core/built/pxtsimcore-globals.d.ts"
     ],
     "include": [
-        "**/*.ts"
+        "core/*.ts"
     ]
 }
