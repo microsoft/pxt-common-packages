@@ -56,6 +56,13 @@
 #include "MPU6050.h"
 #endif
 
+#ifndef PXT_SUPPORT_LSM303
+#define PXT_SUPPORT_LSM303 0
+#endif
+#if PXT_SUPPORT_LSM303
+#include "LSM303Accelerometer.h"
+#endif
+
 #if defined(CODAL_ACCELEROMETER)
 #error "please define PXT_SUPPORT_*"
 #endif
@@ -116,7 +123,7 @@ class WAccel {
         acc = instantiateAccelerometer(accType, i2c);
         if (NULL == acc) {
             int accDetect = detectAccelerometer(i2c);
-            if (accDetect < 0) {
+            if (accDetect == 0) {
                 DMESG("acc: not detected");
             } else {
                 DMESG("acc: detected %d", accDetect);
@@ -186,7 +193,13 @@ private:
 			return ACCELEROMETER_TYPE_MPU6050;	
 #endif 
 
-		return -1;
+#if PXT_SUPPORT_LSM303  
+		result = i2c->readRegister(ACCELEROMETER_TYPE_LSM303 & 0xFF, LSM303_WHO_AM_I_A, &data, 1);
+		if (result ==0)
+			return ACCELEROMETER_TYPE_LSM303;	
+#endif
+
+		return 0;
 	}
 
     codal::Accelerometer* instantiateAccelerometer(int accType, codal::I2C* i2c) {
@@ -215,10 +228,14 @@ private:
         case ACCELEROMETER_TYPE_MMA8453:
             return new MMA8453(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
 #endif
-#if PXT_SUPPORT_MPU6050
-        case ACCELEROMETER_TYPE_MPU6050:
-            return new MPU6050(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
-#endif
+    #if PXT_SUPPORT_MPU6050
+            case ACCELEROMETER_TYPE_MPU6050:
+                return new MPU6050(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+    #endif
+    #if PXT_SUPPORT_LSM303
+        case ACCELEROMETER_TYPE_LSM303:
+            return new LSM303Accelerometer(*i2c, *LOOKUP_PIN(ACCELEROMETER_INT), space);
+    #endif
         default:
             return NULL;
         }
