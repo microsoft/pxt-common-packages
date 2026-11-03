@@ -479,7 +479,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     for (const tile of collidedTiles) {
-                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                        if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
                             s.registerObstacle(collisionDirection, tile, tm);
                         }
                     }
@@ -560,7 +560,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     for (const tile of collidedTiles) {
-                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                        if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
                             s.registerObstacle(collisionDirection, tile, tm);
                         }
                     }
@@ -654,6 +654,10 @@ class ArcadePhysicsEngine extends PhysicsEngine {
             }
             alreadyHandled.push(tile);
 
+            if (!this.spriteStillOverlapsTile(sprite, tile)) {
+                continue;
+            }
+
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
                 tileOverlapHandlers
@@ -661,6 +665,28 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     .forEach(h => h.handler(sprite, tile));
             }
         }
+    }
+
+    /**
+     * Returns true if the sprite's hitbox currently covers the given tile location.
+     */
+    protected spriteStillOverlapsTile(sprite: Sprite, tile: tiles.Location): boolean {
+        if (sprite.flags & SPRITE_NO_TILE_OVERLAPS) return false;
+
+        const tm = game.currentScene().tileMap;
+        if (!tm || !tm.enabled) return false;
+
+        const hbox = sprite._hitbox;
+        if (!hbox) return false;
+
+        const scale = tm.scale;
+        const c0 = Fx.toIntShifted(Fx.add(hbox.left, Fx.oneHalfFx8), scale);
+        const c1 = Fx.toIntShifted(Fx.add(hbox.right, Fx.oneHalfFx8), scale);
+        const r0 = Fx.toIntShifted(Fx.add(hbox.top, Fx.oneHalfFx8), scale);
+        const r1 = Fx.toIntShifted(Fx.add(hbox.bottom, Fx.oneHalfFx8), scale);
+
+        return tile.column >= c0 && tile.column <= c1
+            && tile.row >= r0 && tile.row <= r1;
     }
 
     /**
