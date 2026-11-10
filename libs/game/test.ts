@@ -58,3 +58,41 @@ pause(100);
 
 control.assert(overlapSwapped == 1, 0x200);
 control.assert(dangerHits == 0, 0x201);
+
+namespace SpriteKind {
+    export const TestTeleporter = SpriteKind.create();
+}
+
+const teleportTile = img`
+    4
+`;
+
+const teleportMap = tiles.createTilemap(
+    hex`0400040000000000040404040000000000000000`,
+    img`
+        . . . .
+        . . . .
+        . . . .
+        . . . .
+    `,
+    [emptyTile, overlapTile, neutralTile, dangerTile, teleportTile],
+    TileScale.Eight
+);
+
+let teleportHits = 0;
+
+scene.onOverlapTile(SpriteKind.TestTeleporter, teleportTile, function (sprite: Sprite, location: tiles.Location) {
+    teleportHits++;
+    tiles.placeOnTile(sprite, tiles.getTileLocation(0, 0));
+});
+
+tiles.setCurrentTilemap(teleportMap);
+
+const teleporterImage = image.create(8, 8);
+teleporterImage.fill(1);
+const teleporter = sprites.create(teleporterImage, SpriteKind.TestTeleporter);
+teleporter.setPosition(8, 12);
+
+pause(100);
+
+control.assert(teleportHits == 1, 0x202);

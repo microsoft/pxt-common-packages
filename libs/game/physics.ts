@@ -45,6 +45,22 @@ class MovingSprite {
     ) { }
 }
 
+function spriteStillOverlapsTile(sprite: Sprite, tile: tiles.Location, tm = game.currentScene().tileMap): boolean {
+    if (sprite.flags & SPRITE_NO_TILE_OVERLAPS) return false;
+    if (!tm || !tm.enabled) return false;
+
+    const hbox = sprite._hitbox;
+    if (!hbox) return false;
+
+    const scale = tm.scale;
+    const c0 = Fx.toIntShifted(Fx.add(hbox.left, Fx.oneHalfFx8), scale);
+    const c1 = Fx.toIntShifted(Fx.add(hbox.right, Fx.oneHalfFx8), scale);
+    const r0 = Fx.toIntShifted(Fx.add(hbox.top, Fx.oneHalfFx8), scale);
+    const r1 = Fx.toIntShifted(Fx.add(hbox.bottom, Fx.oneHalfFx8), scale);
+
+    return tile.column >= c0 && tile.column <= c1
+        && tile.row >= r0 && tile.row <= r1;
+}
 
 /**
  * A physics engine that does simple AABB bounding box check
@@ -479,7 +495,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     for (const tile of collidedTiles) {
-                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                        if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
                             s.registerObstacle(collisionDirection, tile, tm);
                         }
                     }
@@ -560,7 +576,7 @@ class ArcadePhysicsEngine extends PhysicsEngine {
                     );
 
                     for (const tile of collidedTiles) {
-                        if(!(s.flags & SPRITE_NO_WALL_COLLISION)) {
+                        if (!(s.flags & SPRITE_NO_WALL_COLLISION)) {
                             s.registerObstacle(collisionDirection, tile, tm);
                         }
                     }
@@ -647,12 +663,17 @@ class ArcadePhysicsEngine extends PhysicsEngine {
      */
     protected tilemapOverlaps(sprite: Sprite, overlappedTiles: tiles.Location[]) {
         const alreadyHandled: tiles.Location[] = [];
+        const moved = sprite._x !== sprite._lastX || sprite._y !== sprite._lastY;
 
         for (const tile of overlappedTiles) {
             if (alreadyHandled.some(l => l.column === tile.column && l.row === tile.row)) {
                 continue;
             }
             alreadyHandled.push(tile);
+
+            if (moved && !spriteStillOverlapsTile(sprite, tile)) {
+                continue;
+            }
 
             const tileOverlapHandlers = game.currentScene().tileOverlapHandlers;
             if (tileOverlapHandlers) {
