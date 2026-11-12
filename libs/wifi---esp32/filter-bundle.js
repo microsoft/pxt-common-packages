@@ -5,56 +5,6 @@ const https = require('https');
 
 const msftTrusted = {}
 
-// CAs that must never be shipped, even if still listed by Mozilla or Microsoft.
-// Embedded TLS stacks cannot enforce partial distrust (SCTNotAfter / NotBefore)
-// or revocation (OneCRL), so these roots are removed outright.
-const blockedSubjects = [
-    // eMudhra / emSign - intermediate CA key compromise, October 2026
-    // https://emudhra.com/en/post/certificate-security-incident
-    /eMudhra/i,
-    /emSign/i,
-]
-
-function parseCsv(text) {
-    const rows = []
-    let row = []
-    let field = ""
-    let quoted = false
-    for (let i = 0; i < text.length; ++i) {
-        const c = text[i]
-        if (quoted) {
-            if (c == '"') {
-                if (text[i + 1] == '"') {
-                    field += '"'
-                    i++
-                } else {
-                    quoted = false
-                }
-            } else {
-                field += c
-            }
-        } else if (c == '"') {
-            quoted = true
-        } else if (c == ",") {
-            row.push(field)
-            field = ""
-        } else if (c == "\n" || c == "\r") {
-            if (c == "\r" && text[i + 1] == "\n") i++
-            row.push(field)
-            rows.push(row)
-            row = []
-            field = ""
-        } else {
-            field += c
-        }
-    }
-    if (field || row.length) {
-        row.push(field)
-        rows.push(row)
-    }
-    return rows.filter(r => r.length > 1 || r[0])
-}
-
 // see https://learn.microsoft.com/en-us/security/trusted-root/participants-list
 https.get('https://ccadb.my.salesforce-sites.com/microsoft/IncludedCACertificateReportForMSFTCSV', (resp) => {
     if (resp.statusCode != 200) {
@@ -64,7 +14,12 @@ https.get('https://ccadb.my.salesforce-sites.com/microsoft/IncludedCACertificate
     let data = '';
     resp.on('data', (chunk) => { data += chunk; });
     resp.on('end', () => {
-        const rows = parseCsv(data)
+        const rows = data.trim().split(/\r?\n/).map(ln => {
+            // CCADB CSV escapes quotes by doubling them, unlike JSON.
+            const json = ln.replace(/"((?:[^"]|"")*)"/g,
+                (_, field) => JSON.stringify(field.replace(/""/g, '"')))
+            return JSON.parse("[" + json + "]")
+        })
         const hd = rows.shift()
         const col = name => {
             const idx = hd.indexOf(name)
@@ -130,15 +85,14 @@ function main() {
             const info = certInfo(cert)
             const sha = info.fingerprint256.replace(/:/g, "")
             const subject = subj(info.subject)
-            if (blockedSubjects.some(re => re.test(subject))) {
-                console.log("skipping", sha, subject, " (blocked)")
-            } else if (msftTrusted[sha]) {
+            // Exclude eMudhra/emSign even if the input snapshots still contain them.
+            if (msftTrusted[sha] && !/eMudhra|emSign/i.test(subject)) {
                 outp += "# " + subject + "\n"
                 outp += "# " + info.valid_to + "\n"
                 outp += "# " + sha + "\n"
                 outp += cert + "\n"
             } else {
-                console.log("skipping", sha, subject, " (not in MSFT list)")
+                console.log("skipping", sha, subject)
             }
             cert = ""
         } else if (cert) {
