@@ -136,10 +136,7 @@ namespace pxsim {
 
         updateStats(stats: string) {
             this.stats = stats;
-            const b = (board() as any);
-            if (b && b.updateStats) {
-                b.updateStats();
-            }
+            runtime.queueDisplayUpdate();
         }
 
         setupScreenStatusBar(barHeight: number) {
