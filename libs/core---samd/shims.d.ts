@@ -84,6 +84,7 @@ declare interface DigitalInOutPin {
      */
     //% help=pins/digital-read weight=61
     //% blockId=device_get_digital_pin block="digital read|pin %name" blockGap=8
+    //% parts="slideswitch" trackArgs=0
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
@@ -97,6 +98,7 @@ declare interface DigitalInOutPin {
      */
     //% help=pins/digital-write weight=60
     //% blockId=device_set_digital_pin block="digital write|pin %name|to %value=toggleHighLow"
+    //% parts="led" trackArgs=0
     //% blockNamespace=pins
     //% name.fieldEditor="gridpicker"
     //% name.fieldOptions.width=220
@@ -109,6 +111,7 @@ declare interface DigitalInOutPin {
      */
     //% help=pins/on-pulsed weight=16 blockGap=8
     //% blockId=pins_on_pulsed block="on|pin %pin|pulsed %pulse"
+    //% parts="slideswitch" trackArgs=0
     //% blockNamespace=pins
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
@@ -121,6 +124,7 @@ declare interface DigitalInOutPin {
      */
     //% help=pins/on-event weight=20 blockGap=8
     //% blockId=pinsonevent block="on|pin %pin|%event"
+    //% parts="slideswitch" trackArgs=0
     //% blockNamespace=pins
     //% pin.fieldEditor="gridpicker"
     //% pin.fieldOptions.width=220
@@ -313,36 +317,6 @@ declare interface SPI {
      */
     //% shim=SPIMethods::setMode
     setMode(mode: int32): void;
-}
-declare namespace configStorage {
-
-    /**
-     * Puts an entry in the device storage. Key may have up to 16 characters (bytes).
-     * @param key the identifier (max 16 characters)
-     * @param value the data (max 32 characters)
-     */
-    //% shim=configStorage::setBuffer
-    function setBuffer(key: string, value: Buffer): void;
-
-    /**
-     * Gets an entry from the device storage. Key may have up to 16 characters (bytes).
-     * @param key the identifier (max 16 characters)
-     */
-    //% shim=configStorage::getBuffer
-    function getBuffer(key: string): Buffer;
-
-    /**
-     * Removes the key from local storage
-     * @param key the identifier (max 16 characters)
-     */
-    //% shim=configStorage::removeItem
-    function removeItem(key: string): void;
-
-    /**
-     * Clears the local storage
-     */
-    //% shim=configStorage::clear
-    function clear(): void;
 }
 
 // Auto-generated. Do not edit. Really.

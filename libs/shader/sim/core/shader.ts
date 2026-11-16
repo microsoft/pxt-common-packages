@@ -1,4 +1,4 @@
-/// <reference path="../../screen/sim/image.ts" />
+/// <reference path="../../../screen/sim/core/image.ts" />
 
 namespace pxsim.ShaderMethods {
     export function _mergeImage(dst: RefImage, src: RefImage, xy: number) {

@@ -16,8 +16,8 @@ declare namespace input {
      */
     //% blockId=device_switch_direction block="switch right"
     //% parts="switch"
-    //% group="Switch" weight=10 blockGap=8 shim=input::switchRight
-    //% help=input/switch-right
+    //% group="Switch" weight=10 blockGap=8
+    //% help=input/switch-right shim=input::switchRight
     function switchRight(): boolean;
 }
 

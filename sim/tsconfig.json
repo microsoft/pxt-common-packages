@@ -15,8 +15,15 @@
         "sourceMap": false,
         "types": []
     },
+    "files": [
+        "../node_modules/pxt-core/built/pxtsim.d.ts",
+        "../built/common-simcore.d.ts"
+    ],
     "include": [
         "../libs/*/sim/*.ts"
+    ],
+    "prepend": [
+        "../built/common-simcore.js"
     ]
 }
 

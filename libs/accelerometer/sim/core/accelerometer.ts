@@ -390,86 +390,9 @@ namespace pxsim {
     export class AccelerometerState {
         accelerometer: Accelerometer;
         useShake = false;
-        private tiltDecayer: any = 0;
-        private element: HTMLElement | SVGElement;
-        private moveHandler: (ev: MouseEvent) => void;
-        private leaveHandler: () => void;
 
         constructor(runtime: Runtime) {
            this.accelerometer = new Accelerometer(runtime);
-        }
-
-        attachEvents(element: HTMLElement | SVGElement): void {
-            this.detachEvents();
-            this.element = element;
-            this.moveHandler = (ev: MouseEvent) => {
-                if (!this.accelerometer.isActive) return;
-                if (this.tiltDecayer) {
-                    clearInterval(this.tiltDecayer);
-                    this.tiltDecayer = 0;
-                }
-
-                let bbox = element.getBoundingClientRect();
-                let ax = (ev.clientX - bbox.width / 2) / (bbox.width / 3);
-                let ay = (ev.clientY - bbox.height / 2) / (bbox.height / 3);
-
-                let x = - Math.max(- 1023, Math.min(1023, Math.floor(ax * 1023)));
-                let y = Math.max(- 1023, Math.min(1023, Math.floor(ay * 1023)));
-                let z2 = 1023 * 1023 - x * x - y * y;
-                let z = Math.floor((z2 > 0 ? -1 : 1) * Math.sqrt(Math.abs(z2)));
-
-                this.accelerometer.update(-x, y, z);
-                this.updateTilt();
-            };
-            this.leaveHandler = () => {
-                if (!this.accelerometer.isActive) return;
-
-                if (!this.tiltDecayer) {
-                    this.tiltDecayer = setInterval(() => {
-                        let accx = this.accelerometer.getX();
-                        accx = Math.floor(Math.abs(accx) * 0.85) * (accx > 0 ? 1 : -1);
-                        let accy = this.accelerometer.getY();
-                        accy = Math.floor(Math.abs(accy) * 0.85) * (accy > 0 ? 1 : -1);
-                        let accz = -Math.sqrt(Math.max(0, 1023 * 1023 - accx * accx - accy * accy));
-                        if (Math.abs(accx) <= 24 && Math.abs(accy) <= 24) {
-                            clearInterval(this.tiltDecayer);
-                            this.tiltDecayer = 0;
-                            accx = 0;
-                            accy = 0;
-                            accz = -1023;
-                        }
-                        this.accelerometer.update(accx, accy, accz);
-                        this.updateTilt();
-                    }, 50)
-                }
-            };
-            this.element.addEventListener(pointerEvents.move, this.moveHandler, false);
-            this.element.addEventListener(pointerEvents.leave, this.leaveHandler, false);
-        }
-
-        detachEvents(): void {
-            if (this.element) {
-                this.element.removeEventListener(pointerEvents.move, this.moveHandler, false);
-                this.element.removeEventListener(pointerEvents.leave, this.leaveHandler, false);
-            }
-            clearInterval(this.tiltDecayer);
-            this.tiltDecayer = 0;
-            this.element = undefined;
-            this.moveHandler = undefined;
-            this.leaveHandler = undefined;
-        }
-
-        private updateTilt() {
-            if (!this.accelerometer.isActive || !this.element) return;
-
-            const x = this.accelerometer.getX();
-            const y = this.accelerometer.getY();
-            const af = 8 / 1023;
-            const s = 1 - Math.min(0.1, Math.pow(Math.max(Math.abs(x), Math.abs(y)) / 1023, 2) / 35);
-
-            this.element.style.transform = `perspective(30em) rotateX(${y * af}deg) rotateY(${x * af}deg) scale(${s}, ${s})`
-            this.element.style.perspectiveOrigin = "50% 50% 50%";
-            this.element.style.perspective = "30em";
         }
     }
 }
