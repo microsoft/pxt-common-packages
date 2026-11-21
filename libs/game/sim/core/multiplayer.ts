@@ -110,15 +110,11 @@ namespace pxsim {
     const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
     const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
 
-    /**
-     * A board that takes controller key presses and releases.
-     */
+    /** A board that takes controller key presses and releases. */
     export interface KeyInputBoard extends CommonBoard {
         /**
-         * Presses or releases a controller key.
-         * @param key the key's code, a `keymap.Key` value
-         * @param pressed true for a press, false for a release
-         * @param playerOffset the number of players to shift the key by, 0 for the key as given
+         * Presses or releases a controller key, given as a `keymap.Key` code. `playerOffset`
+         * shifts the key to another player's controller.
          */
         handleKeyEvent(key: number, pressed: boolean, playerOffset?: number): void;
     }

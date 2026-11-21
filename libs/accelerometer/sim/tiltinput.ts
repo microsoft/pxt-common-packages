@@ -1,26 +1,21 @@
 namespace pxsim.visuals {
-    /** Magnitude of a full-scale accelerometer reading on one axis (1 g). */
+    /** The accelerometer reading for 1 g on one axis. */
     const FULL_SCALE = 1023;
-    /** Factor each decay step multiplies the x and y readings by. */
+    /** How much of the tilt is left after each decay step. */
     const DECAY_FACTOR = 0.85;
-    /** Largest x and y magnitude at which a decaying tilt snaps to flat. */
+    /** A decaying tilt snaps to flat once x and y are both this small. */
     const SETTLE_THRESHOLD = 24;
-    /** Interval between decay steps, in milliseconds. */
     const DECAY_INTERVAL_MS = 50;
-    /** Element rotation, in degrees, per unit of x or y reading. */
     const DEGREES_PER_UNIT = 8 / FULL_SCALE;
-    /** Upper bound on the fraction by which a tilt shrinks the element. */
+    /** The most a tilt shrinks the board image, as a fraction of its size. */
     const MAX_SCALE_REDUCTION = 0.1;
-    /** Divisor of the squared tilt fraction in the element's shrink. */
     const SCALE_DIVISOR = 35;
-    /** CSS perspective distance of the tilted element. */
     const PERSPECTIVE = "30em";
 
     /**
-     * Pointer input that tilts a simulated board. While the accelerometer is
-     * active, the pointer position over the attached element sets the
-     * acceleration of `state` and rotates the element to match; when the
-     * pointer leaves, the tilt decays toward flat in steps every 50 ms.
+     * Tilts a simulated board with the pointer. While the accelerometer is active, moving the
+     * pointer over the board image sets the acceleration and rotates the image to match. When the
+     * pointer leaves, the tilt decays back to flat.
      */
     export class AccelerometerTiltInput {
         private tiltDecayer: number = 0;
@@ -28,16 +23,10 @@ namespace pxsim.visuals {
         private moveHandler: (ev: MouseEvent) => void;
         private leaveHandler: () => void;
 
-        /**
-         * @param state the accelerometer state that pointer movement updates
-         */
         constructor(private state: AccelerometerState) {
         }
 
-        /**
-         * Starts listening for pointer movement over `element`, detaching
-         * from any element attached before.
-         */
+        /** Starts following the pointer over `element`. Detaches from the previous element first. */
         attach(element: HTMLElement | SVGElement): void {
             this.detach();
             this.element = element;
@@ -87,11 +76,8 @@ namespace pxsim.visuals {
         }
 
         /**
-         * Removes the pointer listeners from the attached element, if any,
-         * clears its transform, perspective and perspective origin, and
-         * stops a tilt decay in progress. When an element was attached and
-         * the accelerometer is active, sets the reading to flat
-         * (0, 0, -1023).
+         * Stops following the pointer and clears the element's tilt. If the accelerometer is
+         * active, the reading goes back to flat.
          */
         detach(): void {
             clearInterval(this.tiltDecayer);
