@@ -1,14 +1,8 @@
 namespace pxsim.visuals {
     /**
-     * Paints a screen state onto an SVG image through a canvas. The state's onChange copies the
-     * pixels into the canvas, first sizing the canvas to the state's width and height whenever
-     * they differ, and schedules one repaint per animation frame. A state with no pixels yet
-     * (width or height 0) paints nothing. When the canvas has no 2D context the state is left
-     * unbound and the returned function does nothing.
-     * @param state the screen state to paint
-     * @param lcd the SVG image whose href receives each repaint
-     * @returns a function that cancels a pending repaint and, while this binding's handler is
-     * still the state's onChange, restores the onChange the state had before
+     * Paints a screen state onto an SVG image element through a canvas. Each change to the state
+     * copies the pixels into the canvas and schedules one repaint per animation frame. Returns a
+     * function that undoes the binding.
      */
     export function bindScreenToSvgImage(state: ScreenState, lcd: SVGImageElement): () => void {
         const screenCanvas = document.createElement("canvas")

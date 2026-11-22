@@ -1,5 +1,8 @@
 namespace pxsim {
-    /** Time, in milliseconds, since the last flush beyond which maybeForceUpdate repaints the last image. */
+    /**
+     * How long the screen can go without a flush before maybeForceUpdate
+     * repaints it, in milliseconds.
+     */
     const FORCE_UPDATE_MS = 200
 
     function htmlColorToUint32(hexColor: string) {

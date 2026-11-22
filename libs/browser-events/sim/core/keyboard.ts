@@ -72,8 +72,8 @@ namespace pxsim.browserEvents {
     }
 
     /**
-     * Where a key sits on the keyboard, with the values of a DOM keyboard event's `location`
-     * field.
+     * Where a key sits on the keyboard. The values match the `location` field
+     * of a DOM keyboard event.
      */
     export enum KeyLocation {
         Standard = 0,
@@ -83,11 +83,8 @@ namespace pxsim.browserEvents {
     }
 
     /**
-     * Queues the bus events for a key press or release.
-     * @param key the key's name, as in the `key` field of a DOM keyboard event
-     * @param location where the key sits on the keyboard, as in the `location` field of a DOM
-     *     keyboard event
-     * @param pressed true for a press, false for a release
+     * Queues the key down or key up event for a key. Shift and Control also queue their left or
+     * right variant. `key` and `location` are the fields of the same name on a DOM keyboard event.
      */
     export function onKeyboardInput(key: string, location: KeyLocation, pressed: boolean) {
         const eventValue = getValueForKey(key);
@@ -121,10 +118,7 @@ namespace pxsim.browserEvents {
         }
     }
 
-    /**
-     * Returns the key code for a key name, as in the `key` field of a DOM keyboard event, or 0
-     * for a key with no code.
-     */
+    /** Returns the key code for the `key` name of a DOM keyboard event, or 0 if it has none. */
     export function getValueForKey(key: string): Key {
         switch (key) {
             case "0":
