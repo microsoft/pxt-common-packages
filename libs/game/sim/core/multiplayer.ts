@@ -97,7 +97,7 @@ namespace pxsim {
 
     export interface MultiplayerAudioEvent extends SimulatorMultiplayerMessage {
         content: "Audio";
-        instruction: "playinstructions" | "muteallchannels";
+        instruction: audiohost.SoundEvent;
         soundbuf?: Uint8Array;
     }
 
@@ -109,6 +109,15 @@ namespace pxsim {
 
     const MULTIPLAYER_PLAYER_JOINED_ID = 3241;
     const MULTIPLAYER_PLAYER_LEFT_ID = 3242;
+
+    /** A board that takes controller key presses and releases. */
+    export interface KeyInputBoard extends CommonBoard {
+        /**
+         * Presses or releases a controller key, given as a `keymap.Key` code. `playerOffset`
+         * shifts the key to another player's controller.
+         */
+        handleKeyEvent(key: number, pressed: boolean, playerOffset?: number): void;
+    }
 
     export class MultiplayerState {
         lastMessageId: number;
@@ -134,15 +143,15 @@ namespace pxsim {
             this.origin = origin;
             runtime.board.addMessageListener(msg => this.messageHandler(msg));
             if (this.origin === "server") {
-                pxsim.AudioContextManager.soundEventCallback = (ev: "playinstructions" | "muteallchannels", data?: Uint8Array) => {
+                audiohost.setSoundEventHandler((ev: audiohost.SoundEvent, data?: Uint8Array) => {
                     this.send({
                         content: "Audio",
                         instruction: ev,
                         soundbuf: data,
                     } as pxsim.MultiplayerAudioEvent)
-                }
+                });
             } else {
-                pxsim.AudioContextManager.soundEventCallback = undefined;
+                audiohost.setSoundEventHandler(undefined);
             }
         }
 
@@ -181,7 +190,7 @@ namespace pxsim {
                 }
             } else if (isButtonMessage(msg)) {
                 if (this.origin === "server") {
-                    (board() as any).handleKeyEvent(
+                    (board() as KeyInputBoard).handleKeyEvent(
                         msg.button + (7 * (msg.clientNumber || 1)), // + 7 to make it player 2 controls,
                         msg.state === "Pressed" || msg.state === "Held"
                     );
@@ -189,9 +198,9 @@ namespace pxsim {
             } else if (isAudioMessage(msg)) {
                 if (this.origin === "client") {
                     if (msg.instruction === "playinstructions") {
-                        pxsim.AudioContextManager.playInstructionsAsync(msg.soundbuf)
+                        void audiohost.audio().playInstructionsAsync(msg.soundbuf);
                     } else if (msg.instruction === "muteallchannels") {
-                        pxsim.AudioContextManager.muteAllChannels();
+                        audiohost.audio().stopAll();
                     }
                 }
             } else if (isConnectionMessage(msg)) {

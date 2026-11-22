@@ -1,6 +1,6 @@
 namespace pxsim.browserEvents {
     export function currentTime(): number {
-        return Date.now();
+        return host.clock().now();
     }
 
     export function getYear(time: number): number {

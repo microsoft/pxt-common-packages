@@ -11,10 +11,11 @@
         "newLine": "LF",
         "sourceMap": false
     },
+    "files": [
+        "../../../node_modules/pxt-core/built/pxtsim.d.ts"
+    ],
     "include": [
         "*.ts",
-        "../../*/sim/*.ts",
-        "../../../../pxt/pxtsim/*.ts",
-        "../../../../pxt/pxtsim/*/*.ts"
+        "../../*/sim/**/*.ts"
     ]
 }

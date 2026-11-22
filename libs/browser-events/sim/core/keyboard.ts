@@ -71,24 +71,39 @@ namespace pxsim.browserEvents {
         Delete = 46,
     }
 
-    export function onKeyboardEvent(event: KeyboardEvent, pressed: boolean) {
-        const eventValue = getValueForKey(event);
+    /**
+     * Where a key sits on the keyboard. The values match the `location` field
+     * of a DOM keyboard event.
+     */
+    export enum KeyLocation {
+        Standard = 0,
+        Left = 1,
+        Right = 2,
+        Numpad = 3,
+    }
 
-        fireEvent(eventValue as Key, pressed);
+    /**
+     * Queues the key down or key up event for a key. Shift and Control also queue their left or
+     * right variant. `key` and `location` are the fields of the same name on a DOM keyboard event.
+     */
+    export function onKeyboardInput(key: string, location: KeyLocation, pressed: boolean) {
+        const eventValue = getValueForKey(key);
+
+        fireEvent(eventValue, pressed);
 
         if (eventValue === Key.Shift) {
-            if (event.location === event.DOM_KEY_LOCATION_LEFT) {
+            if (location === KeyLocation.Left) {
                 fireEvent(Key.LeftShift, pressed);
             }
-            else if (event.location === event.DOM_KEY_LOCATION_RIGHT) {
+            else if (location === KeyLocation.Right) {
                 fireEvent(Key.RightShift, pressed);
             }
         }
         if (eventValue === Key.Control) {
-            if (event.location === event.DOM_KEY_LOCATION_LEFT) {
+            if (location === KeyLocation.Left) {
                 fireEvent(Key.LeftControl, pressed);
             }
-            else if (event.location === event.DOM_KEY_LOCATION_RIGHT) {
+            else if (location === KeyLocation.Right) {
                 fireEvent(Key.RightControl, pressed);
             }
         }
@@ -103,8 +118,9 @@ namespace pxsim.browserEvents {
         }
     }
 
-    export function getValueForKey(event: KeyboardEvent) {
-        switch (event.key) {
+    /** Returns the key code for the `key` name of a DOM keyboard event, or 0 if it has none. */
+    export function getValueForKey(key: string): Key {
+        switch (key) {
             case "0":
             case ")":
                 return Key.Zero;

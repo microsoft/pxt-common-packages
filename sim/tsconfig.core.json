@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "noImplicitAny": true,
+        "noImplicitReturns": true,
+        "outFile": "../built/common-simcore.js",
+        "lib": [
+            "ES2017"
+        ],
+        "rootDir": "../libs",
+        "newLine": "LF",
+        "declaration": true,
+        "sourceMap": false,
+        "skipLibCheck": true,
+        "types": []
+    },
+    "files": [
+        "../node_modules/pxt-core/built/pxtsimcore.d.ts",
+        "../node_modules/pxt-core/built/pxtsimcore-globals.d.ts"
+    ],
+    "include": [
+        "../libs/*/sim/core/*.ts"
+    ]
+}

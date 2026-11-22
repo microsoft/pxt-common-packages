@@ -33,7 +33,8 @@ namespace pxsim.browserEvents {
             );
         }, THROTTLE_INTERVAL, true);
 
-        onEvent(event: PointerEvent, x: number, y: number) {
+        /** Records the pointer position and queues the event for a pointer event of the given type. */
+        onEvent(type: MouseEvent, button: number, x: number, y: number) {
             this.x = x;
             this.y = y;
 
@@ -48,12 +49,12 @@ namespace pxsim.browserEvents {
                 "pointerout",
             ];
 
-            let eventId = 6857 + events.indexOf(event.type);
+            let eventId = 6857 + events.indexOf(type);
 
-            if (event.type === "pointerdown") {
+            if (type === "pointerdown") {
                 eventId = INTERNAL_POINTER_DOWN;
             }
-            else if (event.type === "pointerup") {
+            else if (type === "pointerup") {
                 eventId = INTERNAL_POINTER_UP;
             }
 
@@ -61,7 +62,7 @@ namespace pxsim.browserEvents {
             // that's used as a wildcard in our event bus
             board().bus.queue(
                 eventId,
-                (event.button || 0) + 1
+                (button || 0) + 1
             );
         }
 
