@@ -56,7 +56,7 @@ namespace color {
             const s = this.stride;
             const start = index * s;
             for (let i = s - 1; i >= 0; --i) {
-                this.buf[start + i] = color & 0xff;
+                this.buf[start + i] = color & 0xfffff;
                 color = color >> 8;
             }
         }
