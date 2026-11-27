@@ -3,7 +3,7 @@
 
 #if IMAGE_BITS == 1
 // OK
-#elif IMAGE_BITS == 4
+#elif IMAGE_BITS == 16
 // OK
 #else
 #error "Invalid IMAGE_BITS"
@@ -271,17 +271,17 @@ void setRows(Image_ img, int x, Buffer src) {
 
     img->makeWritable();
 
-    uint8_t *dp = img->pix(x, 0);
-    uint8_t *sp = src->data;
-    int n = min(src->length, (w - x) * h) >> 1;
+    uint16_t *dp = (uint16_t *)img->pix(x, 0);
+    uint16_t *sp = (uint16_t *)src->data;
+    int n = min(src->length >> 1, (w - x) * h);
 
     while (n--) {
-        *dp++ = (sp[0] & 0xf) | (sp[1] << 4);
-        sp += 2;
+        *dp++ = *sp++;
     }
 }
+    
 
-void fillRect(Image_ img, int x, int y, int w, int h, int c) {
+voidfillRect(Image_ img, int x, int y, int w, int h, int c) {
     if (w == 0 || h == 0 || x >= img->width() || y >= img->height())
         return;
 
@@ -364,7 +364,7 @@ void mapRect(Image_ img, int x, int y, int w, int h, Buffer map) {
     if (w == 0 || h == 0 || x >= img->width() || y >= img->height())
         return;
 
-    if (img->bpp() != 4 || map->length < 16)
+    if (img->bpp() != 16|| map->length < 16)
         return;
 
     int x2 = x + w - 1;
