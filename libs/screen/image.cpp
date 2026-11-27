@@ -3,7 +3,7 @@
 
 #if IMAGE_BITS == 1
 // OK
-#elif IMAGE_BITS == 4
+#elif IMAGE_BITS == 16
 // OK
 #else
 #error "Invalid IMAGE_BITS"
