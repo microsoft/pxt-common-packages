@@ -939,16 +939,24 @@ namespace game {
                 lastBreakLocation = index;
             }
 
-            if (index - lastBreak === lineLength) {
-                if (lastBreakLocation === index || lastBreakLocation <= lastBreak) {
-                    currentPage.push(formatLine(text.substr(lastBreak, lineLength)));
-                    lastBreak = index;
-                    nextLine();
-                }
-                else {
+            // Use >= because after breaking at a space the leftover text can already be longer
+            // than the next line (the lines next to the cursor are shorter).
+            while (lineLength > 0 && index - lastBreak >= lineLength) {
+                if (lastBreakLocation > lastBreak && lastBreakLocation - lastBreak <= lineLength) {
                     currentPage.push(formatLine(text.substr(lastBreak, lastBreakLocation - lastBreak)));
                     lastBreak = lastBreakLocation;
-                    nextLine();
+                }
+                else {
+                    currentPage.push(formatLine(text.substr(lastBreak, lineLength)));
+                    lastBreak += lineLength;
+                }
+                nextLine();
+
+                if (line >= lineLengths.length) {
+                    line = 0;
+                    lineLength = lineLengths[line];
+                    result.push(currentPage);
+                    currentPage = [];
                 }
             }
 
